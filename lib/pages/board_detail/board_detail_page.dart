@@ -7,6 +7,7 @@ import 'package:flutter_chan_viewer/pages/base/base_page.dart';
 import 'package:flutter_chan_viewer/pages/thread_detail/thread_detail_page.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/utils/preferences.dart';
+import 'package:flutter_chan_viewer/view/list_widget_catalog_thread.dart';
 import 'package:flutter_chan_viewer/view/list_widget_thread.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -37,8 +38,8 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
     super.initState();
     _boardDetailBloc = BlocProvider.of<BoardDetailBloc>(context);
     _boardDetailBloc.dispatch(BoardDetailEventAppStarted());
-    _boardDetailBloc.dispatch(BoardDetailEventFetchThreads(widget.boardId, BoardDetailBloc.FIRST_PAGE_INDEX));
-    _scrollController.addListener(_onScroll);
+    _boardDetailBloc.dispatch(BoardDetailEventFetchThreads(widget.boardId));
+//    _scrollController.addListener(_onScroll);
     _refreshCompleter = Completer<void>();
 
     SharedPreferences.getInstance().then((prefs) {
@@ -89,19 +90,19 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
           _refreshCompleter = Completer();
           return RefreshIndicator(
             onRefresh: () {
-              _boardDetailBloc.dispatch(BoardDetailEventFetchThreads(widget.boardId, BoardDetailBloc.FIRST_PAGE_INDEX));
+              _boardDetailBloc.dispatch(BoardDetailEventFetchThreads(widget.boardId));
               return _refreshCompleter.future;
             },
             child: ListView.builder(
               itemBuilder: (BuildContext context, int index) {
                 return index < state.threads.length
                     ? InkWell(
-                        child: ThreadListWidget(state.threads[index]),
+                        child: CatalogThreadListWidget(state.threads[index]),
                         onTap: () => _openThreadDetailPage(widget.boardId, state.threads[index].threadId),
                       )
                     : Container(width: Constants.progressPlaceholderSize, height: Constants.progressPlaceholderSize, child: CircularProgressIndicator());
               },
-              itemCount: state.hasReachedMax ? state.threads.length : state.threads.length + 1,
+              itemCount: state.threads.length,
               controller: _scrollController,
             ),
           );
@@ -125,13 +126,13 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
     );
   }
 
-  void _onScroll() {
-    final maxScroll = _scrollController.position.maxScrollExtent;
-    final currentScroll = _scrollController.position.pixels;
-    if (maxScroll - currentScroll <= _scrollThreshold && !_boardDetailBloc.isLazyLoading) {
-      _boardDetailBloc.dispatch(BoardDetailEventFetchThreads(widget.boardId, _boardDetailBloc.lastPage + 1));
-    }
-  }
+//  void _onScroll() {
+//    final maxScroll = _scrollController.position.maxScrollExtent;
+//    final currentScroll = _scrollController.position.pixels;
+//    if (maxScroll - currentScroll <= _scrollThreshold && !_boardDetailBloc.isLazyLoading) {
+//      _boardDetailBloc.dispatch(BoardDetailEventFetchThreads(widget.boardId, _boardDetailBloc.lastPage + 1));
+//    }
+//  }
 
   void _onFavoriteToggleClick() {
     bool newState = !_isFavorite;

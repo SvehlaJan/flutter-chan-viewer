@@ -11,14 +11,12 @@ class BoardDetailEventAppStarted extends BoardDetailEvent {
 
 class BoardDetailEventFetchThreads extends BoardDetailEvent {
   final String boardId;
-  final int page;
 
-  BoardDetailEventFetchThreads(this.boardId, this.page)
+  BoardDetailEventFetchThreads(this.boardId)
       : super([
-          boardId,
-          page
+          boardId
         ]);
 
   @override
-  String toString() => 'ThreadsEventFetchBoards { boardId: $boardId, page: $page }';
+  String toString() => 'ThreadsEventFetchBoards { boardId: $boardId }';
 }

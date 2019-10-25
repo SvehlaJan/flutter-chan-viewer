@@ -9,6 +9,7 @@ abstract class BasePageState<T extends BasePage> extends State<T> {
 
   @override
   Widget build(BuildContext context) {
+    final body = buildBody(); // buildBody() is here because BlocBuilder might do some initialization
     return Scaffold(
       appBar: AppBar(
         title: Text(getPageTitle()),
@@ -17,7 +18,7 @@ abstract class BasePageState<T extends BasePage> extends State<T> {
       body: Builder(
         builder: (BuildContext context) {
           scaffoldContext = context;
-          return buildBody();
+          return body;
         },
       ),
       floatingActionButton: getPageFab(),

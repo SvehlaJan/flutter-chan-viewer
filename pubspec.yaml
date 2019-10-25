@@ -29,6 +29,7 @@ dependencies:
   shared_preferences: ^0.5.3+4
   date_format: ^1.0.6
 
+  indexed_list_view: ^1.0.7
   liquid_pull_to_refresh: ^1.1.1
   flutter_html: ^0.11.0
   image: ^2.1.4

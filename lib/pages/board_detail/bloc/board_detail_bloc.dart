@@ -11,8 +11,6 @@ class BoardDetailBloc extends Bloc<BoardDetailEvent, BoardDetailState> {
   static const int FIRST_PAGE_INDEX = 1;
 
   final _repository = ChanRepository.get();
-  int lastPage = 0;
-  bool isLazyLoading = false;
 
   void initBloc() {}
 
@@ -28,31 +26,14 @@ class BoardDetailBloc extends Bloc<BoardDetailEvent, BoardDetailState> {
         initBloc();
         yield BoardDetailStateLoading();
       }
+
       if (event is BoardDetailEventFetchThreads) {
-        if (event.page == FIRST_PAGE_INDEX) {
-          yield BoardDetailStateLoading();
-        } else {
-          isLazyLoading = true;
-        }
-
-        final List<ChanThread> allThreads = [];
-        final newThreads = await _repository.fetchThreads(event.boardId, event.page);
-
-        if (currentState is BoardDetailStateContent && isLazyLoading) {
-          allThreads.addAll((currentState as BoardDetailStateContent).threads);
-        }
-        allThreads.addAll(newThreads.threads);
-
-        lastPage = event.page;
-        isLazyLoading = false;
-        yield BoardDetailStateContent(allThreads, _hasReachedMax(currentState, newThreads));
+        final newThreads = await _repository.fetchCatalog(event.boardId);
+        yield BoardDetailStateContent(newThreads.threads);
       }
     } catch (o) {
       print("Event error! ${o.toString()}");
-      isLazyLoading = false;
       yield BoardDetailStateError(o.toString());
     }
   }
-
-  bool _hasReachedMax(BoardDetailState state, ThreadsModel threads) => threads.threads.length < 15 || lastPage >= 10;
 }

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_chan_viewer/api/chan_api_provider.dart';
 import 'package:flutter_chan_viewer/models/api/boards_model.dart';
+import 'package:flutter_chan_viewer/models/api/catalog_model.dart';
 import 'package:flutter_chan_viewer/models/api/posts_model.dart';
 import 'package:flutter_chan_viewer/models/api/threads_model.dart';
 
@@ -18,6 +19,8 @@ class ChanRepository {
   }
 
   Future<BoardsModel> fetchAllBoards() => chanApiProvider.fetchBoardList();
+
+  Future<CatalogThreadsModel> fetchCatalog(String boardId) => chanApiProvider.fetchCatalogThreadList(boardId);
 
   Future<ThreadsModel> fetchThreads(String boardId, int page) => chanApiProvider.fetchThreadList(boardId, page);
 

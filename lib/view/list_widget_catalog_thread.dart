@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_chan_viewer/models/api/posts_model.dart';
+import 'package:flutter_chan_viewer/models/api/catalog_model.dart';
+import 'package:flutter_chan_viewer/models/api/threads_model.dart';
 import 'package:flutter_chan_viewer/utils/chan_util.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/view/view_cached_image.dart';
 import 'package:flutter_html/flutter_html.dart';
 
-class PostListWidget extends StatelessWidget {
-  final ChanPost _post;
+class CatalogThreadListWidget extends StatelessWidget {
+  final ChanCatalogThread _thread;
 
-  PostListWidget(this._post);
+  CatalogThreadListWidget(this._thread);
 
   @override
   Widget build(BuildContext context) {
-    print("Building PostListWidget { Post: $_post }");
+    String imageUrl = _thread.getThumbnailUrl();
+    print("Building ThreadListWidget { Thread: $_thread }");
     return Card(
       child: ConstrainedBox(
         constraints: BoxConstraints(minHeight: Constants.avatarImageSize),
@@ -21,7 +23,7 @@ class PostListWidget extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            if (_post.getThumbnailUrl() != null) ConstrainedBox(constraints: BoxConstraints(maxWidth: Constants.avatarImageSize), child: ChanCachedImage(_post.getThumbnailUrl())),
+            if (imageUrl != null) ConstrainedBox(constraints: BoxConstraints(maxWidth: Constants.avatarImageSize), child: ChanCachedImage(imageUrl)),
             Flexible(
               child: Padding(
                 padding: const EdgeInsets.only(left: 4.0, right: 4.0),
@@ -30,12 +32,12 @@ class PostListWidget extends StatelessWidget {
                   children: <Widget>[
                     Row(
                       children: <Widget>[
-                        Text(_post.postId.toString(), style: Theme.of(context).textTheme.caption),
-                        Text(_post.date, style: Theme.of(context).textTheme.caption),
+                        Text(_thread.threadId.toString(), style: Theme.of(context).textTheme.caption),
+                        Text(_thread.date, style: Theme.of(context).textTheme.caption),
                       ],
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     ),
-                    Html(data: ChanUtil.getHtml(_post.content ?? ""))
+                    Html(data: ChanUtil.getHtml(_thread.content ?? ""))
                   ],
                 ),
               ),

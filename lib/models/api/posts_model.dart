@@ -44,6 +44,6 @@ class ChanPost extends Equatable {
         ".webp"
       ].contains(extension);
 
-  String getImageUrl() => ChanApiProvider.getImageUrl(this, false);
-  String getThumbnailUrl() => ChanApiProvider.getImageUrl(this, true);
+  String getImageUrl() => ChanApiProvider.getPostImageUrl(this, false);
+  String getThumbnailUrl() => ChanApiProvider.getPostImageUrl(this, true);
 }

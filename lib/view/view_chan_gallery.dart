@@ -43,7 +43,7 @@ class _GridPhotoViewerState extends State<ChanGallery> with TickerProviderStateM
   Offset _targetOffset;
   double _previousScale;
   int _previousTapTimestamp = 0;
-  int currentPage;
+  int currentPageIndex;
 
   @override
   void initState() {
@@ -51,7 +51,7 @@ class _GridPhotoViewerState extends State<ChanGallery> with TickerProviderStateM
     BlocProvider.of<AppBloc>(context).dispatch(AppEventShowBottomBar(false));
     _flingAnimationController = AnimationController(vsync: this)..addListener(_handleFlingAnimation);
     _scaleAnimationController = AnimationController(vsync: this, duration: Duration(milliseconds: SCALE_ANIMATION_DURATION))..addListener(_handleScaleAnimation);
-    currentPage = widget.initialPageIndex;
+    currentPageIndex = widget.initialPageIndex;
   }
 
   @override
@@ -92,7 +92,7 @@ class _GridPhotoViewerState extends State<ChanGallery> with TickerProviderStateM
   }
 
   void _handleOnScaleUpdate(ScaleUpdateDetails details) {
-    print("Scale update { _offset: $_offset, details.focalPoint: ${details.focalPoint}, _normalizedOffset: $_normalizedOffset }");
+//    print("Scale update { _offset: $_offset, details.focalPoint: ${details.focalPoint}, _normalizedOffset: $_normalizedOffset }");
     setState(() {
       _currentScale = (_previousScale * details.scale).clamp(SCALE_MIN, SCALE_MAX);
       if (_isScaled()) {
@@ -195,7 +195,7 @@ class _GridPhotoViewerState extends State<ChanGallery> with TickerProviderStateM
           pageController: widget.pageController,
           scrollPhysics: _isScaled() ? NeverScrollableScrollPhysics() : AlwaysScrollableScrollPhysics(),
           onPageChanged: (int currentPage) {
-            this.currentPage = currentPage;
+            currentPageIndex = currentPage;
           },
         ),
       ),

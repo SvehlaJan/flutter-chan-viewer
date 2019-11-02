@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:flutter_chan_viewer/models/api/posts_model.dart';
+import 'package:flutter_chan_viewer/models/posts_model.dart';
 
 abstract class ThreadDetailState extends Equatable {
   ThreadDetailState([List props = const []]) : super(props);
@@ -20,13 +20,10 @@ class ThreadDetailStateError extends ThreadDetailState {
 }
 
 class ThreadDetailStateContent extends ThreadDetailState {
-  final List<ChanPost> posts;
+  final PostsModel data;
 
-  ThreadDetailStateContent(this.posts)
-      : super([
-          posts
-        ]);
+  ThreadDetailStateContent(this.data) : super([data]);
 
   @override
-  String toString() => 'ThreadDetailStateContent { posts: ${posts.length} }';
+  String toString() => 'ThreadDetailStateContent { posts: $data }';
 }

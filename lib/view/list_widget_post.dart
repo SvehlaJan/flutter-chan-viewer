@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_chan_viewer/models/api/posts_model.dart';
+import 'package:flutter_chan_viewer/models/posts_model.dart';
 import 'package:flutter_chan_viewer/utils/chan_util.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/view/view_cached_image.dart';
@@ -21,7 +21,13 @@ class PostListWidget extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            if (_post.getThumbnailUrl() != null) ConstrainedBox(constraints: BoxConstraints(maxWidth: Constants.avatarImageSize), child: ChanCachedImage(_post.getThumbnailUrl())),
+            if (_post.getThumbnailUrl() != null)
+              ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: Constants.avatarImageSize),
+                child: ChanCachedImage(
+                  _post.getThumbnailUrl(),
+                ),
+              ),
             Flexible(
               child: Padding(
                 padding: const EdgeInsets.only(left: 4.0, right: 4.0),
@@ -31,7 +37,7 @@ class PostListWidget extends StatelessWidget {
                     Row(
                       children: <Widget>[
                         Text(_post.postId.toString(), style: Theme.of(context).textTheme.caption),
-                        Text(_post.date, style: Theme.of(context).textTheme.caption),
+                        Text(ChanUtil.getHumanDate(_post.timestamp), style: Theme.of(context).textTheme.caption),
                       ],
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     ),

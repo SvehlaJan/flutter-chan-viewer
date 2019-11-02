@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_chan_viewer/utils/constants.dart';
 
 import 'base_page.dart';
 
@@ -8,8 +9,7 @@ abstract class StatefulPage extends BasePage {
 
 enum StatefulState { progress, empty, content }
 
-abstract class StatefulPageState<T extends StatefulPage>
-    extends BasePageState<T> {
+abstract class StatefulPageState<T extends StatefulPage> extends BasePageState<T> {
   StatefulState currentState;
 
   @override
@@ -55,7 +55,7 @@ abstract class StatefulPageState<T extends StatefulPage>
   }
 
   Widget getProgressView() {
-    return Material(child: Center(child: CircularProgressIndicator()));
+    return Material(child: Center(child: Constants.progressIndicator));
   }
 
   Widget getEmptyView() {

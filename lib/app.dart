@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/app_bloc/app_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/app_bloc/app_event.dart';
 import 'package:flutter_chan_viewer/bloc/app_bloc/app_state.dart';
+import 'package:flutter_chan_viewer/utils/constants.dart';
 
 import 'navigation/tab_helper.dart';
 import 'navigation/tab_navigator.dart';
@@ -48,7 +49,7 @@ class ChanViewerAppState extends State<ChanViewerApp> {
       print("App bloc state: $state");
 
       if (state is AppStateLoading) {
-        return Center(child: CircularProgressIndicator());
+        return Center(child: Constants.progressIndicator);
       } else if (state is AppStateContent) {
         return WillPopScope(
           onWillPop: () async => !await navigatorKeys[currentTab].currentState.maybePop(),

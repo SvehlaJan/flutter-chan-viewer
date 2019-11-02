@@ -1,5 +1,7 @@
 import 'dart:math';
 
+import 'package:date_format/date_format.dart';
+
 class ChanUtil {
   var style = '';
   static const int IDEAL_TEXT_LENGTH = 200;
@@ -19,5 +21,9 @@ class ChanUtil {
       fixed = '<p style=\"font-size:80%;\">' + fixed + '</p>';
     }
     return fixed;
+  }
+
+  static String getHumanDate(int timestamp) {
+    return formatDate(DateTime.fromMillisecondsSinceEpoch(timestamp), [yyyy, '-', mm, '-', dd, ' ', HH, ':', nn, ':', ss]);
   }
 }

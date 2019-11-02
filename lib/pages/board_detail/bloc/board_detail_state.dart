@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:flutter_chan_viewer/models/api/catalog_model.dart';
+import 'package:flutter_chan_viewer/models/thread_model.dart';
 
 abstract class BoardDetailState extends Equatable {
   BoardDetailState([List props = const []]) : super(props);
@@ -20,7 +20,7 @@ class BoardDetailStateError extends BoardDetailState {
 }
 
 class BoardDetailStateContent extends BoardDetailState {
-  final List<ChanCatalogThread> threads;
+  final List<ChanThread> threads;
 
   BoardDetailStateContent(this.threads)
       : super([

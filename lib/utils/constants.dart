@@ -18,6 +18,7 @@ class Constants {
   static const double avatarImageSize = 100.0;
   static const double progressPlaceholderSize = 40.0;
   static const double minFlingDistance = 100.0;
+  static const Widget progressIndicator = SizedBox(width: Constants.progressPlaceholderSize, height: Constants.progressPlaceholderSize, child: CircularProgressIndicator());
 
   //strings
   static const String appName = "Chan Viewer";

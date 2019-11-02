@@ -22,6 +22,9 @@ dependencies:
 
   http: ^0.12.0+2
   flutter_bloc: ^0.21.0
+  sqflite: ^1.1.7+1
+  path_provider: ^1.4.0
+  flutter_cache_store: ^0.7.0
   kt_dart: ^0.6.2
   equatable: ^0.5.1
   cupertino_icons: ^0.1.2
@@ -29,11 +32,7 @@ dependencies:
   shared_preferences: ^0.5.3+4
   date_format: ^1.0.6
 
-  indexed_list_view: ^1.0.7
-  liquid_pull_to_refresh: ^1.1.1
   flutter_html: ^0.11.0
-  image: ^2.1.4
-  cached_network_image: ^1.1.1
   chewie: ^0.9.8+1
   video_player: ^0.10.2+3
   flutter_advanced_networkimage: ^0.5.0

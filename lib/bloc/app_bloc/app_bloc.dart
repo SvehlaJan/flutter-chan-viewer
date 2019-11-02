@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
-import 'package:flutter_chan_viewer/models/api/boards_model.dart';
+import 'package:flutter_chan_viewer/models/boards_model.dart';
 import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
 import 'package:flutter_chan_viewer/utils/preferences.dart';
 import 'package:shared_preferences/shared_preferences.dart';

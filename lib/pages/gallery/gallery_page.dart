@@ -5,34 +5,47 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/app_bloc/app_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/app_bloc/app_event.dart';
-import 'package:flutter_chan_viewer/models/api/posts_model.dart';
+import 'package:flutter_chan_viewer/models/posts_model.dart';
+import 'package:flutter_chan_viewer/pages/thread_detail/bloc/thread_detail_event.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/view/view_cached_image.dart';
 import 'package:flutter_chan_viewer/view/view_custom_carousel.dart';
 import 'package:flutter_chan_viewer/view/view_video_player.dart';
 
-class ChanGallery extends StatefulWidget {
-  static const String ARG_POSTS = "ChanGallery.ARG_POSTS";
-  static const String ARG_INITIAL_PAGE_INDEX = "ChanGallery.ARG_INITIAL_PAGE_INDEX";
+import '../thread_detail/bloc/thread_detail_bloc.dart';
+import '../thread_detail/bloc/thread_detail_state.dart';
+
+class GalleryPage extends StatefulWidget {
+  static const String ARG_BOARD_ID = "ChanGallery.ARG_BOARD_ID";
+  static const String ARG_THREAD_ID = "ChanGallery.ARG_THREAD_ID";
+  static const String ARG_POST_ID = "ChanGallery.ARG_POST_ID";
   static const bool enableInfiniteScroll = true;
 
-  final List<ChanPost> posts;
-  final int initialPageIndex;
-  final PageController pageController;
+  final String boardId;
+  final int threadId;
+  final int postId;
 
-  ChanGallery(this.posts, this.initialPageIndex) : this.pageController = PageController(initialPage: CustomCarousel.getRealPage(enableInfiniteScroll, initialPageIndex));
+//  final PageController pageController;
+
+  static Map<String, dynamic> getArguments(final String boardId, final int threadId, final int postId) =>
+      {GalleryPage.ARG_BOARD_ID: boardId, GalleryPage.ARG_THREAD_ID: threadId, GalleryPage.ARG_POST_ID: postId};
+
+  GalleryPage(this.boardId, this.threadId, this.postId);
+
+//  : this.pageController = PageController(initialPage: CustomCarousel.getRealPage(enableInfiniteScroll, initialPageIndex));
 
   @override
-  _GridPhotoViewerState createState() => _GridPhotoViewerState();
+  _GalleryPageState createState() => _GalleryPageState();
 }
 
-class _GridPhotoViewerState extends State<ChanGallery> with TickerProviderStateMixin {
+class _GalleryPageState extends State<GalleryPage> with TickerProviderStateMixin {
   static const int DOUBLE_TAP_TIMEOUT = 300;
   static const double SCALE_MIN = 1.0;
   static const double SCALE_MAX = 10.0;
   static const double IS_SCALED_TRESHOLD = 1.2;
   static const int SCALE_ANIMATION_DURATION = 200;
 
+  ThreadDetailBloc _threadDetailBloc;
   AnimationController _flingAnimationController;
   AnimationController _scaleAnimationController;
   Animation<Offset> _flingAnimation;
@@ -49,13 +62,16 @@ class _GridPhotoViewerState extends State<ChanGallery> with TickerProviderStateM
   void initState() {
     super.initState();
     BlocProvider.of<AppBloc>(context).dispatch(AppEventShowBottomBar(false));
+    _threadDetailBloc = BlocProvider.of<ThreadDetailBloc>(context);
+    _threadDetailBloc.dispatch(ThreadDetailEventAppStarted());
+    _threadDetailBloc.dispatch(ThreadDetailEventFetchPosts(false, widget.boardId, widget.threadId));
     _flingAnimationController = AnimationController(vsync: this)..addListener(_handleFlingAnimation);
     _scaleAnimationController = AnimationController(vsync: this, duration: Duration(milliseconds: SCALE_ANIMATION_DURATION))..addListener(_handleScaleAnimation);
-    currentPageIndex = widget.initialPageIndex;
   }
 
   @override
   void dispose() {
+    _threadDetailBloc.dispose();
     _flingAnimationController.dispose();
     super.dispose();
   }
@@ -167,52 +183,68 @@ class _GridPhotoViewerState extends State<ChanGallery> with TickerProviderStateM
       ..forward();
   }
 
-  void _handleOnHorizontalDragUpdate(DragUpdateDetails details) {
-    print("_handleOnHorizontalDragUpdate { _isScaled: ${_isScaled()} }");
-    if (!_isScaled()) {
-      setState(() {
-        widget.pageController.jumpTo(widget.pageController.position.pixels - details.delta.dx);
-      });
-    }
-  }
+//  void _handleOnHorizontalDragUpdate(DragUpdateDetails details) {
+//    print("_handleOnHorizontalDragUpdate { _isScaled: ${_isScaled()} }");
+//    if (!_isScaled()) {
+//      setState(() {
+//        widget.pageController.jumpTo(widget.pageController.position.pixels - details.delta.dx);
+//      });
+//    }
+//  }
 
   @override
   Widget build(BuildContext context) {
-    List<Widget> children = [];
-    widget.posts.asMap().forEach((index, post) => children.add(buildPage(index, post)));
+    return BlocBuilder<ThreadDetailBloc, ThreadDetailState>(
+        bloc: _threadDetailBloc,
+        builder: (context, state) {
+          if (state is ThreadDetailStateLoading) {
+            return Center(
+              child: Constants.progressIndicator,
+            );
+          }
+          if (state is ThreadDetailStateContent) {
+            if (state.data.posts.isEmpty) {
+              return Center(
+                child: Text('No posts'),
+              );
+            }
 
-    return SafeArea(
-      child: GestureDetector(
-        onScaleStart: _handleOnScaleStart,
-        onScaleUpdate: _handleOnScaleUpdate,
-        onScaleEnd: _handleOnScaleEnd,
+            List<Widget> children = state.data.mediaPosts.map((post) => buildPage(post)).toList();
+            int initialIndex = state.data.getMediaIndex(widget.postId);
+            return SafeArea(
+              child: GestureDetector(
+                onScaleStart: _handleOnScaleStart,
+                onScaleUpdate: _handleOnScaleUpdate,
+                onScaleEnd: _handleOnScaleEnd,
 //        onHorizontalDragUpdate: _isScaled() ? null : _handleOnHorizontalDragUpdate,
-        onTapUp: _handleOnDoubleTap,
-        child: CustomCarousel(
-          items: children,
-          initialPage: widget.initialPageIndex,
-          enableInfiniteScroll: ChanGallery.enableInfiniteScroll,
-          pageController: widget.pageController,
-          scrollPhysics: _isScaled() ? NeverScrollableScrollPhysics() : AlwaysScrollableScrollPhysics(),
-          onPageChanged: (int currentPage) {
-            currentPageIndex = currentPage;
-          },
-        ),
-      ),
-    );
+                onTapUp: _handleOnDoubleTap,
+                child: CustomCarousel(
+                  items: children,
+                  initialPage: initialIndex,
+                  enableInfiniteScroll: GalleryPage.enableInfiniteScroll,
+                  scrollPhysics: _isScaled() ? NeverScrollableScrollPhysics() : AlwaysScrollableScrollPhysics(),
+                  onPageChanged: (int currentPage) {
+                    currentPageIndex = currentPage;
+                  },
+                ),
+              ),
+            );
+          } else {
+            return Center(
+              child: Text('Failed to fetch posts'),
+            );
+          }
+        });
   }
 
-  Widget buildPage(int index, ChanPost post) {
+  Widget buildPage(ChanPost post) {
 //    if (currentPage == index) {
     return ClipRect(
       child: Transform(
         transform: Matrix4.identity()
           ..translate(_offset.dx, _offset.dy)
           ..scale(_currentScale),
-        child: Hero(
-          tag: post.getImageUrl(),
-          child: post.hasImage() ? ChanCachedImage(post.getImageUrl(), post.getThumbnailUrl()) : ChanVideoPlayer(post, () {}),
-        ),
+        child: post.hasImage() ? ChanCachedImage(post.getMediaUrl(), post.getThumbnailUrl()) : ChanVideoPlayer(post, () {}),
       ),
     );
 //    } else {

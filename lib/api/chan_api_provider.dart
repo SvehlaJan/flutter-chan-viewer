@@ -1,10 +1,10 @@
 import 'dart:async';
-import 'package:flutter_chan_viewer/models/api/boards_model.dart';
-import 'package:flutter_chan_viewer/models/api/catalog_model.dart';
-import 'package:flutter_chan_viewer/models/api/posts_model.dart';
-import 'package:flutter_chan_viewer/models/api/threads_model.dart';
-import 'package:http/http.dart' show Client;
 import 'dart:convert';
+
+import 'package:flutter_chan_viewer/models/boards_model.dart';
+import 'package:flutter_chan_viewer/models/thread_model.dart';
+import 'package:flutter_chan_viewer/models/posts_model.dart';
+import 'package:http/http.dart' show Client;
 
 class ChanApiProvider {
   Client client = Client();
@@ -12,8 +12,10 @@ class ChanApiProvider {
   static final _baseImageUrl = "https://i.4cdn.org";
 
   Future<BoardsModel> fetchBoardList() async {
-    print("Fetching board list");
-    final response = await client.get("$_baseUrl/boards.json");
+    String url = "$_baseUrl/boards.json";
+    print("Fetching board list: { url: $url }");
+
+    final response = await client.get(url);
     print("Response status: ${response.statusCode}");
     if (response.statusCode == 200) {
       return BoardsModel.fromJson(json.decode(response.body));
@@ -23,20 +25,11 @@ class ChanApiProvider {
     }
   }
 
-  Future<CatalogThreadsModel> fetchCatalogThreadList(String boardId) async {
-    print("Fetching catalog thread list { boardId: $boardId }");
-    final response = await client.get("$_baseUrl/$boardId/catalog.json");
-    print("Response status: ${response.statusCode}");
-    if (response.statusCode == 200) {
-      return CatalogThreadsModel.fromJson(boardId, json.decode(response.body));
-    } else {
-      throw Exception('Failed to load threads');
-    }
-  }
+  Future<ThreadsModel> fetchThreadList(String boardId) async {
+    String url = "$_baseUrl/$boardId/catalog.json";
+    print("Fetching thread list { url: $url }");
 
-  Future<ThreadsModel> fetchThreadList(String boardId, int page) async {
-    print("Fetching thread list { boardId: $boardId, page: $page }");
-    final response = await client.get("$_baseUrl/$boardId/$page.json");
+    final response = await client.get(url);
     print("Response status: ${response.statusCode}");
     if (response.statusCode == 200) {
       return ThreadsModel.fromJson(boardId, json.decode(response.body));
@@ -46,8 +39,10 @@ class ChanApiProvider {
   }
 
   Future<PostsModel> fetchPostList(String boardId, int threadId) async {
-    print("Fetching post list { boardId: $boardId, threadId: $threadId }");
-    final response = await client.get("$_baseUrl/$boardId/thread/$threadId.json");
+    String url = "$_baseUrl/$boardId/thread/$threadId.json";
+    print("Fetching post list { url: $url }");
+
+    final response = await client.get(url);
     print("Response status: ${response.statusCode}");
     if (response.statusCode == 200) {
       return PostsModel.fromJson(boardId, json.decode(response.body));
@@ -56,9 +51,9 @@ class ChanApiProvider {
     }
   }
 
-  static String getPostImageUrl(ChanPost post, [bool thumbnail = false]) => getImageUrl(post.boardId, post.imageId, post.extension, thumbnail);
+  static String getPostMediaUrl(ChanPost post, [bool thumbnail = false]) => getMediaUrl(post.boardId, post.imageId, post.extension, thumbnail);
 
-  static String getImageUrl(String boardId, String imageId, String extension, [bool thumbnail = false]) {
+  static String getMediaUrl(String boardId, String imageId, String extension, [bool thumbnail = false]) {
     if (imageId != null && extension != null) {
       String targetImageId = thumbnail ? "${imageId}s" : imageId;
       String targetExtension = thumbnail ? ".jpg" : extension;

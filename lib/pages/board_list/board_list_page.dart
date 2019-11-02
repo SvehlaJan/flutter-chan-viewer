@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_chan_viewer/models/api/boards_model.dart';
+import 'package:flutter_chan_viewer/models/boards_model.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
 import 'package:flutter_chan_viewer/pages/board_detail/board_detail_page.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
@@ -45,7 +45,7 @@ class _BoardListPageState extends BasePageState<BoardListPage> {
     return BlocBuilder<BoardListBloc, BoardListState>(
       builder: (context, state) {
         if (state is BoardListStateLoading) {
-          return Center(child: CircularProgressIndicator());
+          return Center(child: Constants.progressIndicator);
         }
         if (state is BoardListStateContent) {
           if (state.boards.isEmpty) {

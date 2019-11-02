@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
-import 'package:flutter_chan_viewer/models/api/boards_model.dart';
+import 'package:flutter_chan_viewer/models/boards_model.dart';
 import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
 import 'package:flutter_chan_viewer/utils/preferences.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -32,7 +32,7 @@ class BoardListBloc extends Bloc<BoardListEvent, BoardListState> {
       if (event is BoardListEventFetchBoards) {
         yield BoardListStateLoading();
 
-        final boards = await _repository.fetchAllBoards();
+        final boards = await _repository.fetchBoards();
         if (_showOnlyFavorites) {
           SharedPreferences prefs = await SharedPreferences.getInstance();
           List<String> favoriteBoards = prefs.getStringList(Preferences.KEY_FAVORITE_BOARDS) ?? [];

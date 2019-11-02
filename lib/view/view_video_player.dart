@@ -1,6 +1,6 @@
 import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_chan_viewer/models/api/posts_model.dart';
+import 'package:flutter_chan_viewer/models/posts_model.dart';
 import 'package:flutter_chan_viewer/view/view_cached_image.dart';
 import 'package:video_player/video_player.dart';
 
@@ -22,7 +22,7 @@ class _ChanVideoPlayerState extends State<ChanVideoPlayer> {
   void initState() {
     super.initState();
 
-    _videoController = VideoPlayerController.network(widget._post.getImageUrl())
+    _videoController = VideoPlayerController.network(widget._post.getMediaUrl())
       ..initialize().then((_) {
         // Ensure the first frame is shown after the video is initialized, even before the play button has been pressed.
         _chewieController = ChewieController(
@@ -58,8 +58,8 @@ class _ChanVideoPlayerState extends State<ChanVideoPlayer> {
 
   @override
   void dispose() {
-    _videoController.dispose();
-    _chewieController.dispose();
+    if (_videoController != null) _videoController.dispose();
+    if (_chewieController != null) _chewieController.dispose();
 
     super.dispose();
   }

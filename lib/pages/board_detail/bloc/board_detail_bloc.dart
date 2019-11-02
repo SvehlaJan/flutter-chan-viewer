@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
-import 'package:flutter_chan_viewer/models/api/threads_model.dart';
 import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
 
 import 'board_detail_event.dart';
@@ -28,7 +27,7 @@ class BoardDetailBloc extends Bloc<BoardDetailEvent, BoardDetailState> {
       }
 
       if (event is BoardDetailEventFetchThreads) {
-        final newThreads = await _repository.fetchCatalog(event.boardId);
+        final newThreads = await _repository.fetchThreads(event.boardId);
         yield BoardDetailStateContent(newThreads.threads);
       }
     } catch (o) {

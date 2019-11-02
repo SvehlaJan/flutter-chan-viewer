@@ -9,9 +9,7 @@ import 'thread_detail_state.dart';
 class ThreadDetailBloc extends Bloc<ThreadDetailEvent, ThreadDetailState> {
   final _repository = ChanRepository.get();
 
-  void initBloc() {
-
-  }
+  void initBloc() {}
 
   @override
   get initialState => ThreadDetailStateLoading();
@@ -26,8 +24,8 @@ class ThreadDetailBloc extends Bloc<ThreadDetailEvent, ThreadDetailState> {
         yield ThreadDetailStateLoading();
       }
       if (event is ThreadDetailEventFetchPosts) {
-        final posts = await _repository.fetchPosts(event.boardId, event.threadId);
-        yield ThreadDetailStateContent(posts.posts);
+        final posts = await _repository.fetchPosts(event.forceFetch, event.boardId, event.threadId);
+        yield ThreadDetailStateContent(posts);
       }
     } catch (o) {
       print("Event error! ${o.toString()}");

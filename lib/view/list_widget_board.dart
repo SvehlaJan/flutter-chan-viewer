@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_chan_viewer/models/api/boards_model.dart';
+import 'package:flutter_chan_viewer/models/boards_model.dart';
 
 class BoardListWidget extends StatelessWidget {
   final ChanBoard _board;

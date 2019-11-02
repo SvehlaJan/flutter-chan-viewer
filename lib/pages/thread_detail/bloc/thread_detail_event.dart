@@ -10,15 +10,12 @@ class ThreadDetailEventAppStarted extends ThreadDetailEvent {
 }
 
 class ThreadDetailEventFetchPosts extends ThreadDetailEvent {
+  final bool forceFetch;
   final String boardId;
   final int threadId;
 
-  ThreadDetailEventFetchPosts(this.boardId, this.threadId)
-      : super([
-          boardId,
-          threadId
-        ]);
+  ThreadDetailEventFetchPosts(this.forceFetch, this.boardId, this.threadId) : super([forceFetch, boardId, threadId]);
 
   @override
-  String toString() => 'ThreadDetailEventFetchThreads { boardId: $boardId, threadId: $threadId }';
+  String toString() => 'ThreadDetailEventFetchThreads { forceFetch: $forceFetch, boardId: $boardId, threadId: $threadId }';
 }

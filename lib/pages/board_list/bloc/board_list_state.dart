@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:flutter_chan_viewer/models/api/boards_model.dart';
+import 'package:flutter_chan_viewer/models/boards_model.dart';
 
 abstract class BoardListState extends Equatable {
   BoardListState([List props = const []]) : super(props);

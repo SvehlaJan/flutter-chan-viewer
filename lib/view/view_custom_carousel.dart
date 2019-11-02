@@ -15,11 +15,12 @@ class CustomCarousel extends StatefulWidget {
     this.autoPlayAnimationDuration = const Duration(milliseconds: 800),
     this.autoPlayCurve: Curves.fastOutSlowIn,
     this.onPageChanged,
-    @required this.pageController,
+    this.pageController,
     this.scrollPhysics = const CustomScrollableScrollPhysics(),
     this.scrollDirection: Axis.horizontal,
   })  : this.realPage = getRealPage(enableInfiniteScroll, initialPage) {
     currentPage = initialPage;
+    pageController = PageController(initialPage: getRealPage(enableInfiniteScroll, initialPage));
   }
 
   static const REAL_PAGE_OFFSET = 10000;
@@ -93,7 +94,7 @@ class CustomCarousel extends StatefulWidget {
 
   /// [pageController] is created using the properties passed to the constructor
   /// and can be used to control the [PageView] it is passed to.
-  final PageController pageController;
+  PageController pageController;
 
   /// Animates the controlled [CustomCarousel] to the next page.
   ///

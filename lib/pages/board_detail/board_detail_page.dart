@@ -7,7 +7,6 @@ import 'package:flutter_chan_viewer/pages/base/base_page.dart';
 import 'package:flutter_chan_viewer/pages/thread_detail/thread_detail_page.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/utils/preferences.dart';
-import 'package:flutter_chan_viewer/view/list_widget_catalog_thread.dart';
 import 'package:flutter_chan_viewer/view/list_widget_thread.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -65,9 +64,7 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
   List<Widget> getPageActions() {
     print('Board detail _isFavorite: $_isFavorite');
     Icon icon = _isFavorite ? Icon(Icons.star) : Icon(Icons.star_border);
-    return [
-      IconButton(icon: icon, onPressed: _onFavoriteToggleClick)
-    ];
+    return [IconButton(icon: icon, onPressed: _onFavoriteToggleClick)];
   }
 
   @override
@@ -76,7 +73,7 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
       builder: (context, state) {
         if (state is BoardDetailStateLoading) {
           return Center(
-            child: CircularProgressIndicator(),
+            child: Constants.progressIndicator,
           );
         }
         if (state is BoardDetailStateContent) {
@@ -95,12 +92,10 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
             },
             child: ListView.builder(
               itemBuilder: (BuildContext context, int index) {
-                return index < state.threads.length
-                    ? InkWell(
-                        child: CatalogThreadListWidget(state.threads[index]),
-                        onTap: () => _openThreadDetailPage(widget.boardId, state.threads[index].threadId),
-                      )
-                    : Container(width: Constants.progressPlaceholderSize, height: Constants.progressPlaceholderSize, child: CircularProgressIndicator());
+                return InkWell(
+                  child: ThreadListWidget(state.threads[index]),
+                  onTap: () => _openThreadDetailPage(widget.boardId, state.threads[index].threadId),
+                );
               },
               itemCount: state.threads.length,
               controller: _scrollController,

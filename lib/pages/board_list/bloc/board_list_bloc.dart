@@ -11,9 +11,8 @@ import 'board_list_state.dart';
 
 class BoardListBloc extends Bloc<BoardListEvent, BoardListState> {
   final _repository = ChanRepository.get();
-  final _showOnlyFavorites;
 
-  BoardListBloc(this._showOnlyFavorites);
+  BoardListBloc();
 
   void initBloc() {}
 
@@ -25,22 +24,21 @@ class BoardListBloc extends Bloc<BoardListEvent, BoardListState> {
     print("Event received! ${event.toString()}");
     print("Current state! ${currentState.toString()}");
     try {
-      if (event is BoardListEventAppStarted) {
-        initBloc();
-        yield BoardListStateLoading();
-      }
       if (event is BoardListEventFetchBoards) {
         yield BoardListStateLoading();
 
         final boards = await _repository.fetchBoards();
-        if (_showOnlyFavorites) {
-          SharedPreferences prefs = await SharedPreferences.getInstance();
-          List<String> favoriteBoards = prefs.getStringList(Preferences.KEY_FAVORITE_BOARDS) ?? [];
-          List<ChanBoard> filteredBoards = boards.boards.where((board) => favoriteBoards.contains(board.boardId)).toList();
-          yield BoardListStateContent(filteredBoards, _showOnlyFavorites);
-        } else {
-          yield BoardListStateContent(boards.boards, _showOnlyFavorites);
+        List<String> favoriteBoardIds = (await SharedPreferences.getInstance()).getStringList(Preferences.KEY_FAVORITE_BOARDS) ?? [];
+        List<ChanBoard> favoriteBoards = [];
+        List<ChanBoard> otherBoards = [];
+        for (ChanBoard board in boards.boards) {
+          if (favoriteBoardIds.contains(board.boardId)) {
+            favoriteBoards.add(board);
+          } else {
+            otherBoards.add(board);
+          }
         }
+        yield BoardListStateContent(favoriteBoards, otherBoards);
       }
     } catch (o) {
       print("Event error! ${o.toString()}");

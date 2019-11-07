@@ -393,7 +393,6 @@ class _ChanTransitionToImageState extends State<ChanTransitionToImage> with Sing
 
   @override
   Widget build(BuildContext context) {
-    print("_status: $_status");
     if (_status == _TransitionStatus.failed) {
       return buildPlaceholderWidget(context);
     } else if (_status == _TransitionStatus.start || _status == _TransitionStatus.loading) {

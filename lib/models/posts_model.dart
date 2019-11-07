@@ -1,12 +1,12 @@
 import 'package:equatable/equatable.dart';
-import 'package:flutter_chan_viewer/models/helper/chan_image.dart';
+import 'package:flutter_chan_viewer/models/helper/chan_post_base.dart';
 
 class PostsModel {
   final List<ChanPost> _posts = [];
 
-  PostsModel.fromJson(String boardId, Map<String, dynamic> parsedJson) {
+  PostsModel.fromJson(String boardId, int threadId, Map<String, dynamic> parsedJson) {
     for (Map<String, dynamic> post in parsedJson['posts']) {
-      _posts.add(ChanPost.fromMappedJson(boardId, post));
+      _posts.add(ChanPost.fromMappedJson(boardId, threadId, post));
     }
   }
 
@@ -19,17 +19,16 @@ class PostsModel {
   int getMediaIndex(int postId) => mediaPosts.indexWhere((post) => post.postId == postId);
 }
 
-class ChanPost extends ChanImage with EquatableMixin {
-  final String boardId;
+class ChanPost extends ChanPostBase with EquatableMixin {
   final int postId;
-  final int timestamp;
-  final String content;
 
-  factory ChanPost.fromMappedJson(String boardId, Map<String, dynamic> json) =>
-      ChanPost(json['boardId'] ?? boardId, json['no'], json['time'], json['com'], json['filename'], json['tim'].toString(), json['ext']);
+  factory ChanPost.fromMappedJson(String boardId, int threadId, Map<String, dynamic> json) =>
+      ChanPost(json['boardId'] ?? boardId, json['threadId'] ?? threadId, json['no'], json['time'], json['com'], json['filename'], json['tim'].toString(), json['ext']);
 
   Map<String, dynamic> toJson() => {
     'board_id': boardId,
+    'thread_id': threadId,
+    'no': postId,
     'time': timestamp,
     'com': content,
     'filename': filename,
@@ -37,8 +36,9 @@ class ChanPost extends ChanImage with EquatableMixin {
     'ext': extension
   };
 
-  ChanPost(this.boardId, this.postId, this.timestamp, this.content, String filename, String imageId, String extension) : super(filename, imageId, extension);
+  ChanPost(String boardId, int threadId, this.postId, int timestamp, String content, String filename, String imageId, String extension) : super(boardId, threadId, timestamp, content, filename, imageId, extension);
 
   @override
-  List<Object> get props => [boardId, postId, timestamp, content, filename, imageId, extension];
+  List<Object> get props => super.props + [postId];
+
 }

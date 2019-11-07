@@ -6,9 +6,8 @@ import 'package:video_player/video_player.dart';
 
 class ChanVideoPlayer extends StatefulWidget {
   final ChanPost _post;
-  final void Function() _onItemClick;
 
-  ChanVideoPlayer(this._post, this._onItemClick);
+  ChanVideoPlayer(this._post);
 
   @override
   _ChanVideoPlayerState createState() => _ChanVideoPlayerState();
@@ -52,7 +51,7 @@ class _ChanVideoPlayerState extends State<ChanVideoPlayer> {
                 controller: _chewieController,
               ),
             )
-          : ChanCachedImage(widget._post.getThumbnailUrl()),
+          : ChanCachedImage(widget._post, forceThumbnail: true),
     );
   }
 

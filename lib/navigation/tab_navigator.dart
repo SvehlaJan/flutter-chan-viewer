@@ -7,6 +7,8 @@ import 'package:flutter_chan_viewer/pages/board_list/bloc/board_list_bloc.dart';
 import 'package:flutter_chan_viewer/pages/board_list/board_list_page.dart';
 import 'package:flutter_chan_viewer/pages/favorites/bloc/favorites_bloc.dart';
 import 'package:flutter_chan_viewer/pages/favorites/favorites_page.dart';
+import 'package:flutter_chan_viewer/pages/settings/bloc/settings_bloc.dart';
+import 'package:flutter_chan_viewer/pages/settings/settings_page.dart';
 import 'package:flutter_chan_viewer/pages/thread_detail/bloc/thread_detail_bloc.dart';
 import 'package:flutter_chan_viewer/pages/thread_detail/thread_detail_page.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
@@ -31,7 +33,7 @@ class TabNavigator extends StatelessWidget {
       case Constants.favoritesRoute:
         return MaterialPageRoute<void>(settings: settings, builder: (BuildContext context) => BlocProvider(builder: (context) => FavoritesBloc(), child: FavoritesPage()));
       case Constants.boardsRoute:
-        return MaterialPageRoute<void>(settings: settings, builder: (BuildContext context) => BlocProvider(builder: (context) => BoardListBloc(false), child: BoardListPage()));
+        return MaterialPageRoute<void>(settings: settings, builder: (BuildContext context) => BlocProvider(builder: (context) => BoardListBloc(), child: BoardListPage()));
       case Constants.boardDetailRoute:
         if (arguments != null && arguments.containsKey(BoardDetailPage.ARG_BOARD_ID)) {
           String boardId = arguments[BoardDetailPage.ARG_BOARD_ID];
@@ -44,7 +46,8 @@ class TabNavigator extends StatelessWidget {
           String boardId = arguments[ThreadDetailPage.ARG_BOARD_ID];
           int threadId = arguments[ThreadDetailPage.ARG_THREAD_ID];
           return MaterialPageRoute<void>(
-              settings: settings, builder: (BuildContext context) => BlocProvider(builder: (context) => ThreadDetailBloc(), child: ThreadDetailPage(boardId, threadId)));
+              settings: settings,
+              builder: (BuildContext context) => BlocProvider(builder: (context) => ThreadDetailBloc(boardId, threadId), child: ThreadDetailPage(boardId, threadId)));
         }
         return null;
       case Constants.galleryRoute:
@@ -56,11 +59,12 @@ class TabNavigator extends StatelessWidget {
           int threadId = arguments[GalleryPage.ARG_THREAD_ID];
           int postId = arguments[GalleryPage.ARG_POST_ID];
           return MaterialPageRoute<void>(
-              settings: settings, builder: (BuildContext context) => BlocProvider(builder: (context) => ThreadDetailBloc(), child: GalleryPage(boardId, threadId, postId)));
+              settings: settings,
+              builder: (BuildContext context) => BlocProvider(builder: (context) => ThreadDetailBloc(boardId, threadId), child: GalleryPage(boardId, threadId, postId)));
         }
         return null;
       case Constants.settingsRoute:
-        return MaterialPageRoute<void>(settings: settings, builder: (BuildContext context) => NotFoundPage());
+        return MaterialPageRoute<void>(settings: settings, builder: (BuildContext context) => BlocProvider(builder: (context) => SettingsBloc(), child: SettingsPage()));
       case Constants.favoritesRoute:
         return MaterialPageRoute<void>(settings: settings, builder: (BuildContext context) => NotFoundPage());
     }

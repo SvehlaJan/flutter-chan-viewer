@@ -21,9 +21,11 @@ class ThreadDetailStateError extends ThreadDetailState {
 
 class ThreadDetailStateContent extends ThreadDetailState {
   final PostsModel data;
+  final bool isFavorite;
+  final bool catalogMode;
 
-  ThreadDetailStateContent(this.data) : super([data]);
+  ThreadDetailStateContent(this.data, this.isFavorite, this.catalogMode) : super([data, isFavorite, catalogMode]);
 
   @override
-  String toString() => 'ThreadDetailStateContent { posts: $data }';
+  String toString() => 'ThreadDetailStateContent { posts: $data, isFavorite: $isFavorite, catalogMode: $catalogMode }';
 }

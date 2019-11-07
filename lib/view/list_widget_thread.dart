@@ -13,39 +13,42 @@ class ThreadListWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String imageUrl = _thread.getThumbnailUrl();
     print("Building ThreadListWidget { Thread: $_thread }");
     return Card(
       clipBehavior: Clip.antiAlias,
       margin: EdgeInsets.all(2.0),
-      child: ConstrainedBox(
-        constraints: BoxConstraints(minHeight: Constants.avatarImageSize),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            if (imageUrl != null) SizedBox(width: Constants.avatarImageSize, child: ChanCachedImage(imageUrl)),
-            Flexible(
-              fit: FlexFit.tight,
-              child: Padding(
-                padding: const EdgeInsets.only(left: 4.0, right: 4.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: <Widget>[
-                    Row(
-                      children: <Widget>[
-                        Text(_thread.threadId.toString(), style: Theme.of(context).textTheme.caption),
-                        Text(ChanUtil.getHumanDate(_thread.timestamp), style: Theme.of(context).textTheme.caption),
-                      ],
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    ),
-                    Html(data: ChanUtil.getHtml(_thread.content ?? ""))
-                  ],
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          if (_thread.hasMedia())
+            ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: Constants.avatarImageSize,
+                  minWidth: Constants.avatarImageSize,
+                  minHeight: Constants.avatarImageSize,
                 ),
+                child: ChanCachedImage(_thread, forceThumbnail: true,)),
+          Flexible(
+            fit: FlexFit.tight,
+            child: Padding(
+              padding: const EdgeInsets.only(left: 4.0, right: 4.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  Row(
+                    children: <Widget>[
+                      Text(_thread.threadId.toString(), style: Theme.of(context).textTheme.caption),
+                      Text(ChanUtil.getHumanDate(_thread.timestamp), style: Theme.of(context).textTheme.caption),
+                    ],
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  ),
+                  Html(data: ChanUtil.getHtml(_thread.content ?? ""))
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

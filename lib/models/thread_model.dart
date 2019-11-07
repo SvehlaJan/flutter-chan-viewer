@@ -1,6 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:flutter_chan_viewer/api/chan_api_provider.dart';
-import 'package:flutter_chan_viewer/models/posts_model.dart';
+import 'package:flutter_chan_viewer/models/helper/chan_post_base.dart';
 
 class ThreadsModel extends Equatable {
   final List<ChanThread> _threads = [];
@@ -16,18 +15,10 @@ class ThreadsModel extends Equatable {
   List<ChanThread> get threads => _threads;
 }
 
-class ChanThread extends Equatable {
-  final String boardId;
-  final int threadId;
-//  final ChanPost firstPost;
-  final int timestamp;
-  final String content;
-  final String filename;
-  final String imageId;
-  final String extension;
+class ChanThread extends ChanPostBase with EquatableMixin {
 
-  ChanThread(this.boardId, this.threadId, this.timestamp, this.content, this.filename, this.imageId, this.extension)
-      : super([boardId, threadId, timestamp, content, filename, imageId, extension]);
+  ChanThread(String boardId, int threadId, int timestamp, String content, String filename, String imageId, String extension)
+      : super(boardId, threadId, timestamp, content, filename, imageId, extension);
 
   factory ChanThread.fromMappedJson(String boardId, Map<String, dynamic> json) =>
       ChanThread(json['boardId'] ?? boardId, json['no'], json['time'], json['com'], json['filename'], json['tim'].toString(), json['ext']);
@@ -42,5 +33,6 @@ class ChanThread extends Equatable {
     'ext': extension
   };
 
-  String getThumbnailUrl() => ChanApiProvider.getMediaUrl(this.boardId, this.imageId, this.extension, true);
+  @override
+  List<Object> get props => super.props;
 }

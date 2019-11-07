@@ -34,7 +34,7 @@ class ChanViewerAppState extends State<ChanViewerApp> {
   void initState() {
     super.initState();
     _appBloc = BlocProvider.of<AppBloc>(context);
-    _appBloc.dispatch(AppEventShowBottomBar(true));
+    _appBloc.dispatch(AppEventAppStarted());
   }
 
   void _selectTabIndex(int tabIndex) {

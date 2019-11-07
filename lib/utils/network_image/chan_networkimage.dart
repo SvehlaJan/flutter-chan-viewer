@@ -1,13 +1,12 @@
-import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui show Codec, hashValues;
 
-import 'package:flutter_chan_viewer/utils/network_image/networkimage_utils.dart';
-import 'package:path/path.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:flutter/widgets.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_chan_viewer/utils/chan_cache.dart';
+import 'package:flutter_chan_viewer/utils/network_image/cache_directive.dart';
+import 'package:flutter_chan_viewer/utils/network_image/networkimage_utils.dart';
 
 typedef Future<Uint8List> ImageProcessing(Uint8List data);
 
@@ -15,6 +14,7 @@ typedef Future<Uint8List> ImageProcessing(Uint8List data);
 class ChanNetworkImage extends ImageProvider<ChanNetworkImage> {
   ChanNetworkImage(
     this.url, {
+    this.cacheDirective,
     this.header,
     this.retryLimit: 5,
     this.retryDuration: const Duration(milliseconds: 500),
@@ -41,6 +41,8 @@ class ChanNetworkImage extends ImageProvider<ChanNetworkImage> {
 
   /// The URL from which the image will be fetched.
   final String url;
+
+  final CacheDirective cacheDirective;
 
   /// The HTTP headers that will be used with [http] to fetch image from network.
   final Map<String, String> header;
@@ -136,8 +138,10 @@ class ChanNetworkImage extends ImageProvider<ChanNetworkImage> {
   Future<ui.Codec> _loadAsync(ChanNetworkImage key) async {
     assert(key == this);
 
+    String uId = uid(key.url);
+
     try {
-      Uint8List _diskCache = await _loadFromDiskCache(key);
+      Uint8List _diskCache = await _loadFromDiskCache(key, uId, cacheDirective);
       if (_diskCache != null) {
         if (key.postProcessing != null) _diskCache = (await key.postProcessing(_diskCache)) ?? _diskCache;
         if (key.loadedCallback != null) key.loadedCallback();
@@ -184,16 +188,11 @@ class ChanNetworkImage extends ImageProvider<ChanNetworkImage> {
 /// 1. Check if cache directory exist. If not exist, create it.
 /// 2. Check if cached file(uid) exist. If yes, load the cache,
 ///   otherwise go to download step.
-Future<Uint8List> _loadFromDiskCache(ChanNetworkImage key) async {
-  Directory _cacheImagesDirectory = Directory(join((await getTemporaryDirectory()).path, 'imagecache'));
-  if (_cacheImagesDirectory.existsSync()) {
-    File _cacheImageFile = File(join(_cacheImagesDirectory.path, key.url));
-    if (_cacheImageFile.existsSync()) {
-      if (key.loadedFromDiskCacheCallback != null) key.loadedFromDiskCacheCallback();
-      return await _cacheImageFile.readAsBytes();
-    }
-  } else {
-    await _cacheImagesDirectory.create();
+Future<Uint8List> _loadFromDiskCache(ChanNetworkImage key, String uId, CacheDirective cacheDirective) async {
+  ChanCache _cache = ChanCache.get();
+  if (cacheDirective != null && _cache.mediaFileExists(key.url, cacheDirective)) {
+    print("Chan cache media hit! { url: ${key.url} }");
+    return await _cache.getMediaFile(key.url, cacheDirective);
   }
 
   Uint8List imageData = await loadFromRemote(
@@ -209,7 +208,7 @@ Future<Uint8List> _loadFromDiskCache(ChanNetworkImage key) async {
   );
   if (imageData != null) {
     if (key.preProcessing != null) imageData = (await key.preProcessing(imageData)) ?? imageData;
-    await (File(join(_cacheImagesDirectory.path, key.url))).writeAsBytes(imageData);
+    if (cacheDirective != null) await _cache.writeMediaFile(key.url, cacheDirective, imageData);
     return imageData;
   }
 

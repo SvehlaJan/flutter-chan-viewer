@@ -1,20 +1,19 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
-import 'package:flutter_chan_viewer/models/boards_model.dart';
-import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
+import 'package:flutter_chan_viewer/utils/chan_cache.dart';
 import 'package:flutter_chan_viewer/utils/preferences.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app_event.dart';
 import 'app_state.dart';
 
 class AppBloc extends Bloc<AppEvent, AppState> {
-  final _repository = ChanRepository.get();
-
   AppBloc();
 
-  void initBloc() {}
+  Future<void> initBloc() async {
+    await Preferences.load();
+    await ChanCache.init();
+  }
 
   @override
   get initialState => AppStateLoading();
@@ -25,7 +24,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     print("Current state! ${currentState.toString()}");
     try {
       if (event is AppEventAppStarted) {
-        initBloc();
+        await initBloc();
         yield AppStateContent(true);
       }
       if (event is AppEventShowBottomBar) {

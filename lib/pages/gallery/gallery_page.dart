@@ -63,8 +63,7 @@ class _GalleryPageState extends State<GalleryPage> with TickerProviderStateMixin
     super.initState();
     BlocProvider.of<AppBloc>(context).dispatch(AppEventShowBottomBar(false));
     _threadDetailBloc = BlocProvider.of<ThreadDetailBloc>(context);
-    _threadDetailBloc.dispatch(ThreadDetailEventAppStarted());
-    _threadDetailBloc.dispatch(ThreadDetailEventFetchPosts(false, widget.boardId, widget.threadId));
+    _threadDetailBloc.dispatch(ThreadDetailEventFetchPosts(false));
     _flingAnimationController = AnimationController(vsync: this)..addListener(_handleFlingAnimation);
     _scaleAnimationController = AnimationController(vsync: this, duration: Duration(milliseconds: SCALE_ANIMATION_DURATION))..addListener(_handleScaleAnimation);
   }
@@ -244,7 +243,7 @@ class _GalleryPageState extends State<GalleryPage> with TickerProviderStateMixin
         transform: Matrix4.identity()
           ..translate(_offset.dx, _offset.dy)
           ..scale(_currentScale),
-        child: post.hasImage() ? ChanCachedImage(post.getMediaUrl(), post.getThumbnailUrl()) : ChanVideoPlayer(post, () {}),
+        child: post.hasImage() ? ChanCachedImage(post, showProgress: true) : ChanVideoPlayer(post),
       ),
     );
 //    } else {

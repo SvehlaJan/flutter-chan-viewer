@@ -30,7 +30,7 @@ class ChanPostDao {
     }
 
     List<ChanPost> posts = result.isNotEmpty
-        ? result.map((item) => ChanPost.fromMappedJson("", item)).toList()
+        ? result.map((item) => ChanPost.fromMappedJson("", 0, item)).toList()
         : [];
     return posts;
   }

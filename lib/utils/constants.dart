@@ -9,16 +9,19 @@ class Constants {
   //routes
   static const String favoritesRoute = "favorites";
   static const String boardsRoute = "boards";
-  static const String boardDetailRoute = "/board/detail";
-  static const String threadDetailRoute = "/board/detail/thread";
-  static const String galleryRoute = "/board/detail/thread/gallery";
+  static const String boardDetailRoute = "board/detail";
+  static const String threadDetailRoute = "board/detail/thread";
+  static const String galleryRoute = "board/detail/thread/gallery";
   static const String settingsRoute = "settings";
   static const String notFoundRoute = "not_found";
 
   static const double avatarImageSize = 100.0;
   static const double progressPlaceholderSize = 40.0;
   static const double minFlingDistance = 100.0;
-  static const Widget progressIndicator = SizedBox(width: Constants.progressPlaceholderSize, height: Constants.progressPlaceholderSize, child: CircularProgressIndicator());
+  static const Widget progressIndicator = const SizedBox(width: Constants.progressPlaceholderSize, height: Constants.progressPlaceholderSize, child: CircularProgressIndicator());
+  static const Widget centeredProgressIndicator = const Center(child: progressIndicator);
+  static const Widget noDataPlaceholder = const Center(child: Text("No data :-("));
+  static const Widget errorPlaceholder = const Center(child: Text("Error :-("));
 
   //strings
   static const String appName = "Chan Viewer";
@@ -63,10 +66,7 @@ class Constants {
     Colors.blueGrey.shade800,
     Colors.black87,
   ];
-  static List<Color> kitGradients2 = [
-    Color(0xffb7ac50),
-    Colors.orange.shade900
-  ];
+  static List<Color> kitGradients2 = [Color(0xffb7ac50), Colors.orange.shade900];
 
   static final Random _random = new Random();
 

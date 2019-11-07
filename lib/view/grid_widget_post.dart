@@ -14,7 +14,7 @@ class PostGridWidget extends StatelessWidget {
     return GridTile(
       child: Card(
         clipBehavior: Clip.antiAlias,
-        child: _post.hasImage() ? ChanCachedImage(_post.getMediaUrl(), _post.getThumbnailUrl()) : ChanCachedImage(_post.getThumbnailUrl()),
+        child: ChanCachedImage(_post, boxFit: BoxFit.cover),
       ),
     );
   }

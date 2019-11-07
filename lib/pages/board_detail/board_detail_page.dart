@@ -27,8 +27,6 @@ class BoardDetailPage extends BasePage {
 
 class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
   BoardDetailBloc _boardDetailBloc;
-  final _scrollController = ScrollController();
-  final _scrollThreshold = 200.0;
   Completer<void> _refreshCompleter;
   bool _isFavorite = false;
 
@@ -38,7 +36,6 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
     _boardDetailBloc = BlocProvider.of<BoardDetailBloc>(context);
     _boardDetailBloc.dispatch(BoardDetailEventAppStarted());
     _boardDetailBloc.dispatch(BoardDetailEventFetchThreads(widget.boardId));
-//    _scrollController.addListener(_onScroll);
     _refreshCompleter = Completer<void>();
 
     SharedPreferences.getInstance().then((prefs) {
@@ -53,12 +50,11 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
   @override
   void dispose() {
     _boardDetailBloc.dispose();
-    _scrollController.dispose();
     super.dispose();
   }
 
   @override
-  String getPageTitle() => "Board /${widget.boardId}";
+  String getPageTitle() => "/${widget.boardId}";
 
   @override
   List<Widget> getPageActions() {
@@ -72,42 +68,38 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
     return BlocBuilder<BoardDetailBloc, BoardDetailState>(
       builder: (context, state) {
         if (state is BoardDetailStateLoading) {
-          return Center(
-            child: Constants.progressIndicator,
-          );
+          return Constants.centeredProgressIndicator;
         }
-        if (state is BoardDetailStateContent) {
-          if (state.threads.isEmpty) {
-            return Center(
-              child: Text('No threads'),
-            );
-          }
-
-          _refreshCompleter?.complete();
-          _refreshCompleter = Completer();
-          return RefreshIndicator(
+        _refreshCompleter?.complete();
+        _refreshCompleter = Completer();
+        return RefreshIndicator(
             onRefresh: () {
               _boardDetailBloc.dispatch(BoardDetailEventFetchThreads(widget.boardId));
               return _refreshCompleter.future;
             },
-            child: ListView.builder(
-              itemBuilder: (BuildContext context, int index) {
-                return InkWell(
-                  child: ThreadListWidget(state.threads[index]),
-                  onTap: () => _openThreadDetailPage(widget.boardId, state.threads[index].threadId),
-                );
-              },
-              itemCount: state.threads.length,
-              controller: _scrollController,
-            ),
-          );
-        } else {
-          return Center(
-            child: Text('Failed to fetch posts'),
-          );
-        }
+            child: _buildContent(state));
       },
     );
+  }
+
+  Widget _buildContent(BoardDetailState state) {
+    if (state is BoardDetailStateContent) {
+      if (state.threads.isEmpty) {
+        return Center(child: Text('No threads'));
+      }
+
+      return ListView.builder(
+        itemBuilder: (BuildContext context, int index) {
+          return InkWell(
+            child: ThreadListWidget(state.threads[index]),
+            onTap: () => _openThreadDetailPage(widget.boardId, state.threads[index].threadId),
+          );
+        },
+        itemCount: state.threads.length,
+      );
+    } else {
+      return Center(child: Text('Failed to fetch posts'));
+    }
   }
 
   void _openThreadDetailPage(String boardId, int threadId) {

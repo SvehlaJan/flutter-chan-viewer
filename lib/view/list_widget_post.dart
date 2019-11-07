@@ -15,39 +15,39 @@ class PostListWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     print("Building PostListWidget { Post: $_post }");
     return Card(
-      child: ConstrainedBox(
-        constraints: BoxConstraints(minHeight: Constants.avatarImageSize),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            if (_post.getThumbnailUrl() != null)
-              ConstrainedBox(
-                constraints: BoxConstraints(maxWidth: Constants.avatarImageSize),
-                child: ChanCachedImage(
-                  _post.getThumbnailUrl(),
+      clipBehavior: Clip.antiAlias,
+      margin: EdgeInsets.all(2.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          if (_post.getThumbnailUrl() != null)
+            ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: Constants.avatarImageSize,
+                  minWidth: Constants.avatarImageSize,
+                  minHeight: Constants.avatarImageSize,
                 ),
-              ),
-            Flexible(
-              child: Padding(
-                padding: const EdgeInsets.only(left: 4.0, right: 4.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: <Widget>[
-                    Row(
-                      children: <Widget>[
-                        Text(_post.postId.toString(), style: Theme.of(context).textTheme.caption),
-                        Text(ChanUtil.getHumanDate(_post.timestamp), style: Theme.of(context).textTheme.caption),
-                      ],
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    ),
-                    Html(data: ChanUtil.getHtml(_post.content ?? ""))
-                  ],
-                ),
+                child: ChanCachedImage(_post)),
+          Flexible(
+            child: Padding(
+              padding: const EdgeInsets.only(left: 4.0, right: 4.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  Row(
+                    children: <Widget>[
+                      Text(_post.postId.toString(), style: Theme.of(context).textTheme.caption),
+                      Text(ChanUtil.getHumanDate(_post.timestamp), style: Theme.of(context).textTheme.caption),
+                    ],
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  ),
+                  Html(data: ChanUtil.getHtml(_post.content ?? ""))
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

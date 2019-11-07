@@ -10,10 +10,10 @@ import 'package:flutter_chan_viewer/utils/chan_cache.dart';
 class ChanRepository {
   static final ChanRepository _repo = new ChanRepository._internal();
 
-  final _cache = ChanCache.get();
-  final chanApiProvider = ChanApiProvider();
+  final _cache;
+  final chanApiProvider;
 
-  static final int CACHE_MAX_SIZE = 10;
+  static const int CACHE_MAX_SIZE = 10;
 
   final Map<int, ChanBoard> boardsCache = HashMap();
   final Map<int, ChanThread> threadsCache = HashMap();
@@ -23,7 +23,7 @@ class ChanRepository {
     return _repo;
   }
 
-  ChanRepository._internal() {
+  ChanRepository._internal() : _cache = ChanCache.get(), chanApiProvider = ChanApiProvider() {
     // initialization code
   }
 

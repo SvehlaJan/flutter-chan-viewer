@@ -1,0 +1,90 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_chan_viewer/pages/base/base_page.dart';
+import 'package:flutter_chan_viewer/pages/settings/bloc/settings_bloc.dart';
+import 'package:flutter_chan_viewer/pages/settings/bloc/settings_event.dart';
+import 'package:flutter_chan_viewer/pages/settings/bloc/settings_state.dart';
+import 'package:flutter_chan_viewer/utils/constants.dart';
+import 'package:flutter_chan_viewer/utils/preferences.dart';
+import 'package:flutter_chan_viewer/view/view_common_switch.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+class SettingsPage extends BasePage {
+  SettingsPage();
+
+  @override
+  State<StatefulWidget> createState() => new _SettingsPageState();
+}
+
+class _SettingsPageState extends BasePageState<SettingsPage> {
+  SettingsBloc _settingsBloc;
+
+  @override
+  void initState() {
+    super.initState();
+    _settingsBloc = BlocProvider.of<SettingsBloc>(context);
+    _settingsBloc.dispatch(SettingsEventFetchData());
+  }
+
+  @override
+  void dispose() {
+    _settingsBloc.dispose();
+    super.dispose();
+  }
+
+  @override
+  String getPageTitle() => "Settings";
+
+  void _onThemeSwitchClicked(bool enabled) {
+    _settingsBloc.dispatch(SettingsEventSetTheme(enabled ? AppTheme.dark : AppTheme.light));
+  }
+
+  @override
+  Widget buildBody() {
+    return BlocBuilder<SettingsBloc, SettingsState>(
+      builder: (context, state) {
+        if (state is SettingsStateLoading) {
+          return Constants.centeredProgressIndicator;
+        } else if (state is SettingsStateContent) {
+          return SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text("Visual", style: Theme.of(context).textTheme.subhead),
+                ),
+                Card(
+                  color: Colors.white,
+                  elevation: 2.0,
+                  child: Column(
+                    children: <Widget>[
+                      ListTile(
+                        leading: Icon(
+                          Icons.format_paint,
+                          color: Colors.grey,
+                        ),
+                        title: Text("Dark theme"),
+                        trailing: CommonSwitch(
+                          onChanged: _onThemeSwitchClicked,
+                          defValue: (state.theme == AppTheme.dark) ? true : false,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text("Others", style: Theme.of(context).textTheme.subhead),
+                ),
+              ],
+            ),
+          );
+        } else {
+          return Constants.errorPlaceholder;
+        }
+      },
+    );
+  }
+}

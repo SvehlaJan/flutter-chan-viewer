@@ -9,7 +9,7 @@ import 'package:http/http.dart' show Client;
 class ChanApiProvider {
   Client client = Client();
   static final _baseUrl = "https://a.4cdn.org";
-  static final _baseImageUrl = "https://i.4cdn.org";
+  static final baseImageUrl = "https://i.4cdn.org";
 
   Future<BoardsModel> fetchBoardList() async {
     String url = "$_baseUrl/boards.json";
@@ -45,21 +45,9 @@ class ChanApiProvider {
     final response = await client.get(url);
     print("Response status: ${response.statusCode}");
     if (response.statusCode == 200) {
-      return PostsModel.fromJson(boardId, json.decode(response.body));
+      return PostsModel.fromJson(boardId, threadId, json.decode(response.body));
     } else {
       throw Exception('Failed to load posts');
-    }
-  }
-
-  static String getPostMediaUrl(ChanPost post, [bool thumbnail = false]) => getMediaUrl(post.boardId, post.imageId, post.extension, thumbnail);
-
-  static String getMediaUrl(String boardId, String imageId, String extension, [bool thumbnail = false]) {
-    if (imageId != null && extension != null) {
-      String targetImageId = thumbnail ? "${imageId}s" : imageId;
-      String targetExtension = thumbnail ? ".jpg" : extension;
-      return "$_baseImageUrl/$boardId/$targetImageId$targetExtension";
-    } else {
-      return null;
     }
   }
 }

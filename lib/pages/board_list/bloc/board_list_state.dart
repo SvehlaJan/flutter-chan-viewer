@@ -20,15 +20,11 @@ class BoardListStateError extends BoardListState {
 }
 
 class BoardListStateContent extends BoardListState {
-  final List<ChanBoard> boards;
-  final showOnlyFavorites;
+  final List<ChanBoard> favoriteBoards;
+  final List<ChanBoard> otherBoards;
 
-  BoardListStateContent(this.boards, this.showOnlyFavorites)
-      : super([
-          boards,
-          showOnlyFavorites
-        ]);
+  BoardListStateContent(this.favoriteBoards, this.otherBoards) : super([favoriteBoards, otherBoards]);
 
   @override
-  String toString() => 'BoardListStateContent { boards: ${boards.length} }';
+  String toString() => 'BoardListStateContent { favoriteBoards: ${favoriteBoards.length} otherBoards: ${otherBoards.length} }';
 }

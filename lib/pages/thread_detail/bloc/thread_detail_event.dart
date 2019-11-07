@@ -4,18 +4,21 @@ abstract class ThreadDetailEvent extends Equatable {
   ThreadDetailEvent([List props = const []]) : super(props);
 }
 
-class ThreadDetailEventAppStarted extends ThreadDetailEvent {
+class ThreadDetailEventToggleFavorite extends ThreadDetailEvent {
   @override
-  String toString() => 'ThreadDetailEventAppStarted { }';
+  String toString() => 'ThreadDetailEventToggleFavorite { }';
+}
+
+class ThreadDetailEventToggleCatalogMode extends ThreadDetailEvent {
+  @override
+  String toString() => 'ThreadDetailEventToggleCatalogMode { }';
 }
 
 class ThreadDetailEventFetchPosts extends ThreadDetailEvent {
   final bool forceFetch;
-  final String boardId;
-  final int threadId;
 
-  ThreadDetailEventFetchPosts(this.forceFetch, this.boardId, this.threadId) : super([forceFetch, boardId, threadId]);
+  ThreadDetailEventFetchPosts(this.forceFetch) : super([forceFetch]);
 
   @override
-  String toString() => 'ThreadDetailEventFetchThreads { forceFetch: $forceFetch, boardId: $boardId, threadId: $threadId }';
+  String toString() => 'ThreadDetailEventFetchThreads { forceFetch: $forceFetch }';
 }

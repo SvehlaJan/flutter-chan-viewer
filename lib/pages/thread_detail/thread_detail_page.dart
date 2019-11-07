@@ -7,12 +7,11 @@ import 'package:flutter_chan_viewer/bloc/app_bloc/app_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/app_bloc/app_event.dart';
 import 'package:flutter_chan_viewer/models/posts_model.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
+import 'package:flutter_chan_viewer/pages/gallery/gallery_page.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/utils/preferences.dart';
 import 'package:flutter_chan_viewer/view/grid_widget_post.dart';
 import 'package:flutter_chan_viewer/view/list_widget_post.dart';
-import 'package:flutter_chan_viewer/pages/gallery/gallery_page.dart';
-import 'package:http/http.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'bloc/thread_detail_bloc.dart';
@@ -39,21 +38,19 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
   Completer<void> _refreshCompleter;
   bool _catalogMode = true;
   bool _isFavorite = false;
-  int _currentImageIndex = 0;
 
   @override
   void initState() {
     super.initState();
     _threadDetailBloc = BlocProvider.of<ThreadDetailBloc>(context);
-    _threadDetailBloc.dispatch(ThreadDetailEventAppStarted());
-    _threadDetailBloc.dispatch(ThreadDetailEventFetchPosts(true, widget.boardId, widget.threadId));
+    _threadDetailBloc.dispatch(ThreadDetailEventFetchPosts(true));
     _refreshCompleter = Completer<void>();
-    SharedPreferences.getInstance().then((prefs) {
-      setState(() {
-        _catalogMode = prefs.getBool(Preferences.KEY_THREAD_CATALOG_MODE) ?? false;
-        _isFavorite = (prefs.getStringList(Preferences.KEY_FAVORITE_THREADS) ?? []).contains(widget.threadId.toString());
-      });
-    });
+//    SharedPreferences.getInstance().then((prefs) {
+//      setState(() {
+//        _catalogMode = prefs.getBool(Preferences.KEY_THREAD_CATALOG_MODE) ?? false;
+//        _isFavorite = (prefs.getStringList(Preferences.KEY_FAVORITE_THREADS) ?? []).contains(widget.threadId.toString());
+//      });
+//    });
   }
 
   @override
@@ -64,12 +61,11 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
   }
 
   @override
-  String getPageTitle() => "Thread /${widget.boardId}/${widget.threadId}";
+  String getPageTitle() => "/${widget.boardId}/${widget.threadId}";
 
   @override
   List<Widget> getPageActions() {
     print('Thread detail _catalogMode: $_catalogMode');
-    Icon icon = _catalogMode ? Icon(Icons.list) : Icon(Icons.apps);
     return [
       IconButton(icon: _catalogMode ? Icon(Icons.list) : Icon(Icons.apps), onPressed: _onCatalogModeToggleClick),
       IconButton(icon: _isFavorite ? Icon(Icons.star) : Icon(Icons.star_border), onPressed: _onFavoriteToggleClick)
@@ -77,28 +73,32 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
   }
 
   void _onCatalogModeToggleClick() {
-    bool newVal = !_catalogMode;
-    SharedPreferences.getInstance().then((prefs) {
-      prefs.setBool(Preferences.KEY_THREAD_CATALOG_MODE, newVal);
-      setState(() {
-        _catalogMode = newVal;
-      });
-    });
+    _threadDetailBloc.dispatch(ThreadDetailEventToggleCatalogMode());
+
+//    bool newVal = !_catalogMode;
+//    SharedPreferences.getInstance().then((prefs) {
+//      prefs.setBool(Preferences.KEY_THREAD_CATALOG_MODE, newVal);
+//      setState(() {
+//        _catalogMode = newVal;
+//      });
+//    });
   }
 
   void _onFavoriteToggleClick() {
-    bool newState = !_isFavorite;
-    SharedPreferences.getInstance().then((prefs) {
-      List<String> favoriteThreads = prefs.getStringList(Preferences.KEY_FAVORITE_THREADS) ?? [];
-      favoriteThreads.removeWhere((value) => value == widget.threadId.toString());
-      if (newState) {
-        favoriteThreads.add(widget.threadId.toString());
-      }
-      prefs.setStringList(Preferences.KEY_FAVORITE_THREADS, favoriteThreads);
-    });
-    setState(() {
-      _isFavorite = newState;
-    });
+    _threadDetailBloc.dispatch(ThreadDetailEventToggleFavorite());
+
+//    bool newState = !_isFavorite;
+//    SharedPreferences.getInstance().then((prefs) {
+//      List<String> favoriteThreads = prefs.getStringList(Preferences.KEY_FAVORITE_THREADS) ?? [];
+//      favoriteThreads.removeWhere((value) => value == widget.threadId.toString());
+//      if (newState) {
+//        favoriteThreads.add(widget.threadId.toString());
+//      }
+//      prefs.setStringList(Preferences.KEY_FAVORITE_THREADS, favoriteThreads);
+//    });
+//    setState(() {
+//      _isFavorite = newState;
+//    });
   }
 
   @override
@@ -107,23 +107,22 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
       bloc: _threadDetailBloc,
       builder: (context, state) {
         if (state is ThreadDetailStateLoading) {
-          return Center(
-            child: Constants.progressIndicator,
-          );
+          return Constants.centeredProgressIndicator;
         }
         if (state is ThreadDetailStateContent) {
           if (state.data.posts.isEmpty) {
-            return Center(
-              child: Text('No posts'),
-            );
+            return Constants.noDataPlaceholder;
           }
+
+          _isFavorite = state.isFavorite;
+          _catalogMode = state.catalogMode;
 
           _refreshCompleter?.complete();
           _refreshCompleter = Completer();
 
           return RefreshIndicator(
             onRefresh: () {
-              _threadDetailBloc.dispatch(ThreadDetailEventFetchPosts(true, widget.boardId, widget.threadId));
+              _threadDetailBloc.dispatch(ThreadDetailEventFetchPosts(true));
               return _refreshCompleter.future;
             },
             child: Scrollbar(
@@ -131,9 +130,7 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
             ),
           );
         } else {
-          return Center(
-            child: Text('Failed to fetch posts'),
-          );
+          return Constants.errorPlaceholder;
         }
       },
     );

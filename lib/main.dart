@@ -2,7 +2,6 @@ import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/app_bloc/app_bloc.dart';
-import 'package:flutter_chan_viewer/bloc/app_bloc/app_event.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app.dart';
@@ -11,11 +10,7 @@ import 'utils/constants.dart';
 import 'utils/preferences.dart';
 
 void main() async {
-  print("main.dart: main start");
   BlocSupervisor.delegate = SimpleBlocDelegate();
-  print("main.dart: main 1");
-  await Preferences.load();
-  print("main.dart: main 2");
   runApp(MainApp());
 }
 
@@ -64,7 +59,12 @@ class MainAppState extends State<MainApp> {
         primaryColorLight: Colors.red.shade100,
         accentColor: Colors.indigo,
         cardColor: Colors.white,
-        textTheme: TextTheme(headline: TextStyle(fontSize: 72.0, fontWeight: FontWeight.bold), title: TextStyle(fontSize: 20.0), body1: TextStyle(fontSize: 14.0, fontFamily: 'Hind'), body2: TextStyle(fontSize: 14.0, fontFamily: 'Hind'), caption: TextStyle(fontSize: 12.0, fontFamily: 'Hind')),
+        textTheme: TextTheme(
+            headline: TextStyle(fontSize: 72.0, fontWeight: FontWeight.bold),
+            title: TextStyle(fontSize: 20.0),
+            body1: TextStyle(fontSize: 14.0, fontFamily: 'Hind'),
+            body2: TextStyle(fontSize: 14.0, fontFamily: 'Hind'),
+            caption: TextStyle(fontSize: 12.0, fontFamily: 'Hind')),
       );
     } else {
       themeData = ThemeData(
@@ -73,11 +73,6 @@ class MainAppState extends State<MainApp> {
         primaryColorLight: Colors.red,
         accentColor: Colors.indigo,
         cardColor: Colors.black87,
-        textTheme: TextTheme(
-//          headline: TextStyle(fontSize: 72.0, fontWeight: FontWeight.bold),
-//          title: TextStyle(fontSize: 36.0, fontStyle: FontStyle.italic),
-//          body1: TextStyle(fontSize: 14.0, fontFamily: 'Hind'),
-            ),
       );
     }
 

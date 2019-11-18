@@ -6,7 +6,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_chan_viewer/utils/chan_cache.dart';
 import 'package:flutter_chan_viewer/utils/network_image/cache_directive.dart';
+import 'package:flutter_chan_viewer/utils/network_image/disk_cache.dart';
 import 'package:flutter_chan_viewer/utils/network_image/networkimage_utils.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:video_thumbnail/video_thumbnail.dart';
 
 typedef Future<Uint8List> ImageProcessing(Uint8List data);
 
@@ -151,6 +154,19 @@ class ChanNetworkImage extends ImageProvider<ChanNetworkImage> {
       if (key.printError) debugPrint(e.toString());
     }
 
+//    if (key.url.endsWith(".webm")) {
+//      Uint8List thumbnailData = await VideoThumbnail.thumbnailData(
+//        video: key.url,
+//        imageFormat: ImageFormat.WEBP,
+//        maxHeightOrWidth: 0,
+//        quality: 75,
+//      );
+//
+//      if (key.postProcessing != null) thumbnailData = (await key.postProcessing(thumbnailData)) ?? thumbnailData;
+//      if (key.loadedCallback != null) key.loadedCallback();
+//      return await PaintingBinding.instance.instantiateImageCodec(thumbnailData);
+//    }
+
     if (key.loadFailedCallback != null) key.loadFailedCallback();
     if (key.fallbackAssetImage != null) {
       ByteData imageData = await rootBundle.load(key.fallbackAssetImage);
@@ -189,10 +205,17 @@ class ChanNetworkImage extends ImageProvider<ChanNetworkImage> {
 /// 2. Check if cached file(uid) exist. If yes, load the cache,
 ///   otherwise go to download step.
 Future<Uint8List> _loadFromDiskCache(ChanNetworkImage key, String uId, CacheDirective cacheDirective) async {
-  ChanCache _cache = ChanCache.get();
-  if (cacheDirective != null && _cache.mediaFileExists(key.url, cacheDirective)) {
-    print("Chan cache media hit! { url: ${key.url} }");
-    return await _cache.getMediaFile(key.url, cacheDirective);
+  if (cacheDirective != null) {
+    if (ChanCache.get().mediaFileExists(key.url, cacheDirective)) {
+      print("Permanent cache media hit! { url: ${key.url} }");
+      return await ChanCache.get().getMediaFile(key.url, cacheDirective);
+    }
+  } else {
+    Uint8List data = await DiskCache().load(uId);
+    if (data != null) {
+      print("Temporary cache media hit! { url: ${key.url} }");
+      return data;
+    }
   }
 
   Uint8List imageData = await loadFromRemote(
@@ -208,7 +231,11 @@ Future<Uint8List> _loadFromDiskCache(ChanNetworkImage key, String uId, CacheDire
   );
   if (imageData != null) {
     if (key.preProcessing != null) imageData = (await key.preProcessing(imageData)) ?? imageData;
-    if (cacheDirective != null) await _cache.writeMediaFile(key.url, cacheDirective, imageData);
+    if (cacheDirective != null) {
+      await ChanCache.get().writeMediaFile(key.url, cacheDirective, imageData);
+    } else {
+      await DiskCache().save(uId, imageData);
+    }
     return imageData;
   }
 

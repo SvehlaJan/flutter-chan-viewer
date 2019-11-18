@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter_chan_viewer/utils/constants.dart';
 
 abstract class AppEvent extends Equatable {
   AppEvent([List props = const []]) : super(props);
@@ -9,11 +10,11 @@ class AppEventAppStarted extends AppEvent {
   String toString() => 'AppEventAppStarted { }';
 }
 
-class AppEventShowBottomBar extends AppEvent {
-  final bool showBottomBar;
+class AppEventSetTheme extends AppEvent {
+  final AppTheme appTheme;
 
-  AppEventShowBottomBar(this.showBottomBar);
+  AppEventSetTheme(this.appTheme);
 
   @override
-  String toString() => 'AppEventShowBottomBar { showBottomBar: $showBottomBar }';
+  String toString() => 'AppEventShowBottomBar { appTheme: $appTheme }';
 }

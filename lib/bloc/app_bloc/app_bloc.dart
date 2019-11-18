@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:flutter_chan_viewer/utils/chan_cache.dart';
+import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/utils/preferences.dart';
 
 import 'app_event.dart';
@@ -21,14 +22,16 @@ class AppBloc extends Bloc<AppEvent, AppState> {
   @override
   Stream<AppState> mapEventToState(AppEvent event) async* {
     print("Event received! ${event.toString()}");
-    print("Current state! ${currentState.toString()}");
+    print("Current state! ${state.toString()}");
     try {
       if (event is AppEventAppStarted) {
         await initBloc();
-        yield AppStateContent(true);
+        int appThemeIndex = Preferences.getInt(Preferences.KEY_SETTINGS_THEME) ?? 0;
+        AppTheme appTheme = AppTheme.values[appThemeIndex];
+        yield AppStateContent(appTheme);
       }
-      if (event is AppEventShowBottomBar) {
-        yield AppStateContent(event.showBottomBar);
+      if (event is AppEventSetTheme) {
+        yield AppStateContent(event.appTheme);
       }
     } catch (o) {
       print("Event error! ${o.toString()}");

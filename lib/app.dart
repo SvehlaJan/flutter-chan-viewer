@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_chan_viewer/bloc/app_bloc/app_bloc.dart';
-import 'package:flutter_chan_viewer/bloc/app_bloc/app_event.dart';
-import 'package:flutter_chan_viewer/bloc/app_bloc/app_state.dart';
+import 'package:flutter_chan_viewer/bloc/chan_viewer_bloc/chan_viewer_bloc.dart';
+import 'package:flutter_chan_viewer/bloc/chan_viewer_bloc/chan_viewer_state.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 
 import 'navigation/tab_helper.dart';
@@ -28,13 +27,10 @@ class ChanViewerAppState extends State<ChanViewerApp> {
     TabItem.settings: GlobalKey<NavigatorState>(),
   };
   static TabItem currentTab = TabItem.boards;
-  AppBloc _appBloc;
 
   @override
   void initState() {
     super.initState();
-    _appBloc = BlocProvider.of<AppBloc>(context);
-    _appBloc.dispatch(AppEventAppStarted());
   }
 
   void _selectTabIndex(int tabIndex) {
@@ -45,12 +41,8 @@ class ChanViewerAppState extends State<ChanViewerApp> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<AppBloc, AppState>(builder: (context, state) {
-      print("App bloc state: $state");
-
-      if (state is AppStateLoading) {
-        return Center(child: Constants.progressIndicator);
-      } else if (state is AppStateContent) {
+    return BlocBuilder<ChanViewerBloc, ChanViewerState>(builder: (context, state) {
+      if (state is ChanViewerStateContent) {
         return WillPopScope(
           onWillPop: () async => !await navigatorKeys[currentTab].currentState.maybePop(),
           child: Scaffold(
@@ -59,20 +51,22 @@ class ChanViewerAppState extends State<ChanViewerApp> {
               _buildOffstageNavigator(TabItem.boards),
               _buildOffstageNavigator(TabItem.settings),
             ]),
-            bottomNavigationBar: state.showBottomBar ? BottomNavigationBar(
-              showUnselectedLabels: false,
-              showSelectedLabels: false,
-              backgroundColor: Theme.of(context).primaryColor,
-              selectedItemColor: Colors.white,
-              unselectedItemColor: Colors.white54,
-              items: TabHelper.getItems(context),
-              currentIndex: currentTab.index,
-              onTap: _selectTabIndex,
-            ) : null,
+            bottomNavigationBar: state.showBottomBar
+                ? BottomNavigationBar(
+                    showUnselectedLabels: false,
+                    showSelectedLabels: false,
+                    backgroundColor: Theme.of(context).primaryColor,
+                    selectedItemColor: Colors.white,
+                    unselectedItemColor: Colors.white54,
+                    items: TabHelper.getItems(context),
+                    currentIndex: currentTab.index,
+                    onTap: _selectTabIndex,
+                  )
+                : null,
           ),
         );
       } else {
-        return Center(child: Text('Error'));
+        return Constants.errorPlaceholder;
       }
     });
   }

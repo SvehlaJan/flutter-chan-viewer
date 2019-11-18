@@ -14,6 +14,16 @@ class ThreadDetailEventToggleCatalogMode extends ThreadDetailEvent {
   String toString() => 'ThreadDetailEventToggleCatalogMode { }';
 }
 
+//class ThreadDetailEventOnPostSelected extends ThreadDetailEvent {
+//  final int mediaIndex;
+//  final int postId;
+//
+//  ThreadDetailEventOnPostSelected(this.mediaIndex, this.postId) : super([mediaIndex, postId]);
+//
+//  @override
+//  String toString() => 'ThreadDetailEventOnItemClicked { mediaIndex: $mediaIndex, postId: $postId }';
+//}
+
 class ThreadDetailEventFetchPosts extends ThreadDetailEvent {
   final bool forceFetch;
 

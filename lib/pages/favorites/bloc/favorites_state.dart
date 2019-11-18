@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
-import 'package:flutter_chan_viewer/models/boards_model.dart';
-import 'package:flutter_chan_viewer/models/thread_model.dart';
+import 'package:flutter_chan_viewer/models/board_list_model.dart';
+import 'package:flutter_chan_viewer/models/board_detail_model.dart';
 
 abstract class FavoritesState extends Equatable {
   FavoritesState([List props = const []]) : super(props);

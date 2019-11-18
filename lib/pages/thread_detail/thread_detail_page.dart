@@ -3,16 +3,16 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_chan_viewer/bloc/app_bloc/app_bloc.dart';
-import 'package:flutter_chan_viewer/bloc/app_bloc/app_event.dart';
-import 'package:flutter_chan_viewer/models/posts_model.dart';
-import 'package:flutter_chan_viewer/pages/base/base_page.dart';
+import 'package:flutter_chan_viewer/bloc/chan_viewer_bloc/chan_viewer_bloc.dart';
+import 'package:flutter_chan_viewer/bloc/chan_viewer_bloc/chan_viewer_event.dart';
+import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
+import 'package:flutter_chan_viewer/pages/base/base_page_2.dart';
 import 'package:flutter_chan_viewer/pages/gallery/gallery_page.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
-import 'package:flutter_chan_viewer/utils/preferences.dart';
 import 'package:flutter_chan_viewer/view/grid_widget_post.dart';
 import 'package:flutter_chan_viewer/view/list_widget_post.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_widgets/flutter_widgets.dart';
+//import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 import 'bloc/thread_detail_bloc.dart';
 import 'bloc/thread_detail_event.dart';
@@ -33,31 +33,15 @@ class ThreadDetailPage extends BasePage {
 
 class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
   ThreadDetailBloc _threadDetailBloc;
-
-  final _scrollController = ScrollController();
-  Completer<void> _refreshCompleter;
-  bool _catalogMode = true;
-  bool _isFavorite = false;
+  final ItemScrollController itemScrollController = ItemScrollController();
+  Completer<void> _refreshCompleter = Completer<void>();
+//  final RefreshController _refreshController = RefreshController(initialRefresh: false);
 
   @override
   void initState() {
     super.initState();
     _threadDetailBloc = BlocProvider.of<ThreadDetailBloc>(context);
-    _threadDetailBloc.dispatch(ThreadDetailEventFetchPosts(true));
-    _refreshCompleter = Completer<void>();
-//    SharedPreferences.getInstance().then((prefs) {
-//      setState(() {
-//        _catalogMode = prefs.getBool(Preferences.KEY_THREAD_CATALOG_MODE) ?? false;
-//        _isFavorite = (prefs.getStringList(Preferences.KEY_FAVORITE_THREADS) ?? []).contains(widget.threadId.toString());
-//      });
-//    });
-  }
-
-  @override
-  void dispose() {
-    _threadDetailBloc.dispose();
-    _scrollController.dispose();
-    super.dispose();
+    _threadDetailBloc.add(ThreadDetailEventFetchPosts(true));
   }
 
   @override
@@ -65,88 +49,73 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
 
   @override
   List<Widget> getPageActions() {
-    print('Thread detail _catalogMode: $_catalogMode');
     return [
-      IconButton(icon: _catalogMode ? Icon(Icons.list) : Icon(Icons.apps), onPressed: _onCatalogModeToggleClick),
-      IconButton(icon: _isFavorite ? Icon(Icons.star) : Icon(Icons.star_border), onPressed: _onFavoriteToggleClick)
+      IconButton(icon: _threadDetailBloc.catalogMode ? Icon(Icons.list) : Icon(Icons.apps), onPressed: _onCatalogModeToggleClick),
+      IconButton(icon: _threadDetailBloc.isFavorite ? Icon(Icons.star) : Icon(Icons.star_border), onPressed: _onFavoriteToggleClick)
     ];
   }
 
   void _onCatalogModeToggleClick() {
-    _threadDetailBloc.dispatch(ThreadDetailEventToggleCatalogMode());
-
-//    bool newVal = !_catalogMode;
-//    SharedPreferences.getInstance().then((prefs) {
-//      prefs.setBool(Preferences.KEY_THREAD_CATALOG_MODE, newVal);
-//      setState(() {
-//        _catalogMode = newVal;
-//      });
-//    });
+    _threadDetailBloc.add(ThreadDetailEventToggleCatalogMode());
   }
 
   void _onFavoriteToggleClick() {
-    _threadDetailBloc.dispatch(ThreadDetailEventToggleFavorite());
-
-//    bool newState = !_isFavorite;
-//    SharedPreferences.getInstance().then((prefs) {
-//      List<String> favoriteThreads = prefs.getStringList(Preferences.KEY_FAVORITE_THREADS) ?? [];
-//      favoriteThreads.removeWhere((value) => value == widget.threadId.toString());
-//      if (newState) {
-//        favoriteThreads.add(widget.threadId.toString());
-//      }
-//      prefs.setStringList(Preferences.KEY_FAVORITE_THREADS, favoriteThreads);
-//    });
-//    setState(() {
-//      _isFavorite = newState;
-//    });
+    _threadDetailBloc.add(ThreadDetailEventToggleFavorite());
   }
 
   @override
-  Widget buildBody() {
-    return BlocBuilder<ThreadDetailBloc, ThreadDetailState>(
-      bloc: _threadDetailBloc,
-      builder: (context, state) {
-        if (state is ThreadDetailStateLoading) {
-          return Constants.centeredProgressIndicator;
-        }
-        if (state is ThreadDetailStateContent) {
-          if (state.data.posts.isEmpty) {
-            return Constants.noDataPlaceholder;
-          }
+  Widget build(BuildContext context) {
+    return BlocBuilder<ThreadDetailBloc, ThreadDetailState>(bloc: _threadDetailBloc, builder: (context, state) => buildPage(buildBody(context, state)));
+  }
 
-          _isFavorite = state.isFavorite;
-          _catalogMode = state.catalogMode;
+  Widget buildBody(BuildContext context, ThreadDetailState state) {
+    if (state is ThreadDetailStateLoading) {
+      return Constants.centeredProgressIndicator;
+    }
+    if (state is ThreadDetailStateContent) {
+      if (state.data.posts.isEmpty) {
+        return Constants.noDataPlaceholder;
+      }
 
-          _refreshCompleter?.complete();
-          _refreshCompleter = Completer();
+      _refreshCompleter?.complete();
+      _refreshCompleter = Completer();
 
-          return RefreshIndicator(
-            onRefresh: () {
-              _threadDetailBloc.dispatch(ThreadDetailEventFetchPosts(true));
-              return _refreshCompleter.future;
-            },
-            child: Scrollbar(
-              child: _catalogMode ? buildGrid(state.data.mediaPosts) : buildList(state.data.posts),
-            ),
-          );
-        } else {
-          return Constants.errorPlaceholder;
-        }
-      },
-    );
+      return RefreshIndicator(
+//        enablePullUp: true,
+//        enablePullDown: true,
+//        header: WaterDropHeader(),
+//        controller: _refreshController,
+        onRefresh: () {
+          print("onRefresh");
+//          _threadDetailBloc.add(ThreadDetailEventFetchPosts(true));
+//          _refreshController.refreshCompleted();
+          return _refreshCompleter.future;
+        },
+//        onLoading: () {
+//          print("onLoading");
+//          _refreshController.loadComplete();
+//        },
+        child: Scrollbar(
+          child: state.catalogMode ? buildGrid(state.data.mediaPosts) : buildList(state.data.posts),
+        ),
+      );
+    } else {
+      return Constants.errorPlaceholder;
+    }
   }
 
   Widget buildList(List<ChanPost> posts) {
-    return ListView.builder(
-      itemBuilder: (BuildContext context, int index) {
+    int selectedIndex = _threadDetailBloc.selectedPostIndex;
+    return ScrollablePositionedList.builder(
+      itemCount: posts.length,
+      itemScrollController: itemScrollController,
+      itemBuilder: (context, index) {
         return InkWell(
-          child: PostListWidget(posts[index]),
+          child: PostListWidget(posts[index], index == selectedIndex),
           onTap: () => _onItemTap(posts[index]),
         );
       },
       padding: EdgeInsets.all(0.0),
-      itemCount: posts.length,
-      controller: _scrollController,
     );
   }
 
@@ -161,23 +130,29 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
       padding: const EdgeInsets.all(0.0),
       childAspectRatio: (orientation == Orientation.portrait) ? 1.0 : 1.3,
       children: tiles,
-      controller: _scrollController,
     );
   }
 
   void scrollToIndex(int index) {
-//    if (_catalogMode) {
-//      _scrollController.jumpToIndex(index);
-//    }
+    if (!_threadDetailBloc.catalogMode) {
+      itemScrollController.scrollTo(index: index, duration: Duration(milliseconds: 500), alignment: 500.0);
+    }
   }
 
   void _onItemTap(ChanPost post) async {
-    await Navigator.pushNamed(
-      context,
-      Constants.galleryRoute,
-      arguments: GalleryPage.getArguments(widget.boardId, widget.threadId, post.postId),
+    _threadDetailBloc.selectedPostId = post.postId;
+
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (context) => BlocProvider.value(
+          value: _threadDetailBloc,
+          child: GalleryPage(),
+        ),
+      ),
     );
 
-    BlocProvider.of<AppBloc>(context).dispatch(AppEventShowBottomBar(true));
+    BlocProvider.of<ChanViewerBloc>(context).add(ChanViewerEventShowBottomBar(true));
+    int newIndex = _threadDetailBloc.selectedPostIndex;
+    scrollToIndex(newIndex);
   }
 }

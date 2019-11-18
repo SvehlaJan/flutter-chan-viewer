@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_chan_viewer/models/thread_model.dart';
+import 'package:flutter_chan_viewer/models/board_detail_model.dart';
 import 'package:flutter_chan_viewer/utils/chan_util.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/view/view_cached_image.dart';
@@ -13,7 +13,6 @@ class ThreadListWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print("Building ThreadListWidget { Thread: $_thread }");
     return Card(
       clipBehavior: Clip.antiAlias,
       margin: EdgeInsets.all(2.0),
@@ -28,7 +27,7 @@ class ThreadListWidget extends StatelessWidget {
                   minWidth: Constants.avatarImageSize,
                   minHeight: Constants.avatarImageSize,
                 ),
-                child: ChanCachedImage(_thread, forceThumbnail: true,)),
+                child: ChanCachedImage(_thread, BoxFit.fitWidth, forceThumbnail: true)),
           Flexible(
             fit: FlexFit.tight,
             child: Padding(
@@ -43,7 +42,13 @@ class ThreadListWidget extends StatelessWidget {
                     ],
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   ),
-                  Html(data: ChanUtil.getHtml(_thread.content ?? ""))
+                  if (_thread.subtitle != null) Text(_thread.subtitle, style: Theme.of(context).textTheme.subtitle),
+                  Html(
+                    data: ChanUtil.getHtml(_thread.content ?? "", true),
+                    onLinkTap: ((String url) {
+                      print("Html link clicked { url: $url }");
+                    }),
+                  )
                 ],
               ),
             ),

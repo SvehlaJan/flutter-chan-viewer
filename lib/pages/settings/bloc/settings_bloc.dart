@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
-import 'package:flutter_chan_viewer/models/boards_model.dart';
-import 'package:flutter_chan_viewer/models/thread_model.dart';
+import 'package:flutter_chan_viewer/models/board_list_model.dart';
+import 'package:flutter_chan_viewer/models/board_detail_model.dart';
 import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/utils/preferences.dart';
@@ -20,7 +20,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
   @override
   Stream<SettingsState> mapEventToState(SettingsEvent event) async* {
     print("Event received! ${event.toString()}");
-    print("Current state! ${currentState.toString()}");
+    print("Current state! ${state.toString()}");
     try {
       if (event is SettingsEventSetTheme) {
         SharedPreferences prefs = await SharedPreferences.getInstance();

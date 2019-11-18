@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
-import 'package:flutter_chan_viewer/models/boards_model.dart';
-import 'package:flutter_chan_viewer/models/thread_model.dart';
+import 'package:flutter_chan_viewer/models/board_list_model.dart';
+import 'package:flutter_chan_viewer/models/board_detail_model.dart';
 import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
 import 'package:flutter_chan_viewer/utils/preferences.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -19,12 +19,12 @@ class FavoritesBloc extends Bloc<FavoritesEvent, FavoritesState> {
   @override
   Stream<FavoritesState> mapEventToState(FavoritesEvent event) async* {
     print("Event received! ${event.toString()}");
-    print("Current state! ${currentState.toString()}");
+    print("Current state! ${state.toString()}");
     try {
       if (event is FavoritesEventFetchData) {
         SharedPreferences prefs = await SharedPreferences.getInstance();
 
-        final boards = await _repository.fetchBoards();
+        final boards = await _repository.fetchBoardList();
         List<String> favoriteBoardIds = prefs.getStringList(Preferences.KEY_FAVORITE_BOARDS) ?? [];
         List<ChanBoard> filteredBoards = boards.boards.where((board) => favoriteBoardIds.contains(board.boardId)).toList();
 

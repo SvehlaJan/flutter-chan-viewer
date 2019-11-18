@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter_chan_viewer/database/database_provider.dart';
-import 'package:flutter_chan_viewer/models/posts_model.dart';
+import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
 
 
 class ChanPostDao {

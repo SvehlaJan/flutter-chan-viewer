@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter_chan_viewer/utils/constants.dart';
 
 abstract class AppState extends Equatable {
   AppState([List props = const []]) : super(props);
@@ -6,7 +7,7 @@ abstract class AppState extends Equatable {
 
 class AppStateLoading extends AppState {
   @override
-  String toString() => 'BoardListStateLoading';
+  String toString() => 'AppStateLoading';
 }
 
 class AppStateError extends AppState {
@@ -15,17 +16,17 @@ class AppStateError extends AppState {
   AppStateError(this.message);
 
   @override
-  String toString() => 'BoardListStateError { message: $message }';
+  String toString() => 'AppStateError { message: $message }';
 }
 
 class AppStateContent extends AppState {
-  final showBottomBar;
+  final AppTheme appTheme;
 
-  AppStateContent(this.showBottomBar)
+  AppStateContent(this.appTheme)
       : super([
-          showBottomBar,
+          appTheme,
         ]);
 
   @override
-  String toString() => 'BoardListStateContent { showBottomBar: $showBottomBar }';
+  String toString() => 'AppStateContent { appTheme: $appTheme }';
 }

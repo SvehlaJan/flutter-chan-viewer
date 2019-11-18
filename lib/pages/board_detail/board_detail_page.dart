@@ -3,11 +3,12 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_chan_viewer/pages/base/base_page.dart';
+import 'package:flutter_chan_viewer/pages/base/base_page_2.dart';
 import 'package:flutter_chan_viewer/pages/thread_detail/thread_detail_page.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/utils/preferences.dart';
 import 'package:flutter_chan_viewer/view/list_widget_thread.dart';
+import 'package:flutter_widgets/flutter_widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'bloc/board_detail_bloc.dart';
@@ -28,14 +29,15 @@ class BoardDetailPage extends BasePage {
 class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
   BoardDetailBloc _boardDetailBloc;
   Completer<void> _refreshCompleter;
+  final ItemScrollController itemScrollController = ItemScrollController();
   bool _isFavorite = false;
 
   @override
   void initState() {
     super.initState();
     _boardDetailBloc = BlocProvider.of<BoardDetailBloc>(context);
-    _boardDetailBloc.dispatch(BoardDetailEventAppStarted());
-    _boardDetailBloc.dispatch(BoardDetailEventFetchThreads(widget.boardId));
+    _boardDetailBloc.add(BoardDetailEventAppStarted());
+    _boardDetailBloc.add(BoardDetailEventFetchThreads(widget.boardId));
     _refreshCompleter = Completer<void>();
 
     SharedPreferences.getInstance().then((prefs) {
@@ -48,57 +50,51 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
   }
 
   @override
-  void dispose() {
-    _boardDetailBloc.dispose();
-    super.dispose();
-  }
-
-  @override
   String getPageTitle() => "/${widget.boardId}";
 
   @override
   List<Widget> getPageActions() {
-    print('Board detail _isFavorite: $_isFavorite');
     Icon icon = _isFavorite ? Icon(Icons.star) : Icon(Icons.star_border);
     return [IconButton(icon: icon, onPressed: _onFavoriteToggleClick)];
   }
 
   @override
-  Widget buildBody() {
-    return BlocBuilder<BoardDetailBloc, BoardDetailState>(
-      builder: (context, state) {
-        if (state is BoardDetailStateLoading) {
-          return Constants.centeredProgressIndicator;
-        }
-        _refreshCompleter?.complete();
-        _refreshCompleter = Completer();
-        return RefreshIndicator(
-            onRefresh: () {
-              _boardDetailBloc.dispatch(BoardDetailEventFetchThreads(widget.boardId));
-              return _refreshCompleter.future;
-            },
-            child: _buildContent(state));
-      },
-    );
+  Widget build(BuildContext context) {
+    return BlocBuilder<BoardDetailBloc, BoardDetailState>(bloc: _boardDetailBloc, builder: (context, state) => buildPage(buildBody(context, state)));
+  }
+
+  Widget buildBody(BuildContext context, BoardDetailState state) {
+    if (state is BoardDetailStateLoading) {
+      return Constants.centeredProgressIndicator;
+    }
+    _refreshCompleter?.complete();
+    _refreshCompleter = Completer();
+    return RefreshIndicator(
+        onRefresh: () {
+          _boardDetailBloc.add(BoardDetailEventFetchThreads(widget.boardId));
+          return _refreshCompleter.future;
+        },
+        child: Scrollbar(child: _buildContent(state)));
   }
 
   Widget _buildContent(BoardDetailState state) {
     if (state is BoardDetailStateContent) {
       if (state.threads.isEmpty) {
-        return Center(child: Text('No threads'));
+        return Constants.noDataPlaceholder;
       }
 
-      return ListView.builder(
-        itemBuilder: (BuildContext context, int index) {
+      return ScrollablePositionedList.builder(
+        itemCount: state.threads.length,
+        itemScrollController: itemScrollController,
+        itemBuilder: (context, index) {
           return InkWell(
             child: ThreadListWidget(state.threads[index]),
             onTap: () => _openThreadDetailPage(widget.boardId, state.threads[index].threadId),
           );
         },
-        itemCount: state.threads.length,
       );
     } else {
-      return Center(child: Text('Failed to fetch posts'));
+      return Constants.errorPlaceholder;
     }
   }
 
@@ -112,14 +108,6 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
       },
     );
   }
-
-//  void _onScroll() {
-//    final maxScroll = _scrollController.position.maxScrollExtent;
-//    final currentScroll = _scrollController.position.pixels;
-//    if (maxScroll - currentScroll <= _scrollThreshold && !_boardDetailBloc.isLazyLoading) {
-//      _boardDetailBloc.dispatch(BoardDetailEventFetchThreads(widget.boardId, _boardDetailBloc.lastPage + 1));
-//    }
-//  }
 
   void _onFavoriteToggleClick() {
     bool newState = !_isFavorite;

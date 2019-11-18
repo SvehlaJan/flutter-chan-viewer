@@ -58,9 +58,9 @@ class TabNavigator extends StatelessWidget {
           String boardId = arguments[GalleryPage.ARG_BOARD_ID];
           int threadId = arguments[GalleryPage.ARG_THREAD_ID];
           int postId = arguments[GalleryPage.ARG_POST_ID];
-          return MaterialPageRoute<void>(
+          return MaterialPageRoute<int>(
               settings: settings,
-              builder: (BuildContext context) => BlocProvider(builder: (context) => ThreadDetailBloc(boardId, threadId), child: GalleryPage(boardId, threadId, postId)));
+              builder: (BuildContext context) => BlocProvider(builder: (context) => ThreadDetailBloc(boardId, threadId), child: GalleryPage()));
         }
         return null;
       case Constants.settingsRoute:

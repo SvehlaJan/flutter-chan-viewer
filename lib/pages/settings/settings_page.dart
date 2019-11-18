@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_chan_viewer/bloc/app_bloc/app_bloc.dart';
+import 'package:flutter_chan_viewer/bloc/app_bloc/app_event.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
 import 'package:flutter_chan_viewer/pages/settings/bloc/settings_bloc.dart';
 import 'package:flutter_chan_viewer/pages/settings/bloc/settings_event.dart';
@@ -23,20 +25,16 @@ class _SettingsPageState extends BasePageState<SettingsPage> {
   void initState() {
     super.initState();
     _settingsBloc = BlocProvider.of<SettingsBloc>(context);
-    _settingsBloc.dispatch(SettingsEventFetchData());
-  }
-
-  @override
-  void dispose() {
-    _settingsBloc.dispose();
-    super.dispose();
+    _settingsBloc.add(SettingsEventFetchData());
   }
 
   @override
   String getPageTitle() => "Settings";
 
   void _onThemeSwitchClicked(bool enabled) {
-    _settingsBloc.dispatch(SettingsEventSetTheme(enabled ? AppTheme.dark : AppTheme.light));
+    AppTheme newTheme = enabled ? AppTheme.dark : AppTheme.light;
+    _settingsBloc.add(SettingsEventSetTheme(newTheme));
+    BlocProvider.of<AppBloc>(context).add(AppEventSetTheme(newTheme));
   }
 
   @override

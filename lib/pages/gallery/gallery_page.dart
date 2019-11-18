@@ -3,9 +3,10 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_chan_viewer/bloc/app_bloc/app_bloc.dart';
-import 'package:flutter_chan_viewer/bloc/app_bloc/app_event.dart';
-import 'package:flutter_chan_viewer/models/posts_model.dart';
+import 'package:flutter_chan_viewer/bloc/chan_viewer_bloc/chan_viewer_bloc.dart';
+import 'package:flutter_chan_viewer/bloc/chan_viewer_bloc/chan_viewer_event.dart';
+import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
+import 'package:flutter_chan_viewer/pages/base/base_page_2.dart';
 import 'package:flutter_chan_viewer/pages/thread_detail/bloc/thread_detail_event.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/view/view_cached_image.dart';
@@ -15,34 +16,26 @@ import 'package:flutter_chan_viewer/view/view_video_player.dart';
 import '../thread_detail/bloc/thread_detail_bloc.dart';
 import '../thread_detail/bloc/thread_detail_state.dart';
 
-class GalleryPage extends StatefulWidget {
+class GalleryPage extends BasePage {
   static const String ARG_BOARD_ID = "ChanGallery.ARG_BOARD_ID";
   static const String ARG_THREAD_ID = "ChanGallery.ARG_THREAD_ID";
   static const String ARG_POST_ID = "ChanGallery.ARG_POST_ID";
   static const bool enableInfiniteScroll = true;
 
-  final String boardId;
-  final int threadId;
-  final int postId;
-
-//  final PageController pageController;
-
   static Map<String, dynamic> getArguments(final String boardId, final int threadId, final int postId) =>
       {GalleryPage.ARG_BOARD_ID: boardId, GalleryPage.ARG_THREAD_ID: threadId, GalleryPage.ARG_POST_ID: postId};
 
-  GalleryPage(this.boardId, this.threadId, this.postId);
-
-//  : this.pageController = PageController(initialPage: CustomCarousel.getRealPage(enableInfiniteScroll, initialPageIndex));
+  GalleryPage();
 
   @override
   _GalleryPageState createState() => _GalleryPageState();
 }
 
-class _GalleryPageState extends State<GalleryPage> with TickerProviderStateMixin {
+class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderStateMixin {
   static const int DOUBLE_TAP_TIMEOUT = 300;
   static const double SCALE_MIN = 1.0;
   static const double SCALE_MAX = 10.0;
-  static const double IS_SCALED_TRESHOLD = 1.2;
+  static const double IS_SCALED_THRESHOLD = 1.2;
   static const int SCALE_ANIMATION_DURATION = 200;
 
   ThreadDetailBloc _threadDetailBloc;
@@ -56,21 +49,18 @@ class _GalleryPageState extends State<GalleryPage> with TickerProviderStateMixin
   Offset _targetOffset;
   double _previousScale;
   int _previousTapTimestamp = 0;
-  int currentPageIndex;
 
   @override
   void initState() {
     super.initState();
-    BlocProvider.of<AppBloc>(context).dispatch(AppEventShowBottomBar(false));
+    BlocProvider.of<ChanViewerBloc>(context).add(ChanViewerEventShowBottomBar(false));
     _threadDetailBloc = BlocProvider.of<ThreadDetailBloc>(context);
-    _threadDetailBloc.dispatch(ThreadDetailEventFetchPosts(false));
     _flingAnimationController = AnimationController(vsync: this)..addListener(_handleFlingAnimation);
     _scaleAnimationController = AnimationController(vsync: this, duration: Duration(milliseconds: SCALE_ANIMATION_DURATION))..addListener(_handleScaleAnimation);
   }
 
   @override
   void dispose() {
-    _threadDetailBloc.dispose();
     _flingAnimationController.dispose();
     super.dispose();
   }
@@ -131,7 +121,7 @@ class _GalleryPageState extends State<GalleryPage> with TickerProviderStateMixin
         final direction = details.velocity.pixelsPerSecond.direction;
         print("{ direction: $direction }");
         if (direction >= (-pi * 3 / 4) && direction <= (-pi / 4)) {
-          Navigator.of(context).pop(false);
+          onBackPressed();
           return;
         }
       }
@@ -155,7 +145,7 @@ class _GalleryPageState extends State<GalleryPage> with TickerProviderStateMixin
   }
 
   bool _isScaled() {
-    return _currentScale >= IS_SCALED_TRESHOLD;
+    return _currentScale >= IS_SCALED_THRESHOLD;
   }
 
   void startFlingBackAnimation(Offset velocity) {
@@ -193,61 +183,52 @@ class _GalleryPageState extends State<GalleryPage> with TickerProviderStateMixin
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ThreadDetailBloc, ThreadDetailState>(
-        bloc: _threadDetailBloc,
-        builder: (context, state) {
-          if (state is ThreadDetailStateLoading) {
-            return Center(
-              child: Constants.progressIndicator,
-            );
-          }
-          if (state is ThreadDetailStateContent) {
-            if (state.data.posts.isEmpty) {
-              return Center(
-                child: Text('No posts'),
-              );
-            }
-
-            List<Widget> children = state.data.mediaPosts.map((post) => buildPage(post)).toList();
-            int initialIndex = state.data.getMediaIndex(widget.postId);
-            return SafeArea(
-              child: GestureDetector(
-                onScaleStart: _handleOnScaleStart,
-                onScaleUpdate: _handleOnScaleUpdate,
-                onScaleEnd: _handleOnScaleEnd,
-//        onHorizontalDragUpdate: _isScaled() ? null : _handleOnHorizontalDragUpdate,
-                onTapUp: _handleOnDoubleTap,
-                child: CustomCarousel(
-                  items: children,
-                  initialPage: initialIndex,
-                  enableInfiniteScroll: GalleryPage.enableInfiniteScroll,
-                  scrollPhysics: _isScaled() ? NeverScrollableScrollPhysics() : AlwaysScrollableScrollPhysics(),
-                  onPageChanged: (int currentPage) {
-                    currentPageIndex = currentPage;
-                  },
-                ),
-              ),
-            );
-          } else {
-            return Center(
-              child: Text('Failed to fetch posts'),
-            );
-          }
-        });
+    return BlocBuilder<ThreadDetailBloc, ThreadDetailState>(bloc: _threadDetailBloc, builder: (context, state) => buildBody(context, state));
   }
 
-  Widget buildPage(ChanPost post) {
-//    if (currentPage == index) {
+  Widget buildBody(BuildContext context, ThreadDetailState state) {
+    if (state is ThreadDetailStateLoading) {
+      return Constants.centeredProgressIndicator;
+    }
+    if (state is ThreadDetailStateContent) {
+      if (state.data.posts.isEmpty) {
+        return Constants.noDataPlaceholder;
+      }
+
+      List<Widget> children = state.data.mediaPosts.map((post) => buildItem(post)).toList();
+      int initialIndex = state.data.selectedMediaIndex;
+      return SafeArea(
+        child: GestureDetector(
+          onScaleStart: _handleOnScaleStart,
+          onScaleUpdate: _handleOnScaleUpdate,
+          onScaleEnd: _handleOnScaleEnd,
+//        onHorizontalDragUpdate: _isScaled() ? null : _handleOnHorizontalDragUpdate,
+          onTapUp: _handleOnDoubleTap,
+          child: CustomCarousel(
+            items: children,
+            initialPage: initialIndex,
+            enableInfiniteScroll: GalleryPage.enableInfiniteScroll,
+            scrollPhysics: _isScaled() ? NeverScrollableScrollPhysics() : AlwaysScrollableScrollPhysics(),
+            onPageChanged: (int pageIndex) {
+              _threadDetailBloc.selectedMediaIndex = pageIndex;
+//              _threadDetailBloc.add(ThreadDetailEventOnPostSelected(pageIndex, null));
+            },
+          ),
+        ),
+      );
+    } else {
+      return Constants.errorPlaceholder;
+    }
+  }
+
+  Widget buildItem(ChanPost post) {
     return ClipRect(
       child: Transform(
         transform: Matrix4.identity()
           ..translate(_offset.dx, _offset.dy)
           ..scale(_currentScale),
-        child: post.hasImage() ? ChanCachedImage(post, showProgress: true) : ChanVideoPlayer(post),
+        child: post.hasImage() ? ChanCachedImage(post, BoxFit.contain, showProgress: true) : ChanVideoPlayer(post),
       ),
     );
-//    } else {
-//      return post.hasImage() ? ChanCachedImage(post.getImageUrl(), post.getThumbnailUrl()) : ChanVideoPlayer(post, () {});
-//    }
   }
 }

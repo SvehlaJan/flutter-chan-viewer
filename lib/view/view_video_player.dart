@@ -1,6 +1,6 @@
 import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_chan_viewer/models/posts_model.dart';
+import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
 import 'package:flutter_chan_viewer/view/view_cached_image.dart';
 import 'package:video_player/video_player.dart';
 
@@ -51,7 +51,7 @@ class _ChanVideoPlayerState extends State<ChanVideoPlayer> {
                 controller: _chewieController,
               ),
             )
-          : ChanCachedImage(widget._post, forceThumbnail: true),
+          : ChanCachedImage(widget._post, BoxFit.contain, forceThumbnail: true),
     );
   }
 

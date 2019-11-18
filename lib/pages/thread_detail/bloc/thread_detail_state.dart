@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:flutter_chan_viewer/models/posts_model.dart';
+import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
 
 abstract class ThreadDetailState extends Equatable {
   ThreadDetailState([List props = const []]) : super(props);
@@ -20,7 +20,7 @@ class ThreadDetailStateError extends ThreadDetailState {
 }
 
 class ThreadDetailStateContent extends ThreadDetailState {
-  final PostsModel data;
+  final ThreadDetailModel data;
   final bool isFavorite;
   final bool catalogMode;
 

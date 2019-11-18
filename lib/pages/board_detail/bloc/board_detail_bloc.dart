@@ -19,7 +19,7 @@ class BoardDetailBloc extends Bloc<BoardDetailEvent, BoardDetailState> {
   @override
   Stream<BoardDetailState> mapEventToState(BoardDetailEvent event) async* {
     print("Event received! ${event.toString()}");
-    print("Current state! ${currentState.toString()}");
+    print("Current state! ${state.toString()}");
     try {
       if (event is BoardDetailEventAppStarted) {
         initBloc();
@@ -27,7 +27,7 @@ class BoardDetailBloc extends Bloc<BoardDetailEvent, BoardDetailState> {
       }
 
       if (event is BoardDetailEventFetchThreads) {
-        final newThreads = await _repository.fetchThreads(event.boardId);
+        final newThreads = await _repository.fetchBoardDetail(event.boardId);
         yield BoardDetailStateContent(newThreads.threads);
       }
     } catch (o) {

@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:collection';
 
 import 'package:bloc/bloc.dart';
 import 'package:flutter_chan_viewer/models/board_list_model.dart';
 import 'package:flutter_chan_viewer/models/board_detail_model.dart';
+import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
 import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
 import 'package:flutter_chan_viewer/utils/preferences.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -24,15 +26,17 @@ class FavoritesBloc extends Bloc<FavoritesEvent, FavoritesState> {
       if (event is FavoritesEventFetchData) {
         SharedPreferences prefs = await SharedPreferences.getInstance();
 
-        final boards = await _repository.fetchBoardList();
-        List<String> favoriteBoardIds = prefs.getStringList(Preferences.KEY_FAVORITE_BOARDS) ?? [];
-        List<ChanBoard> filteredBoards = boards.boards.where((board) => favoriteBoardIds.contains(board.boardId)).toList();
+//        final boards = await _repository.fetchBoardList();
+//        List<String> favoriteBoardIds = prefs.getStringList(Preferences.KEY_FAVORITE_BOARDS) ?? [];
+//        List<ChanBoard> filteredBoards = boards.boards.where((board) => favoriteBoardIds.contains(board.boardId)).toList();
 
         List<String> favoriteThreadIds = prefs.getStringList(Preferences.KEY_FAVORITE_THREADS) ?? [];
         List<ChanThread> threads = [];
 
+        HashMap<String, List<String>> threadPaths = await _repository.getFavoriteThreadNames();
+        HashMap<String, List<ThreadDetailModel>> threadMap = await _repository.getFavoriteThreads();
 
-        yield FavoritesStateContent(filteredBoards, threads);
+        yield FavoritesStateContent(threadMap);
       }
     } catch (o) {
       print("Event error! ${o.toString()}");

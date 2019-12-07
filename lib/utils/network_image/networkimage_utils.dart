@@ -392,9 +392,6 @@ Future<Uint8List> loadFromRemote(
   return null;
 }
 
-/// Get uid from hashCode.
-String uid(String str) => str.hashCode.toString();
-
 bool get isInDebugMode {
   bool inDebugMode = false;
   assert(inDebugMode = true);

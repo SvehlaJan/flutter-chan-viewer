@@ -7,9 +7,7 @@ import 'package:flutter_chan_viewer/pages/settings/bloc/settings_bloc.dart';
 import 'package:flutter_chan_viewer/pages/settings/bloc/settings_event.dart';
 import 'package:flutter_chan_viewer/pages/settings/bloc/settings_state.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
-import 'package:flutter_chan_viewer/utils/preferences.dart';
 import 'package:flutter_chan_viewer/view/view_common_switch.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsPage extends BasePage {
   SettingsPage();
@@ -37,52 +35,72 @@ class _SettingsPageState extends BasePageState<SettingsPage> {
     BlocProvider.of<AppBloc>(context).add(AppEventSetTheme(newTheme));
   }
 
+  void _onExperimentClicked() {
+    _settingsBloc.add(SettingsEventExperiment());
+  }
+
   @override
-  Widget buildBody() {
-    return BlocBuilder<SettingsBloc, SettingsState>(
-      builder: (context, state) {
-        if (state is SettingsStateLoading) {
-          return Constants.centeredProgressIndicator;
-        } else if (state is SettingsStateContent) {
-          return SingleChildScrollView(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Text("Visual", style: Theme.of(context).textTheme.subhead),
-                ),
-                Card(
-                  color: Colors.white,
-                  elevation: 2.0,
-                  child: Column(
-                    children: <Widget>[
-                      ListTile(
-                        leading: Icon(
-                          Icons.format_paint,
-                          color: Colors.grey,
-                        ),
-                        title: Text("Dark theme"),
-                        trailing: CommonSwitch(
-                          onChanged: _onThemeSwitchClicked,
-                          defValue: (state.theme == AppTheme.dark) ? true : false,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Text("Others", style: Theme.of(context).textTheme.subhead),
-                ),
-              ],
+  Widget build(BuildContext context) {
+    return BlocBuilder<SettingsBloc, SettingsState>(bloc: _settingsBloc, builder: (context, state) => buildPage(buildBody(context, state)));
+  }
+
+  Widget buildBody(BuildContext context, SettingsState state) {
+    if (state is SettingsStateLoading) {
+      return Constants.centeredProgressIndicator;
+    } else if (state is SettingsStateContent) {
+      return SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text("Visual", style: Theme.of(context).textTheme.subhead),
             ),
-          );
-        } else {
-          return Constants.errorPlaceholder;
-        }
-      },
-    );
+            Card(
+              color: Colors.white,
+              elevation: 2.0,
+              child: Column(
+                children: <Widget>[
+                  ListTile(
+                    leading: Icon(
+                      Icons.format_paint,
+                      color: Colors.grey,
+                    ),
+                    title: Text("Dark theme"),
+                    trailing: CommonSwitch(
+                      onChanged: _onThemeSwitchClicked,
+                      defValue: (state.theme == AppTheme.dark) ? true : false,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text("Others", style: Theme.of(context).textTheme.subhead),
+            ),
+            Card(
+              color: Colors.white,
+              elevation: 2.0,
+              child: Column(
+                children: <Widget>[
+                  ListTile(
+                    leading: Icon(
+                      Icons.priority_high,
+                      color: Colors.red,
+                    ),
+                    title: Text("Experiment"),
+                    onTap: _onExperimentClicked,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    } else {
+      return Constants.errorPlaceholder;
+    }
   }
 }

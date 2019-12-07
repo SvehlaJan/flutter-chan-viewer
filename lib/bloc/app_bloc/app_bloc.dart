@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
+import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
 import 'package:flutter_chan_viewer/utils/chan_cache.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/utils/preferences.dart';
@@ -14,6 +15,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
   Future<void> initBloc() async {
     await Preferences.load();
     await ChanCache.init();
+    await ChanRepository.init();
   }
 
   @override

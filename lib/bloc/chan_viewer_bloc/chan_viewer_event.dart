@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 abstract class ChanViewerEvent extends Equatable {
-  ChanViewerEvent([List props = const []]) : super(props);
+  ChanViewerEvent();
 }
 
 class ChanViewerEventShowBottomBar extends ChanViewerEvent {
@@ -11,4 +11,7 @@ class ChanViewerEventShowBottomBar extends ChanViewerEvent {
 
   @override
   String toString() => 'ChanViewerEventShowBottomBar { showBottomBar: $showBottomBar }';
+
+  @override
+  List<Object> get props => [showBottomBar];
 }

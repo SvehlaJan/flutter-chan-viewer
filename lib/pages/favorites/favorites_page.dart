@@ -5,7 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chan_viewer/models/board_list_model.dart';
 import 'package:flutter_chan_viewer/models/board_detail_model.dart';
-import 'package:flutter_chan_viewer/pages/base/base_page_2.dart';
+import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
+import 'package:flutter_chan_viewer/pages/base/base_page.dart';
 import 'package:flutter_chan_viewer/pages/board_detail/board_detail_page.dart';
 import 'package:flutter_chan_viewer/pages/thread_detail/thread_detail_page.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
@@ -36,6 +37,12 @@ class _FavoritesPageState extends BasePageState<FavoritesPage> {
   }
 
   @override
+  void didChangeDependencies() {
+    // TODO: implement didChangeDependencies
+    super.didChangeDependencies();
+  }
+
+  @override
   String getPageTitle() => "Favorites";
 
   @override
@@ -45,13 +52,24 @@ class _FavoritesPageState extends BasePageState<FavoritesPage> {
 
   Widget buildBody(BuildContext context, FavoritesState state) {
     if (state is FavoritesStateLoading) {
-      return Center(
-        child: Constants.progressIndicator,
-      );
+      return Constants.centeredProgressIndicator;
+    } else {
+      _refreshCompleter?.complete();
+      _refreshCompleter = Completer();
+      return RefreshIndicator(
+          onRefresh: () {
+            _favoritesBloc.add(FavoritesEventFetchData());
+            return _refreshCompleter.future;
+          },
+          child: _buildContent(context, state));
     }
+  }
+
+  Widget _buildContent(BuildContext context, FavoritesState state) {
     if (state is FavoritesStateContent) {
-      if (state.threads.isEmpty) {
-        return Center(child: Text('No threads'));
+      List<ThreadDetailModel> threads = state.threadMap.values.expand((list) => list).toList();
+      if (threads.isEmpty) {
+        return Constants.noDataPlaceholder;
       }
 
       _refreshCompleter?.complete();
@@ -63,36 +81,17 @@ class _FavoritesPageState extends BasePageState<FavoritesPage> {
         },
         child: ListView.builder(
           itemBuilder: (BuildContext context, int index) {
-            if (index < state.boards.length) {
-              ChanBoard board = state.boards[index];
-              return InkWell(
-                child: BoardListWidget(board),
-                onTap: () => _openBoardDetailPage(board.boardId),
-              );
-            } else {
-              ChanThread thread = state.threads[index - state.boards.length];
-              return InkWell(
-                child: ThreadListWidget(thread),
-                onTap: () => _openThreadDetailPage(thread),
-              );
-            }
+            return InkWell(
+              child: ThreadListWidget(threads[index].thread),
+              onTap: () => _openThreadDetailPage(threads[index].thread),
+            );
           },
-          itemCount: state.boards.length + state.threads.length,
+          itemCount: threads.length,
         ),
       );
     } else {
-      return Center(child: Text('Failed to fetch posts'));
+      return Constants.errorPlaceholder;
     }
-  }
-
-  void _openBoardDetailPage(String boardId) {
-    Navigator.pushNamed(
-      context,
-      Constants.boardDetailRoute,
-      arguments: {
-        BoardDetailPage.ARG_BOARD_ID: boardId,
-      },
-    );
   }
 
   void _openThreadDetailPage(ChanThread thread) {

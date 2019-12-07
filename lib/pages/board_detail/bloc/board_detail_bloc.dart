@@ -27,7 +27,7 @@ class BoardDetailBloc extends Bloc<BoardDetailEvent, BoardDetailState> {
       }
 
       if (event is BoardDetailEventFetchThreads) {
-        final newThreads = await _repository.fetchBoardDetail(event.boardId);
+        final newThreads = await _repository.fetchBoardDetail(event.forceFetch, event.boardId);
         yield BoardDetailStateContent(newThreads.threads);
       }
     } catch (o) {

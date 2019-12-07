@@ -8,8 +8,6 @@ import 'package:flutter_chan_viewer/utils/chan_cache.dart';
 import 'package:flutter_chan_viewer/utils/network_image/cache_directive.dart';
 import 'package:flutter_chan_viewer/utils/network_image/disk_cache.dart';
 import 'package:flutter_chan_viewer/utils/network_image/networkimage_utils.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:video_thumbnail/video_thumbnail.dart';
 
 typedef Future<Uint8List> ImageProcessing(Uint8List data);
 
@@ -141,7 +139,7 @@ class ChanNetworkImage extends ImageProvider<ChanNetworkImage> {
   Future<ui.Codec> _loadAsync(ChanNetworkImage key) async {
     assert(key == this);
 
-    String uId = uid(key.url);
+    String uId = DiskCache.uid(key.url);
 
     try {
       Uint8List _diskCache = await _loadFromDiskCache(key, uId, cacheDirective);
@@ -151,7 +149,8 @@ class ChanNetworkImage extends ImageProvider<ChanNetworkImage> {
         return await PaintingBinding.instance.instantiateImageCodec(_diskCache);
       }
     } catch (e) {
-      if (key.printError) debugPrint(e.toString());
+      if (key.printError) print("Error loading image from cache: ${e.toString()}");
+      _invalidateEntryInDiskCache(key, uId, cacheDirective);
     }
 
 //    if (key.url.endsWith(".webm")) {
@@ -213,7 +212,7 @@ Future<Uint8List> _loadFromDiskCache(ChanNetworkImage key, String uId, CacheDire
   } else {
     Uint8List data = await DiskCache().load(uId);
     if (data != null) {
-      print("Temporary cache media hit! { url: ${key.url} }");
+//      print("Temporary cache media hit! { url: ${key.url} }");
       return data;
     }
   }
@@ -240,4 +239,11 @@ Future<Uint8List> _loadFromDiskCache(ChanNetworkImage key, String uId, CacheDire
   }
 
   return null;
+}
+
+Future<void> _invalidateEntryInDiskCache(ChanNetworkImage key, String uId, CacheDirective cacheDirective) async {
+  if (cacheDirective != null) {
+    await ChanCache.get().deleteMediaFile(key.url, cacheDirective);
+  }
+  await DiskCache().evict(uId);
 }

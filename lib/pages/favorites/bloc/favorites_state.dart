@@ -1,14 +1,20 @@
+import 'dart:collection';
+
 import 'package:equatable/equatable.dart';
 import 'package:flutter_chan_viewer/models/board_list_model.dart';
 import 'package:flutter_chan_viewer/models/board_detail_model.dart';
+import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
 
 abstract class FavoritesState extends Equatable {
-  FavoritesState([List props = const []]) : super(props);
+  FavoritesState();
 }
 
 class FavoritesStateLoading extends FavoritesState {
   @override
   String toString() => 'FavoritesStateLoading';
+
+  @override
+  List<Object> get props => [];
 }
 
 class FavoritesStateError extends FavoritesState {
@@ -18,14 +24,19 @@ class FavoritesStateError extends FavoritesState {
 
   @override
   String toString() => 'FavoritesStateError { message: $message }';
+
+  @override
+  List<Object> get props => [message];
 }
 
 class FavoritesStateContent extends FavoritesState {
-  final List<ChanBoard> boards;
-  final List<ChanThread> threads;
+  final HashMap<String, List<ThreadDetailModel>> threadMap;
 
-  FavoritesStateContent(this.boards, this.threads) : super([boards, threads]);
+  FavoritesStateContent(this.threadMap);
 
   @override
-  String toString() => 'FavoritesStateContent { boards: ${boards.length} threads: ${threads.length} }';
+  String toString() => 'FavoritesStateContent { threadMap: ${threadMap.length} }';
+
+  @override
+  List<Object> get props => [threadMap];
 }

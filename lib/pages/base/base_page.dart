@@ -7,14 +7,24 @@ abstract class BasePage extends StatefulWidget {
 abstract class BasePageState<T extends BasePage> extends State<T> {
   BuildContext scaffoldContext;
 
-  @override
-  Widget build(BuildContext context) {
-    final body = buildBody(); // buildBody() is here because BlocBuilder might do some initialization
+  String getPageTitle() => null;
+
+  FloatingActionButton getPageFab() => null;
+
+  List<Widget> getPageActions() => null;
+
+  void onBackPressed() => Navigator.pop(context, false);
+
+  Widget buildPage(Widget body) {
+    bool showAppBar = getPageTitle() != null || getPageActions() != null;
     return Scaffold(
-      appBar: AppBar(
-        title: Text(getPageTitle()),
-        actions: getPageActions(),
-      ),
+      appBar: showAppBar
+          ? AppBar(
+              leading: ModalRoute.of(context).canPop ? IconButton(icon: BackButtonIcon(), onPressed: onBackPressed) : null,
+              title: Text(getPageTitle()),
+              actions: getPageActions(),
+            )
+          : null,
       body: Builder(
         builder: (BuildContext context) {
           scaffoldContext = context;
@@ -24,18 +34,4 @@ abstract class BasePageState<T extends BasePage> extends State<T> {
       floatingActionButton: getPageFab(),
     );
   }
-
-  String getPageTitle() {
-    return "No page title";
-  }
-
-  FloatingActionButton getPageFab() {
-    return null;
-  }
-
-  List<Widget> getPageActions() {
-    return null;
-  }
-
-  Widget buildBody();
 }

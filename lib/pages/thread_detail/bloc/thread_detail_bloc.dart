@@ -25,9 +25,13 @@ class ThreadDetailBloc extends Bloc<ThreadDetailEvent, ThreadDetailState> {
 
   get selectedPostIndex => _threadDetailModel.selectedPostIndex;
 
+  get selectedMediaIndex => _threadDetailModel.selectedMediaIndex;
+
   set selectedMediaIndex(int mediaIndex) => _threadDetailModel.selectedMediaIndex = mediaIndex;
 
   set selectedPostId(int postId) => _threadDetailModel.selectedPostId = postId;
+
+  get selectedPostId => _threadDetailModel.selectedPostId;
 
   @override
   Stream<ThreadDetailState> mapEventToState(ThreadDetailEvent event) async* {
@@ -37,43 +41,38 @@ class ThreadDetailBloc extends Bloc<ThreadDetailEvent, ThreadDetailState> {
 
         SharedPreferences prefs = await SharedPreferences.getInstance();
         _threadDetailModel = await _repository.fetchThreadDetail(event.forceFetch, boardId, threadId);
-        isFavorite = (prefs.getStringList(Preferences.KEY_FAVORITE_THREADS) ?? []).contains(threadId.toString());
+        isFavorite = await _repository.isThreadFavorite(threadId);
         catalogMode = prefs.getBool(Preferences.KEY_THREAD_CATALOG_MODE) ?? false;
 
-        yield ThreadDetailStateContent(_threadDetailModel, isFavorite, catalogMode);
-      }
-      if (event is ThreadDetailEventToggleFavorite) {
+        yield ThreadDetailStateContent(_threadDetailModel, selectedPostId, isFavorite, catalogMode);
+      } else if (event is ThreadDetailEventToggleFavorite) {
         yield ThreadDetailStateLoading();
 
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        List<String> favoriteThreads = prefs.getStringList(Preferences.KEY_FAVORITE_THREADS) ?? [];
-
-        favoriteThreads.removeWhere((value) => value == threadId.toString());
         isFavorite = !isFavorite;
         if (isFavorite) {
-          favoriteThreads.add(threadId.toString());
-          await _repository.addThreadToCache(_threadDetailModel);
+          await _repository.addThreadToFavorites(_threadDetailModel);
+        } else {
+          await _repository.removeThreadFromFavorites(_threadDetailModel);
         }
-        prefs.setStringList(Preferences.KEY_FAVORITE_THREADS, favoriteThreads);
 
-        yield ThreadDetailStateContent(_threadDetailModel, isFavorite, catalogMode);
-      }
-      if (event is ThreadDetailEventToggleCatalogMode) {
+        yield ThreadDetailStateContent(_threadDetailModel, selectedPostId, isFavorite, catalogMode);
+      } else if (event is ThreadDetailEventToggleCatalogMode) {
         yield ThreadDetailStateLoading();
 
         SharedPreferences prefs = await SharedPreferences.getInstance();
         catalogMode = !catalogMode;
         prefs.setBool(Preferences.KEY_THREAD_CATALOG_MODE, catalogMode);
 
-        yield ThreadDetailStateContent(_threadDetailModel, isFavorite, catalogMode);
+        yield ThreadDetailStateContent(_threadDetailModel, selectedPostId, isFavorite, catalogMode);
+      }  else if (event is ThreadDetailEventOnPostSelected) {
+        if (event.mediaIndex != null) {
+          selectedMediaIndex = event.mediaIndex;
+        } else if (event.postId != null) {
+          selectedPostId = event.postId;
+        }
+
+        yield ThreadDetailStateContent(_threadDetailModel, selectedPostId, isFavorite, catalogMode);
       }
-//      if (event is ThreadDetailEventOnPostSelected) {
-//        if (event.mediaIndex != null) {
-//          _threadDetailModel.selectedMediaIndex = event.mediaIndex;
-//        } else {
-//          _threadDetailModel.selectedPostId = event.postId;
-//        }
-//      }
     } catch (o) {
       print("Event error! ${o.toString()}");
       yield ThreadDetailStateError(o.toString());

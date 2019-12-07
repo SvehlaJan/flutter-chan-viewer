@@ -2,12 +2,15 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 
 abstract class AppState extends Equatable {
-  AppState([List props = const []]) : super(props);
+  AppState();
 }
 
 class AppStateLoading extends AppState {
   @override
   String toString() => 'AppStateLoading';
+
+  @override
+  List<Object> get props => [];
 }
 
 class AppStateError extends AppState {
@@ -17,16 +20,19 @@ class AppStateError extends AppState {
 
   @override
   String toString() => 'AppStateError { message: $message }';
+
+  @override
+  List<Object> get props => [message];
 }
 
 class AppStateContent extends AppState {
   final AppTheme appTheme;
 
-  AppStateContent(this.appTheme)
-      : super([
-          appTheme,
-        ]);
+  AppStateContent(this.appTheme);
 
   @override
   String toString() => 'AppStateContent { appTheme: $appTheme }';
+
+  @override
+  List<Object> get props => [appTheme];
 }

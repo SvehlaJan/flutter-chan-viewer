@@ -131,6 +131,11 @@ class DiskCache {
     await _commitMetaData();
   }
 
+  /// Get uid from hashCode.
+  static String uid(String str) => str.hashCode.toString();
+
+  Future<Uint8List> loadByUrl(String url, {bool force}) async => load(uid(url), force: force);
+
   /// Load the cache image from [DiskCache], you can use `force` to skip max age check.
   Future<Uint8List> load(String uid, {bool force}) async {
     if (_metadata == null) await _initMetaData();

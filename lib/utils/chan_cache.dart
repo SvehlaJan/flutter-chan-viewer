@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -30,8 +31,11 @@ class ChanCache {
   }
 
   static Future<void> init() async {
+    if (_initialized) return;
+
     _repo._permanentDirectory = Directory(join((await getTemporaryDirectory()).path, PERMANENT_DIR));
     if (!_repo._permanentDirectory.existsSync()) await _repo._permanentDirectory.create();
+
     _initialized = true;
   }
 
@@ -47,6 +51,8 @@ class ChanCache {
   String _getFileRelativePath(String url, CacheDirective cacheDirective) => "${cacheDirective.boardId}$SEPARATOR${cacheDirective.threadId}$SEPARATOR${_getFileName(url)}";
 
   String _getFileName(String url) => url.substring(url.lastIndexOf(SEPARATOR) + 1);
+
+  String getFolderPath(CacheDirective cacheDirective) => join(_permanentDirectory.path, _getFolderRelativePath(cacheDirective));
 
   Future<Uint8List> getMediaFile(String url, CacheDirective cacheDirective) async {
     try {
@@ -65,7 +71,7 @@ class ChanCache {
       if (!directory.existsSync()) await directory.create(recursive: true);
 
       File mediaFile = File(join(directory.path, _getFileName(url)));
-      print("Writing media { directory: ${directory.path}, mediaFile: ${mediaFile.path} }");
+//      print("Writing media { directory: ${directory.path}, mediaFile: ${mediaFile.path} }");
       File result = await mediaFile.writeAsBytes(data, flush: false);
       return result;
     } catch (e) {
@@ -77,6 +83,7 @@ class ChanCache {
   Future<String> readContentString(CacheDirective cacheDirective) async {
     try {
       Directory directory = Directory(join(_permanentDirectory.path, _getFolderRelativePath(cacheDirective)));
+//      print("ChanCache: readContentString: { directory.path: ${directory.path}, directory.list: ${directory.listSync()}");
       File file = File(join(directory.path, CONTENT_FILENAME));
       String text = await file.readAsString();
       return text;
@@ -86,7 +93,7 @@ class ChanCache {
     }
   }
 
-  saveContentString(CacheDirective cacheDirective, String content) async {
+  Future<File> saveContentString(CacheDirective cacheDirective, String content) async {
     try {
       Directory directory = Directory(join(_permanentDirectory.path, _getFolderRelativePath(cacheDirective)));
       if (!directory.existsSync()) await directory.create(recursive: true);
@@ -96,6 +103,53 @@ class ChanCache {
       return result;
     } catch (e) {
       print("Couldn't write string to ${_getFolderRelativePath(cacheDirective)}");
+      return null;
+    }
+  }
+
+  Future<void> deleteMediaFile(String url, CacheDirective cacheDirective) async {
+    try {
+      Directory directory = Directory(join(_permanentDirectory.path, _getFolderRelativePath(cacheDirective)));
+      if (!directory.existsSync()) return null;
+      File file = File(join(directory.path, CONTENT_FILENAME));
+      if (!file.existsSync()) return null;
+      file.deleteSync(recursive: true);
+      return null;
+    } catch (e) {
+      print("Couldn't delete media file { $e }");
+      return null;
+    }
+  }
+
+  Future<void> deleteCacheFolder(CacheDirective cacheDirective) async {
+    try {
+      Directory directory = Directory(join(_permanentDirectory.path, _getFolderRelativePath(cacheDirective)));
+      if (!directory.existsSync()) return null;
+
+      directory.deleteSync(recursive: true);
+      return null;
+    } catch (e) {
+      print("Couldn't delete folder ${_getFolderRelativePath(cacheDirective)}");
+      return null;
+    }
+  }
+
+  Future<HashMap<String, List<String>>> listDirectories() async {
+    try {
+      Directory boardsDirectory = Directory(_permanentDirectory.path);
+      if (!boardsDirectory.existsSync()) await boardsDirectory.create(recursive: true);
+
+      HashMap<String, List<String>> threadMap = new HashMap();
+      List<String> boards = boardsDirectory.listSync().map((file) => file.path.substring(file.path.lastIndexOf(SEPARATOR) + 1)).toList();
+      for (String board in boards) {
+        Directory threadDirectory = Directory(join(_permanentDirectory.path, board));
+        List<String> threads = threadDirectory.listSync().map((file) => file.path.substring(file.path.lastIndexOf(SEPARATOR) + 1)).toList();
+        threadMap[board] = threads;
+      }
+
+      return threadMap;
+    } catch (e) {
+      print("Couldn't list directories from ${_permanentDirectory.path}");
       return null;
     }
   }

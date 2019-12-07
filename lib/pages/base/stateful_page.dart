@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_chan_viewer/pages/base/base_page.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
-
-import 'base_page.dart';
 
 abstract class StatefulPage extends BasePage {
   StatefulPage() : super();
@@ -55,11 +54,11 @@ abstract class StatefulPageState<T extends StatefulPage> extends BasePageState<T
   }
 
   Widget getProgressView() {
-    return Material(child: Center(child: Constants.progressIndicator));
+    return Material(child: Constants.centeredProgressIndicator);
   }
 
   Widget getEmptyView() {
-    return Material(child: Center(child: Text("No data...")));
+    return Material(child: Constants.noDataPlaceholder);
   }
 
   Widget getContentView() {

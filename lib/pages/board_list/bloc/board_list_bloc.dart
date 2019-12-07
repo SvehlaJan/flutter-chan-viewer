@@ -27,7 +27,7 @@ class BoardListBloc extends Bloc<BoardListEvent, BoardListState> {
       if (event is BoardListEventFetchBoards) {
         yield BoardListStateLoading();
 
-        final boards = await _repository.fetchBoardList();
+        final boards = await _repository.fetchBoardList(event.forceFetch);
         List<String> favoriteBoardIds = (await SharedPreferences.getInstance()).getStringList(Preferences.KEY_FAVORITE_BOARDS) ?? [];
         List<ChanBoard> favoriteBoards = [];
         List<ChanBoard> otherBoards = [];

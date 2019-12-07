@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_chan_viewer/pages/base/base_page_2.dart';
+import 'package:flutter_chan_viewer/pages/base/base_page.dart';
 import 'package:flutter_chan_viewer/pages/board_detail/board_detail_page.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/view/list_widget_board.dart';
@@ -27,7 +27,7 @@ class _BoardListPageState extends BasePageState<BoardListPage> {
   void initState() {
     super.initState();
     _boardListBloc = BlocProvider.of<BoardListBloc>(context);
-    _boardListBloc.add(BoardListEventFetchBoards());
+    _boardListBloc.add(BoardListEventFetchBoards(false));
     _refreshCompleter = Completer<void>();
   }
 
@@ -41,23 +41,23 @@ class _BoardListPageState extends BasePageState<BoardListPage> {
 
   Widget buildBody(BuildContext context, BoardListState state) {
     if (state is BoardListStateLoading) {
-      return Center(child: Constants.progressIndicator);
+      return Constants.centeredProgressIndicator;
+    } else {
+      _refreshCompleter?.complete();
+      _refreshCompleter = Completer();
+      return RefreshIndicator(
+          onRefresh: () {
+            _boardListBloc.add(BoardListEventFetchBoards(true));
+            return _refreshCompleter.future;
+          },
+          child: _buildContent(context, state));
     }
-
-    _refreshCompleter?.complete();
-    _refreshCompleter = Completer();
-    return RefreshIndicator(
-        onRefresh: () {
-          _boardListBloc.add(BoardListEventFetchBoards());
-          return _refreshCompleter.future;
-        },
-        child: _buildContent(state));
   }
 
-  Widget _buildContent(BoardListState state) {
+  Widget _buildContent(BuildContext context, BoardListState state) {
     if (state is BoardListStateContent) {
       if (state.otherBoards.isEmpty) {
-        return Center(child: Text('No boards'));
+        return Constants.noDataPlaceholder;
       }
 
       bool hasFavorites = state.favoriteBoards.isNotEmpty;
@@ -94,17 +94,19 @@ class _BoardListPageState extends BasePageState<BoardListPage> {
         },
       );
     } else {
-      return Center(child: Text('Failed to fetch posts'));
+      return Constants.errorPlaceholder;
     }
   }
 
-  void _openBoardDetailPage(String boardId) {
-    Navigator.pushNamed(
+  void _openBoardDetailPage(String boardId) async {
+    await Navigator.pushNamed(
       context,
       Constants.boardDetailRoute,
       arguments: {
         BoardDetailPage.ARG_BOARD_ID: boardId,
       },
     );
+
+    _boardListBloc.add(BoardListEventFetchBoards(false));
   }
 }

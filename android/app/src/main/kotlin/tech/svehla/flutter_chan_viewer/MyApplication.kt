@@ -2,7 +2,6 @@ package tech.svehla.flutter_chan_viewer
 
 import io.flutter.app.FlutterApplication
 import io.flutter.plugin.common.PluginRegistry
-import vn.hunghd.flutterdownloader.FlutterDownloaderPlugin
 import io.flutter.plugins.GeneratedPluginRegistrant
 
 internal class MyApplication : FlutterApplication(), PluginRegistry.PluginRegistrantCallback {
@@ -20,8 +19,7 @@ internal class MyApplication : FlutterApplication(), PluginRegistry.PluginRegist
         // along with other plugins that need UI manipulation, you should register
         // `FlutterDownloaderPlugin` and any 'background' plugins explicitly like this:
         //
-        // FlutterDownloaderPlugin.registerWith(registry.registrarFor("vn.hunghd.flutterdownloader.FlutterDownloaderPlugin"))
-        //
+//        FlutterDownloaderPlugin.registerWith(registry.registrarFor("vn.hunghd.flutterdownloader.FlutterDownloaderPlugin"))
         GeneratedPluginRegistrant.registerWith(registry)
     }
 }

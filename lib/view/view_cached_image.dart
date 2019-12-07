@@ -52,6 +52,7 @@ class ChanCachedImage extends StatelessWidget {
           : null,
       fit: _boxFit,
       enableRefresh: true,
+      printError: true,
     );
   }
 

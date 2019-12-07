@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_chan_viewer/pages/base/base_page_2.dart';
+import 'package:flutter_chan_viewer/pages/base/base_page.dart';
 import 'package:flutter_chan_viewer/pages/thread_detail/thread_detail_page.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/utils/preferences.dart';
@@ -37,7 +37,7 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
     super.initState();
     _boardDetailBloc = BlocProvider.of<BoardDetailBloc>(context);
     _boardDetailBloc.add(BoardDetailEventAppStarted());
-    _boardDetailBloc.add(BoardDetailEventFetchThreads(widget.boardId));
+    _boardDetailBloc.add(BoardDetailEventFetchThreads(false, widget.boardId));
     _refreshCompleter = Completer<void>();
 
     SharedPreferences.getInstance().then((prefs) {
@@ -71,7 +71,7 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
     _refreshCompleter = Completer();
     return RefreshIndicator(
         onRefresh: () {
-          _boardDetailBloc.add(BoardDetailEventFetchThreads(widget.boardId));
+          _boardDetailBloc.add(BoardDetailEventFetchThreads(true, widget.boardId));
           return _refreshCompleter.future;
         },
         child: Scrollbar(child: _buildContent(state)));

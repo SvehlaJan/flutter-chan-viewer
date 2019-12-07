@@ -6,7 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/chan_viewer_bloc/chan_viewer_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/chan_viewer_bloc/chan_viewer_event.dart';
 import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
-import 'package:flutter_chan_viewer/pages/base/base_page_2.dart';
+import 'package:flutter_chan_viewer/pages/base/base_page.dart';
 import 'package:flutter_chan_viewer/pages/thread_detail/bloc/thread_detail_event.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/view/view_cached_image.dart';
@@ -172,15 +172,6 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
       ..forward();
   }
 
-//  void _handleOnHorizontalDragUpdate(DragUpdateDetails details) {
-//    print("_handleOnHorizontalDragUpdate { _isScaled: ${_isScaled()} }");
-//    if (!_isScaled()) {
-//      setState(() {
-//        widget.pageController.jumpTo(widget.pageController.position.pixels - details.delta.dx);
-//      });
-//    }
-//  }
-
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<ThreadDetailBloc, ThreadDetailState>(bloc: _threadDetailBloc, builder: (context, state) => buildBody(context, state));
@@ -191,28 +182,32 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
       return Constants.centeredProgressIndicator;
     }
     if (state is ThreadDetailStateContent) {
-      if (state.data.posts.isEmpty) {
+      if (state.model.posts.isEmpty) {
         return Constants.noDataPlaceholder;
       }
 
-      List<Widget> children = state.data.mediaPosts.map((post) => buildItem(post)).toList();
-      int initialIndex = state.data.selectedMediaIndex;
+      List<Widget> children = state.model.mediaPosts.map((post) => buildItem(post)).toList();
+      int initialIndex = state.model.selectedMediaIndex;
       return SafeArea(
         child: GestureDetector(
           onScaleStart: _handleOnScaleStart,
           onScaleUpdate: _handleOnScaleUpdate,
           onScaleEnd: _handleOnScaleEnd,
-//        onHorizontalDragUpdate: _isScaled() ? null : _handleOnHorizontalDragUpdate,
           onTapUp: _handleOnDoubleTap,
-          child: CustomCarousel(
-            items: children,
-            initialPage: initialIndex,
-            enableInfiniteScroll: GalleryPage.enableInfiniteScroll,
-            scrollPhysics: _isScaled() ? NeverScrollableScrollPhysics() : AlwaysScrollableScrollPhysics(),
-            onPageChanged: (int pageIndex) {
-              _threadDetailBloc.selectedMediaIndex = pageIndex;
+          child: Stack(
+            children: <Widget>[
+              Text(""),
+              CustomCarousel(
+                items: children,
+                initialPage: initialIndex,
+                enableInfiniteScroll: GalleryPage.enableInfiniteScroll,
+                scrollPhysics: _isScaled() ? NeverScrollableScrollPhysics() : AlwaysScrollableScrollPhysics(),
+                onPageChanged: (int pageIndex) {
+                  _threadDetailBloc.selectedMediaIndex = pageIndex;
 //              _threadDetailBloc.add(ThreadDetailEventOnPostSelected(pageIndex, null));
-            },
+                },
+              ),
+            ],
           ),
         ),
       );

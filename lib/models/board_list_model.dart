@@ -16,9 +16,8 @@ class ChanBoard extends Equatable {
   final String boardId;
   final String title;
 
-  ChanBoard(this.boardId, this.title)
-      : super([
-          boardId,
-          title
-        ]);
+  ChanBoard(this.boardId, this.title);
+
+  @override
+  List<Object> get props => [boardId, title];
 }

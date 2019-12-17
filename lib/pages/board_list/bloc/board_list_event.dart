@@ -15,3 +15,15 @@ class BoardListEventFetchBoards extends BoardListEvent {
   @override
   List<Object> get props => [forceFetch];
 }
+
+class BoardListEventSearchBoards extends BoardListEvent {
+  final String query;
+
+  BoardListEventSearchBoards(this.query);
+
+  @override
+  String toString() => 'BoardListEventSearchBoards { query: $query }';
+
+  @override
+  List<Object> get props => [query];
+}

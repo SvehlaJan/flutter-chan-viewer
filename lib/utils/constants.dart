@@ -15,6 +15,7 @@ class Constants {
   static const String settingsRoute = "settings";
   static const String notFoundRoute = "not_found";
 
+  static const double favoriteIconSize = 20.0;
   static const double avatarImageSize = 100.0;
   static const double progressPlaceholderSize = 40.0;
   static const double errorPlaceholderSize = 100.0;
@@ -23,6 +24,9 @@ class Constants {
   static const Widget centeredProgressIndicator = const Center(child: progressIndicator);
   static const Widget noDataPlaceholder = const Center(child: Text("No data :-("));
   static const Widget errorPlaceholder = const Center(child: Text("Error :-("));
+
+  static final Color cardBackground = Colors.white;
+  static final Color cardBackgroundSelected = Colors.lightBlue.withOpacity(0.1);
 
   //strings
   static const String appName = "Chan Viewer";

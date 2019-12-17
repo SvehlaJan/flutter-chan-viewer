@@ -12,9 +12,11 @@ class BoardListWidget extends StatelessWidget {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text(_board.title, style: Theme.of(context).textTheme.title,)
+            Text(_board.title, style: Theme.of(context).textTheme.title),
+            if (!_board.workSafe) Text(" !!!", style: Theme.of(context).textTheme.title.copyWith(color: Colors.red)),
           ],
         ),
       ),

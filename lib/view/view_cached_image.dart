@@ -21,10 +21,10 @@ class ChanCachedImage extends StatelessWidget {
     final bool thumbnailOnly = forceThumbnail || !_post.hasImage();
     final String _url = thumbnailOnly ? _post.getThumbnailUrl() : _post.getImageUrl();
     final String _thumbnailUrl = thumbnailOnly ? null : _post.getThumbnailUrl();
-    final bool _usePermanentCache = usePermanentCache && !thumbnailOnly; // we don't want to permanently cache thumbnails
+    final bool _usePermanentCache = !thumbnailOnly; // we don't want to permanently cache thumbnails
 
     return ChanTransitionToImage(
-      image: ChanNetworkImage(_url, cacheDirective: _usePermanentCache ? _post.getCacheDirective() : null),
+      image: ChanNetworkImage(_url, _usePermanentCache ? _post.getCacheDirective() : null),
       loadFailedCallback: () {
         print('Failed to load image: $_url');
       },
@@ -58,7 +58,7 @@ class ChanCachedImage extends StatelessWidget {
 
   Widget _buildLoadingWidget(String url) {
     return (url != null)
-        ? ChanTransitionToImage(image: ChanNetworkImage(url, cacheDirective: null), fit: _boxFit, loadingWidget: Center(child: Constants.progressIndicator))
+        ? ChanTransitionToImage(image: ChanNetworkImage(url, null), fit: _boxFit, loadingWidget: Center(child: Constants.progressIndicator))
         : Center(child: Constants.progressIndicator);
   }
 }

@@ -26,59 +26,38 @@ class FavoritesPage extends BasePage {
 
 class _FavoritesPageState extends BasePageState<FavoritesPage> {
   FavoritesBloc _favoritesBloc;
-  Completer<void> _refreshCompleter;
 
   @override
   void initState() {
     super.initState();
     _favoritesBloc = BlocProvider.of<FavoritesBloc>(context);
     _favoritesBloc.add(FavoritesEventFetchData());
-    _refreshCompleter = Completer<void>();
-  }
-
-  @override
-  void didChangeDependencies() {
-    // TODO: implement didChangeDependencies
-    super.didChangeDependencies();
   }
 
   @override
   String getPageTitle() => "Favorites";
 
   @override
+  List<Widget> getPageActions(BuildContext context) {
+    return [IconButton(icon: Icon(Icons.refresh), onPressed: () => _favoritesBloc.add(FavoritesEventFetchData()))];
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return BlocBuilder<FavoritesBloc, FavoritesState>(bloc: _favoritesBloc, builder: (context, state) => buildPage(buildBody(context, state)));
+    return BlocBuilder<FavoritesBloc, FavoritesState>(bloc: _favoritesBloc, builder: (context, state) => buildPage(context, buildBody(context, state)));
   }
 
   Widget buildBody(BuildContext context, FavoritesState state) {
     if (state is FavoritesStateLoading) {
       return Constants.centeredProgressIndicator;
-    } else {
-      _refreshCompleter?.complete();
-      _refreshCompleter = Completer();
-      return RefreshIndicator(
-          onRefresh: () {
-            _favoritesBloc.add(FavoritesEventFetchData());
-            return _refreshCompleter.future;
-          },
-          child: _buildContent(context, state));
-    }
-  }
-
-  Widget _buildContent(BuildContext context, FavoritesState state) {
-    if (state is FavoritesStateContent) {
+    } else if (state is FavoritesStateContent) {
       List<ThreadDetailModel> threads = state.threadMap.values.expand((list) => list).toList();
+
       if (threads.isEmpty) {
         return Constants.noDataPlaceholder;
       }
 
-      _refreshCompleter?.complete();
-      _refreshCompleter = Completer();
-      return RefreshIndicator(
-        onRefresh: () {
-          _favoritesBloc.add(FavoritesEventFetchData());
-          return _refreshCompleter.future;
-        },
+      return Scrollbar(
         child: ListView.builder(
           itemBuilder: (BuildContext context, int index) {
             return InkWell(

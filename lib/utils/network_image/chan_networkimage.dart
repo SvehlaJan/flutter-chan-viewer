@@ -4,7 +4,7 @@ import 'dart:ui' as ui show Codec, hashValues;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_chan_viewer/utils/chan_cache.dart';
+import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
 import 'package:flutter_chan_viewer/utils/network_image/cache_directive.dart';
 import 'package:flutter_chan_viewer/utils/network_image/disk_cache.dart';
 import 'package:flutter_chan_viewer/utils/network_image/networkimage_utils.dart';
@@ -14,13 +14,13 @@ typedef Future<Uint8List> ImageProcessing(Uint8List data);
 /// Fetches the given URL from the network, associating it with some options.
 class ChanNetworkImage extends ImageProvider<ChanNetworkImage> {
   ChanNetworkImage(
-    this.url, {
-    this.cacheDirective,
+    this.url,
+    this.cacheDirective, {
     this.header,
     this.retryLimit: 5,
     this.retryDuration: const Duration(milliseconds: 500),
     this.retryDurationFactor: 1.5,
-    this.timeoutDuration: const Duration(seconds: 5),
+    this.timeoutDuration: const Duration(seconds: 20),
     this.loadedCallback,
     this.loadFailedCallback,
     this.loadedFromDiskCacheCallback,
@@ -40,7 +40,6 @@ class ChanNetworkImage extends ImageProvider<ChanNetworkImage> {
         assert(disableMemoryCache != null),
         assert(printError != null);
 
-  /// The URL from which the image will be fetched.
   final String url;
 
   final CacheDirective cacheDirective;
@@ -139,10 +138,8 @@ class ChanNetworkImage extends ImageProvider<ChanNetworkImage> {
   Future<ui.Codec> _loadAsync(ChanNetworkImage key) async {
     assert(key == this);
 
-    String uId = DiskCache.uid(key.url);
-
     try {
-      Uint8List _diskCache = await _loadFromDiskCache(key, uId, cacheDirective);
+      Uint8List _diskCache = await _loadFromDiskCache(key, cacheDirective);
       if (_diskCache != null) {
         if (key.postProcessing != null) _diskCache = (await key.postProcessing(_diskCache)) ?? _diskCache;
         if (key.loadedCallback != null) key.loadedCallback();
@@ -150,7 +147,7 @@ class ChanNetworkImage extends ImageProvider<ChanNetworkImage> {
       }
     } catch (e) {
       if (key.printError) print("Error loading image from cache: ${e.toString()}");
-      _invalidateEntryInDiskCache(key, uId, cacheDirective);
+      _invalidateEntryInDiskCache(key, cacheDirective);
     }
 
 //    if (key.url.endsWith(".webm")) {
@@ -197,27 +194,15 @@ class ChanNetworkImage extends ImageProvider<ChanNetworkImage> {
       ')';
 }
 
-/// Load the disk cache
-///
-/// Check the following conditions: (no [CacheRule])
-/// 1. Check if cache directory exist. If not exist, create it.
-/// 2. Check if cached file(uid) exist. If yes, load the cache,
-///   otherwise go to download step.
-Future<Uint8List> _loadFromDiskCache(ChanNetworkImage key, String uId, CacheDirective cacheDirective) async {
-  if (cacheDirective != null) {
-    if (ChanCache.get().mediaFileExists(key.url, cacheDirective)) {
-      print("Permanent cache media hit! { url: ${key.url} }");
-      return await ChanCache.get().getMediaFile(key.url, cacheDirective);
-    }
-  } else {
-    Uint8List data = await DiskCache().load(uId);
-    if (data != null) {
-//      print("Temporary cache media hit! { url: ${key.url} }");
-      return data;
-    }
+Future<Uint8List> _loadFromDiskCache(ChanNetworkImage key, CacheDirective cacheDirective) async {
+  ChanRepository repository = await ChanRepository.initAndGet();
+
+  Uint8List cachedData = await repository.getCachedMediaFile(key.url, cacheDirective);
+  if (cachedData != null) {
+    return cachedData;
   }
 
-  Uint8List imageData = await loadFromRemote(
+  Uint8List remoteData = await loadFromRemote(
     key.url,
     key.header,
     key.retryLimit,
@@ -228,22 +213,17 @@ Future<Uint8List> _loadFromDiskCache(ChanNetworkImage key, String uId, CacheDire
     key.getRealUrl,
     printError: key.printError,
   );
-  if (imageData != null) {
-    if (key.preProcessing != null) imageData = (await key.preProcessing(imageData)) ?? imageData;
-    if (cacheDirective != null) {
-      await ChanCache.get().writeMediaFile(key.url, cacheDirective, imageData);
-    } else {
-      await DiskCache().save(uId, imageData);
-    }
-    return imageData;
+
+  if (remoteData != null) {
+    if (key.preProcessing != null) remoteData = (await key.preProcessing(remoteData)) ?? remoteData;
+    repository.saveMediaFile(key.url, cacheDirective, remoteData);
+    return remoteData;
   }
 
   return null;
 }
 
-Future<void> _invalidateEntryInDiskCache(ChanNetworkImage key, String uId, CacheDirective cacheDirective) async {
-  if (cacheDirective != null) {
-    await ChanCache.get().deleteMediaFile(key.url, cacheDirective);
-  }
-  await DiskCache().evict(uId);
+Future<void> _invalidateEntryInDiskCache(ChanNetworkImage key, CacheDirective cacheDirective) async {
+  ChanRepository repository = await ChanRepository.initAndGet();
+  repository.deleteMediaFile(key.url, cacheDirective);
 }

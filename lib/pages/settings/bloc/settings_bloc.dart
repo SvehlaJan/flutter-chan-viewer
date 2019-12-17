@@ -13,7 +13,7 @@ import 'settings_event.dart';
 import 'settings_state.dart';
 
 class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
-  final _repository = ChanRepository.get();
+  final _repository = ChanRepository.getSync();
   AppTheme _appTheme;
 
   @override
@@ -38,7 +38,6 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
         yield SettingsStateContent(_appTheme);
       } else if (event is SettingsEventExperiment) {
         yield SettingsStateLoading();
-        HashMap<String, List<String>> threadMap = await _repository.getFavoriteThreadNames();
 
         yield SettingsStateContent(_appTheme);
       }

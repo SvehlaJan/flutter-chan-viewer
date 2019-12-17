@@ -5,33 +5,28 @@ abstract class BasePage extends StatefulWidget {
 }
 
 abstract class BasePageState<T extends BasePage> extends State<T> {
-  BuildContext scaffoldContext;
-
   String getPageTitle() => null;
 
-  FloatingActionButton getPageFab() => null;
+  FloatingActionButton getPageFab(BuildContext context) => null;
 
-  List<Widget> getPageActions() => null;
+  List<Widget> getPageActions(BuildContext context) => null;
 
   void onBackPressed() => Navigator.pop(context, false);
 
-  Widget buildPage(Widget body) {
-    bool showAppBar = getPageTitle() != null || getPageActions() != null;
+  Widget buildPage(BuildContext context, Widget body) {
+    bool showAppBar = getPageTitle() != null || getPageActions(context) != null;
     return Scaffold(
       appBar: showAppBar
           ? AppBar(
               leading: ModalRoute.of(context).canPop ? IconButton(icon: BackButtonIcon(), onPressed: onBackPressed) : null,
               title: Text(getPageTitle()),
-              actions: getPageActions(),
+              actions: getPageActions(context),
             )
           : null,
       body: Builder(
-        builder: (BuildContext context) {
-          scaffoldContext = context;
-          return body;
-        },
+        builder: (BuildContext context) => body,
       ),
-      floatingActionButton: getPageFab(),
+      floatingActionButton: getPageFab(context),
     );
   }
 }

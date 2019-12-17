@@ -37,10 +37,11 @@ class ThreadListWidget extends StatelessWidget {
                 children: <Widget>[
                   Row(
                     children: <Widget>[
+                      if (_thread.isFavorite) Icon(Icons.star, color: Colors.yellow, size: Constants.favoriteIconSize),
                       Text(_thread.threadId.toString(), style: Theme.of(context).textTheme.caption),
+                      Spacer(),
                       Text(ChanUtil.getHumanDate(_thread.timestamp), style: Theme.of(context).textTheme.caption),
                     ],
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   ),
                   if (_thread.subtitle != null) Text(_thread.subtitle, style: Theme.of(context).textTheme.subtitle),
                   Html(

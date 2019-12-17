@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:flutter_chan_viewer/models/board_list_model.dart';
+import 'package:flutter_chan_viewer/models/helper/chan_board_item_wrapper.dart';
 
 abstract class BoardListState extends Equatable {
   BoardListState();
@@ -26,14 +26,13 @@ class BoardListStateError extends BoardListState {
 }
 
 class BoardListStateContent extends BoardListState {
-  final List<ChanBoard> favoriteBoards;
-  final List<ChanBoard> otherBoards;
+  final List<ChanBoardItemWrapper> items;
 
-  BoardListStateContent(this.favoriteBoards, this.otherBoards);
-
-  @override
-  String toString() => 'BoardListStateContent { favoriteBoards: ${favoriteBoards.length} otherBoards: ${otherBoards.length} }';
+  BoardListStateContent(this.items);
 
   @override
-  List<Object> get props => [favoriteBoards, otherBoards];
+  String toString() => 'BoardListStateContent { items: ${items.length} }';
+
+  @override
+  List<Object> get props => [items];
 }

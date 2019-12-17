@@ -4,9 +4,9 @@ abstract class BoardDetailEvent extends Equatable {
   BoardDetailEvent();
 }
 
-class BoardDetailEventAppStarted extends BoardDetailEvent {
+class BoardDetailEventToggleFavorite extends BoardDetailEvent {
   @override
-  String toString() => 'ThreadsEventAppStarted { }';
+  String toString() => 'BoardDetailEventToggleFavorite { }';
 
   @override
   List<Object> get props => [];
@@ -14,13 +14,24 @@ class BoardDetailEventAppStarted extends BoardDetailEvent {
 
 class BoardDetailEventFetchThreads extends BoardDetailEvent {
   final bool forceFetch;
-  final String boardId;
 
-  BoardDetailEventFetchThreads(this.forceFetch, this.boardId);
-
-  @override
-  String toString() => 'ThreadsEventFetchBoards { forceFetch: $forceFetch, boardId: $boardId }';
+  BoardDetailEventFetchThreads(this.forceFetch);
 
   @override
-  List<Object> get props => [forceFetch, boardId];
+  String toString() => 'BoardDetailEventFetchThreads { forceFetch: $forceFetch }';
+
+  @override
+  List<Object> get props => [forceFetch];
+}
+
+class BoardDetailEventSearchBoards extends BoardDetailEvent {
+  final String query;
+
+  BoardDetailEventSearchBoards(this.query);
+
+  @override
+  String toString() => 'BoardDetailEventSearchBoards { query: $query }';
+
+  @override
+  List<Object> get props => [query];
 }

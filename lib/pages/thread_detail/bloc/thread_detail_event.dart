@@ -27,7 +27,7 @@ class ThreadDetailEventOnPostSelected extends ThreadDetailEvent {
   ThreadDetailEventOnPostSelected(this.mediaIndex, this.postId) : super([mediaIndex, postId]);
 
   @override
-  String toString() => 'ThreadDetailEventOnItemClicked { mediaIndex: $mediaIndex, postId: $postId }';
+  String toString() => 'ThreadDetailEventOnPostSelected { mediaIndex: $mediaIndex, postId: $postId }';
 
   @override
   List<Object> get props => [mediaIndex, postId];

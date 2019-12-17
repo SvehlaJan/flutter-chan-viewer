@@ -20,17 +20,47 @@ class BoardDetailModel extends Equatable {
 }
 
 class ChanThread extends ChanPostBase with EquatableMixin {
-  ChanThread(String boardId, int threadId, int timestamp, String subtitle, String content, String filename, String imageId, String extension)
-      : super(boardId, threadId, timestamp, subtitle, content, filename, imageId, extension);
+  ChanThread(String boardId, int threadId, int timestamp, String subtitle, String content, String filename, String imageId, String extension, this.isFavorite)
+      : super(
+          boardId,
+          threadId,
+          timestamp,
+          subtitle,
+          content,
+          filename,
+          imageId,
+          extension,
+        );
 
-  factory ChanThread.fromMappedJson(String boardId, int threadId, Map<String, dynamic> json) =>
-      ChanThread(json['boardId'] ?? boardId, json['no'] ?? threadId, json['time'], json['sub'], json['com'], json['filename'], json['tim'].toString(), json['ext']);
+  bool isFavorite;
 
-  Map<String, dynamic> toJson() =>
-      {'board_id': boardId, 'no': threadId, 'time': timestamp, 'sub': subtitle, 'com': content, 'filename': filename, 'tim': imageId, 'ext': extension};
+  factory ChanThread.fromMappedJson(String boardId, int threadId, Map<String, dynamic> json) => ChanThread(
+        json['board_id'] ?? boardId,
+        json['no'] ?? threadId,
+        json['time'],
+        json['sub'],
+        json['com'],
+        json['filename'],
+        json['tim'].toString(),
+        json['ext'],
+        json['is_favorite'] ?? json['isFavorite'] ?? false,
+      );
+
+  Map<String, dynamic> toJson() => {
+        'board_id': boardId,
+        'no': threadId,
+        'time': timestamp,
+        'sub': subtitle,
+        'com': content,
+        'filename': filename,
+        'tim': imageId,
+        'ext': extension,
+        'is_favorite': isFavorite,
+      };
 
   @override
   List<Object> get props => super.props;
 
-  ChanThread copyWithPostData(ChanPost post) => new ChanThread(boardId, threadId, post.timestamp, post.subtitle, post.content, post.filename, post.imageId, post.extension);
+  ChanThread copyWithPostData(ChanPost post) =>
+      new ChanThread(boardId, threadId, post.timestamp, post.subtitle, post.content, post.filename, post.imageId, post.extension, isFavorite);
 }

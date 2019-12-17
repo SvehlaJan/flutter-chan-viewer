@@ -1,13 +1,12 @@
-import 'dart:async';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_chan_viewer/models/board_list_model.dart';
+import 'package:flutter_chan_viewer/models/helper/chan_board_item_wrapper.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
 import 'package:flutter_chan_viewer/pages/board_detail/board_detail_page.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/view/list_widget_board.dart';
-import 'package:flutter_widgets/flutter_widgets.dart';
 
 import 'bloc/board_list_bloc.dart';
 import 'bloc/board_list_event.dart';
@@ -20,77 +19,57 @@ class BoardListPage extends BasePage {
 
 class _BoardListPageState extends BasePageState<BoardListPage> {
   BoardListBloc _boardListBloc;
-  Completer<void> _refreshCompleter;
-  final ItemScrollController itemScrollController = ItemScrollController();
 
   @override
   void initState() {
     super.initState();
     _boardListBloc = BlocProvider.of<BoardListBloc>(context);
     _boardListBloc.add(BoardListEventFetchBoards(false));
-    _refreshCompleter = Completer<void>();
   }
 
   @override
   String getPageTitle() => "Boards";
 
   @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<BoardListBloc, BoardListState>(bloc: _boardListBloc, builder: (context, state) => buildPage(buildBody(context, state)));
+  List<Widget> getPageActions(BuildContext context) {
+    return [
+      IconButton(
+          icon: Icon(Icons.search),
+          onPressed: () async {
+            ChanBoard board = await showSearch<ChanBoard>(context: context, delegate: CustomSearchDelegate(_boardListBloc));
+            _boardListBloc.searchQuery = '';
+
+            if (board != null) {
+              _openBoardDetailPage(board);
+            }
+          }),
+      IconButton(icon: Icon(Icons.refresh), onPressed: () => _boardListBloc.add(BoardListEventFetchBoards(true))),
+    ];
   }
 
-  Widget buildBody(BuildContext context, BoardListState state) {
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<BoardListBloc, BoardListState>(
+        bloc: _boardListBloc, builder: (context, state) => buildPage(context, buildBody(context, state, ((board) => _openBoardDetailPage(board)))));
+  }
+
+  static Widget buildBody(BuildContext context, BoardListState state, Function(ChanBoard) onItemClicked) {
     if (state is BoardListStateLoading) {
       return Constants.centeredProgressIndicator;
-    } else {
-      _refreshCompleter?.complete();
-      _refreshCompleter = Completer();
-      return RefreshIndicator(
-          onRefresh: () {
-            _boardListBloc.add(BoardListEventFetchBoards(true));
-            return _refreshCompleter.future;
-          },
-          child: _buildContent(context, state));
-    }
-  }
-
-  Widget _buildContent(BuildContext context, BoardListState state) {
-    if (state is BoardListStateContent) {
-      if (state.otherBoards.isEmpty) {
+    } else if (state is BoardListStateContent) {
+      if (state.items.isEmpty) {
         return Constants.noDataPlaceholder;
       }
 
-      bool hasFavorites = state.favoriteBoards.isNotEmpty;
-      int totalCount = hasFavorites ? (state.otherBoards.length + state.favoriteBoards.length + 2) : state.otherBoards.length;
-      return ScrollablePositionedList.builder(
-        itemCount: totalCount,
-        itemScrollController: itemScrollController,
+      return ListView.builder(
+        itemCount: state.items.length,
         itemBuilder: (context, index) {
-          Widget child;
-          GestureTapCallback onTap;
-          if (hasFavorites) {
-            if (index == 0)
-              child = Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text("Favorites", style: Theme.of(context).textTheme.subhead),
-              );
-            else if (index < state.favoriteBoards.length + 1) {
-              child = BoardListWidget(state.favoriteBoards[index - 1]);
-              onTap = (() => _openBoardDetailPage(state.favoriteBoards[index - 1].boardId));
-            } else if (index == state.favoriteBoards.length + 1)
-              child = Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text("Others", style: Theme.of(context).textTheme.subhead),
-              );
-            else {
-              child = BoardListWidget(state.otherBoards[index - 2]);
-              onTap = (() => _openBoardDetailPage(state.otherBoards[index - 2].boardId));
-            }
+          ChanBoardItemWrapper item = state.items[index];
+          if (item.isHeader) {
+            return Padding(padding: const EdgeInsets.all(8.0), child: Text(item.headerTitle, style: Theme.of(context).textTheme.subhead));
           } else {
-            child = BoardListWidget(state.otherBoards[index]);
-            onTap = (() => _openBoardDetailPage(state.otherBoards[index].boardId));
+            return InkWell(child: BoardListWidget(item.chanBoard), onTap: (() => onItemClicked(item.chanBoard)));
           }
-          return InkWell(child: child, onTap: onTap);
         },
       );
     } else {
@@ -98,15 +77,59 @@ class _BoardListPageState extends BasePageState<BoardListPage> {
     }
   }
 
-  void _openBoardDetailPage(String boardId) async {
+  void _openBoardDetailPage(ChanBoard board) async {
     await Navigator.pushNamed(
       context,
       Constants.boardDetailRoute,
       arguments: {
-        BoardDetailPage.ARG_BOARD_ID: boardId,
+        BoardDetailPage.ARG_BOARD_ID: board.boardId,
       },
     );
 
     _boardListBloc.add(BoardListEventFetchBoards(false));
+  }
+}
+
+class CustomSearchDelegate extends SearchDelegate<ChanBoard> {
+  CustomSearchDelegate(this._boardListBloc);
+
+  final BoardListBloc _boardListBloc;
+
+  @override
+  ThemeData appBarTheme(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    return theme.copyWith(
+      textTheme: theme.textTheme.copyWith(
+          title: theme.textTheme.title.copyWith(
+        color: Colors.white,
+      )),
+      inputDecorationTheme: InputDecorationTheme(
+        hintStyle: Theme.of(context).textTheme.title.copyWith(
+              color: Colors.white.withOpacity(0.8),
+            ),
+      ),
+    );
+  }
+
+  @override
+  List<Widget> buildActions(BuildContext context) => null;
+
+  @override
+  Widget buildLeading(BuildContext context) => IconButton(icon: Icon(Icons.arrow_back), onPressed: () => close(context, null));
+
+  @override
+  Widget buildResults(BuildContext context) {
+    _boardListBloc.add(BoardListEventSearchBoards(query));
+
+    return BlocBuilder<BoardListBloc, BoardListState>(
+        bloc: _boardListBloc, builder: (context, state) => _BoardListPageState.buildBody(context, state, ((board) => close(context, board))));
+  }
+
+  @override
+  Widget buildSuggestions(BuildContext context) {
+    _boardListBloc.add(BoardListEventSearchBoards(query));
+
+    return BlocBuilder<BoardListBloc, BoardListState>(
+        bloc: _boardListBloc, builder: (context, state) => _BoardListPageState.buildBody(context, state, ((board) => close(context, board))));
   }
 }

@@ -10,7 +10,7 @@ import 'thread_detail_event.dart';
 import 'thread_detail_state.dart';
 
 class ThreadDetailBloc extends Bloc<ThreadDetailEvent, ThreadDetailState> {
-  final _repository = ChanRepository.get();
+  final _repository = ChanRepository.getSync();
   final String boardId;
   final int threadId;
 
@@ -41,7 +41,7 @@ class ThreadDetailBloc extends Bloc<ThreadDetailEvent, ThreadDetailState> {
 
         SharedPreferences prefs = await SharedPreferences.getInstance();
         _threadDetailModel = await _repository.fetchThreadDetail(event.forceFetch, boardId, threadId);
-        isFavorite = await _repository.isThreadFavorite(threadId);
+        isFavorite = _repository.isThreadFavorite(_threadDetailModel.cacheDirective);
         catalogMode = prefs.getBool(Preferences.KEY_THREAD_CATALOG_MODE) ?? false;
 
         yield ThreadDetailStateContent(_threadDetailModel, selectedPostId, isFavorite, catalogMode);

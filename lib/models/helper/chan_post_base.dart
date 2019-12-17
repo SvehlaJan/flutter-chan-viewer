@@ -35,7 +35,7 @@ abstract class ChanPostBase {
     }
   }
 
-  CacheDirective getCacheDirective() => CacheDirective(boardId, threadId.toString());
+  CacheDirective getCacheDirective() => CacheDirective(boardId, threadId);
 
   List<Object> get props => [boardId, threadId, timestamp, subtitle, content, filename, imageId, extension];
 }

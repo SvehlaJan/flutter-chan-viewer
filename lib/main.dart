@@ -14,16 +14,8 @@ void main() async {
   BlocSupervisor.delegate = SimpleBlocDelegate();
   runApp(
     BlocProvider(
-      builder: (context) {
-        return AppBloc(
-//          todosRepository: const TodosRepositoryFlutter(
-//            fileStorage: const FileStorage(
-//              '__flutter_bloc_app__',
-//              getApplicationDocumentsDirectory,
-//            ),
-//          ),
-            )
-          ..add(AppEventAppStarted());
+      create: (context) {
+        return AppBloc()..add(AppEventAppStarted());
       },
       child: MainApp(),
     ),
@@ -42,9 +34,7 @@ class MainApp extends StatelessWidget {
         if (state.appTheme == AppTheme.light) {
           themeData = ThemeData(
             brightness: Brightness.light,
-            primaryColor: Colors.red,
-            primaryColorLight: Colors.red.shade100,
-            accentColor: Colors.indigo,
+            primarySwatch: Colors.red,
             cardColor: Colors.white,
             textTheme: TextTheme(
                 headline: TextStyle(fontSize: 72.0, fontWeight: FontWeight.bold),
@@ -57,8 +47,6 @@ class MainApp extends StatelessWidget {
           themeData = ThemeData(
             brightness: Brightness.dark,
             primaryColor: Colors.red,
-            primaryColorLight: Colors.red,
-            accentColor: Colors.indigo,
             cardColor: Colors.black87,
           );
         }

@@ -10,7 +10,6 @@ class Preferences {
   static const String KEY_USER_PHOTO_URL = "user_photo_url";
   static const String KEY_SETTINGS_THEME = "settings_theme";
   static const String KEY_FAVORITE_BOARDS = "favorite_boards";
-  static const String KEY_FAVORITE_THREADS = "favorite_threads";
   static const String KEY_THREAD_CATALOG_MODE = "thread_catalog_mode";
 
   static SharedPreferences _prefs;

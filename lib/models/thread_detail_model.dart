@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_chan_viewer/models/board_detail_model.dart';
 import 'package:flutter_chan_viewer/models/helper/chan_post_base.dart';
+import 'package:flutter_chan_viewer/utils/network_image/cache_directive.dart';
 import 'package:kt_dart/kt.dart';
 
 class ThreadDetailModel with EquatableMixin {
@@ -10,23 +11,27 @@ class ThreadDetailModel with EquatableMixin {
 
   ThreadDetailModel._(this._thread, this._posts, this._selectedPostId);
 
-//  factory (String boardId, int threadId, Map<String, dynamic> parsedJson) {
-//    ChanThread thread = ChanThread.fromMappedJson(boardId, threadId, parsedJson);
-//    List<ChanPost> posts = [];
-//    for (Map<String, dynamic> post in parsedJson['posts']) {
-//      posts.add(ChanPost.fromMappedJson(boardId, threadId, post));
-//    }
-//    int selectedPost = parsedJson['selected_post'] ?? 0;
-//    return new ThreadDetailModel._(thread, posts, selectedPost);
-//  }
+  factory ThreadDetailModel.fromJson(String boardId, int threadId, Map<String, dynamic> parsedJson) {
+    List<ChanPost> posts = [];
+    for (Map<String, dynamic> post in parsedJson['posts']) {
+      posts.add(ChanPost.fromMappedJson(boardId, threadId, post));
+    }
+    ChanThread thread = ChanThread.fromMappedJson(boardId, threadId, parsedJson);
+    if (posts.isNotEmpty) thread = thread.copyWithPostData(posts.first);
 
-//  ThreadDetailModel.fromJson(String boardId, int threadId, Map<String, dynamic> parsedJson)
-//      : _thread = ChanThread.fromMappedJson(boardId, threadId, parsedJson),
-//        _selectedPost = parsedJson['selected_post'] ?? 0 {
-//    for (Map<String, dynamic> post in parsedJson['posts']) {
-//      _posts.add(ChanPost.fromMappedJson(boardId, threadId, post));
-//    }
-//  }
+    int selectedPost = parsedJson['selected_post'] ?? 0;
+
+    return new ThreadDetailModel._(thread, posts, selectedPost);
+  }
+
+  /*
+  ThreadDetailModel.fromJson(String boardId, int threadId, Map<String, dynamic> parsedJson)
+      : _thread = ChanThread.fromMappedJson(boardId, threadId, parsedJson),
+        _selectedPost = parsedJson['selected_post'] ?? 0 {
+    for (Map<String, dynamic> post in parsedJson['posts']) {
+      _posts.add(ChanPost.fromMappedJson(boardId, threadId, post));
+    }
+  }
 
   static ThreadDetailModel fromJson(String boardId, int threadId, Map<String, dynamic> parsedJson) {
     List<ChanPost> posts = [];
@@ -41,6 +46,11 @@ class ThreadDetailModel with EquatableMixin {
 
     return new ThreadDetailModel._(thread, posts, selectedPost);
   }
+  */
+
+  CacheDirective get cacheDirective => _thread.getCacheDirective();
+
+  String get cacheKey => cacheDirective.getCacheKey();
 
   ChanThread get thread => _thread;
 
@@ -71,7 +81,8 @@ class ThreadDetailModel with EquatableMixin {
         'filename': _thread.filename,
         'tim': _thread.imageId,
         'ext': _thread.extension,
-        'posts': _posts,
+        'is_favorite': _thread.isFavorite,
+        'posts': _posts.map((post) => post.toJson()),
         'selected_post': _selectedPostId
       };
 
@@ -82,14 +93,41 @@ class ThreadDetailModel with EquatableMixin {
 class ChanPost extends ChanPostBase with EquatableMixin {
   final int postId;
 
-  factory ChanPost.fromMappedJson(String boardId, int threadId, Map<String, dynamic> json) =>
-      ChanPost(json['boardId'] ?? boardId, json['threadId'] ?? threadId, json['no'], json['time'], json['sub'], json['com'], json['filename'], json['tim'].toString(), json['ext']);
+  factory ChanPost.fromMappedJson(String boardId, int threadId, Map<String, dynamic> json) => ChanPost(
+        json['board_id'] ?? boardId,
+        json['thread_id'] ?? threadId,
+        json['no'],
+        json['time'],
+        json['sub'],
+        json['com'],
+        json['filename'],
+        json['tim'].toString(),
+        json['ext'],
+      );
 
-  Map<String, dynamic> toJson() =>
-      {'board_id': boardId, 'thread_id': threadId, 'no': postId, 'time': timestamp, 'sub': subtitle, 'com': content, 'filename': filename, 'tim': imageId, 'ext': extension};
+  Map<String, dynamic> toJson() => {
+        'board_id': boardId,
+        'thread_id': threadId,
+        'no': postId,
+        'time': timestamp,
+        'sub': subtitle,
+        'com': content,
+        'filename': filename,
+        'tim': imageId,
+        'ext': extension,
+      };
 
   ChanPost(String boardId, int threadId, this.postId, int timestamp, String subtitle, String content, String filename, String imageId, String extension)
-      : super(boardId, threadId, timestamp, subtitle, content, filename, imageId, extension);
+      : super(
+          boardId,
+          threadId,
+          timestamp,
+          subtitle,
+          content,
+          filename,
+          imageId,
+          extension,
+        );
 
   @override
   List<Object> get props => super.props + [postId];

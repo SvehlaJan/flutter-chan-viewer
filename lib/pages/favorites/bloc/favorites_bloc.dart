@@ -13,7 +13,7 @@ import 'favorites_event.dart';
 import 'favorites_state.dart';
 
 class FavoritesBloc extends Bloc<FavoritesEvent, FavoritesState> {
-  final _repository = ChanRepository.get();
+  final _repository = ChanRepository.getSync();
 
   @override
   get initialState => FavoritesStateLoading();
@@ -24,18 +24,9 @@ class FavoritesBloc extends Bloc<FavoritesEvent, FavoritesState> {
     print("Current state! ${state.toString()}");
     try {
       if (event is FavoritesEventFetchData) {
-        SharedPreferences prefs = await SharedPreferences.getInstance();
+        yield FavoritesStateLoading();
 
-//        final boards = await _repository.fetchBoardList();
-//        List<String> favoriteBoardIds = prefs.getStringList(Preferences.KEY_FAVORITE_BOARDS) ?? [];
-//        List<ChanBoard> filteredBoards = boards.boards.where((board) => favoriteBoardIds.contains(board.boardId)).toList();
-
-        List<String> favoriteThreadIds = prefs.getStringList(Preferences.KEY_FAVORITE_THREADS) ?? [];
-        List<ChanThread> threads = [];
-
-        HashMap<String, List<String>> threadPaths = await _repository.getFavoriteThreadNames();
         HashMap<String, List<ThreadDetailModel>> threadMap = await _repository.getFavoriteThreads();
-
         yield FavoritesStateContent(threadMap);
       }
     } catch (o) {

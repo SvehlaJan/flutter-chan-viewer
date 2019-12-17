@@ -1,8 +1,19 @@
 class CacheDirective {
   final String boardId;
-  final String threadId;
+  final int threadId;
+  static const String DIVIDER = "_";
 
   CacheDirective(this.boardId, this.threadId);
+  
+  String getCacheKey() => "$boardId$threadId";
 
-  String getCachePath() => "$boardId/$threadId/";
+  static CacheDirective fromPath(String path) {
+    int dividerIndex = path.indexOf(RegExp(r"\d"));
+    return new CacheDirective(path.substring(0, dividerIndex), int.parse(path.substring(dividerIndex)));
+  }
+
+  @override
+  String toString() {
+    return "CacheDirective { boardId: $boardId, threadId: $threadId }";
+  }
 }

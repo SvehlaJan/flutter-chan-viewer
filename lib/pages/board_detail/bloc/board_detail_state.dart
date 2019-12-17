@@ -27,12 +27,13 @@ class BoardDetailStateError extends BoardDetailState {
 
 class BoardDetailStateContent extends BoardDetailState {
   final List<ChanThread> threads;
+  final bool isFavorite;
 
-  BoardDetailStateContent(this.threads);
-
-  @override
-  String toString() => 'BoardDetailStateContent { threads: ${threads.length} }';
+  BoardDetailStateContent(this.threads, this.isFavorite);
 
   @override
-  List<Object> get props => [threads];
+  String toString() => 'BoardDetailStateContent { threads: ${threads.length}, isFavorite: $isFavorite }';
+
+  @override
+  List<Object> get props => [threads, isFavorite];
 }

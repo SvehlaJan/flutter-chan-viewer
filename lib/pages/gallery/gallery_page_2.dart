@@ -52,7 +52,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ThreadDetailBloc, ThreadDetailState>(bloc: _threadDetailBloc, builder: (context, state) => buildPage(buildBody(context, state)));
+    return BlocBuilder<ThreadDetailBloc, ThreadDetailState>(bloc: _threadDetailBloc, builder: (context, state) => buildPage(context, buildBody(context, state)));
   }
 
   Widget buildBody(BuildContext context, ThreadDetailState state) {
@@ -78,13 +78,9 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
               loadingChild: Center(child: Constants.progressIndicator),
               pageController: PageController(initialPage: state.selectedMediaIndex),
               onPageChanged: ((pageIndex) {
-
                 if (pageIndex != state.selectedMediaIndex) {
                   _threadDetailBloc.add(ThreadDetailEventOnPostSelected(pageIndex, null));
                 }
-//                setState(() {
-//                  _threadDetailBloc.selectedMediaIndex = pageIndex;
-//                });
               }),
             ),
             Align(
@@ -108,7 +104,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
   PhotoViewGalleryPageOptions buildItem(BuildContext context, ChanPost post) {
     if (post.hasImage()) {
       return PhotoViewGalleryPageOptions(
-        imageProvider: ChanNetworkImage(post.getImageUrl(), cacheDirective: null),
+        imageProvider: ChanNetworkImage(post.getImageUrl(), post.getCacheDirective()),
         heroAttributes: PhotoViewHeroAttributes(tag: post.getMediaUrl()),
         minScale: PhotoViewComputedScale.contained,
         maxScale: PhotoViewComputedScale.covered * 3,
@@ -120,6 +116,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
         heroAttributes: PhotoViewHeroAttributes(tag: post.getMediaUrl()),
         minScale: PhotoViewComputedScale.contained,
         maxScale: PhotoViewComputedScale.covered * 3,
+        tightMode: true
       );
     }
   }

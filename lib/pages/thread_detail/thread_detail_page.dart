@@ -13,7 +13,6 @@ import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/view/grid_widget_post.dart';
 import 'package:flutter_chan_viewer/view/list_widget_post.dart';
 import 'package:flutter_widgets/flutter_widgets.dart';
-//import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 import 'bloc/thread_detail_bloc.dart';
 import 'bloc/thread_detail_event.dart';
@@ -33,24 +32,30 @@ class ThreadDetailPage extends BasePage {
 }
 
 class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
+  static const String KEY_LIST = "KEY_LIST";
+  static const String KEY_GRID = "KEY_GRID";
+
   ThreadDetailBloc _threadDetailBloc;
-  final ItemScrollController itemScrollController = ItemScrollController();
-  Completer<void> _refreshCompleter = Completer<void>();
-//  final RefreshController _refreshController = RefreshController(initialRefresh: false);
+  ScrollController _gridScrollController;
+  ItemScrollController _listScrollController;
 
   @override
   void initState() {
     super.initState();
     _threadDetailBloc = BlocProvider.of<ThreadDetailBloc>(context);
     _threadDetailBloc.add(ThreadDetailEventFetchPosts(false));
+
+    _gridScrollController = ScrollController();
+    _listScrollController = ItemScrollController();
   }
 
   @override
   String getPageTitle() => "/${widget.boardId}/${widget.threadId}";
 
   @override
-  List<Widget> getPageActions() {
+  List<Widget> getPageActions(BuildContext context) {
     return [
+      IconButton(icon: Icon(Icons.refresh), onPressed: () => _threadDetailBloc.add(ThreadDetailEventFetchPosts(true))),
       IconButton(icon: _threadDetailBloc.catalogMode ? Icon(Icons.list) : Icon(Icons.apps), onPressed: _onCatalogModeToggleClick),
       IconButton(icon: _threadDetailBloc.isFavorite ? Icon(Icons.star) : Icon(Icons.star_border), onPressed: _onFavoriteToggleClick)
     ];
@@ -66,7 +71,7 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ThreadDetailBloc, ThreadDetailState>(bloc: _threadDetailBloc, builder: (context, state) => buildPage(buildBody(context, state)));
+    return BlocBuilder<ThreadDetailBloc, ThreadDetailState>(bloc: _threadDetailBloc, builder: (context, state) => buildPage(context, buildBody(context, state)));
   }
 
   Widget buildBody(BuildContext context, ThreadDetailState state) {
@@ -78,27 +83,18 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
         return Constants.noDataPlaceholder;
       }
 
-      _refreshCompleter?.complete();
-      _refreshCompleter = Completer();
-
-      return RefreshIndicator(
-//        enablePullUp: true,
-//        enablePullDown: true,
-//        header: WaterDropHeader(),
-//        controller: _refreshController,
-        onRefresh: () {
-          print("onRefresh");
-//          _threadDetailBloc.add(ThreadDetailEventFetchPosts(true));
-//          _refreshController.refreshCompleted();
-          return _refreshCompleter.future;
-        },
-//        onLoading: () {
-//          print("onLoading");
-//          _refreshController.loadComplete();
-//        },
-        child: Scrollbar(
-          child: state.catalogMode ? buildGrid(context, state.model.mediaPosts) : buildList(context, state.model.posts, state.selectedPostIndex),
-        ),
+      return Scrollbar(
+        child: state.catalogMode
+            ? buildGrid(
+                context,
+                state.model.mediaPosts,
+                state.selectedMediaIndex,
+              )
+            : buildList(
+                context,
+                state.model.posts,
+                state.selectedPostIndex,
+              ),
       );
     } else {
       return Constants.errorPlaceholder;
@@ -108,7 +104,7 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
   Widget buildList(BuildContext context, List<ChanPost> posts, int selectedPostIndex) {
     return ScrollablePositionedList.builder(
       itemCount: posts.length,
-      itemScrollController: itemScrollController,
+      itemScrollController: _listScrollController,
       initialScrollIndex: max(0, selectedPostIndex),
       itemBuilder: (context, index) {
         return InkWell(
@@ -120,25 +116,48 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
     );
   }
 
-  Widget buildGrid(BuildContext context, List<ChanPost> mediaPosts) {
-    final Orientation orientation = MediaQuery.of(context).orientation;
-    List<Widget> tiles = mediaPosts.map((post) => InkWell(child: PostGridWidget(post), onTap: () => _onItemTap(post))).toList();
-
-    return GridView.count(
-      crossAxisCount: (orientation == Orientation.portrait) ? 2 : 3,
-      mainAxisSpacing: 0.0,
-      crossAxisSpacing: 0.0,
+  Widget buildGrid(BuildContext context, List<ChanPost> mediaPosts, int selectedMediaIndex) {
+    return GridView.builder(
+      key: PageStorageKey<String>(KEY_GRID),
+      controller: _gridScrollController,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: _getGridColumnCount(),
+        mainAxisSpacing: 0.0,
+        crossAxisSpacing: 0.0,
+        childAspectRatio: 1.0,
+      ),
       padding: const EdgeInsets.all(0.0),
-      childAspectRatio: (orientation == Orientation.portrait) ? 1.0 : 1.3,
-      children: tiles,
+      itemCount: mediaPosts.length,
+      itemBuilder: (BuildContext context, int index) {
+        return InkWell(
+          child: PostGridWidget(mediaPosts[index], index == selectedMediaIndex),
+          onTap: () => _onItemTap(mediaPosts[index]),
+        );
+      },
     );
   }
 
-  void scrollToIndex(int index) {
-    if (!_threadDetailBloc.catalogMode) {
-//      itemScrollController.scrollTo(index: index, duration: Duration(milliseconds: 500), alignment: 500.0);
-      itemScrollController.jumpTo(index: index, alignment: 0.5);
+  void scrollToSelectedPost() {
+    if (_threadDetailBloc.catalogMode) {
+      _gridScrollController.jumpTo(_getGridScrollOffset());
+    } else {
+      _listScrollController.jumpTo(index: _threadDetailBloc.selectedPostIndex, alignment: 0.5);
     }
+
+//      _gridScrollController.animateTo(targetRow * itemHeight, duration: Duration(milliseconds: 500), curve: Curves.elasticInOut);
+//      _listScrollController.scrollTo(index: index, duration: Duration(milliseconds: 500), alignment: 0.5);
+  }
+
+  double _getGridScrollOffset() {
+    int mediaIndex = _threadDetailBloc.selectedMediaIndex;
+    double itemHeight = MediaQuery.of(context).size.width / _getGridColumnCount();
+    int targetRow = mediaIndex ~/ _getGridColumnCount();
+    return targetRow * itemHeight;
+  }
+
+  int _getGridColumnCount() {
+    final Orientation orientation = MediaQuery.of(context).orientation;
+    return (orientation == Orientation.portrait) ? 2 : 3;
   }
 
   void _onItemTap(ChanPost post) async {
@@ -155,7 +174,6 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
     );
 
     BlocProvider.of<ChanViewerBloc>(context).add(ChanViewerEventShowBottomBar(true));
-    int newIndex = _threadDetailBloc.selectedPostIndex;
-    scrollToIndex(newIndex);
+    scrollToSelectedPost();
   }
 }

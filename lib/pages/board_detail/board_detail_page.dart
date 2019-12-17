@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_chan_viewer/models/board_detail_model.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
 import 'package:flutter_chan_viewer/pages/thread_detail/thread_detail_page.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
@@ -28,99 +29,121 @@ class BoardDetailPage extends BasePage {
 
 class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
   BoardDetailBloc _boardDetailBloc;
-  Completer<void> _refreshCompleter;
-  final ItemScrollController itemScrollController = ItemScrollController();
-  bool _isFavorite = false;
 
   @override
   void initState() {
     super.initState();
     _boardDetailBloc = BlocProvider.of<BoardDetailBloc>(context);
-    _boardDetailBloc.add(BoardDetailEventAppStarted());
-    _boardDetailBloc.add(BoardDetailEventFetchThreads(false, widget.boardId));
-    _refreshCompleter = Completer<void>();
-
-    SharedPreferences.getInstance().then((prefs) {
-      List<String> favoriteBoards = prefs.getStringList(Preferences.KEY_FAVORITE_BOARDS) ?? [];
-      bool isFavorite = favoriteBoards.contains(widget.boardId);
-      setState(() {
-        _isFavorite = isFavorite;
-      });
-    });
+    _boardDetailBloc.add(BoardDetailEventFetchThreads(false));
   }
 
   @override
   String getPageTitle() => "/${widget.boardId}";
 
   @override
-  List<Widget> getPageActions() {
-    Icon icon = _isFavorite ? Icon(Icons.star) : Icon(Icons.star_border);
-    return [IconButton(icon: icon, onPressed: _onFavoriteToggleClick)];
+  List<Widget> getPageActions(BuildContext context) {
+    return [
+      IconButton(
+          icon: Icon(Icons.search),
+          onPressed: () async {
+            ChanThread thread = await showSearch<ChanThread>(context: context, delegate: CustomSearchDelegate(_boardDetailBloc));
+            _boardDetailBloc.searchQuery = '';
+
+            if (thread != null) {
+              _openThreadDetailPage(thread);
+            }
+          }),
+      IconButton(icon: _boardDetailBloc.isFavorite ? Icon(Icons.star) : Icon(Icons.star_border), onPressed: _onFavoriteToggleClick),
+      IconButton(icon: Icon(Icons.refresh), onPressed: () => _boardDetailBloc.add(BoardDetailEventFetchThreads(true))),
+    ];
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<BoardDetailBloc, BoardDetailState>(bloc: _boardDetailBloc, builder: (context, state) => buildPage(buildBody(context, state)));
+    return BlocBuilder<BoardDetailBloc, BoardDetailState>(
+        bloc: _boardDetailBloc, builder: (context, state) => buildPage(context, buildBody(context, state, ((thread) => _openThreadDetailPage(thread)))));
   }
 
-  Widget buildBody(BuildContext context, BoardDetailState state) {
+  static Widget buildBody(BuildContext context, BoardDetailState state, Function(ChanThread) onItemClicked) {
     if (state is BoardDetailStateLoading) {
       return Constants.centeredProgressIndicator;
-    }
-    _refreshCompleter?.complete();
-    _refreshCompleter = Completer();
-    return RefreshIndicator(
-        onRefresh: () {
-          _boardDetailBloc.add(BoardDetailEventFetchThreads(true, widget.boardId));
-          return _refreshCompleter.future;
-        },
-        child: Scrollbar(child: _buildContent(state)));
-  }
-
-  Widget _buildContent(BoardDetailState state) {
-    if (state is BoardDetailStateContent) {
+    } else if (state is BoardDetailStateContent) {
       if (state.threads.isEmpty) {
         return Constants.noDataPlaceholder;
       }
 
-      return ScrollablePositionedList.builder(
-        itemCount: state.threads.length,
-        itemScrollController: itemScrollController,
-        itemBuilder: (context, index) {
-          return InkWell(
-            child: ThreadListWidget(state.threads[index]),
-            onTap: () => _openThreadDetailPage(widget.boardId, state.threads[index].threadId),
-          );
-        },
+      return Scrollbar(
+        child: ListView.builder(
+          itemCount: state.threads.length,
+          itemBuilder: (context, index) {
+            return InkWell(
+              child: ThreadListWidget(state.threads[index]),
+              onTap: () => onItemClicked(state.threads[index]),
+            );
+          },
+        ),
       );
     } else {
       return Constants.errorPlaceholder;
     }
   }
 
-  void _openThreadDetailPage(String boardId, int threadId) {
+  void _openThreadDetailPage(ChanThread thread) {
     Navigator.pushNamed(
       context,
       Constants.threadDetailRoute,
       arguments: {
-        ThreadDetailPage.ARG_BOARD_ID: boardId,
-        ThreadDetailPage.ARG_THREAD_ID: threadId,
+        ThreadDetailPage.ARG_BOARD_ID: thread.boardId,
+        ThreadDetailPage.ARG_THREAD_ID: thread.threadId,
       },
     );
   }
 
   void _onFavoriteToggleClick() {
-    bool newState = !_isFavorite;
-    SharedPreferences.getInstance().then((prefs) {
-      List<String> favoriteBoards = prefs.getStringList(Preferences.KEY_FAVORITE_BOARDS) ?? [];
-      favoriteBoards.removeWhere((value) => value == widget.boardId);
-      if (newState) {
-        favoriteBoards.add(widget.boardId);
-      }
-      prefs.setStringList(Preferences.KEY_FAVORITE_BOARDS, favoriteBoards);
-    });
-    setState(() {
-      _isFavorite = newState;
-    });
+    _boardDetailBloc.add(BoardDetailEventToggleFavorite());
+  }
+}
+
+class CustomSearchDelegate extends SearchDelegate<ChanThread> {
+  CustomSearchDelegate(this._boardDetailBloc);
+
+  final BoardDetailBloc _boardDetailBloc;
+
+  @override
+  ThemeData appBarTheme(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    return theme.copyWith(
+      textTheme: theme.textTheme.copyWith(
+          title: theme.textTheme.title.copyWith(
+        color: Colors.white,
+      )),
+      inputDecorationTheme: InputDecorationTheme(
+        hintStyle: Theme.of(context).textTheme.title.copyWith(
+              color: Colors.white.withOpacity(0.8),
+            ),
+      ),
+    );
+  }
+
+  @override
+  List<Widget> buildActions(BuildContext context) => null;
+
+  @override
+  Widget buildLeading(BuildContext context) => IconButton(icon: Icon(Icons.arrow_back), onPressed: () => close(context, null));
+
+  @override
+  Widget buildResults(BuildContext context) {
+    _boardDetailBloc.add(BoardDetailEventSearchBoards(query));
+
+    return BlocBuilder<BoardDetailBloc, BoardDetailState>(
+        bloc: _boardDetailBloc, builder: (context, state) => _BoardDetailPageState.buildBody(context, state, ((thread) => close(context, thread))));
+  }
+
+  @override
+  Widget buildSuggestions(BuildContext context) {
+    _boardDetailBloc.add(BoardDetailEventSearchBoards(query));
+
+    return BlocBuilder<BoardDetailBloc, BoardDetailState>(
+        bloc: _boardDetailBloc, builder: (context, state) => _BoardDetailPageState.buildBody(context, state, ((thread) => close(context, thread))));
   }
 }

@@ -15,7 +15,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
   Future<void> initBloc() async {
     await Preferences.load();
     await ChanCache.init();
-    await ChanRepository.init();
+    await ChanRepository.initAndGet();
   }
 
   @override

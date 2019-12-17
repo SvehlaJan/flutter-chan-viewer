@@ -15,7 +15,7 @@ class PostListWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: _selected ? Colors.white70 : Colors.white,
+      color: _selected ? Constants.cardBackgroundSelected : Constants.cardBackground,
       clipBehavior: Clip.antiAlias,
       margin: EdgeInsets.all(2.0),
       child: Row(

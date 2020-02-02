@@ -1,30 +1,25 @@
 import 'package:equatable/equatable.dart';
 
 abstract class ThreadDetailEvent extends Equatable {
-  ThreadDetailEvent([List props = const []]);
-}
-
-class ThreadDetailEventToggleFavorite extends ThreadDetailEvent {
-  @override
-  String toString() => 'ThreadDetailEventToggleFavorite { }';
+  ThreadDetailEvent();
 
   @override
   List<Object> get props => [];
 }
 
-class ThreadDetailEventToggleCatalogMode extends ThreadDetailEvent {
-  @override
-  String toString() => 'ThreadDetailEventToggleCatalogMode { }';
+class ThreadDetailEventToggleFavorite extends ThreadDetailEvent {}
 
-  @override
-  List<Object> get props => [];
-}
+class ThreadDetailEventToggleCatalogMode extends ThreadDetailEvent {}
+
+class ThreadDetailEventDownload extends ThreadDetailEvent {}
+
+class ThreadDetailEventShowDownloaded extends ThreadDetailEvent {}
 
 class ThreadDetailEventOnPostSelected extends ThreadDetailEvent {
   final int mediaIndex;
   final int postId;
 
-  ThreadDetailEventOnPostSelected(this.mediaIndex, this.postId) : super([mediaIndex, postId]);
+  ThreadDetailEventOnPostSelected(this.mediaIndex, this.postId);
 
   @override
   String toString() => 'ThreadDetailEventOnPostSelected { mediaIndex: $mediaIndex, postId: $postId }';
@@ -36,7 +31,7 @@ class ThreadDetailEventOnPostSelected extends ThreadDetailEvent {
 class ThreadDetailEventFetchPosts extends ThreadDetailEvent {
   final bool forceFetch;
 
-  ThreadDetailEventFetchPosts(this.forceFetch) : super([forceFetch]);
+  ThreadDetailEventFetchPosts(this.forceFetch);
 
   @override
   String toString() => 'ThreadDetailEventFetchThreads { forceFetch: $forceFetch }';

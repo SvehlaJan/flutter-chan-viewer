@@ -4,6 +4,7 @@ import 'package:bloc/bloc.dart';
 import 'package:flutter_chan_viewer/models/board_list_model.dart';
 import 'package:flutter_chan_viewer/models/helper/chan_board_item_wrapper.dart';
 import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
+import 'package:flutter_chan_viewer/utils/chan_logger.dart';
 import 'package:flutter_chan_viewer/utils/preferences.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -47,9 +48,9 @@ class BoardListBloc extends Bloc<BoardListEvent, BoardListState> {
         searchQuery = event.query;
         add(BoardListEventFetchBoards(false));
       }
-    } catch (o) {
-      print("Event error! ${o.toString()}");
-      yield BoardListStateError(o.toString());
+    } catch (e) {
+      ChanLogger.e("Event error!", e);
+      yield BoardListStateError(e.toString());
     }
   }
 

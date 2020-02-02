@@ -5,9 +5,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
-import 'package:flutter_chan_viewer/utils/network_image/cache_directive.dart';
-import 'package:flutter_chan_viewer/utils/network_image/disk_cache.dart';
+import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
+import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
+import 'package:flutter_chan_viewer/utils/chan_logger.dart';
 import 'package:flutter_chan_viewer/utils/network_image/networkimage_utils.dart';
+import 'package:video_thumbnail/video_thumbnail.dart';
 
 typedef Future<Uint8List> ImageProcessing(Uint8List data);
 
@@ -109,9 +111,9 @@ class ChanNetworkImage extends ImageProvider<ChanNetworkImage> {
     final ImageStream stream = ImageStream();
     obtainKey(configuration).then<void>((ChanNetworkImage key) {
       if (key.disableMemoryCache) {
-        stream.setCompleter(load(key));
+        stream.setCompleter(load(key, PaintingBinding.instance.instantiateImageCodec));
       } else {
-        final ImageStreamCompleter completer = PaintingBinding.instance.imageCache.putIfAbsent(key, () => load(key));
+        final ImageStreamCompleter completer = PaintingBinding.instance.imageCache.putIfAbsent(key, () => load(key, PaintingBinding.instance.instantiateImageCodec));
         if (completer != null) stream.setCompleter(completer);
       }
     });
@@ -124,7 +126,7 @@ class ChanNetworkImage extends ImageProvider<ChanNetworkImage> {
   }
 
   @override
-  ImageStreamCompleter load(ChanNetworkImage key) {
+  ImageStreamCompleter load(ChanNetworkImage key, DecoderCallback decode) {
     return MultiFrameImageStreamCompleter(
       codec: _loadAsync(key),
       scale: 1.0,
@@ -139,29 +141,16 @@ class ChanNetworkImage extends ImageProvider<ChanNetworkImage> {
     assert(key == this);
 
     try {
-      Uint8List _diskCache = await _loadFromDiskCache(key, cacheDirective);
-      if (_diskCache != null) {
-        if (key.postProcessing != null) _diskCache = (await key.postProcessing(_diskCache)) ?? _diskCache;
+      Uint8List imageData = await _loadData(key, cacheDirective);
+      if (imageData != null) {
+        if (key.postProcessing != null) imageData = (await key.postProcessing(imageData)) ?? imageData;
         if (key.loadedCallback != null) key.loadedCallback();
-        return await PaintingBinding.instance.instantiateImageCodec(_diskCache);
+        return await PaintingBinding.instance.instantiateImageCodec(imageData);
       }
     } catch (e) {
-      if (key.printError) print("Error loading image from cache: ${e.toString()}");
+      if (key.printError) ChanLogger.e("Error loading image from cache", e);
       _invalidateEntryInDiskCache(key, cacheDirective);
     }
-
-//    if (key.url.endsWith(".webm")) {
-//      Uint8List thumbnailData = await VideoThumbnail.thumbnailData(
-//        video: key.url,
-//        imageFormat: ImageFormat.WEBP,
-//        maxHeightOrWidth: 0,
-//        quality: 75,
-//      );
-//
-//      if (key.postProcessing != null) thumbnailData = (await key.postProcessing(thumbnailData)) ?? thumbnailData;
-//      if (key.loadedCallback != null) key.loadedCallback();
-//      return await PaintingBinding.instance.instantiateImageCodec(thumbnailData);
-//    }
 
     if (key.loadFailedCallback != null) key.loadFailedCallback();
     if (key.fallbackAssetImage != null) {
@@ -194,15 +183,35 @@ class ChanNetworkImage extends ImageProvider<ChanNetworkImage> {
       ')';
 }
 
-Future<Uint8List> _loadFromDiskCache(ChanNetworkImage key, CacheDirective cacheDirective) async {
+Future<Uint8List> _loadData(ChanNetworkImage key, CacheDirective cacheDirective) async {
   ChanRepository repository = await ChanRepository.initAndGet();
+  ChanStorage storage = await ChanStorage.initAndGet();
 
   Uint8List cachedData = await repository.getCachedMediaFile(key.url, cacheDirective);
   if (cachedData != null) {
-    return cachedData;
+    if (key.url.endsWith(".webm")) {
+      Uint8List thumbnailData = await VideoThumbnail.thumbnailData(
+        video: storage.getFileAbsolutePath(key.url, cacheDirective),
+        imageFormat: ImageFormat.JPEG,
+        maxHeight: 256,
+        quality: 75,
+      );
+      return thumbnailData;
+    } else {
+      return cachedData;
+    }
   }
 
-  Uint8List remoteData = await loadFromRemote(
+  Uint8List remoteData;
+//  if (key.isVideo) {
+//    remoteData = await VideoThumbnail.thumbnailData(
+//      video: key.url,
+//      imageFormat: ImageFormat.JPEG,
+//      maxHeight: 256,
+//      quality: 75,
+//    );
+//  } else {
+  remoteData = await loadFromRemote(
     key.url,
     key.header,
     key.retryLimit,
@@ -213,6 +222,7 @@ Future<Uint8List> _loadFromDiskCache(ChanNetworkImage key, CacheDirective cacheD
     key.getRealUrl,
     printError: key.printError,
   );
+//  }
 
   if (remoteData != null) {
     if (key.preProcessing != null) remoteData = (await key.preProcessing(remoteData)) ?? remoteData;

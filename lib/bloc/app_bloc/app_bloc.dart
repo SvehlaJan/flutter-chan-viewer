@@ -1,8 +1,10 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
+import 'package:flutter_chan_viewer/repositories/chan_downloader.dart';
 import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
-import 'package:flutter_chan_viewer/utils/chan_cache.dart';
+import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
+import 'package:flutter_chan_viewer/utils/chan_logger.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/utils/preferences.dart';
 
@@ -14,7 +16,8 @@ class AppBloc extends Bloc<AppEvent, AppState> {
 
   Future<void> initBloc() async {
     await Preferences.load();
-    await ChanCache.init();
+    await ChanDownloader.initAndGet();
+    await ChanStorage.initAndGet();
     await ChanRepository.initAndGet();
   }
 
@@ -23,8 +26,6 @@ class AppBloc extends Bloc<AppEvent, AppState> {
 
   @override
   Stream<AppState> mapEventToState(AppEvent event) async* {
-    print("Event received! ${event.toString()}");
-    print("Current state! ${state.toString()}");
     try {
       if (event is AppEventAppStarted) {
         await initBloc();
@@ -35,9 +36,9 @@ class AppBloc extends Bloc<AppEvent, AppState> {
       if (event is AppEventSetTheme) {
         yield AppStateContent(event.appTheme);
       }
-    } catch (o) {
-      print("Event error! ${o.toString()}");
-      yield AppStateError(o.toString());
+    } catch (e) {
+      ChanLogger.e("Event error!", e);
+      yield AppStateError(e.toString());
     }
   }
 }

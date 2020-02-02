@@ -45,9 +45,10 @@ class TabNavigator extends StatelessWidget {
         if (arguments != null && arguments.containsKey(ThreadDetailPage.ARG_BOARD_ID) && arguments.containsKey(ThreadDetailPage.ARG_THREAD_ID)) {
           String boardId = arguments[ThreadDetailPage.ARG_BOARD_ID];
           int threadId = arguments[ThreadDetailPage.ARG_THREAD_ID];
+          bool showDownloadsOnly = arguments[ThreadDetailPage.ARG_SHOW_DOWNLOADS_ONLY] ?? false;
           return MaterialPageRoute<void>(
               settings: settings,
-              builder: (BuildContext context) => BlocProvider(create: (context) => ThreadDetailBloc(boardId, threadId), child: ThreadDetailPage(boardId, threadId)));
+              builder: (BuildContext context) => BlocProvider(create: (context) => ThreadDetailBloc(boardId, threadId, showDownloadsOnly), child: ThreadDetailPage(boardId, threadId)));
         }
         return null;
       case Constants.galleryRoute:
@@ -57,10 +58,10 @@ class TabNavigator extends StatelessWidget {
             arguments.containsKey(GalleryPage.ARG_POST_ID)) {
           String boardId = arguments[GalleryPage.ARG_BOARD_ID];
           int threadId = arguments[GalleryPage.ARG_THREAD_ID];
-          int postId = arguments[GalleryPage.ARG_POST_ID];
+          bool showDownloadsOnly = arguments[ThreadDetailPage.ARG_SHOW_DOWNLOADS_ONLY] ?? false;
           return MaterialPageRoute<int>(
               settings: settings,
-              builder: (BuildContext context) => BlocProvider(create: (context) => ThreadDetailBloc(boardId, threadId), child: GalleryPage()));
+              builder: (BuildContext context) => BlocProvider(create: (context) => ThreadDetailBloc(boardId, threadId, showDownloadsOnly), child: GalleryPage()));
         }
         return null;
       case Constants.settingsRoute:

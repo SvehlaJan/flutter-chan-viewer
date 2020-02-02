@@ -52,7 +52,7 @@ class MainApp extends StatelessWidget {
         }
 
         return BlocProvider(
-          builder: (context) => ChanViewerBloc(),
+          create: (context) => ChanViewerBloc(),
           child: MaterialApp(
             title: Constants.appName,
             theme: themeData,

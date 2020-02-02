@@ -1,9 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:flutter_chan_viewer/models/board_list_model.dart';
 import 'package:flutter_chan_viewer/models/board_detail_model.dart';
+import 'package:flutter_chan_viewer/models/board_list_model.dart';
 import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
+import 'package:flutter_chan_viewer/utils/chan_logger.dart';
 import 'package:http/http.dart' show Client;
 
 class ChanApiProvider {
@@ -13,24 +14,21 @@ class ChanApiProvider {
 
   Future<BoardListModel> fetchBoardList() async {
     String url = "$_baseUrl/boards.json";
-    print("Fetching board list: { url: $url }");
 
     final response = await client.get(url);
-    print("Response status: ${response.statusCode}");
+    ChanLogger.d("Board list fetched. { url: $url, response status: ${response.statusCode} }");
     if (response.statusCode == 200) {
       return BoardListModel.fromJson(json.decode(response.body));
     } else {
-      // If that call was not successful, throw an error.
       throw Exception('Failed to load boards');
     }
   }
 
   Future<BoardDetailModel> fetchThreadList(String boardId) async {
     String url = "$_baseUrl/$boardId/catalog.json";
-    print("Fetching thread list { url: $url }");
 
     final response = await client.get(url);
-    print("Response status: ${response.statusCode}");
+    ChanLogger.d("Thread list fetched. { url: $url, response status: ${response.statusCode} }");
     if (response.statusCode == 200) {
       return BoardDetailModel.fromJson(boardId, json.decode(response.body));
     } else {
@@ -40,10 +38,9 @@ class ChanApiProvider {
 
   Future<ThreadDetailModel> fetchPostList(String boardId, int threadId) async {
     String url = "$_baseUrl/$boardId/thread/$threadId.json";
-    print("Fetching post list { url: $url }");
 
     final response = await client.get(url);
-    print("Response status: ${response.statusCode}");
+    ChanLogger.d("Post list fetched. { url: $url, response status: ${response.statusCode} }");
     if (response.statusCode == 200) {
       return ThreadDetailModel.fromJson(boardId, threadId, json.decode(response.body));
     } else {

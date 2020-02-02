@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
@@ -21,9 +20,16 @@ import 'bloc/thread_detail_state.dart';
 class ThreadDetailPage extends BasePage {
   static const String ARG_BOARD_ID = "ThreadDetailPage.ARG_BOARD_ID";
   static const String ARG_THREAD_ID = "ThreadDetailPage.ARG_THREAD_ID";
+  static const String ARG_SHOW_DOWNLOADS_ONLY = "ThreadDetailPage.ARG_SHOW_DOWNLOADS_ONLY";
 
   final String boardId;
   final int threadId;
+
+  static Map<String, dynamic> getArguments(final String boardId, final int threadId, final bool showDownloadsOnly) => {
+        ARG_BOARD_ID: boardId,
+        ARG_THREAD_ID: threadId,
+        ARG_SHOW_DOWNLOADS_ONLY: showDownloadsOnly,
+      };
 
   ThreadDetailPage(this.boardId, this.threadId);
 
@@ -53,21 +59,20 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
   String getPageTitle() => "/${widget.boardId}/${widget.threadId}";
 
   @override
-  List<Widget> getPageActions(BuildContext context) {
-    return [
-      IconButton(icon: Icon(Icons.refresh), onPressed: () => _threadDetailBloc.add(ThreadDetailEventFetchPosts(true))),
-      IconButton(icon: _threadDetailBloc.catalogMode ? Icon(Icons.list) : Icon(Icons.apps), onPressed: _onCatalogModeToggleClick),
-      IconButton(icon: _threadDetailBloc.isFavorite ? Icon(Icons.star) : Icon(Icons.star_border), onPressed: _onFavoriteToggleClick)
-    ];
-  }
+  List<AppBarAction> getAppBarActions(BuildContext context) => [
+        AppBarAction("Refresh", Icons.refresh, _onRefreshClick),
+        _threadDetailBloc.catalogMode ? AppBarAction("List", Icons.list, _onCatalogModeToggleClick) : AppBarAction("Catalog", Icons.apps, _onCatalogModeToggleClick),
+        _threadDetailBloc.isFavorite ? AppBarAction("Unstar", Icons.star_border, _onFavoriteToggleClick) : AppBarAction("Star", Icons.star, _onFavoriteToggleClick),
+        AppBarAction("Download", Icons.file_download, _onDownloadClick)
+      ];
 
-  void _onCatalogModeToggleClick() {
-    _threadDetailBloc.add(ThreadDetailEventToggleCatalogMode());
-  }
+  void _onRefreshClick() => _threadDetailBloc.add(ThreadDetailEventFetchPosts(true));
 
-  void _onFavoriteToggleClick() {
-    _threadDetailBloc.add(ThreadDetailEventToggleFavorite());
-  }
+  void _onCatalogModeToggleClick() => _threadDetailBloc.add(ThreadDetailEventToggleCatalogMode());
+
+  void _onFavoriteToggleClick() => _threadDetailBloc.add(ThreadDetailEventToggleFavorite());
+
+  void _onDownloadClick() => _threadDetailBloc.add(ThreadDetailEventDownload());
 
   @override
   Widget build(BuildContext context) {
@@ -83,18 +88,25 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
         return Constants.noDataPlaceholder;
       }
 
-      return Scrollbar(
-        child: state.catalogMode
-            ? buildGrid(
-                context,
-                state.model.mediaPosts,
-                state.selectedMediaIndex,
-              )
-            : buildList(
-                context,
-                state.model.posts,
-                state.selectedPostIndex,
-              ),
+      return Column(
+        children: <Widget>[
+          Flexible(
+            child: Scrollbar(
+              child: state.catalogMode
+                  ? buildGrid(
+                      context,
+                      state.model.mediaPosts,
+                      state.selectedMediaIndex,
+                    )
+                  : buildList(
+                      context,
+                      state.model.posts,
+                      state.selectedPostIndex,
+                    ),
+            ),
+          ),
+          if (state.lazyLoading) LinearProgressIndicator()
+        ],
       );
     } else {
       return Constants.errorPlaceholder;

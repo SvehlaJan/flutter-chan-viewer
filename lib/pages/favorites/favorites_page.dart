@@ -1,16 +1,11 @@
-import 'dart:async';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_chan_viewer/models/board_list_model.dart';
 import 'package:flutter_chan_viewer/models/board_detail_model.dart';
 import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
-import 'package:flutter_chan_viewer/pages/board_detail/board_detail_page.dart';
 import 'package:flutter_chan_viewer/pages/thread_detail/thread_detail_page.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
-import 'package:flutter_chan_viewer/view/list_widget_board.dart';
 import 'package:flutter_chan_viewer/view/list_widget_thread.dart';
 
 import 'bloc/favorites_bloc.dart';
@@ -38,9 +33,9 @@ class _FavoritesPageState extends BasePageState<FavoritesPage> {
   String getPageTitle() => "Favorites";
 
   @override
-  List<Widget> getPageActions(BuildContext context) {
-    return [IconButton(icon: Icon(Icons.refresh), onPressed: () => _favoritesBloc.add(FavoritesEventFetchData()))];
-  }
+  List<AppBarAction> getAppBarActions(BuildContext context) => [AppBarAction("Refresh", Icons.refresh, _onRefreshClick)];
+
+  void _onRefreshClick() => _favoritesBloc.add(FavoritesEventFetchData());
 
   @override
   Widget build(BuildContext context) {
@@ -77,10 +72,7 @@ class _FavoritesPageState extends BasePageState<FavoritesPage> {
     Navigator.pushNamed(
       context,
       Constants.threadDetailRoute,
-      arguments: {
-        ThreadDetailPage.ARG_BOARD_ID: thread.boardId,
-        ThreadDetailPage.ARG_THREAD_ID: thread.threadId,
-      },
+      arguments: ThreadDetailPage.getArguments(thread.boardId, thread.threadId, false),
     );
   }
 }

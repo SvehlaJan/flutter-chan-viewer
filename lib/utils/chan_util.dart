@@ -25,6 +25,6 @@ class ChanUtil {
   }
 
   static String getHumanDate(int timestamp) {
-    return formatDate(DateTime.fromMillisecondsSinceEpoch(timestamp), [yyyy, '-', mm, '-', dd, ' ', HH, ':', nn, ':', ss]);
+    return formatDate(DateTime.fromMillisecondsSinceEpoch(timestamp * 1000), [yyyy, '-', mm, '-', dd, ' ', HH, ':', nn, ':', ss]);
   }
 }

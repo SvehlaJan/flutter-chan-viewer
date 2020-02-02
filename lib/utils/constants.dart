@@ -26,7 +26,7 @@ class Constants {
   static const Widget errorPlaceholder = const Center(child: Text("Error :-("));
 
   static final Color cardBackground = Colors.white;
-  static final Color cardBackgroundSelected = Colors.lightBlue.withOpacity(0.1);
+  static final Color cardBackgroundSelected = Colors.lightBlue.withOpacity(0.01);
 
   //strings
   static const String appName = "Chan Viewer";

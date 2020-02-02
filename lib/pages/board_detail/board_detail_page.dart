@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -7,10 +5,7 @@ import 'package:flutter_chan_viewer/models/board_detail_model.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
 import 'package:flutter_chan_viewer/pages/thread_detail/thread_detail_page.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
-import 'package:flutter_chan_viewer/utils/preferences.dart';
 import 'package:flutter_chan_viewer/view/list_widget_thread.dart';
-import 'package:flutter_widgets/flutter_widgets.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'bloc/board_detail_bloc.dart';
 import 'bloc/board_detail_event.dart';
@@ -41,22 +36,24 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
   String getPageTitle() => "/${widget.boardId}";
 
   @override
-  List<Widget> getPageActions(BuildContext context) {
-    return [
-      IconButton(
-          icon: Icon(Icons.search),
-          onPressed: () async {
-            ChanThread thread = await showSearch<ChanThread>(context: context, delegate: CustomSearchDelegate(_boardDetailBloc));
-            _boardDetailBloc.searchQuery = '';
+  List<AppBarAction> getAppBarActions(BuildContext context) => [
+        AppBarAction("Search", Icons.search, _onSearchClick),
+        AppBarAction("Refresh", Icons.refresh, _onRefreshClick),
+        _boardDetailBloc.isFavorite ? AppBarAction("Unstar", Icons.star_border, _onFavoriteToggleClick) : AppBarAction("Star", Icons.star, _onFavoriteToggleClick),
+      ];
 
-            if (thread != null) {
-              _openThreadDetailPage(thread);
-            }
-          }),
-      IconButton(icon: _boardDetailBloc.isFavorite ? Icon(Icons.star) : Icon(Icons.star_border), onPressed: _onFavoriteToggleClick),
-      IconButton(icon: Icon(Icons.refresh), onPressed: () => _boardDetailBloc.add(BoardDetailEventFetchThreads(true))),
-    ];
+  void _onSearchClick() async {
+    ChanThread thread = await showSearch<ChanThread>(context: context, delegate: CustomSearchDelegate(_boardDetailBloc));
+    _boardDetailBloc.searchQuery = '';
+
+    if (thread != null) {
+      _openThreadDetailPage(thread);
+    }
   }
+
+  void _onRefreshClick() => _boardDetailBloc.add(BoardDetailEventFetchThreads(true));
+
+  void _onFavoriteToggleClick() => _boardDetailBloc.add(BoardDetailEventToggleFavorite());
 
   @override
   Widget build(BuildContext context) {
@@ -92,15 +89,8 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
     Navigator.pushNamed(
       context,
       Constants.threadDetailRoute,
-      arguments: {
-        ThreadDetailPage.ARG_BOARD_ID: thread.boardId,
-        ThreadDetailPage.ARG_THREAD_ID: thread.threadId,
-      },
+      arguments: ThreadDetailPage.getArguments(thread.boardId, thread.threadId, false),
     );
-  }
-
-  void _onFavoriteToggleClick() {
-    _boardDetailBloc.add(BoardDetailEventToggleFavorite());
   }
 }
 

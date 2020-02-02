@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:flutter_chan_viewer/models/board_detail_model.dart';
 import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
+import 'package:flutter_chan_viewer/utils/chan_logger.dart';
 import 'package:flutter_chan_viewer/utils/preferences.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -50,9 +51,9 @@ class BoardDetailBloc extends Bloc<BoardDetailEvent, BoardDetailState> {
         prefs.setStringList(Preferences.KEY_FAVORITE_BOARDS, favoriteBoards);
         add(BoardDetailEventFetchThreads(false));
       }
-    } catch (o) {
-      print("Event error! ${o.toString()}");
-      yield BoardDetailStateError(o.toString());
+    } catch (e) {
+      ChanLogger.e("Event error!", e);
+      yield BoardDetailStateError(e.toString());
     }
   }
 

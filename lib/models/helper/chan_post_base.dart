@@ -1,5 +1,5 @@
 import 'package:flutter_chan_viewer/api/chan_api_provider.dart';
-import 'package:flutter_chan_viewer/utils/network_image/cache_directive.dart';
+import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
 
 abstract class ChanPostBase {
   final String boardId;
@@ -17,7 +17,7 @@ abstract class ChanPostBase {
 
   bool hasVideo() => [".webm"].contains(extension);
 
-  bool hasMedia() => hasImage() || hasVideo();
+  bool hasMedia() => filename?.isNotEmpty ?? false;
 
   String getMediaUrl() => _getMediaUrl(this.boardId, this.imageId, this.extension, false);
 
@@ -25,14 +25,19 @@ abstract class ChanPostBase {
 
   String getThumbnailUrl() => _getMediaUrl(this.boardId, this.imageId, this.extension, true);
 
-  String _getMediaUrl(String boardId, String imageId, String extension, [bool thumbnail = false]) {
-    if (imageId != null && extension != null) {
-      String targetImageId = thumbnail ? "${imageId}s" : imageId;
-      String targetExtension = thumbnail ? ".jpg" : extension;
-      return "${ChanApiProvider.baseImageUrl}/$boardId/$targetImageId$targetExtension";
+  String _getMediaUrl(String boardId, String imageId, String extension, bool thumbnail) {
+    if (boardId != null && imageId != null && extension != null) {
+      String fileName = _getFileName(imageId, extension, thumbnail);
+      return "${ChanApiProvider.baseImageUrl}/$boardId/$fileName";
     } else {
       return null;
     }
+  }
+
+  String _getFileName(String imageId, String extension, bool thumbnail) {
+    String targetImageId = thumbnail ? "${imageId}s" : imageId;
+    String targetExtension = thumbnail ? ".jpg" : extension;
+    return "$targetImageId$targetExtension";
   }
 
   CacheDirective getCacheDirective() => CacheDirective(boardId, threadId);

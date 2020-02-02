@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -10,8 +8,6 @@ import 'package:flutter_chan_viewer/pages/base/base_page.dart';
 import 'package:flutter_chan_viewer/pages/thread_detail/bloc/thread_detail_event.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/utils/network_image/chan_networkimage.dart';
-import 'package:flutter_chan_viewer/view/view_cached_image.dart';
-import 'package:flutter_chan_viewer/view/view_custom_carousel.dart';
 import 'package:flutter_chan_viewer/view/view_video_player.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
@@ -73,8 +69,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
                 return buildItem(context, state.model.mediaPosts[index]);
               },
               scrollPhysics: BouncingScrollPhysics(),
-              // Set the background color to the "classic white"
-              backgroundDecoration: BoxDecoration(color: Colors.white.withOpacity(0.0)),
+              backgroundDecoration: BoxDecoration(color: Colors.transparent),
               loadingChild: Center(child: Constants.progressIndicator),
               pageController: PageController(initialPage: state.selectedMediaIndex),
               onPageChanged: ((pageIndex) {
@@ -108,6 +103,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
         heroAttributes: PhotoViewHeroAttributes(tag: post.getMediaUrl()),
         minScale: PhotoViewComputedScale.contained,
         maxScale: PhotoViewComputedScale.covered * 3,
+        scaleStateCycle: customScaleStateCycle,
       );
     } else {
       return PhotoViewGalleryPageOptions.customChild(
@@ -116,8 +112,24 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
         heroAttributes: PhotoViewHeroAttributes(tag: post.getMediaUrl()),
         minScale: PhotoViewComputedScale.contained,
         maxScale: PhotoViewComputedScale.covered * 3,
-        tightMode: true
+        scaleStateCycle: customScaleStateCycle,
       );
+    }
+  }
+
+  PhotoViewScaleState customScaleStateCycle(PhotoViewScaleState actual) {
+    switch (actual) {
+      case PhotoViewScaleState.initial:
+        return PhotoViewScaleState.covering;
+      case PhotoViewScaleState.covering:
+        return PhotoViewScaleState.originalSize;
+      case PhotoViewScaleState.originalSize:
+        return PhotoViewScaleState.initial;
+      case PhotoViewScaleState.zoomedIn:
+      case PhotoViewScaleState.zoomedOut:
+        return PhotoViewScaleState.initial;
+      default:
+        return PhotoViewScaleState.initial;
     }
   }
 

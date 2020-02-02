@@ -6,8 +6,10 @@ import 'package:flutter_chan_viewer/api/chan_api_provider.dart';
 import 'package:flutter_chan_viewer/models/board_detail_model.dart';
 import 'package:flutter_chan_viewer/models/board_list_model.dart';
 import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
-import 'package:flutter_chan_viewer/utils/chan_cache.dart';
-import 'package:flutter_chan_viewer/utils/network_image/cache_directive.dart';
+import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
+import 'package:flutter_chan_viewer/repositories/chan_downloader.dart';
+import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
+import 'package:flutter_chan_viewer/utils/chan_logger.dart';
 import 'package:flutter_chan_viewer/utils/network_image/disk_cache.dart';
 import 'package:flutter_chan_viewer/utils/preferences.dart';
 import 'package:path/path.dart';
@@ -17,12 +19,13 @@ import 'package:sembast/sembast_io.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ChanRepository {
-  static final ChanRepository _repo = new ChanRepository._internal();
+  static final ChanRepository _instance = new ChanRepository._internal();
   static bool _initialized = false;
   static const int CACHE_MAX_SIZE = 10;
 
   DiskCache _diskCache;
-  ChanCache _chanCache;
+  ChanStorage _chanStorage;
+  ChanDownloader _chanDownloader;
   ChanApiProvider _chanApiProvider;
   SharedPreferences _prefs;
 
@@ -33,40 +36,44 @@ class ChanRepository {
   BoardListModel boardListMemoryCache;
   final Map<String, BoardDetailModel> boardDetailMemoryCache = HashMap();
   final Map<String, ThreadDetailModel> threadDetailMemoryCache = HashMap();
+
 //  final Set<String> favoriteThreadsCache = Set();
 
   static ChanRepository getSync() {
     if (!_initialized) throw Exception("Repository must be initialized at first!");
-    return _repo;
+    return _instance;
   }
 
   static Future<ChanRepository> initAndGet() async {
-    if (_initialized) return _repo;
+    if (_initialized) return _instance;
 
-    _repo._diskCache = DiskCache();
-    _repo._chanCache = ChanCache.get();
-    _repo._chanApiProvider = ChanApiProvider();
-    _repo._prefs = await SharedPreferences.getInstance();
+    _instance._diskCache = DiskCache();
+    _instance._chanStorage = await ChanStorage.initAndGet();
+    _instance._chanDownloader = await ChanDownloader.initAndGet();
+    _instance._chanApiProvider = ChanApiProvider();
+    _instance._prefs = await SharedPreferences.getInstance();
 
     var dir = await getApplicationDocumentsDirectory();
     await dir.create(recursive: true);
-    _repo._db = await databaseFactoryIo.openDatabase(join(dir.path, "chan.db"), version: 1);
-    _repo._favoriteThreadsStore = stringMapStoreFactory.store("favorites");
-    _repo._boardsStore = stringMapStoreFactory.store("boards");
+    _instance._db = await databaseFactoryIo.openDatabase(join(dir.path, "chan.db"), version: 1);
+    _instance._favoriteThreadsStore = stringMapStoreFactory.store("favorites");
+    _instance._boardsStore = stringMapStoreFactory.store("boards");
 
-    HashMap<String, List<ThreadDetailModel>> favoriteThreadsMap = await _repo.getFavoriteThreads();
+    HashMap<String, List<ThreadDetailModel>> favoriteThreadsMap = await _instance.getFavoriteThreads();
     List<ThreadDetailModel> favoriteThreadsList = favoriteThreadsMap.values.expand((list) => list).toList();
     for (ThreadDetailModel thread in favoriteThreadsList) {
-      _repo.threadDetailMemoryCache[thread.cacheKey] = thread;
+      _instance.threadDetailMemoryCache[thread.cacheKey] = thread;
     }
 
     _initialized = true;
-    return _repo;
+    return _instance;
   }
 
   ChanRepository._internal() {
     // initialization code
   }
+
+  bool isFileDownloaded(ChanPost post) => _chanStorage.mediaFileExists(post.getMediaUrl(), post.getCacheDirective());
 
   Future<BoardListModel> fetchBoardList(bool forceFetch) async {
     if (!forceFetch) {
@@ -84,7 +91,7 @@ class ChanRepository {
           boardListMemoryCache = model;
           return model;
         } catch (e) {
-          print(e);
+          ChanLogger.e("fetchBoardList error", e);
         }
       }
     }
@@ -111,17 +118,27 @@ class ChanRepository {
     return boardDetailMemoryCache[boardId];
   }
 
+  Future<ThreadDetailModel> fetchCachedThreadDetail(String boardId, int threadId) async {
+    CacheDirective cacheDirective = CacheDirective(boardId, threadId);
+    if (threadDetailMemoryCache.containsKey(cacheDirective.getCacheKey())) {
+      return threadDetailMemoryCache[cacheDirective.getCacheKey()];
+    } else if (isThreadFavorite(cacheDirective)) {
+      ThreadDetailModel thread = await _tryToGetCachedThread(cacheDirective);
+      if (thread != null) {
+        threadDetailMemoryCache[thread.cacheKey] = thread;
+        return thread;
+      }
+    }
+
+    return Future.value(null);
+  }
+
   Future<ThreadDetailModel> fetchThreadDetail(bool forceFetch, String boardId, int threadId) async {
     CacheDirective cacheDirective = CacheDirective(boardId, threadId);
     if (!forceFetch) {
-      if (threadDetailMemoryCache.containsKey(cacheDirective.getCacheKey())) {
-        return threadDetailMemoryCache[cacheDirective.getCacheKey()];
-      } else if (isThreadFavorite(cacheDirective)) {
-        ThreadDetailModel thread = await _tryToGetCachedThread(cacheDirective);
-        if (thread != null) {
-          threadDetailMemoryCache[thread.cacheKey] = thread;
-          return thread;
-        }
+      ThreadDetailModel model = await fetchCachedThreadDetail(boardId, threadId);
+      if (model != null) {
+        return model;
       }
     }
 
@@ -153,7 +170,7 @@ class ChanRepository {
       await _favoriteThreadsStore.record(model.cacheKey).put(_db, model.toJson());
       await moveMediaToPermanentCache(model);
     } catch (e) {
-      print(e);
+      ChanLogger.e("addThreadToFavorites error", e);
     }
   }
 
@@ -163,10 +180,14 @@ class ChanRepository {
       threadDetailMemoryCache[model.cacheKey] = model;
 
       await _favoriteThreadsStore.record(model.cacheKey).delete(_db);
-      await _chanCache.deleteCacheFolder(model.thread.getCacheDirective());
+      await _chanStorage.deleteCacheFolder(model.thread.getCacheDirective());
     } catch (e) {
-      print(e);
+      ChanLogger.e("removeThreadFromFavorites error", e);
     }
+  }
+
+  Future<void> downloadAllMedia(ThreadDetailModel model) async {
+    _chanDownloader.downloadAllMedia(model);
   }
 
   Future<HashMap<String, List<ThreadDetailModel>>> getFavoriteThreads() async {
@@ -181,7 +202,7 @@ class ChanRepository {
         threadMap[directive.boardId].add(thread);
       });
     } catch (e) {
-      print(e);
+      ChanLogger.e("downloadAllMedia error", e);
     }
 
     return threadMap;
@@ -191,41 +212,43 @@ class ChanRepository {
     model.mediaPosts.forEach((post) async {
       Uint8List data = await _diskCache.loadByUrl(post.getMediaUrl());
       if (data != null) {
-        print("moveMediaToPermanentStorage: moving { post.getMediaUrl(): ${post.getMediaUrl()} }");
-        await _chanCache.writeMediaFile(post.getMediaUrl(), post.getCacheDirective(), data);
+        ChanLogger.d("moveMediaToPermanentStorage: moving { post.getMediaUrl(): ${post.getMediaUrl()} }");
+        await _chanStorage.writeMediaFile(post.getMediaUrl(), post.getCacheDirective(), data);
       }
     });
   }
 
   Future<Uint8List> getCachedMediaFile(String url, CacheDirective cacheDirective) async {
-    Uint8List data;
     String uId = DiskCache.uid(url);
-    bool isPermanentStorage = cacheDirective != null && isThreadFavorite(cacheDirective);
-    if (isPermanentStorage) {
-      data = await ChanCache.get().getMediaFile(uId, cacheDirective);
-    } else {
+    Uint8List data;
+
+    if (cacheDirective != null) {
+      data = await _chanStorage.readMediaFile(url, cacheDirective);
+    }
+    if (data == null) {
       data = await DiskCache().load(uId);
     }
 
-    print("getCachedMediaFile() { cache hit: ${data != null}, isPermanentStorage: $isPermanentStorage, url: $url, uId: $uId, cacheDirective: $cacheDirective");
+//    ChanLogger.d("getCachedMediaFile() { cache hit: ${data != null}, url: $url, uId: $uId, cacheDirective: $cacheDirective");
     return data;
   }
 
   Future<void> saveMediaFile(String url, CacheDirective cacheDirective, Uint8List data) async {
     String uId = DiskCache.uid(url);
     bool isPermanentStorage = cacheDirective != null && isThreadFavorite(cacheDirective);
+
     if (isPermanentStorage) {
-      await ChanCache.get().writeMediaFile(uId, cacheDirective, data);
+      await _chanStorage.writeMediaFile(url, cacheDirective, data);
     } else {
       await DiskCache().save(uId, data);
     }
-    print("saveMediaFile() { isPermanentStorage: $isPermanentStorage, url: $url, uId: $uId, cacheDirective: $cacheDirective");
+//    ChanLogger.d("saveMediaFile() { isPermanentStorage: $isPermanentStorage, url: $url, uId: $uId, cacheDirective: $cacheDirective");
   }
 
   Future<void> deleteMediaFile(String url, CacheDirective cacheDirective) async {
     String uId = DiskCache.uid(url);
     if (cacheDirective != null) {
-      await ChanCache.get().deleteMediaFile(uId, cacheDirective);
+      await _chanStorage.deleteMediaFile(url, cacheDirective);
     }
     await DiskCache().evict(uId);
   }
@@ -233,7 +256,7 @@ class ChanRepository {
 //  Future<void> downloadMedia(ThreadDetailModel model) async {
 //    String path = _chanCache.getFolderPath(model.thread.getCacheDirective());
 //    bool dirExists = Directory(path).existsSync();
-//    print("downloadMedia { path: $path, dirExists: $dirExists }");
+//    ChanLogger.d("downloadMedia { path: $path, dirExists: $dirExists }");
 //    final taskId = await FlutterDownloader.enqueue(
 //      url: model.thread.getMediaUrl(),
 //      savedDir: path,
@@ -243,7 +266,7 @@ class ChanRepository {
 //  }
 
 //  static void downloadCallback(String id, DownloadTaskStatus status, int progress) {
-//    print("downloadCallback { id: $id, status: $status, progress: $progress }");
+//    ChanLogger.d("downloadCallback { id: $id, status: $status, progress: $progress }");
 //
 ////    final SendPort send = IsolateNameServer.lookupPortByName('downloader_send_port');
 ////    send.send([id, status, progress]);
@@ -254,7 +277,7 @@ class ChanRepository {
       var record = await _favoriteThreadsStore.record(cacheDirective.getCacheKey()).get(_db);
       return ThreadDetailModel.fromJson(cacheDirective.boardId, cacheDirective.threadId, record);
     } catch (e) {
-      print("Exception reading favorite thread: { cacheDirective: $cacheDirective, e: $e }");
+      ChanLogger.e("Exception reading favorite thread: { cacheDirective: $cacheDirective }", e);
     }
     return null;
   }

@@ -30,16 +30,17 @@ class ThreadDetailStateContent extends ThreadDetailState {
   final int selectedPostId;
   final bool isFavorite;
   final bool catalogMode;
+  final bool lazyLoading;
 
-  ThreadDetailStateContent(this.model, this.selectedPostId, this.isFavorite, this.catalogMode);
+  ThreadDetailStateContent(this.model, this.selectedPostId, this.isFavorite, this.catalogMode, this.lazyLoading);
 
   get selectedMediaIndex => model.getMediaIndex(selectedPostId);
 
   get selectedPostIndex => model.getPostIndex(selectedPostId);
 
   @override
-  String toString() => 'ThreadDetailStateContent { posts: $model, selectedPostId: $selectedPostId, isFavorite: $isFavorite, catalogMode: $catalogMode }';
+  String toString() => 'ThreadDetailStateContent { posts: $model, selectedPostId: $selectedPostId, isFavorite: $isFavorite, catalogMode: $catalogMode, lazyLoading: $lazyLoading }';
 
   @override
-  List<Object> get props => [model, selectedPostId, isFavorite, catalogMode];
+  List<Object> get props => [model, selectedPostId, isFavorite, catalogMode, lazyLoading];
 }

@@ -1,8 +1,10 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_chan_viewer/models/board_detail_model.dart';
 import 'package:flutter_chan_viewer/models/helper/chan_post_base.dart';
-import 'package:flutter_chan_viewer/utils/network_image/cache_directive.dart';
+import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
+import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
 import 'package:kt_dart/kt.dart';
+import 'package:path/path.dart';
 
 class ThreadDetailModel with EquatableMixin {
   final ChanThread _thread;
@@ -22,6 +24,12 @@ class ThreadDetailModel with EquatableMixin {
     int selectedPost = parsedJson['selected_post'] ?? 0;
 
     return new ThreadDetailModel._(thread, posts, selectedPost);
+  }
+
+  factory ThreadDetailModel.fromFolderInfo(DownloadFolderInfo folderInfo) {
+    List<ChanPost> posts = [];
+    folderInfo.fileNames.asMap().forEach((index, fileName) => posts.add(ChanPost.fromDownloadedFile(fileName, folderInfo.cacheDirective, index)));
+    return new ThreadDetailModel._(ChanThread.fromCacheDirective(folderInfo.cacheDirective), posts, 0);
   }
 
   /*
@@ -105,16 +113,22 @@ class ChanPost extends ChanPostBase with EquatableMixin {
         json['ext'],
       );
 
+  factory ChanPost.fromDownloadedFile(String fileName, CacheDirective cacheDirective, int postId) {
+    String imageId = basenameWithoutExtension(fileName);
+    String extensionStr = extension(fileName);
+    return ChanPost(cacheDirective.boardId, cacheDirective.threadId, postId, 0, "", "", fileName, imageId, extensionStr);
+  }
+
   Map<String, dynamic> toJson() => {
-        'board_id': boardId,
-        'thread_id': threadId,
-        'no': postId,
-        'time': timestamp,
-        'sub': subtitle,
-        'com': content,
-        'filename': filename,
-        'tim': imageId,
-        'ext': extension,
+        'board_id': this.boardId,
+        'thread_id': this.threadId,
+        'no': this.postId,
+        'time': this.timestamp,
+        'sub': this.subtitle,
+        'com': this.content,
+        'filename': this.filename,
+        'tim': this.imageId,
+        'ext': this.extension,
       };
 
   ChanPost(String boardId, int threadId, this.postId, int timestamp, String subtitle, String content, String filename, String imageId, String extension)

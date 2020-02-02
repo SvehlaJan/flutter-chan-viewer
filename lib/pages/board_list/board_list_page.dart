@@ -31,21 +31,21 @@ class _BoardListPageState extends BasePageState<BoardListPage> {
   String getPageTitle() => "Boards";
 
   @override
-  List<Widget> getPageActions(BuildContext context) {
-    return [
-      IconButton(
-          icon: Icon(Icons.search),
-          onPressed: () async {
-            ChanBoard board = await showSearch<ChanBoard>(context: context, delegate: CustomSearchDelegate(_boardListBloc));
-            _boardListBloc.searchQuery = '';
+  List<AppBarAction> getAppBarActions(BuildContext context) => [
+    AppBarAction("Search", Icons.search, _onSearchClick),
+    AppBarAction("Refresh", Icons.refresh, _onRefreshClick)
+  ];
 
-            if (board != null) {
-              _openBoardDetailPage(board);
-            }
-          }),
-      IconButton(icon: Icon(Icons.refresh), onPressed: () => _boardListBloc.add(BoardListEventFetchBoards(true))),
-    ];
+  void _onSearchClick() async {
+    ChanBoard board = await showSearch<ChanBoard>(context: context, delegate: CustomSearchDelegate(_boardListBloc));
+    _boardListBloc.searchQuery = '';
+
+    if (board != null) {
+      _openBoardDetailPage(board);
+    }
   }
+
+  void _onRefreshClick() => _boardListBloc.add(BoardListEventFetchBoards(true));
 
   @override
   Widget build(BuildContext context) {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
+import 'package:flutter_chan_viewer/utils/chan_logger.dart';
 import 'package:flutter_chan_viewer/utils/chan_util.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/view/view_cached_image.dart';
@@ -47,7 +48,7 @@ class PostListWidget extends StatelessWidget {
                   Html(
                     data: ChanUtil.getHtml(_post.content ?? "", false),
                     onLinkTap: ((String url) {
-                      print("Html link clicked { url: $url }");
+                      ChanLogger.d("Html link clicked { url: $url }");
                     }),
                   )
                 ],

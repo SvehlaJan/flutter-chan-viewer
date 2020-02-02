@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_chan_viewer/models/board_detail_model.dart';
+import 'package:flutter_chan_viewer/utils/chan_logger.dart';
 import 'package:flutter_chan_viewer/utils/chan_util.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/view/view_cached_image.dart';
@@ -40,6 +41,8 @@ class ThreadListWidget extends StatelessWidget {
                       if (_thread.isFavorite) Icon(Icons.star, color: Colors.yellow, size: Constants.favoriteIconSize),
                       Text(_thread.threadId.toString(), style: Theme.of(context).textTheme.caption),
                       Spacer(),
+                      Text("${_thread.replies ?? "?"}p/${_thread.images ?? "?"}m", style: Theme.of(context).textTheme.caption),
+                      Spacer(),
                       Text(ChanUtil.getHumanDate(_thread.timestamp), style: Theme.of(context).textTheme.caption),
                     ],
                   ),
@@ -47,7 +50,7 @@ class ThreadListWidget extends StatelessWidget {
                   Html(
                     data: ChanUtil.getHtml(_thread.content ?? "", true),
                     onLinkTap: ((String url) {
-                      print("Html link clicked { url: $url }");
+                      ChanLogger.d("Html link clicked { url: $url }");
                     }),
                   )
                 ],

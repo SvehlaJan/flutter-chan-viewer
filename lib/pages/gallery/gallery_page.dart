@@ -7,7 +7,6 @@ import 'package:flutter_chan_viewer/bloc/chan_viewer_bloc/chan_viewer_bloc.dart'
 import 'package:flutter_chan_viewer/bloc/chan_viewer_bloc/chan_viewer_event.dart';
 import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
-import 'package:flutter_chan_viewer/pages/thread_detail/bloc/thread_detail_event.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/view/view_cached_image.dart';
 import 'package:flutter_chan_viewer/view/view_custom_carousel.dart';
@@ -87,7 +86,6 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
   }
 
   void _handleOnScaleStart(ScaleStartDetails details) {
-    print("Scale start");
     setState(() {
       _previousScale = _currentScale;
       _normalizedOffset = (details.focalPoint - _offset) / _currentScale;
@@ -97,7 +95,6 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
   }
 
   void _handleOnScaleUpdate(ScaleUpdateDetails details) {
-//    print("Scale update { _offset: $_offset, details.focalPoint: ${details.focalPoint}, _normalizedOffset: $_normalizedOffset }");
     setState(() {
       _currentScale = (_previousScale * details.scale).clamp(SCALE_MIN, SCALE_MAX);
       if (_isScaled()) {
@@ -109,17 +106,14 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
 //      double horizontalDelta = _previousOffset.dx - details.focalPoint.dx;
 //      double newPosition = widget.pageController.position.pixels + horizontalDelta;
 //      _previousOffset = details.focalPoint;
-//      print("horizontalDelta: $horizontalDelta newPosition: $newPosition");
 //      widget.pageController.jumpTo(newPosition);
     });
   }
 
   void _handleOnScaleEnd(ScaleEndDetails details) {
-    print("Scale end");
     if (!_isScaled()) {
       if (details.velocity.pixelsPerSecond.distance >= Constants.minFlingDistance) {
         final direction = details.velocity.pixelsPerSecond.direction;
-        print("{ direction: $direction }");
         if (direction >= (-pi * 3 / 4) && direction <= (-pi / 4)) {
           onBackPressed();
           return;
@@ -132,8 +126,6 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
 
   void _handleOnDoubleTap(TapUpDetails details) {
     if (DateTime.now().millisecondsSinceEpoch - _previousTapTimestamp < DOUBLE_TAP_TIMEOUT) {
-      print("DoubleTap! ${details.toString()}");
-
       setState(() {
         _previousScale = _currentScale;
         _targetOffset = details.localPosition;
@@ -149,7 +141,6 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
   }
 
   void startFlingBackAnimation(Offset velocity) {
-    print("Starting fling back { velocity: $velocity }");
     final Offset direction = velocity / velocity.distance;
     final double distance = (Offset.zero & context.size).shortestSide;
     _flingAnimation = _flingAnimationController.drive(Tween<Offset>(
@@ -162,7 +153,6 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
   }
 
   void startScaleAnimation(double targetScale) {
-    print("animateToScale { targetScale: $targetScale, _scale: $_currentScale");
     _scaleAnimation = _scaleAnimationController.drive(Tween<double>(
       begin: _currentScale,
       end: targetScale,

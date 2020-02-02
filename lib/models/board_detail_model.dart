@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_chan_viewer/models/helper/chan_post_base.dart';
 import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
+import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
 
 class BoardDetailModel extends Equatable {
   final List<ChanThread> _threads = [];
@@ -20,7 +21,8 @@ class BoardDetailModel extends Equatable {
 }
 
 class ChanThread extends ChanPostBase with EquatableMixin {
-  ChanThread(String boardId, int threadId, int timestamp, String subtitle, String content, String filename, String imageId, String extension, this.isFavorite)
+  ChanThread(
+      String boardId, int threadId, int timestamp, String subtitle, String content, String filename, String imageId, String extension, this.replies, this.images, this.isFavorite)
       : super(
           boardId,
           threadId,
@@ -32,6 +34,8 @@ class ChanThread extends ChanPostBase with EquatableMixin {
           extension,
         );
 
+  int replies;
+  int images;
   bool isFavorite;
 
   factory ChanThread.fromMappedJson(String boardId, int threadId, Map<String, dynamic> json) => ChanThread(
@@ -43,7 +47,23 @@ class ChanThread extends ChanPostBase with EquatableMixin {
         json['filename'],
         json['tim'].toString(),
         json['ext'],
+        json['replies'],
+        json['images'],
         json['is_favorite'] ?? json['isFavorite'] ?? false,
+      );
+
+  factory ChanThread.fromCacheDirective(CacheDirective cacheDirective) => ChanThread(
+        cacheDirective.boardId,
+        cacheDirective.threadId,
+        0,
+        "",
+        "",
+        "",
+        "",
+        "",
+        0,
+        0,
+        false,
       );
 
   Map<String, dynamic> toJson() => {
@@ -55,6 +75,8 @@ class ChanThread extends ChanPostBase with EquatableMixin {
         'filename': filename,
         'tim': imageId,
         'ext': extension,
+        'replies': replies,
+        'images': images,
         'is_favorite': isFavorite,
       };
 
@@ -62,5 +84,5 @@ class ChanThread extends ChanPostBase with EquatableMixin {
   List<Object> get props => super.props;
 
   ChanThread copyWithPostData(ChanPost post) =>
-      new ChanThread(boardId, threadId, post.timestamp, post.subtitle, post.content, post.filename, post.imageId, post.extension, isFavorite);
+      new ChanThread(boardId, threadId, post.timestamp, post.subtitle, post.content, post.filename, post.imageId, post.extension, replies, images, isFavorite);
 }

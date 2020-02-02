@@ -2,23 +2,27 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
+import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
 import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
+import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
+import 'package:flutter_chan_viewer/utils/chan_logger.dart';
 import 'package:flutter_chan_viewer/utils/preferences.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'thread_detail_event.dart';
 import 'thread_detail_state.dart';
 
 class ThreadDetailBloc extends Bloc<ThreadDetailEvent, ThreadDetailState> {
   final _repository = ChanRepository.getSync();
+  final _chanStorage = ChanStorage.getSync();
   final String boardId;
   final int threadId;
+  final bool showDownloadsOnly;
 
   ThreadDetailModel _threadDetailModel;
   bool catalogMode = true;
   bool isFavorite = false;
 
-  ThreadDetailBloc(this.boardId, this.threadId);
+  ThreadDetailBloc(this.boardId, this.threadId, this.showDownloadsOnly);
 
   @override
   get initialState => ThreadDetailStateLoading();
@@ -39,12 +43,18 @@ class ThreadDetailBloc extends Bloc<ThreadDetailEvent, ThreadDetailState> {
       if (event is ThreadDetailEventFetchPosts) {
         yield ThreadDetailStateLoading();
 
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        _threadDetailModel = await _repository.fetchThreadDetail(event.forceFetch, boardId, threadId);
-        isFavorite = _repository.isThreadFavorite(_threadDetailModel.cacheDirective);
-        catalogMode = prefs.getBool(Preferences.KEY_THREAD_CATALOG_MODE) ?? false;
+        if (showDownloadsOnly) {
+          DownloadFolderInfo folderInfo = _chanStorage.getThreadDownloadFolderInfo(CacheDirective(boardId, threadId));
+          _threadDetailModel = ThreadDetailModel.fromFolderInfo(folderInfo);
+        } else {
+          _threadDetailModel = await _repository.fetchCachedThreadDetail(boardId, threadId);
+          if (_threadDetailModel != null) {
+            yield _getContentState(true);
+          }
+          _threadDetailModel = await _repository.fetchThreadDetail(event.forceFetch, boardId, threadId);
+        }
 
-        yield ThreadDetailStateContent(_threadDetailModel, selectedPostId, isFavorite, catalogMode);
+        yield _getContentState();
       } else if (event is ThreadDetailEventToggleFavorite) {
         yield ThreadDetailStateLoading();
 
@@ -55,27 +65,38 @@ class ThreadDetailBloc extends Bloc<ThreadDetailEvent, ThreadDetailState> {
           await _repository.removeThreadFromFavorites(_threadDetailModel);
         }
 
-        yield ThreadDetailStateContent(_threadDetailModel, selectedPostId, isFavorite, catalogMode);
+        yield _getContentState();
       } else if (event is ThreadDetailEventToggleCatalogMode) {
         yield ThreadDetailStateLoading();
 
-        SharedPreferences prefs = await SharedPreferences.getInstance();
         catalogMode = !catalogMode;
-        prefs.setBool(Preferences.KEY_THREAD_CATALOG_MODE, catalogMode);
+        Preferences.setBool(Preferences.KEY_THREAD_CATALOG_MODE, catalogMode);
 
-        yield ThreadDetailStateContent(_threadDetailModel, selectedPostId, isFavorite, catalogMode);
-      }  else if (event is ThreadDetailEventOnPostSelected) {
+        yield _getContentState();
+      } else if (event is ThreadDetailEventDownload) {
+        yield ThreadDetailStateLoading();
+
+        _repository.downloadAllMedia(_threadDetailModel);
+
+        yield _getContentState();
+      } else if (event is ThreadDetailEventOnPostSelected) {
         if (event.mediaIndex != null) {
           selectedMediaIndex = event.mediaIndex;
         } else if (event.postId != null) {
           selectedPostId = event.postId;
         }
 
-        yield ThreadDetailStateContent(_threadDetailModel, selectedPostId, isFavorite, catalogMode);
+        yield _getContentState();
       }
-    } catch (o) {
-      print("Event error! ${o.toString()}");
-      yield ThreadDetailStateError(o.toString());
+    } catch (e) {
+      ChanLogger.e("Event error!", e);
+      yield ThreadDetailStateError(e.toString());
     }
+  }
+
+  ThreadDetailStateContent _getContentState([bool lazyLoading = false]) {
+    isFavorite = _repository.isThreadFavorite(_threadDetailModel.cacheDirective);
+    catalogMode = Preferences.getBool(Preferences.KEY_THREAD_CATALOG_MODE) ?? false;
+    return ThreadDetailStateContent(_threadDetailModel, selectedPostId, isFavorite, catalogMode, lazyLoading);
   }
 }

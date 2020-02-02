@@ -1,17 +1,15 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 
 abstract class SettingsState extends Equatable {
   SettingsState();
-}
-
-class SettingsStateLoading extends SettingsState {
-  @override
-  String toString() => 'SettingsStateLoading';
 
   @override
   List<Object> get props => [];
 }
+
+class SettingsStateLoading extends SettingsState {}
 
 class SettingsStateError extends SettingsState {
   final String message;
@@ -27,12 +25,13 @@ class SettingsStateError extends SettingsState {
 
 class SettingsStateContent extends SettingsState {
   final AppTheme theme;
+  final List<DownloadFolderInfo> downloads;
 
-  SettingsStateContent(this.theme);
-
-  @override
-  String toString() => 'SettingsStateContent { theme: $theme }';
+  SettingsStateContent(this.theme, this.downloads);
 
   @override
-  List<Object> get props => [theme];
+  String toString() => 'SettingsStateContent { theme: $theme, downloads: $downloads }';
+
+  @override
+  List<Object> get props => [theme, downloads];
 }

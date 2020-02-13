@@ -105,7 +105,7 @@ packages:
       name: equatable
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.0.3"
+    version: "1.1.0"
   filesize:
     dependency: "direct main"
     description:
@@ -169,7 +169,7 @@ packages:
       name: flutter_widgets
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.1.9"
+    version: "0.1.11"
   html:
     dependency: transitive
     description:

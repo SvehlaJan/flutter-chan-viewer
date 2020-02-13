@@ -15,6 +15,15 @@ class ThreadDetailEventDownload extends ThreadDetailEvent {}
 
 class ThreadDetailEventShowDownloaded extends ThreadDetailEvent {}
 
+class ThreadDetailEventOnLinkClicked extends ThreadDetailEvent {
+  final String url;
+
+  ThreadDetailEventOnLinkClicked(this.url);
+
+  @override
+  List<Object> get props => [url];
+}
+
 class ThreadDetailEventOnPostSelected extends ThreadDetailEvent {
   final int mediaIndex;
   final int postId;

@@ -3,7 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/chan_viewer_bloc/chan_viewer_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/chan_viewer_bloc/chan_viewer_event.dart';
-import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
+import 'package:flutter_chan_viewer/models/chan_post.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
 import 'package:flutter_chan_viewer/pages/thread_detail/bloc/thread_detail_event.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
@@ -132,6 +132,4 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
         return PhotoViewScaleState.initial;
     }
   }
-
-//  ChanCachedImage(post, BoxFit.contain, showProgress: true)
 }

@@ -6,6 +6,7 @@ import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
 import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
 import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
 import 'package:flutter_chan_viewer/utils/chan_logger.dart';
+import 'package:flutter_chan_viewer/utils/chan_util.dart';
 import 'package:flutter_chan_viewer/utils/preferences.dart';
 
 import 'thread_detail_event.dart';
@@ -84,6 +85,13 @@ class ThreadDetailBloc extends Bloc<ThreadDetailEvent, ThreadDetailState> {
           selectedMediaIndex = event.mediaIndex;
         } else if (event.postId != null) {
           selectedPostId = event.postId;
+        }
+
+        yield _getContentState();
+      } else if (event is ThreadDetailEventOnLinkClicked) {
+        int postIndex = _threadDetailModel.getPostIndex(ChanUtil.getPostIdFromUrl(event.url));
+        if (postIndex > 0) {
+          selectedMediaIndex = postIndex;
         }
 
         yield _getContentState();

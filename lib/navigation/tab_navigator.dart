@@ -12,7 +12,6 @@ import 'package:flutter_chan_viewer/pages/settings/settings_page.dart';
 import 'package:flutter_chan_viewer/pages/thread_detail/bloc/thread_detail_bloc.dart';
 import 'package:flutter_chan_viewer/pages/thread_detail/thread_detail_page.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
-import 'package:flutter_chan_viewer/pages/gallery/gallery_page.dart';
 
 import 'tab_helper.dart';
 
@@ -51,19 +50,19 @@ class TabNavigator extends StatelessWidget {
               builder: (BuildContext context) => BlocProvider(create: (context) => ThreadDetailBloc(boardId, threadId, showDownloadsOnly), child: ThreadDetailPage(boardId, threadId)));
         }
         return null;
-      case Constants.galleryRoute:
-        if (arguments != null &&
-            arguments.containsKey(GalleryPage.ARG_BOARD_ID) &&
-            arguments.containsKey(GalleryPage.ARG_THREAD_ID) &&
-            arguments.containsKey(GalleryPage.ARG_POST_ID)) {
-          String boardId = arguments[GalleryPage.ARG_BOARD_ID];
-          int threadId = arguments[GalleryPage.ARG_THREAD_ID];
-          bool showDownloadsOnly = arguments[ThreadDetailPage.ARG_SHOW_DOWNLOADS_ONLY] ?? false;
-          return MaterialPageRoute<int>(
-              settings: settings,
-              builder: (BuildContext context) => BlocProvider(create: (context) => ThreadDetailBloc(boardId, threadId, showDownloadsOnly), child: GalleryPage()));
-        }
-        return null;
+//      case Constants.galleryRoute:
+//        if (arguments != null &&
+//            arguments.containsKey(GalleryPage.ARG_BOARD_ID) &&
+//            arguments.containsKey(GalleryPage.ARG_THREAD_ID) &&
+//            arguments.containsKey(GalleryPage.ARG_POST_ID)) {
+//          String boardId = arguments[GalleryPage.ARG_BOARD_ID];
+//          int threadId = arguments[GalleryPage.ARG_THREAD_ID];
+//          bool showDownloadsOnly = arguments[ThreadDetailPage.ARG_SHOW_DOWNLOADS_ONLY] ?? false;
+//          return MaterialPageRoute<int>(
+//              settings: settings,
+//              builder: (BuildContext context) => BlocProvider(create: (context) => ThreadDetailBloc(boardId, threadId, showDownloadsOnly), child: GalleryPage()));
+//        }
+//        return null;
       case Constants.settingsRoute:
         return MaterialPageRoute<void>(settings: settings, builder: (BuildContext context) => BlocProvider(create: (context) => SettingsBloc(), child: SettingsPage()));
       case Constants.favoritesRoute:

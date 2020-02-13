@@ -1,7 +1,8 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter_chan_viewer/models/chan_post.dart';
 import 'package:flutter_chan_viewer/models/helper/chan_post_base.dart';
-import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
 import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
+import 'package:flutter_chan_viewer/utils/chan_util.dart';
 
 class BoardDetailModel extends Equatable {
   final List<ChanThread> _threads = [];
@@ -42,8 +43,8 @@ class ChanThread extends ChanPostBase with EquatableMixin {
         json['board_id'] ?? boardId,
         json['no'] ?? threadId,
         json['time'],
-        json['sub'],
-        json['com'],
+        ChanUtil.unescapeHtml(json['sub']),
+        ChanUtil.unescapeHtml(json['com']),
         json['filename'],
         json['tim'].toString(),
         json['ext'],

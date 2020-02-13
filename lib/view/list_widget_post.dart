@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
-import 'package:flutter_chan_viewer/utils/chan_logger.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_chan_viewer/models/chan_post.dart';
+import 'package:flutter_chan_viewer/pages/thread_detail/bloc/thread_detail_bloc.dart';
+import 'package:flutter_chan_viewer/pages/thread_detail/bloc/thread_detail_event.dart';
 import 'package:flutter_chan_viewer/utils/chan_util.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/view/view_cached_image.dart';
@@ -40,17 +42,18 @@ class PostListWidget extends StatelessWidget {
                   Row(
                     children: <Widget>[
                       Text(_post.postId.toString(), style: Theme.of(context).textTheme.caption),
+                      Spacer(),
+                      Text("${_post.repliesFrom.length}r", style: Theme.of(context).textTheme.caption),
+                      Spacer(),
                       Text(ChanUtil.getHumanDate(_post.timestamp), style: Theme.of(context).textTheme.caption),
                     ],
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   ),
                   if (_post.subtitle != null) Text(_post.subtitle, style: Theme.of(context).textTheme.subtitle),
                   Html(
-                    data: ChanUtil.getHtml(_post.content ?? "", false),
-                    onLinkTap: ((String url) {
-                      ChanLogger.d("Html link clicked { url: $url }");
-                    }),
-                  )
+                    data: ChanUtil.getReadableHtml(_post.content ?? "", false),
+                    onLinkTap: ((String url) => _onLinkClicked(url, context)),
+                  ),
                 ],
               ),
             ),
@@ -59,4 +62,6 @@ class PostListWidget extends StatelessWidget {
       ),
     );
   }
+
+  _onLinkClicked(String url, BuildContext context) => BlocProvider.of<ThreadDetailBloc>(context).add(ThreadDetailEventOnLinkClicked(url));
 }

@@ -100,23 +100,15 @@ class ThreadDetailModel with EquatableMixin {
 
 class ChanPost extends ChanPostBase with EquatableMixin {
   final int postId;
+  final List<ChanPost> replies;
 
   factory ChanPost.fromMappedJson(String boardId, int threadId, Map<String, dynamic> json) => ChanPost(
-        json['board_id'] ?? boardId,
-        json['thread_id'] ?? threadId,
-        json['no'],
-        json['time'],
-        json['sub'],
-        json['com'],
-        json['filename'],
-        json['tim'].toString(),
-        json['ext'],
-      );
+      json['board_id'] ?? boardId, json['thread_id'] ?? threadId, json['no'], json['time'], json['sub'], json['com'], json['filename'], json['tim'].toString(), json['ext'], []);
 
   factory ChanPost.fromDownloadedFile(String fileName, CacheDirective cacheDirective, int postId) {
     String imageId = basenameWithoutExtension(fileName);
     String extensionStr = extension(fileName);
-    return ChanPost(cacheDirective.boardId, cacheDirective.threadId, postId, 0, "", "", fileName, imageId, extensionStr);
+    return ChanPost(cacheDirective.boardId, cacheDirective.threadId, postId, 0, "", "", fileName, imageId, extensionStr, []);
   }
 
   Map<String, dynamic> toJson() => {
@@ -131,7 +123,7 @@ class ChanPost extends ChanPostBase with EquatableMixin {
         'ext': this.extension,
       };
 
-  ChanPost(String boardId, int threadId, this.postId, int timestamp, String subtitle, String content, String filename, String imageId, String extension)
+  ChanPost(String boardId, int threadId, this.postId, int timestamp, String subtitle, String content, String filename, String imageId, String extension, this.replies)
       : super(
           boardId,
           threadId,

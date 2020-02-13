@@ -27,7 +27,6 @@ class ChanRepository {
   ChanStorage _chanStorage;
   ChanDownloader _chanDownloader;
   ChanApiProvider _chanApiProvider;
-  SharedPreferences _prefs;
 
   Database _db;
   StoreRef<String, Map<String, dynamic>> _favoriteThreadsStore;
@@ -51,7 +50,6 @@ class ChanRepository {
     _instance._chanStorage = await ChanStorage.initAndGet();
     _instance._chanDownloader = await ChanDownloader.initAndGet();
     _instance._chanApiProvider = ChanApiProvider();
-    _instance._prefs = await SharedPreferences.getInstance();
 
     var dir = await getApplicationDocumentsDirectory();
     await dir.create(recursive: true);
@@ -160,7 +158,7 @@ class ChanRepository {
     return false;
   }
 
-  Future<bool> isBoardFavorite(String boardId) async => (_prefs.getStringList(Preferences.KEY_FAVORITE_BOARDS) ?? []).contains(boardId);
+  Future<bool> isBoardFavorite(String boardId) async => (Preferences.getStringList(Preferences.KEY_FAVORITE_BOARDS)).contains(boardId);
 
   Future<void> addThreadToFavorites(ThreadDetailModel model) async {
     try {

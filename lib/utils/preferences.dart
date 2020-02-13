@@ -4,22 +4,42 @@ import 'package:shared_preferences/shared_preferences.dart';
  * https://gist.github.com/faisalraja/9b628439978c67b2fb6515cf202a3992
  */
 class Preferences {
+  static final Preferences _instance = new Preferences._internal();
+  static bool _initialized = false;
+
+  static SharedPreferences _prefs;
+  static Map<String, dynamic> _memoryPrefs = Map<String, dynamic>();
+
   static const String KEY_USER_UID = "user_uid";
   static const String KEY_USER_NICK_NAME = "user_nick_name";
   static const String KEY_USER_EMAIL = "user_email";
   static const String KEY_USER_PHOTO_URL = "user_photo_url";
   static const String KEY_SETTINGS_THEME = "settings_theme";
+  static const String KEY_SETTINGS_SHOW_NSFW = "settings_show_nsfw";
   static const String KEY_FAVORITE_BOARDS = "favorite_boards";
   static const String KEY_THREAD_CATALOG_MODE = "thread_catalog_mode";
 
-  static SharedPreferences _prefs;
-  static Map<String, dynamic> _memoryPrefs = Map<String, dynamic>();
+  Preferences._internal() {
+    // initialization code
+  }
 
-  static Future<SharedPreferences> load() async {
-    if (_prefs == null) {
-      _prefs = await SharedPreferences.getInstance();
-    }
-    return _prefs;
+  static Preferences getSync() {
+    if (!_initialized) throw Exception("Cache must be initialized at first!");
+    return _instance;
+  }
+
+  static Future<Preferences> initAndGet() async {
+    if (_initialized) return _instance;
+
+    _prefs = await SharedPreferences.getInstance();
+
+    _initialized = true;
+    return _instance;
+  }
+
+  static void setStringList(String key, List<String> value) {
+    _prefs.setStringList(key, value);
+    _memoryPrefs[key] = value;
   }
 
   static void setString(String key, String value) {
@@ -40,6 +60,21 @@ class Preferences {
   static void setBool(String key, bool value) {
     _prefs.setBool(key, value);
     _memoryPrefs[key] = value;
+  }
+
+  static List<String> getStringList(String key, {List<String> def = const []}) {
+    List<String> val;
+    if (_memoryPrefs.containsKey(key)) {
+      val = _memoryPrefs[key];
+    }
+    if (val == null) {
+      val = _prefs.getStringList(key);
+    }
+    if (val == null) {
+      val = def;
+    }
+    _memoryPrefs[key] = val;
+    return val;
   }
 
   static String getString(String key, {String def}) {

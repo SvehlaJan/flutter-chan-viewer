@@ -31,8 +31,7 @@ class BoardDetailBloc extends Bloc<BoardDetailEvent, BoardDetailState> {
         yield BoardDetailStateLoading();
 
         BoardDetailModel boardDetailModel = await _repository.fetchBoardDetail(event.forceFetch, boardId);
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        List<String> favoriteBoards = prefs.getStringList(Preferences.KEY_FAVORITE_BOARDS) ?? [];
+        List<String> favoriteBoards = Preferences.getStringList(Preferences.KEY_FAVORITE_BOARDS);
         isFavorite = favoriteBoards.contains(boardId);
         List<ChanThread> filteredThreads = boardDetailModel.threads.where((thread) => _matchesQuery(thread, searchQuery)).toList();
 
@@ -42,13 +41,12 @@ class BoardDetailBloc extends Bloc<BoardDetailEvent, BoardDetailState> {
         add(BoardDetailEventFetchThreads(false));
       } else if (event is BoardDetailEventToggleFavorite) {
         isFavorite = !isFavorite;
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        List<String> favoriteBoards = prefs.getStringList(Preferences.KEY_FAVORITE_BOARDS) ?? [];
+        List<String> favoriteBoards = Preferences.getStringList(Preferences.KEY_FAVORITE_BOARDS);
         favoriteBoards.removeWhere((value) => value == boardId);
         if (isFavorite) {
           favoriteBoards.add(boardId);
         }
-        prefs.setStringList(Preferences.KEY_FAVORITE_BOARDS, favoriteBoards);
+        Preferences.setStringList(Preferences.KEY_FAVORITE_BOARDS, favoriteBoards);
         add(BoardDetailEventFetchThreads(false));
       }
     } catch (e) {

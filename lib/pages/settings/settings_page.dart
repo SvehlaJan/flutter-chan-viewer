@@ -33,12 +33,6 @@ class _SettingsPageState extends BasePageState<SettingsPage> {
   @override
   String getPageTitle() => "Settings";
 
-  void _onThemeSwitchClicked(bool enabled) {
-    AppTheme newTheme = enabled ? AppTheme.dark : AppTheme.light;
-    _settingsBloc.add(SettingsEventSetTheme(newTheme));
-    BlocProvider.of<AppBloc>(context).add(AppEventSetTheme(newTheme));
-  }
-
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<SettingsBloc, SettingsState>(bloc: _settingsBloc, builder: (context, state) => buildPage(context, buildBody(context, state)));
@@ -85,7 +79,18 @@ class _SettingsPageState extends BasePageState<SettingsPage> {
               elevation: 2.0,
               child: Column(
                 children: <Widget>[
-                  ListTile(leading: Icon(Icons.priority_high, color: Colors.red), title: Text("Experiment"), onTap: _onExperimentClicked),
+                  ListTile(leading: Icon(Icons.block, color: Colors.red), title: Text("Experiment"), onTap: _onExperimentClicked),
+                  ListTile(
+                    leading: Icon(
+                      Icons.priority_high,
+                      color: Colors.grey,
+                    ),
+                    title: Text("Show NSFW"),
+                    trailing: CommonSwitch(
+                      onChanged: _onToggleNSFWClicked,
+                      defValue: state.nsfwEnabled,
+                    ),
+                  ),
                   ListTile(leading: Icon(Icons.cancel, color: Colors.red), title: Text("Cancel downloads"), onTap: _onCancelDownloadsClicked),
                 ],
               ),
@@ -128,15 +133,17 @@ class _SettingsPageState extends BasePageState<SettingsPage> {
     );
   }
 
-  void _onExperimentClicked() {
-    _settingsBloc.add(SettingsEventExperiment());
+  void _onThemeSwitchClicked(bool enabled) {
+    AppTheme newTheme = enabled ? AppTheme.dark : AppTheme.light;
+    _settingsBloc.add(SettingsEventSetTheme(newTheme));
+    BlocProvider.of<AppBloc>(context).add(AppEventSetTheme(newTheme));
   }
 
-  void _onCancelDownloadsClicked() {
-    _settingsBloc.add(SettingsEventCancelDownloads());
-  }
+  void _onExperimentClicked() => _settingsBloc.add(SettingsEventExperiment());
+  
+  void _onToggleNSFWClicked(bool enabled) => _settingsBloc.add(SettingsEventToggleNSFW(enabled));
 
-  void _onDeleteFolderClicked(CacheDirective cacheDirective) {
-    _settingsBloc.add(SettingsEventDeleteFolder(cacheDirective));
-  }
+  void _onCancelDownloadsClicked() => _settingsBloc.add(SettingsEventCancelDownloads());
+
+  void _onDeleteFolderClicked(CacheDirective cacheDirective) => _settingsBloc.add(SettingsEventDeleteFolder(cacheDirective));
 }

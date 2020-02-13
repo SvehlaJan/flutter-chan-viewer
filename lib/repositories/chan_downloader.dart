@@ -18,7 +18,6 @@ class ChanDownloader {
   static const int CACHE_MAX_SIZE = 10;
 
   ChanStorage _chanStorage;
-  SharedPreferences _prefs;
   Database _db;
 
   static ChanDownloader getSync() {
@@ -33,7 +32,6 @@ class ChanDownloader {
     await FlutterDownloader.initialize();
 //    FlutterDownloader.registerCallback(downloadCallback);
     _instance._chanStorage = await ChanStorage.initAndGet();
-    _instance._prefs = await SharedPreferences.getInstance();
 
     var dir = await getApplicationDocumentsDirectory();
     await dir.create(recursive: true);

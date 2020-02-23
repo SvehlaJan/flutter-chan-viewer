@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/app_bloc/app_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/app_bloc/app_event.dart';
+import 'package:flutter_chan_viewer/navigation/navigation_helper.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
 import 'package:flutter_chan_viewer/pages/settings/bloc/settings_bloc.dart';
 import 'package:flutter_chan_viewer/pages/settings/bloc/settings_event.dart';
@@ -85,10 +86,10 @@ class _SettingsPageState extends BasePageState<SettingsPage> {
                       Icons.priority_high,
                       color: Colors.grey,
                     ),
-                    title: Text("Show NSFW"),
+                    title: Text("Show SFW Only"),
                     trailing: CommonSwitch(
-                      onChanged: _onToggleNSFWClicked,
-                      defValue: state.nsfwEnabled,
+                      onChanged: _onToggleShowSfwOnlyClicked,
+                      defValue: state.showSfwOnly,
                     ),
                   ),
                   ListTile(leading: Icon(Icons.cancel, color: Colors.red), title: Text("Cancel downloads"), onTap: _onCancelDownloadsClicked),
@@ -126,11 +127,17 @@ class _SettingsPageState extends BasePageState<SettingsPage> {
   }
 
   void _onFolderTileClicked(DownloadFolderInfo folderInfo) {
-    Navigator.pushNamed(
-      context,
-      Constants.threadDetailRoute,
-      arguments: ThreadDetailPage.getArguments(folderInfo.cacheDirective.boardId, folderInfo.cacheDirective.threadId, true),
+    Navigator.of(context).push(
+      NavigationHelper.getRoute(
+        Constants.threadDetailRoute,
+        ThreadDetailPage.getArguments(folderInfo.cacheDirective.boardId, folderInfo.cacheDirective.threadId, true),
+      ),
     );
+//    Navigator.pushNamed(
+//      context,
+//      Constants.threadDetailRoute,
+//      arguments: ThreadDetailPage.getArguments(folderInfo.cacheDirective.boardId, folderInfo.cacheDirective.threadId, true),
+//    );
   }
 
   void _onThemeSwitchClicked(bool enabled) {
@@ -140,8 +147,8 @@ class _SettingsPageState extends BasePageState<SettingsPage> {
   }
 
   void _onExperimentClicked() => _settingsBloc.add(SettingsEventExperiment());
-  
-  void _onToggleNSFWClicked(bool enabled) => _settingsBloc.add(SettingsEventToggleNSFW(enabled));
+
+  void _onToggleShowSfwOnlyClicked(bool enabled) => _settingsBloc.add(SettingsEventToggleShowSfwOnly(enabled));
 
   void _onCancelDownloadsClicked() => _settingsBloc.add(SettingsEventCancelDownloads());
 

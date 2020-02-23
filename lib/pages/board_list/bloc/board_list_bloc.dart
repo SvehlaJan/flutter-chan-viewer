@@ -27,8 +27,8 @@ class BoardListBloc extends Bloc<BoardListEvent, BoardListState> {
         yield BoardListStateLoading();
 
         BoardListModel boardListModel = await _repository.fetchBoardList(event.forceFetch);
-        bool allowNSFW = Preferences.getBool(Preferences.KEY_SETTINGS_SHOW_NSFW);
-        List<ChanBoard> filteredBoards = boardListModel.boards.where((board) => _matchesFilter(board, searchQuery, allowNSFW)).toList();
+        bool showSfwOnly = Preferences.getBool(Preferences.KEY_SETTINGS_SHOW_SFW_ONLY, def: true);
+        List<ChanBoard> filteredBoards = boardListModel.boards.where((board) => _matchesFilter(board, searchQuery, showSfwOnly)).toList();
         List<String> favoriteBoardIds = Preferences.getStringList(Preferences.KEY_FAVORITE_BOARDS);
         List<ChanBoard> favoriteBoards = filteredBoards.where((board) => favoriteBoardIds.contains(board.boardId)).toList();
         List<ChanBoard> otherBoards = filteredBoards.where((board) => !favoriteBoardIds.contains(board.boardId)).toList();
@@ -54,8 +54,8 @@ class BoardListBloc extends Bloc<BoardListEvent, BoardListState> {
     }
   }
 
-  bool _matchesFilter(ChanBoard board, String query, bool allowNSFW) {
-    if (!allowNSFW && !board.workSafe) {
+  bool _matchesFilter(ChanBoard board, String query, bool showSfwOnly) {
+    if (showSfwOnly && !board.workSafe) {
       return false;
     }
     if (query.isNotEmpty) {

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chan_viewer/models/board_detail_model.dart';
 import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
+import 'package:flutter_chan_viewer/navigation/navigation_helper.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
 import 'package:flutter_chan_viewer/pages/thread_detail/thread_detail_page.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
@@ -69,10 +70,16 @@ class _FavoritesPageState extends BasePageState<FavoritesPage> {
   }
 
   void _openThreadDetailPage(ChanThread thread) {
-    Navigator.pushNamed(
-      context,
-      Constants.threadDetailRoute,
-      arguments: ThreadDetailPage.getArguments(thread.boardId, thread.threadId, false),
+    Navigator.of(context).push(
+      NavigationHelper.getRoute(
+        Constants.threadDetailRoute,
+        ThreadDetailPage.getArguments(thread.boardId, thread.threadId, false),
+      ),
     );
+//    Navigator.pushNamed(
+//      context,
+//      Constants.threadDetailRoute,
+//      arguments: ThreadDetailPage.getArguments(thread.boardId, thread.threadId, false),
+//    );
   }
 }

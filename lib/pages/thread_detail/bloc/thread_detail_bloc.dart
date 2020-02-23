@@ -41,7 +41,9 @@ class ThreadDetailBloc extends Bloc<ThreadDetailEvent, ThreadDetailState> {
   @override
   Stream<ThreadDetailState> mapEventToState(ThreadDetailEvent event) async* {
     try {
-      if (event is ThreadDetailEventFetchPosts) {
+      if (event is ThreadDetailEventShowContent) {
+        yield _getShowListState();
+      } else if (event is ThreadDetailEventFetchPosts) {
         yield ThreadDetailStateLoading();
 
         if (showDownloadsOnly) {
@@ -50,12 +52,12 @@ class ThreadDetailBloc extends Bloc<ThreadDetailEvent, ThreadDetailState> {
         } else {
           _threadDetailModel = await _repository.fetchCachedThreadDetail(boardId, threadId);
           if (_threadDetailModel != null) {
-            yield _getContentState(true);
+            yield _getShowListState(lazyLoading: true);
           }
           _threadDetailModel = await _repository.fetchThreadDetail(event.forceFetch, boardId, threadId);
         }
 
-        yield _getContentState();
+        yield _getShowListState();
       } else if (event is ThreadDetailEventToggleFavorite) {
         yield ThreadDetailStateLoading();
 
@@ -66,20 +68,20 @@ class ThreadDetailBloc extends Bloc<ThreadDetailEvent, ThreadDetailState> {
           await _repository.removeThreadFromFavorites(_threadDetailModel);
         }
 
-        yield _getContentState();
+        yield _getShowListState();
       } else if (event is ThreadDetailEventToggleCatalogMode) {
         yield ThreadDetailStateLoading();
 
         catalogMode = !catalogMode;
         Preferences.setBool(Preferences.KEY_THREAD_CATALOG_MODE, catalogMode);
 
-        yield _getContentState();
+        yield _getShowListState();
       } else if (event is ThreadDetailEventDownload) {
         yield ThreadDetailStateLoading();
 
         _repository.downloadAllMedia(_threadDetailModel);
 
-        yield _getContentState();
+        yield _getShowListState();
       } else if (event is ThreadDetailEventOnPostSelected) {
         if (event.mediaIndex != null) {
           selectedMediaIndex = event.mediaIndex;
@@ -87,14 +89,17 @@ class ThreadDetailBloc extends Bloc<ThreadDetailEvent, ThreadDetailState> {
           selectedPostId = event.postId;
         }
 
-        yield _getContentState();
+        yield _getShowListState();
       } else if (event is ThreadDetailEventOnLinkClicked) {
         int postIndex = _threadDetailModel.getPostIndex(ChanUtil.getPostIdFromUrl(event.url));
         if (postIndex > 0) {
           selectedMediaIndex = postIndex;
         }
 
-        yield _getContentState();
+        yield _getShowListState();
+      } else if (event is ThreadDetailEventOnReplyClicked) {
+        selectedPostId = event.postId;
+        yield ThreadDetailStateCloseGallery();
       }
     } catch (e) {
       ChanLogger.e("Event error!", e);
@@ -102,9 +107,13 @@ class ThreadDetailBloc extends Bloc<ThreadDetailEvent, ThreadDetailState> {
     }
   }
 
-  ThreadDetailStateContent _getContentState([bool lazyLoading = false]) {
+  ThreadDetailStateShowList _getShowListState({bool lazyLoading = false}) {
     isFavorite = _repository.isThreadFavorite(_threadDetailModel.cacheDirective);
     catalogMode = Preferences.getBool(Preferences.KEY_THREAD_CATALOG_MODE) ?? false;
-    return ThreadDetailStateContent(_threadDetailModel, selectedPostId, isFavorite, catalogMode, lazyLoading);
+    return ThreadDetailStateShowList(_threadDetailModel, selectedPostId, isFavorite, catalogMode, lazyLoading);
+  }
+
+  ThreadDetailStateShowGallery _getShowGalleryState() {
+    return ThreadDetailStateShowGallery(_threadDetailModel, selectedPostId);
   }
 }

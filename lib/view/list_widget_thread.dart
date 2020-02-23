@@ -27,6 +27,7 @@ class ThreadListWidget extends StatelessWidget {
                   maxWidth: Constants.avatarImageSize,
                   minWidth: Constants.avatarImageSize,
                   minHeight: Constants.avatarImageSize,
+//                  maxHeight: Constants.avatarImageMaxHeight,
                 ),
                 child: ChanCachedImage(_thread, BoxFit.fitWidth, forceThumbnail: true)),
           Flexible(

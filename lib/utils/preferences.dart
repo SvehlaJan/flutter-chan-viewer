@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
  * https://gist.github.com/faisalraja/9b628439978c67b2fb6515cf202a3992
  */
 class Preferences {
-  static final Preferences _instance = new Preferences._internal();
+  static final Preferences _instance = Preferences._internal();
   static bool _initialized = false;
 
   static SharedPreferences _prefs;
@@ -15,7 +15,7 @@ class Preferences {
   static const String KEY_USER_EMAIL = "user_email";
   static const String KEY_USER_PHOTO_URL = "user_photo_url";
   static const String KEY_SETTINGS_THEME = "settings_theme";
-  static const String KEY_SETTINGS_SHOW_NSFW = "settings_show_nsfw";
+  static const String KEY_SETTINGS_SHOW_SFW_ONLY = "settings_show_sfw_only";
   static const String KEY_FAVORITE_BOARDS = "favorite_boards";
   static const String KEY_THREAD_CATALOG_MODE = "thread_catalog_mode";
 

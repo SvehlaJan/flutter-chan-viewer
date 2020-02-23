@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 
 enum AppTheme { light, dark }
 
+enum OnlineState { ONLINE, OFFLINE, UNKNOWN }
+
 class Constants {
   //routes
   static const String favoritesRoute = "favorites";
@@ -17,6 +19,7 @@ class Constants {
 
   static const double favoriteIconSize = 20.0;
   static const double avatarImageSize = 100.0;
+  static const double avatarImageMaxHeight = 600.0;
   static const double progressPlaceholderSize = 40.0;
   static const double errorPlaceholderSize = 100.0;
   static const double minFlingDistance = 100.0;

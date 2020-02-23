@@ -5,6 +5,7 @@ import 'package:flutter_chan_viewer/models/board_detail_model.dart';
 import 'package:flutter_chan_viewer/models/board_list_model.dart';
 import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
 import 'package:flutter_chan_viewer/utils/chan_logger.dart';
+import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:http/http.dart' show Client;
 
 class ChanApiProvider {
@@ -42,7 +43,7 @@ class ChanApiProvider {
     final response = await client.get(url);
     ChanLogger.d("Post list fetched. { url: $url, response status: ${response.statusCode} }");
     if (response.statusCode == 200) {
-      return ThreadDetailModel.fromJson(boardId, threadId, json.decode(response.body));
+      return ThreadDetailModel.fromJson(boardId, threadId, json.decode(response.body), OnlineState.ONLINE);
     } else {
       throw Exception('Failed to load posts');
     }

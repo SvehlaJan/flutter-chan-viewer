@@ -23,9 +23,7 @@ abstract class BasePageState<T extends BasePage> extends State<T> {
               actions: _buildAppBarActions(context),
             )
           : null,
-      body: Builder(
-        builder: (BuildContext context) => body,
-      ),
+      body: Builder(builder: (BuildContext context) => body),
       floatingActionButton: getPageFab(context),
     );
   }

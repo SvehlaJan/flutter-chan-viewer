@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chan_viewer/models/board_list_model.dart';
 import 'package:flutter_chan_viewer/models/helper/chan_board_item_wrapper.dart';
+import 'package:flutter_chan_viewer/navigation/navigation_helper.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
+import 'package:flutter_chan_viewer/pages/board_detail/bloc/board_detail_bloc.dart';
 import 'package:flutter_chan_viewer/pages/board_detail/board_detail_page.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/view/list_widget_board.dart';
@@ -31,10 +33,7 @@ class _BoardListPageState extends BasePageState<BoardListPage> {
   String getPageTitle() => "Boards";
 
   @override
-  List<AppBarAction> getAppBarActions(BuildContext context) => [
-    AppBarAction("Search", Icons.search, _onSearchClick),
-    AppBarAction("Refresh", Icons.refresh, _onRefreshClick)
-  ];
+  List<AppBarAction> getAppBarActions(BuildContext context) => [AppBarAction("Search", Icons.search, _onSearchClick), AppBarAction("Refresh", Icons.refresh, _onRefreshClick)];
 
   void _onSearchClick() async {
     ChanBoard board = await showSearch<ChanBoard>(context: context, delegate: CustomSearchDelegate(_boardListBloc));
@@ -78,13 +77,20 @@ class _BoardListPageState extends BasePageState<BoardListPage> {
   }
 
   void _openBoardDetailPage(ChanBoard board) async {
-    await Navigator.pushNamed(
-      context,
-      Constants.boardDetailRoute,
-      arguments: {
-        BoardDetailPage.ARG_BOARD_ID: board.boardId,
-      },
-    );
+    await Navigator.of(context).push(
+        NavigationHelper.getRoute(
+          Constants.boardDetailRoute,
+          {
+            BoardDetailPage.ARG_BOARD_ID: board.boardId,
+          },
+        ));
+//    await Navigator.pushNamed(
+//      context,
+//      Constants.boardDetailRoute,
+//      arguments: {
+//        BoardDetailPage.ARG_BOARD_ID: board.boardId,
+//      },
+//    );
 
     _boardListBloc.add(BoardListEventFetchBoards(false));
   }

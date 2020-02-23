@@ -28,7 +28,7 @@ class ChanCachedImage extends StatelessWidget {
     return ChanTransitionToImage(
       image: ChanNetworkImage(mainUrl, cacheDirective),
       loadFailedCallback: () {
-        ChanLogger.e('Failed to load image: $mainUrl');
+        print('Failed to load image: $mainUrl');
       },
       placeholder: Icon(Icons.sync_problem, size: Constants.errorPlaceholderSize),
       loadingWidgetBuilder: showProgress

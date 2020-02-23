@@ -8,7 +8,7 @@ import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 
 class ChanStorage {
-  static final ChanStorage _instance = new ChanStorage._internal();
+  static final ChanStorage _instance = ChanStorage._internal();
   static bool _initialized = false;
 
   static const String PERMANENT_DIR = "saved";
@@ -137,12 +137,25 @@ class ChanStorage {
     }
   }
 
+  Future<void> moveFolderToTempCache(CacheDirective cacheDirective) async {
+    try {
+      Directory directory = Directory(getFolderAbsolutePath(cacheDirective));
+      if (!directory.existsSync()) return null;
+
+      directory.deleteSync(recursive: true);
+      return null;
+    } catch (e) {
+      ChanLogger.e("File delete error!", e);
+      return null;
+    }
+  }
+
   Future<HashMap<String, List<String>>> listDirectories() async {
     try {
       Directory boardsDirectory = Directory(_permanentDirectory.path);
       if (!boardsDirectory.existsSync()) await boardsDirectory.create(recursive: true);
 
-      HashMap<String, List<String>> threadMap = new HashMap();
+      HashMap<String, List<String>> threadMap = HashMap();
       List<String> boards = boardsDirectory.listSync().map((file) => basename(file.path)).toList();
       for (String board in boards) {
         Directory threadDirectory = Directory(join(_permanentDirectory.path, board));
@@ -165,7 +178,7 @@ class ChanStorage {
 
   List<DownloadFolderInfo> getAllDownloadFoldersInfo() {
     try {
-      List<DownloadFolderInfo> downloadedFolders = new List<DownloadFolderInfo>();
+      List<DownloadFolderInfo> downloadedFolders = List<DownloadFolderInfo>();
       Directory boardsDirectory = Directory(_permanentDirectory.path);
       if (!boardsDirectory.existsSync()) boardsDirectory.createSync(recursive: true);
 

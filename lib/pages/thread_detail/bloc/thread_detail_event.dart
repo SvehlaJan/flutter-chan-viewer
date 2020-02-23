@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter_chan_viewer/models/chan_post.dart';
 
 abstract class ThreadDetailEvent extends Equatable {
   ThreadDetailEvent();
@@ -6,6 +7,8 @@ abstract class ThreadDetailEvent extends Equatable {
   @override
   List<Object> get props => [];
 }
+
+class ThreadDetailEventShowContent extends ThreadDetailEvent {}
 
 class ThreadDetailEventToggleFavorite extends ThreadDetailEvent {}
 
@@ -35,6 +38,18 @@ class ThreadDetailEventOnPostSelected extends ThreadDetailEvent {
 
   @override
   List<Object> get props => [mediaIndex, postId];
+}
+
+class ThreadDetailEventOnReplyClicked extends ThreadDetailEvent {
+  final int postId;
+
+  ThreadDetailEventOnReplyClicked(this.postId);
+
+  @override
+  String toString() => 'ThreadDetailEventOnReplyClicked { post: $postId }';
+
+  @override
+  List<Object> get props => [postId];
 }
 
 class ThreadDetailEventFetchPosts extends ThreadDetailEvent {

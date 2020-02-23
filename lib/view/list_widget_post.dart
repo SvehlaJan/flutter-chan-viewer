@@ -1,38 +1,68 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chan_viewer/models/chan_post.dart';
-import 'package:flutter_chan_viewer/pages/thread_detail/bloc/thread_detail_bloc.dart';
-import 'package:flutter_chan_viewer/pages/thread_detail/bloc/thread_detail_event.dart';
 import 'package:flutter_chan_viewer/utils/chan_util.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/view/view_cached_image.dart';
 import 'package:flutter_html/flutter_html.dart';
 
-class PostListWidget extends StatelessWidget {
+class PostListWidget extends StatefulWidget {
   final ChanPost _post;
   final bool _selected;
+  final Function _onTap;
+  final Function(String url) _onLinkTap;
 
-  PostListWidget(this._post, this._selected);
+  PostListWidget(this._post, this._selected, this._onTap, this._onLinkTap);
+
+  @override
+  _PostListWidgetState createState() => _PostListWidgetState();
+}
+
+class _PostListWidgetState extends State<PostListWidget> with SingleTickerProviderStateMixin {
+  AnimationController _controller;
+  Animation<double> _animation;
+
+  initState() {
+    super.initState();
+
+    if (widget._selected) {
+      _controller = AnimationController(duration: const Duration(milliseconds: 2000), vsync: this, value: 0.6, lowerBound: 0.5);
+      _animation = CurvedAnimation(parent: _controller, curve: Curves.bounceInOut);
+      _controller.forward();
+    }
+  }
+
+  @override
+  dispose() {
+    _controller?.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    return InkWell(
+      onTap: widget._onTap,
+      child: widget._selected ? ScaleTransition(scale: _animation, child: buildContent(context)) : buildContent(context),
+    );
+  }
+
+  Widget buildContent(BuildContext context) {
     return Card(
-      color: _selected ? Constants.cardBackgroundSelected : Constants.cardBackground,
       clipBehavior: Clip.antiAlias,
       margin: EdgeInsets.all(2.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          if (_post.getThumbnailUrl() != null)
+          if (widget._post.getThumbnailUrl() != null)
             ConstrainedBox(
                 constraints: BoxConstraints(
                   maxWidth: Constants.avatarImageSize,
                   minWidth: Constants.avatarImageSize,
                   minHeight: Constants.avatarImageSize,
+//                    maxHeight: Constants.avatarImageMaxHeight,
                 ),
-                child: ChanCachedImage(_post, BoxFit.fitWidth)),
+                child: ChanCachedImage(widget._post, BoxFit.fitWidth)),
           Flexible(
             child: Padding(
               padding: const EdgeInsets.only(left: 4.0, right: 4.0),
@@ -41,19 +71,16 @@ class PostListWidget extends StatelessWidget {
                 children: <Widget>[
                   Row(
                     children: <Widget>[
-                      Text(_post.postId.toString(), style: Theme.of(context).textTheme.caption),
+                      Text(widget._post.postId.toString(), style: Theme.of(context).textTheme.caption),
                       Spacer(),
-                      Text("${_post.repliesFrom.length}r", style: Theme.of(context).textTheme.caption),
+                      Text("${widget._post.repliesFrom.length}r", style: Theme.of(context).textTheme.caption),
                       Spacer(),
-                      Text(ChanUtil.getHumanDate(_post.timestamp), style: Theme.of(context).textTheme.caption),
+                      Text(ChanUtil.getHumanDate(widget._post.timestamp), style: Theme.of(context).textTheme.caption),
                     ],
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   ),
-                  if (_post.subtitle != null) Text(_post.subtitle, style: Theme.of(context).textTheme.subtitle),
-                  Html(
-                    data: ChanUtil.getReadableHtml(_post.content ?? "", false),
-                    onLinkTap: ((String url) => _onLinkClicked(url, context)),
-                  ),
+                  if (widget._post.subtitle != null) Text(widget._post.subtitle, style: Theme.of(context).textTheme.subtitle),
+                  Html(data: ChanUtil.getReadableHtml(widget._post.content ?? "", false), onLinkTap: widget._onLinkTap),
                 ],
               ),
             ),
@@ -62,6 +89,4 @@ class PostListWidget extends StatelessWidget {
       ),
     );
   }
-
-  _onLinkClicked(String url, BuildContext context) => BlocProvider.of<ThreadDetailBloc>(context).add(ThreadDetailEventOnLinkClicked(url));
 }

@@ -83,7 +83,7 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
     if (state is ThreadDetailStateLoading) {
       return Constants.centeredProgressIndicator;
     }
-    if (state is ThreadDetailStateContent) {
+    if (state is ThreadDetailStateShowList) {
       if (state.model.posts.isEmpty) {
         return Constants.noDataPlaceholder;
       }
@@ -119,10 +119,7 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
       itemScrollController: _listScrollController,
       initialScrollIndex: max(0, selectedPostIndex),
       itemBuilder: (context, index) {
-        return InkWell(
-          child: PostListWidget(posts[index], index == selectedPostIndex),
-          onTap: () => _onItemTap(posts[index]),
-        );
+        return PostListWidget(posts[index], index == selectedPostIndex, () => _onItemTap(posts[index]), (url) => _onLinkClicked(url, context));
       },
       padding: EdgeInsets.all(0.0),
     );
@@ -141,17 +138,15 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
       padding: const EdgeInsets.all(0.0),
       itemCount: mediaPosts.length,
       itemBuilder: (BuildContext context, int index) {
-        return InkWell(
-          child: PostGridWidget(mediaPosts[index], index == selectedMediaIndex),
-          onTap: () => _onItemTap(mediaPosts[index]),
-        );
+        return PostGridWidget(mediaPosts[index], index == selectedMediaIndex, () => _onItemTap(mediaPosts[index]));
       },
     );
   }
 
   void scrollToSelectedPost() {
     if (_threadDetailBloc.catalogMode) {
-      _gridScrollController.jumpTo(_getGridScrollOffset());
+      _gridScrollController.animateTo(_getGridScrollOffset(), duration: Duration(milliseconds: 500), curve: Curves.easeInOut);
+//      _gridScrollController.jumpTo(_getGridScrollOffset());
     } else {
       _listScrollController.jumpTo(index: _threadDetailBloc.selectedPostIndex, alignment: 0.5);
     }
@@ -164,7 +159,7 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
     int mediaIndex = _threadDetailBloc.selectedMediaIndex;
     double itemHeight = MediaQuery.of(context).size.width / _getGridColumnCount();
     int targetRow = mediaIndex ~/ _getGridColumnCount();
-    return targetRow * itemHeight;
+    return targetRow * itemHeight - itemHeight;
   }
 
   int _getGridColumnCount() {
@@ -174,7 +169,6 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
 
   void _onItemTap(ChanPost post) async {
     _threadDetailBloc.add(ThreadDetailEventOnPostSelected(null, post.postId));
-//    _threadDetailBloc.selectedPostId = post.postId;
 
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
@@ -185,7 +179,9 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
       ),
     );
 
-    BlocProvider.of<ChanViewerBloc>(context).add(ChanViewerEventShowBottomBar(true));
+    _threadDetailBloc.add(ThreadDetailEventShowContent());
     scrollToSelectedPost();
   }
+
+  void _onLinkClicked(String url, BuildContext context) => _threadDetailBloc.add(ThreadDetailEventOnLinkClicked(url));
 }

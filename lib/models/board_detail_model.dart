@@ -85,5 +85,5 @@ class ChanThread extends ChanPostBase with EquatableMixin {
   List<Object> get props => super.props;
 
   ChanThread copyWithPostData(ChanPost post) =>
-      new ChanThread(boardId, threadId, post.timestamp, post.subtitle, post.content, post.filename, post.imageId, post.extension, replies, images, isFavorite);
+      ChanThread(boardId, threadId, post.timestamp, post.subtitle, post.content, post.filename, post.imageId, post.extension, replies, images, isFavorite);
 }

@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_chan_viewer/bloc/chan_viewer_bloc/chan_viewer_bloc.dart';
-import 'package:flutter_chan_viewer/bloc/chan_viewer_bloc/chan_viewer_event.dart';
 import 'package:flutter_chan_viewer/models/chan_post.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
 import 'package:flutter_chan_viewer/pages/thread_detail/bloc/thread_detail_event.dart';
+import 'package:flutter_chan_viewer/utils/chan_util.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/utils/network_image/chan_networkimage.dart';
+import 'package:flutter_chan_viewer/view/list_widget_post.dart';
 import 'package:flutter_chan_viewer/view/view_video_player.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
@@ -42,24 +42,37 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
   @override
   void initState() {
     super.initState();
-    BlocProvider.of<ChanViewerBloc>(context).add(ChanViewerEventShowBottomBar(false));
+//    BlocProvider.of<ChanViewerBloc>(context).add(ChanViewerEventShowBottomBar(false));
     _threadDetailBloc = BlocProvider.of<ThreadDetailBloc>(context);
+    _threadDetailBloc.add(ThreadDetailEventShowContent());
   }
 
   @override
   Widget build(BuildContext context) {
+    return BlocConsumer<ThreadDetailBloc, ThreadDetailState>(
+      listener: (context, state) => resolveAction(context, state),
+      builder: (context, state) => buildPage(context, buildBody(context, state)),
+    );
+
     return BlocBuilder<ThreadDetailBloc, ThreadDetailState>(bloc: _threadDetailBloc, builder: (context, state) => buildPage(context, buildBody(context, state)));
+  }
+
+  void resolveAction(BuildContext context, ThreadDetailState state) {
+    if (state is ThreadDetailStateCloseGallery) {
+      Navigator.pop(context, false);
+    }
   }
 
   Widget buildBody(BuildContext context, ThreadDetailState state) {
     if (state is ThreadDetailStateLoading) {
       return Constants.centeredProgressIndicator;
     }
-    if (state is ThreadDetailStateContent) {
+    if (state is ThreadDetailStateShowList) {
       if (state.model.posts.isEmpty) {
         return Constants.noDataPlaceholder;
       }
 
+      ChanPost post = state.model.mediaPosts[state.selectedMediaIndex];
       return SafeArea(
         child: Stack(
           children: <Widget>[
@@ -76,16 +89,15 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
                 if (pageIndex != state.selectedMediaIndex) {
                   _threadDetailBloc.add(ThreadDetailEventOnPostSelected(pageIndex, null));
                 }
+                DraggableScrollableActuator.reset(context);
               }),
             ),
+            if (post.hasReplies) _buildBottomView(post),
             Align(
-              alignment: Alignment.bottomLeft,
+              alignment: Alignment.topLeft,
               child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  "${state.selectedMediaIndex + 1}/${state.model.mediaPosts.length}",
-                  style: Theme.of(context).textTheme.caption,
-                ),
+                padding: const EdgeInsets.all(4.0),
+                child: Text("${state.selectedMediaIndex + 1}/${state.model.mediaPosts.length}", style: Theme.of(context).textTheme.caption),
               ),
             ),
           ],
@@ -132,4 +144,34 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
         return PhotoViewScaleState.initial;
     }
   }
+
+  Widget _buildBottomView(ChanPost post) {
+    return DraggableScrollableSheet(
+      expand: true,
+      initialChildSize: 0.05,
+      minChildSize: 0.05,
+      maxChildSize: 0.9,
+      builder: (context, scrollController) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: Container(
+            color: Colors.white60,
+            child: ListView.builder(
+              padding: EdgeInsets.all(4),
+              shrinkWrap: true,
+              controller: scrollController,
+              itemCount: post.repliesFrom.length,
+              itemBuilder: (context, index) {
+                return PostListWidget(post.repliesFrom[index], false, () => _onReplyPostClicked(post.repliesFrom[index], context), (url) => _onLinkClicked(url, context));
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _onReplyPostClicked(ChanPost post, BuildContext context) => _threadDetailBloc.add(ThreadDetailEventOnReplyClicked(post.postId));
+
+  void _onLinkClicked(String url, BuildContext context) => _threadDetailBloc.add(ThreadDetailEventOnReplyClicked(ChanUtil.getPostIdFromUrl(url)));
 }

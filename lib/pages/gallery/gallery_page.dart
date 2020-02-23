@@ -171,7 +171,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
     if (state is ThreadDetailStateLoading) {
       return Constants.centeredProgressIndicator;
     }
-    if (state is ThreadDetailStateContent) {
+    if (state is ThreadDetailStateShowList) {
       if (state.model.posts.isEmpty) {
         return Constants.noDataPlaceholder;
       }

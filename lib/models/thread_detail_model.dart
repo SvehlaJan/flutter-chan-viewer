@@ -3,16 +3,18 @@ import 'package:flutter_chan_viewer/models/board_detail_model.dart';
 import 'package:flutter_chan_viewer/models/chan_post.dart';
 import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
 import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
+import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:kt_dart/kt.dart';
 
 class ThreadDetailModel with EquatableMixin {
   final ChanThread _thread;
   final List<ChanPost> _posts;
   int _selectedPostId;
+  OnlineState onlineStatus;
 
-  ThreadDetailModel._(this._thread, this._posts, this._selectedPostId);
+  ThreadDetailModel._(this._thread, this._posts, this._selectedPostId, this.onlineStatus);
 
-  factory ThreadDetailModel.fromJson(String boardId, int threadId, Map<String, dynamic> parsedJson) {
+  factory ThreadDetailModel.fromJson(String boardId, int threadId, Map<String, dynamic> parsedJson, OnlineState isLive) {
     List<ChanPost> posts = [];
     Map<int, ChanPost> postMap = {};
     for (Map<String, dynamic> postData in parsedJson['posts']) {
@@ -32,13 +34,13 @@ class ThreadDetailModel with EquatableMixin {
 
     int selectedPost = parsedJson['selected_post'] ?? 0;
 
-    return new ThreadDetailModel._(thread, posts, selectedPost);
+    return ThreadDetailModel._(thread, posts, selectedPost, isLive);
   }
 
   factory ThreadDetailModel.fromFolderInfo(DownloadFolderInfo folderInfo) {
     List<ChanPost> posts = [];
     folderInfo.fileNames.asMap().forEach((index, fileName) => posts.add(ChanPost.fromDownloadedFile(fileName, folderInfo.cacheDirective, index)));
-    return new ThreadDetailModel._(ChanThread.fromCacheDirective(folderInfo.cacheDirective), posts, 0);
+    return ThreadDetailModel._(ChanThread.fromCacheDirective(folderInfo.cacheDirective), posts, 0, OnlineState.OFFLINE);
   }
 
   /*
@@ -74,6 +76,8 @@ class ThreadDetailModel with EquatableMixin {
   List<ChanPost> get posts => _posts;
 
   List<ChanPost> get mediaPosts => _posts.where((post) => post.hasMedia()).toList();
+
+  ChanPost get firstPost => _posts?.first;
 
   int getPostIndex(int postId) => ((postId ?? -1) > 0) ? _posts.indexWhere((post) => post.postId == postId) : -1;
 

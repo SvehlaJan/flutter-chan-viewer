@@ -9,6 +9,8 @@ class ChanPost extends ChanPostBase with EquatableMixin {
   final List<int> repliesTo;
   final List<ChanPost> repliesFrom = [];
 
+  bool get hasReplies => repliesFrom.isNotEmpty;
+
   factory ChanPost.fromMappedJson(String boardId, int threadId, Map<String, dynamic> json) => ChanPost(
         json['board_id'] ?? boardId,
         json['thread_id'] ?? threadId,

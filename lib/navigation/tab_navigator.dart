@@ -13,7 +13,7 @@ import 'package:flutter_chan_viewer/pages/thread_detail/bloc/thread_detail_bloc.
 import 'package:flutter_chan_viewer/pages/thread_detail/thread_detail_page.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 
-import 'tab_helper.dart';
+import 'navigation_helper.dart';
 
 class TabNavigator extends StatelessWidget {
   TabNavigator({this.navigatorKey, this.tabItem, this.rootContext});
@@ -22,7 +22,7 @@ class TabNavigator extends StatelessWidget {
   final TabItem tabItem;
   final BuildContext rootContext;
 
-  Route<dynamic> _getRoute(RouteSettings settings) {
+  static Route<dynamic> getRoute(RouteSettings settings) {
     Map<String, dynamic> arguments;
     if (settings.arguments is Map<String, dynamic>) {
       arguments = settings.arguments;
@@ -65,8 +65,6 @@ class TabNavigator extends StatelessWidget {
 //        return null;
       case Constants.settingsRoute:
         return MaterialPageRoute<void>(settings: settings, builder: (BuildContext context) => BlocProvider(create: (context) => SettingsBloc(), child: SettingsPage()));
-      case Constants.favoritesRoute:
-        return MaterialPageRoute<void>(settings: settings, builder: (BuildContext context) => NotFoundPage());
     }
 
     // The other paths we support are in the routes table.
@@ -77,8 +75,8 @@ class TabNavigator extends StatelessWidget {
   Widget build(BuildContext context) {
     return Navigator(
       key: navigatorKey,
-      initialRoute: TabHelper.getInitialRoute(tabItem),
-      onGenerateRoute: _getRoute,
+      initialRoute: NavigationHelper.getInitialRoute(tabItem),
+      onGenerateRoute: getRoute,
       onUnknownRoute: (routeSettings) {
         return MaterialPageRoute(builder: (context) => NotFoundPage());
       },

@@ -1,5 +1,4 @@
 import 'package:equatable/equatable.dart';
-import 'package:flutter_chan_viewer/models/chan_post.dart';
 
 abstract class ThreadDetailEvent extends Equatable {
   ThreadDetailEvent();
@@ -7,8 +6,6 @@ abstract class ThreadDetailEvent extends Equatable {
   @override
   List<Object> get props => [];
 }
-
-class ThreadDetailEventShowContent extends ThreadDetailEvent {}
 
 class ThreadDetailEventToggleFavorite extends ThreadDetailEvent {}
 

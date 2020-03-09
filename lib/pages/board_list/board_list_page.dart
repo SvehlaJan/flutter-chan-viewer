@@ -49,7 +49,7 @@ class _BoardListPageState extends BasePageState<BoardListPage> {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<BoardListBloc, BoardListState>(
-        bloc: _boardListBloc, builder: (context, state) => buildPage(context, buildBody(context, state, ((board) => _openBoardDetailPage(board)))));
+        bloc: _boardListBloc, builder: (context, state) => buildScaffold(context, buildBody(context, state, ((board) => _openBoardDetailPage(board)))));
   }
 
   static Widget buildBody(BuildContext context, BoardListState state, Function(ChanBoard) onItemClicked) {
@@ -77,20 +77,12 @@ class _BoardListPageState extends BasePageState<BoardListPage> {
   }
 
   void _openBoardDetailPage(ChanBoard board) async {
-    await Navigator.of(context).push(
-        NavigationHelper.getRoute(
-          Constants.boardDetailRoute,
-          {
-            BoardDetailPage.ARG_BOARD_ID: board.boardId,
-          },
-        ));
-//    await Navigator.pushNamed(
-//      context,
-//      Constants.boardDetailRoute,
-//      arguments: {
-//        BoardDetailPage.ARG_BOARD_ID: board.boardId,
-//      },
-//    );
+    await Navigator.of(context).push(NavigationHelper.getRoute(
+      Constants.boardDetailRoute,
+      {
+        BoardDetailPage.ARG_BOARD_ID: board.boardId,
+      },
+    ));
 
     _boardListBloc.add(BoardListEventFetchBoards(false));
   }
@@ -102,20 +94,7 @@ class CustomSearchDelegate extends SearchDelegate<ChanBoard> {
   final BoardListBloc _boardListBloc;
 
   @override
-  ThemeData appBarTheme(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    return theme.copyWith(
-      textTheme: theme.textTheme.copyWith(
-          title: theme.textTheme.title.copyWith(
-        color: Colors.white,
-      )),
-      inputDecorationTheme: InputDecorationTheme(
-        hintStyle: Theme.of(context).textTheme.title.copyWith(
-              color: Colors.white.withOpacity(0.8),
-            ),
-      ),
-    );
-  }
+  ThemeData appBarTheme(BuildContext context) => Constants.searchBarTheme(context);
 
   @override
   List<Widget> buildActions(BuildContext context) => null;

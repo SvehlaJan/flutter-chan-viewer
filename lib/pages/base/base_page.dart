@@ -9,22 +9,35 @@ abstract class BasePageState<T extends BasePage> extends State<T> {
 
   FloatingActionButton getPageFab(BuildContext context) => null;
 
-  void onBackPressed() => Navigator.pop(context, false);
+  void finishScreen() async {
+    if (await onBackPressed() == true) {
+      Navigator.pop(context, false);
+    }
+  }
 
   List<AppBarAction> getAppBarActions(BuildContext context) => null;
 
-  Widget buildPage(BuildContext context, Widget body) {
+  /// Return true if stack should pop. False will block the back-press.
+  Future<bool> onBackPressed() async => Future.value(true);
+
+  Widget buildWillPopScope(BuildContext context, Widget body) => WillPopScope(onWillPop: onBackPressed, child: body);
+
+  Widget buildScaffold(BuildContext context, Widget body, {Color backgroundColor}) {
     bool showAppBar = getPageTitle() != null || getAppBarActions(context) != null;
-    return Scaffold(
-      appBar: showAppBar
-          ? AppBar(
-              leading: ModalRoute.of(context).canPop ? IconButton(icon: BackButtonIcon(), onPressed: onBackPressed) : null,
-              title: Text(getPageTitle()),
-              actions: _buildAppBarActions(context),
-            )
-          : null,
-      body: Builder(builder: (BuildContext context) => body),
-      floatingActionButton: getPageFab(context),
+    return WillPopScope(
+      onWillPop: onBackPressed,
+      child: Scaffold(
+        backgroundColor: backgroundColor != null ? backgroundColor : Theme.of(context).scaffoldBackgroundColor,
+        appBar: showAppBar
+            ? AppBar(
+                leading: ModalRoute.of(context).canPop ? IconButton(icon: BackButtonIcon(), onPressed: finishScreen) : null,
+                title: Text(getPageTitle()),
+                actions: _buildAppBarActions(context),
+              )
+            : null,
+        body: Builder(builder: (BuildContext context) => body),
+        floatingActionButton: getPageFab(context),
+      ),
     );
   }
 

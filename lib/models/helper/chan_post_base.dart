@@ -13,9 +13,11 @@ abstract class ChanPostBase {
 
   ChanPostBase(this.boardId, this.threadId, this.timestamp, this.subtitle, this.content, this.filename, this.imageId, this.extension);
 
-  bool hasImage() => [".jpg", ".png", ".gif", ".webp"].contains(extension);
+  bool hasImage() => [".jpg", ".png", ".webp"].contains(extension) || hasGif();
 
-  bool hasVideo() => [".webm"].contains(extension);
+  bool hasGif() => [".gif"].contains(extension);
+
+  bool hasWebm() => [".webm"].contains(extension);
 
   bool hasMedia() => filename?.isNotEmpty ?? false;
 

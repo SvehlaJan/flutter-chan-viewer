@@ -39,7 +39,7 @@ class ThreadListWidget extends StatelessWidget {
                 children: <Widget>[
                   Row(
                     children: <Widget>[
-                      if (_thread.isFavorite) Icon(Icons.star, color: Colors.yellow, size: Constants.favoriteIconSize),
+                      if (_thread.isFavorite) Padding(padding: const EdgeInsets.all(1.0), child: Icon(Icons.star, color: Colors.yellow, size: Constants.favoriteIconSize)),
                       Text(_thread.threadId.toString(), style: Theme.of(context).textTheme.caption),
                       Spacer(),
                       Text("${_thread.replies ?? "?"}p/${_thread.images ?? "?"}m", style: Theme.of(context).textTheme.caption),

@@ -26,12 +26,12 @@ class SettingsEventSetTheme extends SettingsEvent {
 class SettingsEventExperiment extends SettingsEvent {}
 
 class SettingsEventToggleShowSfwOnly extends SettingsEvent {
-  final bool enabled;
+  final bool showNsfw;
 
-  SettingsEventToggleShowSfwOnly(this.enabled);
+  SettingsEventToggleShowSfwOnly(this.showNsfw);
 
   @override
-  List<Object> get props => [enabled];
+  List<Object> get props => [showNsfw];
 }
 
 class SettingsEventCancelDownloads extends SettingsEvent {}

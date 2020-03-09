@@ -5,26 +5,13 @@ class NotFoundPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return new Material(
-      color: Colors.red,
-      child: new Column(
+    return Material(
+      color: Theme.of(context).accentColor,
+      child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          new Text(
-            "Page not found :-(",
-            style: new TextStyle(color: Colors.white, fontSize: 30.0),
-          ),
-          new IconButton(
-              icon: new Icon(Icons.arrow_back),
-              color: Colors.white,
-              iconSize: 70.0,
-              onPressed: () {
-                Navigator.of(context).pop(false);
-//                Navigator.of(context).pushAndRemoveUntil(
-//                    new MaterialPageRoute(
-//                        builder: (BuildContext context) => new LandingPage()),
-//                    (Route route) => route == null);
-              })
+          Text("Page not found :-(", style: Theme.of(context).textTheme.title),
+          IconButton(icon: Icon(Icons.arrow_back), iconSize: 70.0, onPressed: () => Navigator.of(context).pop(false))
         ],
       ),
     );

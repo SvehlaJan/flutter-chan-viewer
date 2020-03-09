@@ -4,6 +4,7 @@ import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chan_viewer/models/chan_post.dart';
 import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
+import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/view/view_cached_image.dart';
 import 'package:video_player/video_player.dart';
 
@@ -49,13 +50,23 @@ class _ChanVideoPlayerState extends State<ChanVideoPlayer> {
 
   @override
   Widget build(BuildContext context) {
+    return _videoController.value.initialized ? _buildVideoView(context) : _buildLoadingView(context);
+  }
+
+  Widget _buildVideoView(BuildContext context) {
     return GestureDetector(
-      onTap: (() {
-        setState(() {
-          _videoController.value.isPlaying ? _videoController.pause() : _videoController.play();
-        });
-      }),
-      child: _videoController.value.initialized ? Center(child: Chewie(controller: _chewieController)) : ChanCachedImage(widget._post, BoxFit.contain),
+        onTap: (() {
+          setState(() {
+            _videoController.value.isPlaying ? _videoController.pause() : _videoController.play();
+          });
+        }),
+        child: Chewie(controller: _chewieController));
+  }
+
+  Widget _buildLoadingView(BuildContext context) {
+    return Stack(
+      fit: StackFit.expand,
+      children: <Widget>[ChanCachedImage(widget._post, BoxFit.contain), Constants.centeredProgressIndicator],
     );
   }
 

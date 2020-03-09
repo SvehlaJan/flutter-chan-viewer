@@ -21,37 +21,41 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
   @override
   get initialState => SettingsStateLoading();
 
+  get showNsfw => !_showSfwOnly;
+
+  get _contentState => SettingsStateContent(_appTheme, _downloads, showNsfw);
+
   @override
   Stream<SettingsState> mapEventToState(SettingsEvent event) async* {
     try {
       if (event is SettingsEventSetTheme) {
         Preferences.setInt(Preferences.KEY_SETTINGS_THEME, event.theme.index);
         _appTheme = event.theme;
-        yield SettingsStateContent(_appTheme, _downloads, _showSfwOnly);
+        yield _contentState;
       } else if (event is SettingsEventFetchData) {
         int appThemeIndex = Preferences.getInt(Preferences.KEY_SETTINGS_THEME) ?? 0;
         _appTheme = AppTheme.values[appThemeIndex];
         _downloads = _chanStorage.getAllDownloadFoldersInfo();
         _showSfwOnly = Preferences.getBool(Preferences.KEY_SETTINGS_SHOW_SFW_ONLY, def: true);
 
-        yield SettingsStateContent(_appTheme, _downloads, _showSfwOnly);
+        yield _contentState;
       } else if (event is SettingsEventExperiment) {
         yield SettingsStateLoading();
-        yield SettingsStateContent(_appTheme, _downloads, _showSfwOnly);
+        yield _contentState;
       } else if (event is SettingsEventToggleShowSfwOnly) {
         yield SettingsStateLoading();
-        _showSfwOnly = event.enabled;
+        _showSfwOnly = !event.showNsfw;
         Preferences.setBool(Preferences.KEY_SETTINGS_SHOW_SFW_ONLY, _showSfwOnly);
-        yield SettingsStateContent(_appTheme, _downloads, _showSfwOnly);
+        yield _contentState;
       } else if (event is SettingsEventCancelDownloads) {
         yield SettingsStateLoading();
         _downloader.cancelAllDownloads();
-        yield SettingsStateContent(_appTheme, _downloads, _showSfwOnly);
+        yield _contentState;
       } else if (event is SettingsEventDeleteFolder) {
         yield SettingsStateLoading();
         _chanStorage.deleteCacheFolder(event.cacheDirective);
         _downloads = _chanStorage.getAllDownloadFoldersInfo();
-        yield SettingsStateContent(_appTheme, _downloads, _showSfwOnly);
+        yield _contentState;
       }
     } catch (e) {
       ChanLogger.e("Event error!", e);

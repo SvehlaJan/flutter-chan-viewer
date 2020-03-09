@@ -203,14 +203,7 @@ Future<Uint8List> _loadData(ChanNetworkImage key, CacheDirective cacheDirective)
   }
 
   Uint8List remoteData;
-//  if (key.isVideo) {
-//    remoteData = await VideoThumbnail.thumbnailData(
-//      video: key.url,
-//      imageFormat: ImageFormat.JPEG,
-//      maxHeight: 256,
-//      quality: 75,
-//    );
-//  } else {
+
   remoteData = await loadFromRemote(
     key.url,
     key.header,
@@ -222,7 +215,6 @@ Future<Uint8List> _loadData(ChanNetworkImage key, CacheDirective cacheDirective)
     key.getRealUrl,
     printError: key.printError,
   );
-//  }
 
   if (remoteData != null) {
     if (key.preProcessing != null) remoteData = (await key.preProcessing(remoteData)) ?? remoteData;

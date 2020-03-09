@@ -1,29 +1,23 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_chan_viewer/bloc/chan_viewer_bloc/chan_viewer_bloc.dart';
-import 'package:flutter_chan_viewer/bloc/chan_viewer_bloc/chan_viewer_event.dart';
 import 'package:flutter_chan_viewer/models/chan_post.dart';
+import 'package:flutter_chan_viewer/navigation/navigation_helper.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
+import 'package:flutter_chan_viewer/pages/thread_detail/bloc/thread_detail_event.dart';
+import 'package:flutter_chan_viewer/pages/thread_detail/thread_detail_page.dart';
+import 'package:flutter_chan_viewer/utils/chan_util.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
-import 'package:flutter_chan_viewer/view/view_cached_image.dart';
-import 'package:flutter_chan_viewer/view/view_custom_carousel.dart';
+import 'package:flutter_chan_viewer/utils/network_image/chan_networkimage.dart';
+import 'package:flutter_chan_viewer/view/list_widget_post.dart';
 import 'package:flutter_chan_viewer/view/view_video_player.dart';
+import 'package:photo_view/photo_view.dart';
+import 'package:photo_view/photo_view_gallery.dart';
 
 import '../thread_detail/bloc/thread_detail_bloc.dart';
 import '../thread_detail/bloc/thread_detail_state.dart';
 
 class GalleryPage extends BasePage {
-  static const String ARG_BOARD_ID = "ChanGallery.ARG_BOARD_ID";
-  static const String ARG_THREAD_ID = "ChanGallery.ARG_THREAD_ID";
-  static const String ARG_POST_ID = "ChanGallery.ARG_POST_ID";
-  static const bool enableInfiniteScroll = true;
-
-  static Map<String, dynamic> getArguments(final String boardId, final int threadId, final int postId) =>
-      {GalleryPage.ARG_BOARD_ID: boardId, GalleryPage.ARG_THREAD_ID: threadId, GalleryPage.ARG_POST_ID: postId};
-
   GalleryPage();
 
   @override
@@ -38,167 +32,62 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
   static const int SCALE_ANIMATION_DURATION = 200;
 
   ThreadDetailBloc _threadDetailBloc;
-  AnimationController _flingAnimationController;
-  AnimationController _scaleAnimationController;
-  Animation<Offset> _flingAnimation;
-  Animation<double> _scaleAnimation;
-  Offset _offset = Offset.zero;
-  double _currentScale = SCALE_MIN;
-  Offset _normalizedOffset;
-  Offset _targetOffset;
-  double _previousScale;
-  int _previousTapTimestamp = 0;
 
   @override
   void initState() {
     super.initState();
-    BlocProvider.of<ChanViewerBloc>(context).add(ChanViewerEventShowBottomBar(false));
     _threadDetailBloc = BlocProvider.of<ThreadDetailBloc>(context);
-    _flingAnimationController = AnimationController(vsync: this)..addListener(_handleFlingAnimation);
-    _scaleAnimationController = AnimationController(vsync: this, duration: Duration(milliseconds: SCALE_ANIMATION_DURATION))..addListener(_handleScaleAnimation);
-  }
-
-  @override
-  void dispose() {
-    _flingAnimationController.dispose();
-    super.dispose();
-  }
-
-  // The maximum offset value is 0,0. If the size of this renderer's box is w,h
-  // then the minimum offset value is w - _scale * w, h - _scale * h.
-  Offset _clampOffset(Offset offset) {
-    final Size size = context.size;
-    final Offset minOffset = Offset(size.width, size.height) * (1.0 - _currentScale);
-    return Offset(offset.dx.clamp(minOffset.dx, 0.0), offset.dy.clamp(minOffset.dy, 0.0));
-  }
-
-  void _handleFlingAnimation() {
-    setState(() {
-      _offset = _flingAnimation.value;
-    });
-  }
-
-  void _handleScaleAnimation() {
-    setState(() {
-      _currentScale = _scaleAnimation.value;
-      _offset = _clampOffset(_targetOffset - _normalizedOffset * _currentScale);
-    });
-  }
-
-  void _handleOnScaleStart(ScaleStartDetails details) {
-    setState(() {
-      _previousScale = _currentScale;
-      _normalizedOffset = (details.focalPoint - _offset) / _currentScale;
-      // The fling animation stops if an input gesture starts.
-      _flingAnimationController.stop();
-    });
-  }
-
-  void _handleOnScaleUpdate(ScaleUpdateDetails details) {
-    setState(() {
-      _currentScale = (_previousScale * details.scale).clamp(SCALE_MIN, SCALE_MAX);
-      if (_isScaled()) {
-        _offset = _clampOffset(details.focalPoint - _normalizedOffset * _currentScale);
-      } else {
-        _offset = details.focalPoint - _normalizedOffset * _currentScale;
-      }
-
-//      double horizontalDelta = _previousOffset.dx - details.focalPoint.dx;
-//      double newPosition = widget.pageController.position.pixels + horizontalDelta;
-//      _previousOffset = details.focalPoint;
-//      widget.pageController.jumpTo(newPosition);
-    });
-  }
-
-  void _handleOnScaleEnd(ScaleEndDetails details) {
-    if (!_isScaled()) {
-      if (details.velocity.pixelsPerSecond.distance >= Constants.minFlingDistance) {
-        final direction = details.velocity.pixelsPerSecond.direction;
-        if (direction >= (-pi * 3 / 4) && direction <= (-pi / 4)) {
-          onBackPressed();
-          return;
-        }
-      }
-
-      startFlingBackAnimation(details.velocity.pixelsPerSecond);
-    }
-  }
-
-  void _handleOnDoubleTap(TapUpDetails details) {
-    if (DateTime.now().millisecondsSinceEpoch - _previousTapTimestamp < DOUBLE_TAP_TIMEOUT) {
-      setState(() {
-        _previousScale = _currentScale;
-        _targetOffset = details.localPosition;
-        _normalizedOffset = (_targetOffset - _offset) / _currentScale;
-        startScaleAnimation((_currentScale < 3.0) ? 7.5 : SCALE_MIN);
-      });
-    }
-    _previousTapTimestamp = DateTime.now().millisecondsSinceEpoch;
-  }
-
-  bool _isScaled() {
-    return _currentScale >= IS_SCALED_THRESHOLD;
-  }
-
-  void startFlingBackAnimation(Offset velocity) {
-    final Offset direction = velocity / velocity.distance;
-    final double distance = (Offset.zero & context.size).shortestSide;
-    _flingAnimation = _flingAnimationController.drive(Tween<Offset>(
-      begin: _offset,
-      end: _clampOffset(_offset + direction * distance),
-    ));
-    _flingAnimationController
-      ..value = 0.0
-      ..fling(velocity: velocity.distance / 1000.0);
-  }
-
-  void startScaleAnimation(double targetScale) {
-    _scaleAnimation = _scaleAnimationController.drive(Tween<double>(
-      begin: _currentScale,
-      end: targetScale,
-    ));
-    _scaleAnimationController
-      ..value = 0.0
-      ..forward();
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ThreadDetailBloc, ThreadDetailState>(bloc: _threadDetailBloc, builder: (context, state) => buildBody(context, state));
+    return BlocBuilder<ThreadDetailBloc, ThreadDetailState>(
+        bloc: _threadDetailBloc,
+        builder: (context, state) => buildScaffold(
+              context,
+              buildBody(context, state),
+              backgroundColor: Theme.of(context).scaffoldBackgroundColor.withOpacity(0.5),
+            ));
   }
 
   Widget buildBody(BuildContext context, ThreadDetailState state) {
     if (state is ThreadDetailStateLoading) {
       return Constants.centeredProgressIndicator;
     }
-    if (state is ThreadDetailStateShowList) {
-      if (state.model.posts.isEmpty) {
+    if (state is ThreadDetailStateContent) {
+      int mediaIndex = state.selectedMediaIndex;
+      if (mediaIndex < 0) { // for case when non-media post is selected
         return Constants.noDataPlaceholder;
       }
 
-      List<Widget> children = state.model.mediaPosts.map((post) => buildItem(post)).toList();
-      int initialIndex = state.model.selectedMediaIndex;
+      ChanPost post = state.model.mediaPosts[mediaIndex];
       return SafeArea(
-        child: GestureDetector(
-          onScaleStart: _handleOnScaleStart,
-          onScaleUpdate: _handleOnScaleUpdate,
-          onScaleEnd: _handleOnScaleEnd,
-          onTapUp: _handleOnDoubleTap,
-          child: Stack(
-            children: <Widget>[
-              Text(""),
-              CustomCarousel(
-                items: children,
-                initialPage: initialIndex,
-                enableInfiniteScroll: GalleryPage.enableInfiniteScroll,
-                scrollPhysics: _isScaled() ? NeverScrollableScrollPhysics() : AlwaysScrollableScrollPhysics(),
-                onPageChanged: (int pageIndex) {
-                  _threadDetailBloc.selectedMediaIndex = pageIndex;
-//              _threadDetailBloc.add(ThreadDetailEventOnPostSelected(pageIndex, null));
-                },
+        child: Stack(
+          children: <Widget>[
+            PhotoViewGallery.builder(
+              itemCount: state.model.mediaPosts.length,
+              builder: (context, index) {
+                return buildItem(context, state.model.mediaPosts[index]);
+              },
+              scrollPhysics: BouncingScrollPhysics(),
+              backgroundDecoration: BoxDecoration(color: Colors.transparent),
+              loadingBuilder: (context, index) => Constants.progressIndicator,
+              pageController: PageController(initialPage: state.selectedMediaIndex),
+              onPageChanged: ((pageIndex) {
+                if (pageIndex != state.selectedMediaIndex) {
+                  _threadDetailBloc.add(ThreadDetailEventOnPostSelected(pageIndex, null));
+                }
+              }),
+            ),
+            if (post.hasReplies) _buildBottomView(post),
+            Align(
+              alignment: Alignment.topLeft,
+              child: Padding(
+                padding: const EdgeInsets.all(4.0),
+                child: Text("${state.selectedMediaIndex + 1}/${state.model.mediaPosts.length}", style: Theme.of(context).textTheme.caption),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       );
     } else {
@@ -206,14 +95,67 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
     }
   }
 
-  Widget buildItem(ChanPost post) {
-    return ClipRect(
-      child: Transform(
-        transform: Matrix4.identity()
-          ..translate(_offset.dx, _offset.dy)
-          ..scale(_currentScale),
-        child: post.hasImage() ? ChanCachedImage(post, BoxFit.contain, showProgress: true) : ChanVideoPlayer(post),
-      ),
+  PhotoViewGalleryPageOptions buildItem(BuildContext context, ChanPost post) {
+    if (post.hasImage() || post.hasGif()) {
+      return PhotoViewGalleryPageOptions(
+        imageProvider: ChanNetworkImage(post.getImageUrl(), post.getCacheDirective()),
+        heroAttributes: PhotoViewHeroAttributes(tag: post.getMediaUrl()),
+        minScale: PhotoViewComputedScale.contained,
+        maxScale: PhotoViewComputedScale.covered * 3,
+      );
+    } else if (post.hasWebm()) {
+      return PhotoViewGalleryPageOptions.customChild(
+        child: ChanVideoPlayer(post),
+        heroAttributes: PhotoViewHeroAttributes(tag: post.getMediaUrl()),
+        minScale: PhotoViewComputedScale.contained,
+        maxScale: PhotoViewComputedScale.covered * 3,
+      );
+    } else {
+      return null;
+    }
+  }
+
+  Widget _buildBottomView(ChanPost post) {
+    return DraggableScrollableSheet(
+      initialChildSize: 0.05,
+      minChildSize: 0.05,
+      maxChildSize: 0.9,
+      builder: (context, scrollController) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 0.0),
+          child: Material(
+            child: ListView.builder(
+              padding: EdgeInsets.all(4),
+              shrinkWrap: true,
+              controller: scrollController,
+              itemCount: post.repliesFrom.length,
+              itemBuilder: (context, index) {
+                return PostListWidget(post.repliesFrom[index], false, () => _onReplyPostClicked(post.repliesFrom[index], context), (url) => _onLinkClicked(url, context));
+              },
+            ),
+          ),
+        );
+      },
     );
   }
+
+  void _onReplyPostClicked(ChanPost post, BuildContext context) {
+//    showDialog(
+//        context: context,
+//        child: Dialog(
+//            child: BlocProvider(
+//                create: (context) => ThreadDetailBloc(
+//                      _threadDetailBloc.boardId,
+//                      _threadDetailBloc.threadId,
+//                      null,
+//                      false,
+//                      post.postId,
+//                    ),
+//                child: ThreadDetailPage())));
+
+    _threadDetailBloc.add(ThreadDetailEventOnReplyClicked(post.postId));
+    Navigator.of(context).pop();
+  }
+
+  void _onLinkClicked(String url, BuildContext context) => _threadDetailBloc.add(ThreadDetailEventOnReplyClicked(ChanUtil.getPostIdFromUrl(url)));
 }

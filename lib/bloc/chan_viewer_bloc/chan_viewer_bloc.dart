@@ -10,14 +10,11 @@ class ChanViewerBloc extends Bloc<ChanViewerEvent, ChanViewerState> {
   ChanViewerBloc();
 
   @override
-  get initialState => ChanViewerStateContent(true);
+  get initialState => ChanViewerStateContent();
 
   @override
   Stream<ChanViewerState> mapEventToState(ChanViewerEvent event) async* {
     try {
-      if (event is ChanViewerEventShowBottomBar) {
-        yield ChanViewerStateContent(event.showBottomBar);
-      }
     } catch (e) {
       ChanLogger.e("File read error!", e);
       yield ChanViewerStateError(e.toString());

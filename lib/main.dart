@@ -5,6 +5,8 @@ import 'package:flutter_chan_viewer/bloc/app_bloc/app_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/app_bloc/app_event.dart';
 import 'package:flutter_chan_viewer/bloc/app_bloc/app_state.dart';
 import 'package:flutter_chan_viewer/bloc/chan_viewer_bloc/chan_viewer_bloc.dart';
+import 'package:flutter_chan_viewer/utils/theme/theme_dark.dart';
+import 'package:flutter_chan_viewer/utils/theme/theme_light.dart';
 
 import 'app.dart';
 import 'bloc/simple_bloc_delegate.dart';
@@ -20,7 +22,6 @@ void main() async {
       child: MainApp(),
     ),
   );
-//  runApp(MainApp());
 }
 
 class MainApp extends StatelessWidget {
@@ -32,23 +33,9 @@ class MainApp extends StatelessWidget {
       } else if (state is AppStateContent) {
         ThemeData themeData;
         if (state.appTheme == AppTheme.light) {
-          themeData = ThemeData(
-            brightness: Brightness.light,
-            primarySwatch: Colors.red,
-            cardColor: Colors.white,
-            textTheme: TextTheme(
-                headline: TextStyle(fontSize: 72.0, fontWeight: FontWeight.bold),
-                title: TextStyle(fontSize: 20.0),
-                body1: TextStyle(fontSize: 14.0, fontFamily: 'Hind'),
-                body2: TextStyle(fontSize: 14.0, fontFamily: 'Hind'),
-                caption: TextStyle(fontSize: 12.0, fontFamily: 'Hind')),
-          );
+          themeData = themeLight;
         } else {
-          themeData = ThemeData(
-            brightness: Brightness.dark,
-            primaryColor: Colors.red,
-            cardColor: Colors.black87,
-          );
+          themeData = themeDark;
         }
 
         return BlocProvider(

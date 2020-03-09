@@ -40,7 +40,7 @@ class _FavoritesPageState extends BasePageState<FavoritesPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<FavoritesBloc, FavoritesState>(bloc: _favoritesBloc, builder: (context, state) => buildPage(context, buildBody(context, state)));
+    return BlocBuilder<FavoritesBloc, FavoritesState>(bloc: _favoritesBloc, builder: (context, state) => buildScaffold(context, buildBody(context, state)));
   }
 
   Widget buildBody(BuildContext context, FavoritesState state) {
@@ -73,13 +73,8 @@ class _FavoritesPageState extends BasePageState<FavoritesPage> {
     Navigator.of(context).push(
       NavigationHelper.getRoute(
         Constants.threadDetailRoute,
-        ThreadDetailPage.getArguments(thread.boardId, thread.threadId, false),
+        ThreadDetailPage.getArguments(thread.boardId, thread.threadId),
       ),
     );
-//    Navigator.pushNamed(
-//      context,
-//      Constants.threadDetailRoute,
-//      arguments: ThreadDetailPage.getArguments(thread.boardId, thread.threadId, false),
-//    );
   }
 }

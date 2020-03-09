@@ -59,7 +59,7 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<BoardDetailBloc, BoardDetailState>(
-        bloc: _boardDetailBloc, builder: (context, state) => buildPage(context, buildBody(context, state, ((thread) => _openThreadDetailPage(thread)))));
+        bloc: _boardDetailBloc, builder: (context, state) => buildScaffold(context, buildBody(context, state, ((thread) => _openThreadDetailPage(thread)))));
   }
 
   static Widget buildBody(BuildContext context, BoardDetailState state, Function(ChanThread) onItemClicked) {
@@ -90,14 +90,9 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
     Navigator.of(context).push(
       NavigationHelper.getRoute(
         Constants.threadDetailRoute,
-        ThreadDetailPage.getArguments(thread.boardId, thread.threadId, false),
+        ThreadDetailPage.getArguments(thread.boardId, thread.threadId),
       ),
     );
-//    Navigator.pushNamed(
-//      context,
-//      Constants.threadDetailRoute,
-//      arguments: ThreadDetailPage.getArguments(thread.boardId, thread.threadId, false),
-//    );
   }
 }
 
@@ -107,20 +102,7 @@ class CustomSearchDelegate extends SearchDelegate<ChanThread> {
   final BoardDetailBloc _boardDetailBloc;
 
   @override
-  ThemeData appBarTheme(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    return theme.copyWith(
-      textTheme: theme.textTheme.copyWith(
-          title: theme.textTheme.title.copyWith(
-        color: Colors.white,
-      )),
-      inputDecorationTheme: InputDecorationTheme(
-        hintStyle: Theme.of(context).textTheme.title.copyWith(
-              color: Colors.white.withOpacity(0.8),
-            ),
-      ),
-    );
-  }
+  ThemeData appBarTheme(BuildContext context) => Constants.searchBarTheme(context);
 
   @override
   List<Widget> buildActions(BuildContext context) => null;

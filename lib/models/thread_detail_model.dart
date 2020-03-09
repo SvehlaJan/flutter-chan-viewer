@@ -83,15 +83,19 @@ class ThreadDetailModel with EquatableMixin {
 
   int getMediaIndex(int postId) => ((postId ?? -1) > 0) ? mediaPosts.indexWhere((post) => post.postId == postId) : -1;
 
+  ChanPost findPostById(int postId) => _posts.where((post) => post.postId == postId)?.first;
+
   get selectedPostIndex => getPostIndex(_selectedPostId);
+
+  set selectedPostIndex(int postIndex) => _selectedPostId = postIndex < posts.length ? posts[postIndex].postId : throw IndexOutOfBoundsException();
 
   get selectedMediaIndex => getMediaIndex(_selectedPostId);
 
   set selectedMediaIndex(int mediaIndex) => _selectedPostId = mediaIndex < mediaPosts.length ? mediaPosts[mediaIndex].postId : throw IndexOutOfBoundsException();
 
-  set selectedPostId(int postId) => _selectedPostId = getPostIndex(postId) >= 0 ? postId : throw IndexOutOfBoundsException();
-
   get selectedPostId => _selectedPostId;
+
+  set selectedPostId(int postId) => _selectedPostId = getPostIndex(postId) >= 0 ? postId : throw IndexOutOfBoundsException();
 
   Map<String, dynamic> toJson() => {
         'board_id': _thread.boardId,

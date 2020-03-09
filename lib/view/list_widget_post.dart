@@ -42,7 +42,7 @@ class _PostListWidgetState extends State<PostListWidget> with SingleTickerProvid
   Widget build(BuildContext context) {
     return InkWell(
       onTap: widget._onTap,
-      child: widget._selected ? ScaleTransition(scale: _animation, child: buildContent(context)) : buildContent(context),
+      child: buildContent(context),
     );
   }
 
@@ -60,9 +60,8 @@ class _PostListWidgetState extends State<PostListWidget> with SingleTickerProvid
                   maxWidth: Constants.avatarImageSize,
                   minWidth: Constants.avatarImageSize,
                   minHeight: Constants.avatarImageSize,
-//                    maxHeight: Constants.avatarImageMaxHeight,
                 ),
-                child: ChanCachedImage(widget._post, BoxFit.fitWidth)),
+                child: Hero(tag: widget._post.getMediaUrl(), child: ChanCachedImage(widget._post, BoxFit.fitWidth))),
           Flexible(
             child: Padding(
               padding: const EdgeInsets.only(left: 4.0, right: 4.0),

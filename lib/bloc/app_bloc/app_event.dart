@@ -19,7 +19,7 @@ class AppEventSetTheme extends AppEvent {
   AppEventSetTheme(this.appTheme);
 
   @override
-  String toString() => 'AppEventShowBottomBar { appTheme: $appTheme }';
+  String toString() => 'AppEventSetTheme { appTheme: $appTheme }';
 
   @override
   List<Object> get props => [appTheme];

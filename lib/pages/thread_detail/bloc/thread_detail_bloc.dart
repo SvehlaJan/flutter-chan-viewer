@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
+import 'package:flutter_chan_viewer/models/chan_post.dart';
 import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
 import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
 import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
@@ -15,20 +16,24 @@ import 'thread_detail_state.dart';
 class ThreadDetailBloc extends Bloc<ThreadDetailEvent, ThreadDetailState> {
   final _repository = ChanRepository.getSync();
   final _chanStorage = ChanStorage.getSync();
-  final String boardId;
-  final int threadId;
-  final bool showDownloadsOnly;
+  final String _boardId;
+  final int _threadId;
+  final bool _showDownloadsOnly;
 
   ThreadDetailModel _threadDetailModel;
-  bool catalogMode = true;
-  bool isFavorite = false;
 
-  ThreadDetailBloc(this.boardId, this.threadId, this.showDownloadsOnly);
+  bool _catalogMode;
+  bool _isFavorite;
+  int _preSelectedPostId;
+
+  ThreadDetailBloc(this._boardId, this._threadId, this._showDownloadsOnly, this._catalogMode, this._preSelectedPostId);
 
   @override
   get initialState => ThreadDetailStateLoading();
 
   get selectedPostIndex => _threadDetailModel.selectedPostIndex;
+
+  set selectedPostIndex(int postIndex) => _threadDetailModel.selectedPostIndex = postIndex;
 
   get selectedMediaIndex => _threadDetailModel.selectedMediaIndex;
 
@@ -38,31 +43,45 @@ class ThreadDetailBloc extends Bloc<ThreadDetailEvent, ThreadDetailState> {
 
   get selectedPostId => _threadDetailModel.selectedPostId;
 
+  get pageTitle => "/$_boardId/$_threadId";
+
+  get catalogMode => _catalogMode ?? false;
+
+  get isFavorite => _isFavorite ?? false;
+
   @override
   Stream<ThreadDetailState> mapEventToState(ThreadDetailEvent event) async* {
     try {
-      if (event is ThreadDetailEventShowContent) {
-        yield _getShowListState();
-      } else if (event is ThreadDetailEventFetchPosts) {
+      if (event is ThreadDetailEventFetchPosts) {
         yield ThreadDetailStateLoading();
 
-        if (showDownloadsOnly) {
-          DownloadFolderInfo folderInfo = _chanStorage.getThreadDownloadFolderInfo(CacheDirective(boardId, threadId));
+        if (_showDownloadsOnly ?? false) {
+          DownloadFolderInfo folderInfo = _chanStorage.getThreadDownloadFolderInfo(CacheDirective(_boardId, _threadId));
           _threadDetailModel = ThreadDetailModel.fromFolderInfo(folderInfo);
         } else {
-          _threadDetailModel = await _repository.fetchCachedThreadDetail(boardId, threadId);
+          _threadDetailModel = await _repository.fetchCachedThreadDetail(_boardId, _threadId);
           if (_threadDetailModel != null) {
             yield _getShowListState(lazyLoading: true);
           }
-          _threadDetailModel = await _repository.fetchThreadDetail(event.forceFetch, boardId, threadId);
+          _threadDetailModel = await _repository.fetchThreadDetail(event.forceFetch, _boardId, _threadId);
+        }
+
+        if (_preSelectedPostId != null) {
+          selectedPostId = _preSelectedPostId;
+          _preSelectedPostId = null;
+        }
+
+        _isFavorite = _repository.isThreadFavorite(_threadDetailModel.cacheDirective);
+        if (_catalogMode == null) {
+          _catalogMode = Preferences.getBool(Preferences.KEY_THREAD_CATALOG_MODE, def: false);
         }
 
         yield _getShowListState();
       } else if (event is ThreadDetailEventToggleFavorite) {
         yield ThreadDetailStateLoading();
 
-        isFavorite = !isFavorite;
-        if (isFavorite) {
+        _isFavorite = !_isFavorite;
+        if (_isFavorite) {
           await _repository.addThreadToFavorites(_threadDetailModel);
         } else {
           await _repository.removeThreadFromFavorites(_threadDetailModel);
@@ -72,8 +91,8 @@ class ThreadDetailBloc extends Bloc<ThreadDetailEvent, ThreadDetailState> {
       } else if (event is ThreadDetailEventToggleCatalogMode) {
         yield ThreadDetailStateLoading();
 
-        catalogMode = !catalogMode;
-        Preferences.setBool(Preferences.KEY_THREAD_CATALOG_MODE, catalogMode);
+        _catalogMode = !_catalogMode;
+        Preferences.setBool(Preferences.KEY_THREAD_CATALOG_MODE, _catalogMode);
 
         yield _getShowListState();
       } else if (event is ThreadDetailEventDownload) {
@@ -91,15 +110,25 @@ class ThreadDetailBloc extends Bloc<ThreadDetailEvent, ThreadDetailState> {
 
         yield _getShowListState();
       } else if (event is ThreadDetailEventOnLinkClicked) {
-        int postIndex = _threadDetailModel.getPostIndex(ChanUtil.getPostIdFromUrl(event.url));
-        if (postIndex > 0) {
-          selectedMediaIndex = postIndex;
+        ChanPost post = _threadDetailModel.findPostById(ChanUtil.getPostIdFromUrl(event.url));
+        if (post != null) {
+          selectedPostId = post.postId;
+          if (!post.hasMedia()) {
+            _catalogMode = false;
+          }
         }
 
         yield _getShowListState();
       } else if (event is ThreadDetailEventOnReplyClicked) {
-        selectedPostId = event.postId;
-        yield ThreadDetailStateCloseGallery();
+        ChanPost post = _threadDetailModel.findPostById(event.postId);
+        if (post != null) {
+          selectedPostId = post.postId;
+          if (!post.hasMedia()) {
+            _catalogMode = false;
+          }
+        }
+
+        yield _getShowListState();
       }
     } catch (e) {
       ChanLogger.e("Event error!", e);
@@ -107,13 +136,7 @@ class ThreadDetailBloc extends Bloc<ThreadDetailEvent, ThreadDetailState> {
     }
   }
 
-  ThreadDetailStateShowList _getShowListState({bool lazyLoading = false}) {
-    isFavorite = _repository.isThreadFavorite(_threadDetailModel.cacheDirective);
-    catalogMode = Preferences.getBool(Preferences.KEY_THREAD_CATALOG_MODE) ?? false;
-    return ThreadDetailStateShowList(_threadDetailModel, selectedPostId, isFavorite, catalogMode, lazyLoading);
-  }
-
-  ThreadDetailStateShowGallery _getShowGalleryState() {
-    return ThreadDetailStateShowGallery(_threadDetailModel, selectedPostId);
+  ThreadDetailStateContent _getShowListState({bool lazyLoading = false}) {
+    return ThreadDetailStateContent(_threadDetailModel, selectedPostId, _isFavorite, _catalogMode, lazyLoading);
   }
 }

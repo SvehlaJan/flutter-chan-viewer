@@ -26,13 +26,13 @@ class SettingsStateError extends SettingsState {
 class SettingsStateContent extends SettingsState {
   final AppTheme theme;
   final List<DownloadFolderInfo> downloads;
-  final bool showSfwOnly;
+  final bool showNsfw;
 
-  SettingsStateContent(this.theme, this.downloads, this.showSfwOnly);
-
-  @override
-  String toString() => 'SettingsStateContent { theme: $theme, downloads: $downloads, showSfwOnly: $showSfwOnly }';
+  SettingsStateContent(this.theme, this.downloads, this.showNsfw);
 
   @override
-  List<Object> get props => [theme, downloads, showSfwOnly];
+  String toString() => 'SettingsStateContent { theme: $theme, downloads: $downloads, showNsfw: $showNsfw }';
+
+  @override
+  List<Object> get props => [theme, downloads, showNsfw];
 }

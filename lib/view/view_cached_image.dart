@@ -13,17 +13,17 @@ class ChanCachedImage extends StatelessWidget {
   final ChanPostBase _post;
   final BoxFit _boxFit;
   final bool forceThumbnail;
+  final bool forceVideoThumbnail;
   final bool showProgress;
-  final bool usePermanentCache;
 
-  ChanCachedImage(this._post, this._boxFit, {this.forceThumbnail = false, this.showProgress = true, this.usePermanentCache = false});
+  ChanCachedImage(this._post, this._boxFit, {this.forceThumbnail = false, this.showProgress = true, this.forceVideoThumbnail = false});
 
   @override
   Widget build(BuildContext context) {
     final bool thumbnailOnly = forceThumbnail || !_post.hasImage();
-    final String mainUrl = thumbnailOnly ? _post.getThumbnailUrl() : _post.getMediaUrl();
+    final String mainUrl = (thumbnailOnly && !forceVideoThumbnail) ? _post.getThumbnailUrl() : _post.getMediaUrl();
     final String thumbnailUrl = thumbnailOnly ? null : _post.getThumbnailUrl();
-    final CacheDirective cacheDirective = thumbnailOnly ? null : _post.getCacheDirective();
+    final CacheDirective cacheDirective = (thumbnailOnly && !forceVideoThumbnail) ? null : _post.getCacheDirective();
 
     return ChanTransitionToImage(
       image: ChanNetworkImage(mainUrl, cacheDirective),

@@ -10,8 +10,6 @@ abstract class ThreadDetailState extends Equatable {
 
 class ThreadDetailStateLoading extends ThreadDetailState {}
 
-class ThreadDetailStateCloseGallery extends ThreadDetailState {}
-
 class ThreadDetailStateError extends ThreadDetailState {
   final String message;
 
@@ -24,14 +22,14 @@ class ThreadDetailStateError extends ThreadDetailState {
   List<Object> get props => [message];
 }
 
-class ThreadDetailStateShowList extends ThreadDetailState {
+class ThreadDetailStateContent extends ThreadDetailState {
   final ThreadDetailModel model;
   final int selectedPostId;
   final bool isFavorite;
   final bool catalogMode;
   final bool lazyLoading;
 
-  ThreadDetailStateShowList(this.model, this.selectedPostId, this.isFavorite, this.catalogMode, this.lazyLoading);
+  ThreadDetailStateContent(this.model, this.selectedPostId, this.isFavorite, this.catalogMode, this.lazyLoading);
 
   get selectedMediaIndex => model.getMediaIndex(selectedPostId);
 
@@ -42,21 +40,4 @@ class ThreadDetailStateShowList extends ThreadDetailState {
 
   @override
   List<Object> get props => [model, selectedPostId, isFavorite, catalogMode, lazyLoading];
-}
-
-class ThreadDetailStateShowGallery extends ThreadDetailState {
-  final ThreadDetailModel model;
-  final int selectedPostId;
-
-  ThreadDetailStateShowGallery(this.model, this.selectedPostId);
-
-  get selectedMediaIndex => model.getMediaIndex(selectedPostId);
-
-  get selectedPostIndex => model.getPostIndex(selectedPostId);
-
-  @override
-  String toString() => 'ThreadDetailStateShowGallery { posts: $model, selectedPostId: $selectedPostId }';
-
-  @override
-  List<Object> get props => [model, selectedPostId];
 }

@@ -27,11 +27,11 @@ class _PostGridWidgetState extends State<PostGridWidget> with SingleTickerProvid
   initState() {
     super.initState();
 
-    _controller = AnimationController(duration: const Duration(milliseconds: 2000), vsync: this, value: 0.6, lowerBound: 0.5);
+    _controller = AnimationController(duration: const Duration(milliseconds: 2000), vsync: this, value: 1.0);
     _animation = CurvedAnimation(parent: _controller, curve: Curves.bounceInOut);
-//    if (widget._selected) {
-//    _controller.forward();
-//    }
+    if (widget._selected) {
+      _controller.forward(from: 0.5);
+    }
   }
 
   @override
@@ -42,33 +42,27 @@ class _PostGridWidgetState extends State<PostGridWidget> with SingleTickerProvid
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<ThreadDetailBloc, ThreadDetailState>(
-      bloc: BlocProvider.of<ThreadDetailBloc>(context),
-      child: GridTile(
-        child: InkWell(
-          onTap: widget._onTap,
-          child: widget._selected ? ScaleTransition(scale: _animation, child: buildContent(context)) : buildContent(context),
-        ),
+    return GridTile(
+      child: InkWell(
+        onTap: widget._onTap,
+        child: ScaleTransition(scale: _animation, child: buildContent(context)),
       ),
-      listener: (BuildContext context, ThreadDetailState state) {
-        if (state is ThreadDetailStateShowList && state.selectedPostId == widget._post.postId) {
-          _controller.forward();
-        }
-      },
     );
   }
 
   Widget buildContent(BuildContext context) {
     final bool isDownloaded = ChanRepository.getSync().isFileDownloaded(widget._post);
+    final bool forceVideoThumbnail = isDownloaded && widget._post.hasWebm();
     return Card(
       margin: EdgeInsets.all(1.0),
       clipBehavior: Clip.antiAlias,
       child: Stack(
         fit: StackFit.passthrough,
         children: <Widget>[
-          ChanCachedImage(widget._post, BoxFit.cover),
+          Hero(tag: widget._post.getMediaUrl(), child: ChanCachedImage(widget._post, BoxFit.cover, forceVideoThumbnail: forceVideoThumbnail)),
           if (isDownloaded) Align(alignment: Alignment.bottomRight, child: Icon(Icons.sd_storage)),
-          if (widget._post.hasVideo()) Align(alignment: Alignment.bottomLeft, child: Icon(Icons.play_arrow)),
+          if (widget._post.hasGif()) Align(alignment: Alignment.bottomLeft, child: Icon(Icons.gif)),
+          if (widget._post.hasWebm()) Align(alignment: Alignment.bottomRight, child: Icon(Icons.play_arrow)),
         ],
       ),
     );

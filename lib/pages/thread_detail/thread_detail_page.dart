@@ -3,11 +3,9 @@ import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_chan_viewer/bloc/chan_viewer_bloc/chan_viewer_bloc.dart';
-import 'package:flutter_chan_viewer/bloc/chan_viewer_bloc/chan_viewer_event.dart';
 import 'package:flutter_chan_viewer/models/chan_post.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
-import 'package:flutter_chan_viewer/pages/gallery/gallery_page_2.dart';
+import 'package:flutter_chan_viewer/pages/gallery/gallery_page.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/view/grid_widget_post.dart';
 import 'package:flutter_chan_viewer/view/list_widget_post.dart';
@@ -21,17 +19,24 @@ class ThreadDetailPage extends BasePage {
   static const String ARG_BOARD_ID = "ThreadDetailPage.ARG_BOARD_ID";
   static const String ARG_THREAD_ID = "ThreadDetailPage.ARG_THREAD_ID";
   static const String ARG_SHOW_DOWNLOADS_ONLY = "ThreadDetailPage.ARG_SHOW_DOWNLOADS_ONLY";
+  static const String ARG_CATALOG_MODE = "ThreadDetailPage.ARG_CATALOG_MODE";
+  static const String ARG_PRESELECTED_POST_ID = "ThreadDetailPage.ARG_PRESELECTED_POST_ID";
 
-  final String boardId;
-  final int threadId;
+  static Map<String, dynamic> getArguments(final String boardId, final int threadId, {final bool showDownloadsOnly, final bool catalogMode, final int preSelectedPostId}) {
+    Map<String, dynamic> arguments = {ARG_BOARD_ID: boardId, ARG_THREAD_ID: threadId};
+    if (preSelectedPostId != null) {
+      arguments[ARG_PRESELECTED_POST_ID] = preSelectedPostId;
+    }
+    if (catalogMode != null) {
+      arguments[ARG_CATALOG_MODE] = catalogMode;
+    }
+    if (showDownloadsOnly != null) {
+      arguments[ARG_SHOW_DOWNLOADS_ONLY] = showDownloadsOnly;
+    }
+    return arguments;
+  }
 
-  static Map<String, dynamic> getArguments(final String boardId, final int threadId, final bool showDownloadsOnly) => {
-        ARG_BOARD_ID: boardId,
-        ARG_THREAD_ID: threadId,
-        ARG_SHOW_DOWNLOADS_ONLY: showDownloadsOnly,
-      };
-
-  ThreadDetailPage(this.boardId, this.threadId);
+  ThreadDetailPage();
 
   @override
   _ThreadDetailPageState createState() => _ThreadDetailPageState();
@@ -56,13 +61,13 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
   }
 
   @override
-  String getPageTitle() => "/${widget.boardId}/${widget.threadId}";
+  String getPageTitle() => _threadDetailBloc.pageTitle;
 
   @override
   List<AppBarAction> getAppBarActions(BuildContext context) => [
+        _threadDetailBloc.isFavorite ? AppBarAction("Unstar", Icons.star_border, _onFavoriteToggleClick) : AppBarAction("Star", Icons.star, _onFavoriteToggleClick),
         AppBarAction("Refresh", Icons.refresh, _onRefreshClick),
         _threadDetailBloc.catalogMode ? AppBarAction("List", Icons.list, _onCatalogModeToggleClick) : AppBarAction("Catalog", Icons.apps, _onCatalogModeToggleClick),
-        _threadDetailBloc.isFavorite ? AppBarAction("Unstar", Icons.star_border, _onFavoriteToggleClick) : AppBarAction("Star", Icons.star, _onFavoriteToggleClick),
         AppBarAction("Download", Icons.file_download, _onDownloadClick)
       ];
 
@@ -76,33 +81,25 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ThreadDetailBloc, ThreadDetailState>(bloc: _threadDetailBloc, builder: (context, state) => buildPage(context, buildBody(context, state)));
+    return BlocBuilder<ThreadDetailBloc, ThreadDetailState>(bloc: _threadDetailBloc, builder: (context, state) => buildScaffold(context, buildBody(context, state)));
   }
 
   Widget buildBody(BuildContext context, ThreadDetailState state) {
     if (state is ThreadDetailStateLoading) {
       return Constants.centeredProgressIndicator;
     }
-    if (state is ThreadDetailStateShowList) {
+    if (state is ThreadDetailStateContent) {
       if (state.model.posts.isEmpty) {
         return Constants.noDataPlaceholder;
       }
+
+      scrollToSelectedPost();
 
       return Column(
         children: <Widget>[
           Flexible(
             child: Scrollbar(
-              child: state.catalogMode
-                  ? buildGrid(
-                      context,
-                      state.model.mediaPosts,
-                      state.selectedMediaIndex,
-                    )
-                  : buildList(
-                      context,
-                      state.model.posts,
-                      state.selectedPostIndex,
-                    ),
+              child: state.catalogMode ? buildGrid(context, state.model.mediaPosts, state.selectedMediaIndex) : buildList(context, state.model.posts, state.selectedPostIndex),
             ),
           ),
           if (state.lazyLoading) LinearProgressIndicator()
@@ -119,7 +116,7 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
       itemScrollController: _listScrollController,
       initialScrollIndex: max(0, selectedPostIndex),
       itemBuilder: (context, index) {
-        return PostListWidget(posts[index], index == selectedPostIndex, () => _onItemTap(posts[index]), (url) => _onLinkClicked(url, context));
+        return PostListWidget(posts[index], index == selectedPostIndex, () => _onItemTap(posts[index], context), (url) => _onLinkClicked(url, context));
       },
       padding: EdgeInsets.all(0.0),
     );
@@ -138,21 +135,22 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
       padding: const EdgeInsets.all(0.0),
       itemCount: mediaPosts.length,
       itemBuilder: (BuildContext context, int index) {
-        return PostGridWidget(mediaPosts[index], index == selectedMediaIndex, () => _onItemTap(mediaPosts[index]));
+        return PostGridWidget(mediaPosts[index], index == selectedMediaIndex, () => _onItemTap(mediaPosts[index], context));
       },
     );
   }
 
   void scrollToSelectedPost() {
-    if (_threadDetailBloc.catalogMode) {
-      _gridScrollController.animateTo(_getGridScrollOffset(), duration: Duration(milliseconds: 500), curve: Curves.easeInOut);
+    // TODO - dirty! Fix
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (_threadDetailBloc.catalogMode) {
 //      _gridScrollController.jumpTo(_getGridScrollOffset());
-    } else {
-      _listScrollController.jumpTo(index: _threadDetailBloc.selectedPostIndex, alignment: 0.5);
-    }
-
-//      _gridScrollController.animateTo(targetRow * itemHeight, duration: Duration(milliseconds: 500), curve: Curves.elasticInOut);
-//      _listScrollController.scrollTo(index: index, duration: Duration(milliseconds: 500), alignment: 0.5);
+        _gridScrollController.animateTo(_getGridScrollOffset(), duration: Duration(milliseconds: 500), curve: Curves.easeInOut);
+      } else {
+//      _listScrollController.jumpTo(index: _threadDetailBloc.selectedPostIndex, alignment: 0.5);
+        _listScrollController.scrollTo(index: _threadDetailBloc.selectedPostIndex, duration: Duration(milliseconds: 500), alignment: 0.5);
+      }
+    });
   }
 
   double _getGridScrollOffset() {
@@ -167,20 +165,15 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
     return (orientation == Orientation.portrait) ? 2 : 3;
   }
 
-  void _onItemTap(ChanPost post) async {
+  void _onItemTap(ChanPost post, BuildContext context) {
     _threadDetailBloc.add(ThreadDetailEventOnPostSelected(null, post.postId));
 
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (context) => BlocProvider.value(
-          value: _threadDetailBloc,
-          child: GalleryPage(),
-        ),
-      ),
-    );
-
-    _threadDetailBloc.add(ThreadDetailEventShowContent());
-    scrollToSelectedPost();
+    Navigator.of(context).push(PageRouteBuilder(
+        opaque: false,
+        pageBuilder: (BuildContext context, _, __) => BlocProvider.value(
+              value: _threadDetailBloc,
+              child: GalleryPage(),
+            )));
   }
 
   void _onLinkClicked(String url, BuildContext context) => _threadDetailBloc.add(ThreadDetailEventOnLinkClicked(url));

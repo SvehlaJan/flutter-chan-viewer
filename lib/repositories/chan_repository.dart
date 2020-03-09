@@ -157,7 +157,7 @@ class ChanRepository {
     return false;
   }
 
-  Future<bool> isBoardFavorite(String boardId) async => (Preferences.getStringList(Preferences.KEY_FAVORITE_BOARDS)).contains(boardId);
+  bool isBoardFavorite(String boardId) => (Preferences.getStringList(Preferences.KEY_FAVORITE_BOARDS)).contains(boardId);
 
   Future<void> addThreadToFavorites(ThreadDetailModel model) async {
     try {

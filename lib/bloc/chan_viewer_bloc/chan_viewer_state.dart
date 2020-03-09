@@ -2,6 +2,9 @@ import 'package:equatable/equatable.dart';
 
 abstract class ChanViewerState extends Equatable {
   ChanViewerState();
+
+  @override
+  List<Object> get props => [];
 }
 
 class ChanViewerStateError extends ChanViewerState {
@@ -16,14 +19,4 @@ class ChanViewerStateError extends ChanViewerState {
   List<Object> get props => [message];
 }
 
-class ChanViewerStateContent extends ChanViewerState {
-  final showBottomBar;
-
-  ChanViewerStateContent(this.showBottomBar);
-
-  @override
-  String toString() => 'ChanViewerStateContent { showBottomBar: $showBottomBar }';
-
-  @override
-  List<Object> get props => [showBottomBar];
-}
+class ChanViewerStateContent extends ChanViewerState {}

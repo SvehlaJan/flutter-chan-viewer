@@ -16,7 +16,7 @@ class BoardListWidget extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Text(_board.title, style: Theme.of(context).textTheme.title),
-            if (!_board.workSafe) Text(" !!!", style: Theme.of(context).textTheme.title.copyWith(color: Colors.red)),
+            if (!_board.workSafe) Text(" !!!", style: Theme.of(context).textTheme.title.copyWith(color: Theme.of(context).errorColor)),
           ],
         ),
       ),

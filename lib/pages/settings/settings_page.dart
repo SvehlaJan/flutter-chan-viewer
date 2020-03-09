@@ -36,7 +36,7 @@ class _SettingsPageState extends BasePageState<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<SettingsBloc, SettingsState>(bloc: _settingsBloc, builder: (context, state) => buildPage(context, buildBody(context, state)));
+    return BlocBuilder<SettingsBloc, SettingsState>(bloc: _settingsBloc, builder: (context, state) => buildScaffold(context, buildBody(context, state)));
   }
 
   Widget buildBody(BuildContext context, SettingsState state) {
@@ -53,14 +53,12 @@ class _SettingsPageState extends BasePageState<SettingsPage> {
               child: Text("Visual", style: Theme.of(context).textTheme.subhead),
             ),
             Card(
-              color: Colors.white,
               elevation: 2.0,
               child: Column(
                 children: <Widget>[
                   ListTile(
                     leading: Icon(
                       Icons.format_paint,
-                      color: Colors.grey,
                     ),
                     title: Text("Dark theme"),
                     trailing: CommonSwitch(
@@ -76,23 +74,16 @@ class _SettingsPageState extends BasePageState<SettingsPage> {
               child: Text("Others", style: Theme.of(context).textTheme.subhead),
             ),
             Card(
-              color: Colors.white,
               elevation: 2.0,
               child: Column(
                 children: <Widget>[
-                  ListTile(leading: Icon(Icons.block, color: Colors.red), title: Text("Experiment"), onTap: _onExperimentClicked),
+                  ListTile(leading: Icon(Icons.block), title: Text("Experiment"), onTap: _onExperimentClicked),
                   ListTile(
-                    leading: Icon(
-                      Icons.priority_high,
-                      color: Colors.grey,
-                    ),
-                    title: Text("Show SFW Only"),
-                    trailing: CommonSwitch(
-                      onChanged: _onToggleShowSfwOnlyClicked,
-                      defValue: state.showSfwOnly,
-                    ),
+                    leading: Icon(Icons.priority_high),
+                    title: Text("Show NSFW"),
+                    trailing: CommonSwitch(onChanged: _onToggleShowSfwOnlyClicked, defValue: state.showNsfw),
                   ),
-                  ListTile(leading: Icon(Icons.cancel, color: Colors.red), title: Text("Cancel downloads"), onTap: _onCancelDownloadsClicked),
+                  ListTile(leading: Icon(Icons.cancel), title: Text("Cancel downloads"), onTap: _onCancelDownloadsClicked),
                 ],
               ),
             ),
@@ -107,7 +98,6 @@ class _SettingsPageState extends BasePageState<SettingsPage> {
               itemBuilder: (context, index) {
                 DownloadFolderInfo folderInfo = state.downloads[index];
                 return Card(
-                  color: Colors.white,
                   elevation: 2.0,
                   child: ListTile(
                     title: Text(folderInfo.cacheDirective.toPath()),
@@ -130,14 +120,9 @@ class _SettingsPageState extends BasePageState<SettingsPage> {
     Navigator.of(context).push(
       NavigationHelper.getRoute(
         Constants.threadDetailRoute,
-        ThreadDetailPage.getArguments(folderInfo.cacheDirective.boardId, folderInfo.cacheDirective.threadId, true),
+        ThreadDetailPage.getArguments(folderInfo.cacheDirective.boardId, folderInfo.cacheDirective.threadId, showDownloadsOnly: true),
       ),
     );
-//    Navigator.pushNamed(
-//      context,
-//      Constants.threadDetailRoute,
-//      arguments: ThreadDetailPage.getArguments(folderInfo.cacheDirective.boardId, folderInfo.cacheDirective.threadId, true),
-//    );
   }
 
   void _onThemeSwitchClicked(bool enabled) {

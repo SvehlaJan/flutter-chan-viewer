@@ -130,7 +130,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
               controller: scrollController,
               itemCount: post.repliesFrom.length,
               itemBuilder: (context, index) {
-                return PostListWidget(post.repliesFrom[index], false, () => _onReplyPostClicked(post.repliesFrom[index], context), (url) => _onLinkClicked(url, context));
+                return PostListWidget(post.repliesFrom[index], false, false, () => _onReplyPostClicked(post.repliesFrom[index], context), (url) => _onLinkClicked(url, context));
               },
             ),
           ),
@@ -140,21 +140,22 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
   }
 
   void _onReplyPostClicked(ChanPost post, BuildContext context) {
-//    showDialog(
-//        context: context,
-//        child: Dialog(
-//            child: BlocProvider(
-//                create: (context) => ThreadDetailBloc(
-//                      _threadDetailBloc.boardId,
-//                      _threadDetailBloc.threadId,
-//                      null,
-//                      false,
-//                      post.postId,
-//                    ),
-//                child: ThreadDetailPage())));
+    showDialog(
+        context: context,
+        child: Dialog(
+            child: BlocProvider(
+                create: (context) => ThreadDetailBloc(
+                      post.boardId,
+                      post.threadId,
+                      true,
+                      false,
+                      false,
+                      post.postId,
+                    ),
+                child: ThreadDetailPage())));
 
-    _threadDetailBloc.add(ThreadDetailEventOnReplyClicked(post.postId));
-    Navigator.of(context).pop();
+//    _threadDetailBloc.add(ThreadDetailEventOnReplyClicked(post.postId));
+//    Navigator.of(context).pop();
   }
 
   void _onLinkClicked(String url, BuildContext context) => _threadDetailBloc.add(ThreadDetailEventOnReplyClicked(ChanUtil.getPostIdFromUrl(url)));

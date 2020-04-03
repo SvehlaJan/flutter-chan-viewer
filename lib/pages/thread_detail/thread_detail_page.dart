@@ -18,20 +18,25 @@ import 'bloc/thread_detail_state.dart';
 class ThreadDetailPage extends BasePage {
   static const String ARG_BOARD_ID = "ThreadDetailPage.ARG_BOARD_ID";
   static const String ARG_THREAD_ID = "ThreadDetailPage.ARG_THREAD_ID";
+  static const String ARG_SHOW_APP_BAR = "ThreadDetailPage.ARG_SHOW_APP_BAR";
   static const String ARG_SHOW_DOWNLOADS_ONLY = "ThreadDetailPage.ARG_SHOW_DOWNLOADS_ONLY";
   static const String ARG_CATALOG_MODE = "ThreadDetailPage.ARG_CATALOG_MODE";
   static const String ARG_PRESELECTED_POST_ID = "ThreadDetailPage.ARG_PRESELECTED_POST_ID";
 
-  static Map<String, dynamic> getArguments(final String boardId, final int threadId, {final bool showDownloadsOnly, final bool catalogMode, final int preSelectedPostId}) {
-    Map<String, dynamic> arguments = {ARG_BOARD_ID: boardId, ARG_THREAD_ID: threadId};
+  static Map<String, dynamic> getArguments(final String boardId, final int threadId, {bool showAppBar = true,
+      final bool showDownloadsOnly = false, final bool catalogMode, final int preSelectedPostId = -1}) {
+    Map<String, dynamic> arguments = {
+      ARG_BOARD_ID: boardId,
+      ARG_THREAD_ID: threadId,
+      ARG_SHOW_APP_BAR: showAppBar,
+      ARG_SHOW_DOWNLOADS_ONLY: showDownloadsOnly,
+      ARG_PRESELECTED_POST_ID: preSelectedPostId
+    };
     if (preSelectedPostId != null) {
       arguments[ARG_PRESELECTED_POST_ID] = preSelectedPostId;
     }
     if (catalogMode != null) {
       arguments[ARG_CATALOG_MODE] = catalogMode;
-    }
-    if (showDownloadsOnly != null) {
-      arguments[ARG_SHOW_DOWNLOADS_ONLY] = showDownloadsOnly;
     }
     return arguments;
   }
@@ -65,7 +70,7 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
 
   @override
   List<AppBarAction> getAppBarActions(BuildContext context) => [
-        _threadDetailBloc.isFavorite ? AppBarAction("Unstar", Icons.star_border, _onFavoriteToggleClick) : AppBarAction("Star", Icons.star, _onFavoriteToggleClick),
+        _threadDetailBloc.isFavorite ? AppBarAction("Star", Icons.star, _onFavoriteToggleClick) : AppBarAction("Unstar", Icons.star_border, _onFavoriteToggleClick),
         AppBarAction("Refresh", Icons.refresh, _onRefreshClick),
         _threadDetailBloc.catalogMode ? AppBarAction("List", Icons.list, _onCatalogModeToggleClick) : AppBarAction("Catalog", Icons.apps, _onCatalogModeToggleClick),
         AppBarAction("Download", Icons.file_download, _onDownloadClick)
@@ -81,7 +86,12 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ThreadDetailBloc, ThreadDetailState>(bloc: _threadDetailBloc, builder: (context, state) => buildScaffold(context, buildBody(context, state)));
+    return BlocBuilder<ThreadDetailBloc, ThreadDetailState>(bloc: _threadDetailBloc, builder: (context, state) {
+      if (state is ThreadDetailStateContent && !state.showAppBar) {
+        return buildBody(context, state);
+      }
+      return buildScaffold(context, buildBody(context, state));
+    });
   }
 
   Widget buildBody(BuildContext context, ThreadDetailState state) {
@@ -116,7 +126,7 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
       itemScrollController: _listScrollController,
       initialScrollIndex: max(0, selectedPostIndex),
       itemBuilder: (context, index) {
-        return PostListWidget(posts[index], index == selectedPostIndex, () => _onItemTap(posts[index], context), (url) => _onLinkClicked(url, context));
+        return PostListWidget(posts[index], index == selectedPostIndex, true, () => _onItemTap(posts[index], context), (url) => _onLinkClicked(url, context));
       },
       padding: EdgeInsets.all(0.0),
     );

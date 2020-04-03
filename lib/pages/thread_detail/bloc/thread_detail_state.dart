@@ -25,19 +25,22 @@ class ThreadDetailStateError extends ThreadDetailState {
 class ThreadDetailStateContent extends ThreadDetailState {
   final ThreadDetailModel model;
   final int selectedPostId;
+  final bool showAppBar;
   final bool isFavorite;
   final bool catalogMode;
   final bool lazyLoading;
 
-  ThreadDetailStateContent(this.model, this.selectedPostId, this.isFavorite, this.catalogMode, this.lazyLoading);
+  ThreadDetailStateContent(this.model, this.selectedPostId, this.showAppBar, this.isFavorite, this.catalogMode, this.lazyLoading);
 
   get selectedMediaIndex => model.getMediaIndex(selectedPostId);
 
   get selectedPostIndex => model.getPostIndex(selectedPostId);
 
   @override
-  String toString() => 'ThreadDetailStateContent { posts: $model, selectedPostId: $selectedPostId, isFavorite: $isFavorite, catalogMode: $catalogMode, lazyLoading: $lazyLoading }';
+  String toString() {
+    return 'ThreadDetailStateContent{model: $model, selectedPostId: $selectedPostId, showAppBar: $showAppBar, isFavorite: $isFavorite, catalogMode: $catalogMode, lazyLoading: $lazyLoading}';
+  }
 
   @override
-  List<Object> get props => [model, selectedPostId, isFavorite, catalogMode, lazyLoading];
+  List<Object> get props => [model, selectedPostId, showAppBar, isFavorite, catalogMode, lazyLoading];
 }

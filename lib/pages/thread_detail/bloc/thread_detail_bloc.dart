@@ -19,6 +19,7 @@ class ThreadDetailBloc extends Bloc<ThreadDetailEvent, ThreadDetailState> {
   final String _boardId;
   final int _threadId;
   final bool _showDownloadsOnly;
+  final bool _showAppBar;
 
   ThreadDetailModel _threadDetailModel;
 
@@ -26,7 +27,7 @@ class ThreadDetailBloc extends Bloc<ThreadDetailEvent, ThreadDetailState> {
   bool _isFavorite;
   int _preSelectedPostId;
 
-  ThreadDetailBloc(this._boardId, this._threadId, this._showDownloadsOnly, this._catalogMode, this._preSelectedPostId);
+  ThreadDetailBloc(this._boardId, this._threadId, this._showAppBar, this._showDownloadsOnly, this._catalogMode, this._preSelectedPostId);
 
   @override
   get initialState => ThreadDetailStateLoading();
@@ -66,7 +67,7 @@ class ThreadDetailBloc extends Bloc<ThreadDetailEvent, ThreadDetailState> {
           _threadDetailModel = await _repository.fetchThreadDetail(event.forceFetch, _boardId, _threadId);
         }
 
-        if (_preSelectedPostId != null) {
+        if (_preSelectedPostId >= 0) {
           selectedPostId = _preSelectedPostId;
           _preSelectedPostId = null;
         }
@@ -137,6 +138,6 @@ class ThreadDetailBloc extends Bloc<ThreadDetailEvent, ThreadDetailState> {
   }
 
   ThreadDetailStateContent _getShowListState({bool lazyLoading = false}) {
-    return ThreadDetailStateContent(_threadDetailModel, selectedPostId, _isFavorite, _catalogMode, lazyLoading);
+    return ThreadDetailStateContent(_threadDetailModel, selectedPostId, _showAppBar, _isFavorite, _catalogMode, lazyLoading);
   }
 }

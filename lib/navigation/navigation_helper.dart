@@ -83,6 +83,7 @@ class NavigationHelper {
               create: (context) => ThreadDetailBloc(
                 arguments[ThreadDetailPage.ARG_BOARD_ID],
                 arguments[ThreadDetailPage.ARG_THREAD_ID],
+                arguments[ThreadDetailPage.ARG_SHOW_APP_BAR],
                 arguments[ThreadDetailPage.ARG_SHOW_DOWNLOADS_ONLY],
                 arguments[ThreadDetailPage.ARG_CATALOG_MODE],
                 arguments[ThreadDetailPage.ARG_PRESELECTED_POST_ID],

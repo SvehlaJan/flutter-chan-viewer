@@ -4,26 +4,31 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_chan_viewer/models/helper/chan_post_base.dart';
 import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
-import 'package:flutter_chan_viewer/utils/chan_logger.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
-import 'package:flutter_chan_viewer/utils/network_image/chan_networkimage.dart';
-import 'package:flutter_chan_viewer/utils/network_image/transition_to_image.dart';
+import 'package:flutter_chan_viewer/view/network_image/chan_networkimage.dart';
+import 'package:flutter_chan_viewer/view/network_image/transition_to_image.dart';
 
 class ChanCachedImage extends StatelessWidget {
-  final ChanPostBase _post;
-  final BoxFit _boxFit;
+  final ChanPostBase post;
+  final BoxFit boxFit;
   final bool forceThumbnail;
   final bool forceVideoThumbnail;
   final bool showProgress;
 
-  ChanCachedImage(this._post, this._boxFit, {this.forceThumbnail = false, this.showProgress = true, this.forceVideoThumbnail = false});
+  const ChanCachedImage({
+    @required this.post,
+    @required this.boxFit,
+    this.forceThumbnail = false,
+    this.forceVideoThumbnail = true,
+    this.showProgress = false,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final bool thumbnailOnly = forceThumbnail || !_post.hasImage();
-    final String mainUrl = (thumbnailOnly && !forceVideoThumbnail) ? _post.getThumbnailUrl() : _post.getMediaUrl();
-    final String thumbnailUrl = thumbnailOnly ? null : _post.getThumbnailUrl();
-    final CacheDirective cacheDirective = (thumbnailOnly && !forceVideoThumbnail) ? null : _post.getCacheDirective();
+    final bool thumbnailOnly = forceThumbnail || !post.hasImage();
+    final String mainUrl = (thumbnailOnly && !forceVideoThumbnail) ? post.getThumbnailUrl() : post.getMediaUrl();
+    final String thumbnailUrl = thumbnailOnly ? null : post.getThumbnailUrl();
+    final CacheDirective cacheDirective = (thumbnailOnly && !forceVideoThumbnail) ? null : post.getCacheDirective();
 
     return ChanTransitionToImage(
       image: ChanNetworkImage(mainUrl, cacheDirective),
@@ -42,7 +47,7 @@ class ChanCachedImage extends StatelessWidget {
               );
             }
           : null,
-      fit: _boxFit,
+      fit: boxFit,
       enableRefresh: true,
       printError: true,
     );
@@ -50,7 +55,7 @@ class ChanCachedImage extends StatelessWidget {
 
   Widget _buildLoadingWidget(String url) {
     return (url != null)
-        ? ChanTransitionToImage(image: ChanNetworkImage(url, null), fit: _boxFit, loadingWidget: Center(child: Constants.progressIndicator))
+        ? ChanTransitionToImage(image: ChanNetworkImage(url, null), fit: boxFit, loadingWidget: Center(child: Constants.progressIndicator))
         : Center(child: Constants.progressIndicator);
   }
 }

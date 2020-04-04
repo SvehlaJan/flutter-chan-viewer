@@ -1,16 +1,13 @@
 import 'dart:async';
 
-import 'package:flutter/widgets.dart';
+import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/models/chan_post.dart';
 import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
 import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
 import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
-import 'package:flutter_chan_viewer/utils/network_image/disk_cache.dart';
+import 'package:flutter_chan_viewer/repositories/disk_cache.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
-import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:sembast/sembast.dart';
-import 'package:sembast/sembast_io.dart';
 
 class ChanDownloader {
   static final ChanDownloader _instance = new ChanDownloader._internal();
@@ -18,24 +15,16 @@ class ChanDownloader {
   static const int CACHE_MAX_SIZE = 10;
 
   ChanStorage _chanStorage;
-  Database _db;
-
-  static ChanDownloader getSync() {
-    if (!_initialized) throw Exception("Repository must be initialized at first!");
-    return _instance;
-  }
 
   static Future<ChanDownloader> initAndGet() async {
     if (_initialized) return _instance;
 
-    WidgetsFlutterBinding.ensureInitialized();
     await FlutterDownloader.initialize();
 //    FlutterDownloader.registerCallback(downloadCallback);
-    _instance._chanStorage = await ChanStorage.initAndGet();
+    _instance._chanStorage = await getIt.getAsync<ChanStorage>();
 
     var dir = await getApplicationDocumentsDirectory();
     await dir.create(recursive: true);
-    _instance._db = await databaseFactoryIo.openDatabase(join(dir.path, "chan.db"), version: 1);
 
     _initialized = true;
     return _instance;

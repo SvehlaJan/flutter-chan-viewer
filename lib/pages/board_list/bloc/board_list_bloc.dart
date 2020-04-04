@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
+import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/models/board_list_model.dart';
 import 'package:flutter_chan_viewer/models/helper/chan_board_item_wrapper.dart';
 import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
@@ -11,7 +12,7 @@ import 'board_list_event.dart';
 import 'board_list_state.dart';
 
 class BoardListBloc extends Bloc<BoardListEvent, BoardListState> {
-  final _repository = ChanRepository.getSync();
+  final ChanRepository _repository = getIt<ChanRepository>();
 
   void initBloc() {}
 
@@ -48,8 +49,8 @@ class BoardListBloc extends Bloc<BoardListEvent, BoardListState> {
         searchQuery = event.query;
         add(BoardListEventFetchBoards(false));
       }
-    } catch (e) {
-      ChanLogger.e("Event error!", e);
+    } catch (e, stackTrace) {
+      ChanLogger.e("Event error!", e, stackTrace);
       yield BoardListStateError(e.toString());
     }
   }

@@ -4,11 +4,12 @@ import 'dart:ui' as ui show Codec, hashValues;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
 import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
 import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
 import 'package:flutter_chan_viewer/utils/chan_logger.dart';
-import 'package:flutter_chan_viewer/utils/network_image/networkimage_utils.dart';
+import 'package:flutter_chan_viewer/view/network_image/networkimage_utils.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 
 typedef Future<Uint8List> ImageProcessing(Uint8List data);
@@ -147,8 +148,8 @@ class ChanNetworkImage extends ImageProvider<ChanNetworkImage> {
         if (key.loadedCallback != null) key.loadedCallback();
         return await PaintingBinding.instance.instantiateImageCodec(imageData);
       }
-    } catch (e) {
-      if (key.printError) ChanLogger.e("Error loading image from cache", e);
+    } catch (e, stackTrace) {
+      if (key.printError) ChanLogger.e("Error loading image from cache", e, stackTrace);
       _invalidateEntryInDiskCache(key, cacheDirective);
     }
 
@@ -181,51 +182,47 @@ class ChanNetworkImage extends ImageProvider<ChanNetworkImage> {
       'retryDurationFactor: $retryDurationFactor,'
       'timeoutDuration: $timeoutDuration'
       ')';
-}
 
-Future<Uint8List> _loadData(ChanNetworkImage key, CacheDirective cacheDirective) async {
-  ChanRepository repository = await ChanRepository.initAndGet();
-  ChanStorage storage = await ChanStorage.initAndGet();
-
-  Uint8List cachedData = await repository.getCachedMediaFile(key.url, cacheDirective);
-  if (cachedData != null) {
-    if (key.url.endsWith(".webm")) {
-      Uint8List thumbnailData = await VideoThumbnail.thumbnailData(
-        video: storage.getFileAbsolutePath(key.url, cacheDirective),
-        imageFormat: ImageFormat.JPEG,
-        maxHeight: 256,
-        quality: 75,
-      );
-      return thumbnailData;
-    } else {
-      return cachedData;
+  Future<Uint8List> _loadData(ChanNetworkImage key, CacheDirective cacheDirective) async {
+    Uint8List cachedData = await getIt<ChanRepository>().getCachedMediaFile(key.url, cacheDirective);
+    if (cachedData != null) {
+      if (key.url.endsWith(".webm")) {
+        Uint8List thumbnailData = await VideoThumbnail.thumbnailData(
+          video: getIt<ChanStorage>().getFileAbsolutePath(key.url, cacheDirective),
+          imageFormat: ImageFormat.JPEG,
+          maxHeight: 256,
+          quality: 75,
+        );
+        return thumbnailData;
+      } else {
+        return cachedData;
+      }
     }
+
+    Uint8List remoteData;
+
+    remoteData = await loadFromRemote(
+      key.url,
+      key.header,
+      key.retryLimit,
+      key.retryDuration,
+      key.retryDurationFactor,
+      key.timeoutDuration,
+      key.loadingProgress,
+      key.getRealUrl,
+      printError: key.printError,
+    );
+
+    if (remoteData != null) {
+      if (key.preProcessing != null) remoteData = (await key.preProcessing(remoteData)) ?? remoteData;
+      await getIt<ChanRepository>().saveMediaFile(key.url, cacheDirective, remoteData);
+      return remoteData;
+    }
+
+    return null;
   }
 
-  Uint8List remoteData;
-
-  remoteData = await loadFromRemote(
-    key.url,
-    key.header,
-    key.retryLimit,
-    key.retryDuration,
-    key.retryDurationFactor,
-    key.timeoutDuration,
-    key.loadingProgress,
-    key.getRealUrl,
-    printError: key.printError,
-  );
-
-  if (remoteData != null) {
-    if (key.preProcessing != null) remoteData = (await key.preProcessing(remoteData)) ?? remoteData;
-    repository.saveMediaFile(key.url, cacheDirective, remoteData);
-    return remoteData;
+  Future<void> _invalidateEntryInDiskCache(ChanNetworkImage key, CacheDirective cacheDirective) async {
+    await getIt<ChanRepository>().deleteMediaFile(key.url, cacheDirective);
   }
-
-  return null;
-}
-
-Future<void> _invalidateEntryInDiskCache(ChanNetworkImage key, CacheDirective cacheDirective) async {
-  ChanRepository repository = await ChanRepository.initAndGet();
-  repository.deleteMediaFile(key.url, cacheDirective);
 }

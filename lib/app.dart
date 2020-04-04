@@ -10,7 +10,7 @@ import 'package:flutter_chan_viewer/pages/settings/bloc/settings_bloc.dart';
 import 'package:flutter_chan_viewer/pages/settings/settings_page.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 
-import 'navigation/navigation_helper.dart';
+import 'utils/navigation_helper.dart';
 
 class ChanViewerApp extends StatefulWidget {
   @override

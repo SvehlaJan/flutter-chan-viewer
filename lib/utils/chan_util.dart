@@ -46,6 +46,6 @@ class ChanUtil {
   static int getPostIdFromUrl(String url) => url.startsWith("#p") ? int.parse(url.substring(2)) : null;
 
   static String getHumanDate(int timestamp) {
-    return formatDate(DateTime.fromMillisecondsSinceEpoch(timestamp * 1000), [yyyy, '-', mm, '-', dd, ' ', HH, ':', nn, ':', ss]);
+    return formatDate(DateTime.fromMillisecondsSinceEpoch(timestamp * 1000), [mm, '-', dd, ' ', HH, ':', nn, ':', ss]);
   }
 }

@@ -1,17 +1,18 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
+import 'package:date_format/date_format.dart';
+import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/models/board_detail_model.dart';
 import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
 import 'package:flutter_chan_viewer/utils/chan_logger.dart';
 import 'package:flutter_chan_viewer/utils/preferences.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'board_detail_event.dart';
 import 'board_detail_state.dart';
 
 class BoardDetailBloc extends Bloc<BoardDetailEvent, BoardDetailState> {
-  final _repository = ChanRepository.getSync();
+  final ChanRepository _repository = getIt<ChanRepository>();
 
   BoardDetailBloc(this.boardId);
 
@@ -49,8 +50,8 @@ class BoardDetailBloc extends Bloc<BoardDetailEvent, BoardDetailState> {
         Preferences.setStringList(Preferences.KEY_FAVORITE_BOARDS, favoriteBoards);
         add(BoardDetailEventFetchThreads(false));
       }
-    } catch (e) {
-      ChanLogger.e("Event error!", e);
+    } catch (e, stackTrace) {
+      ChanLogger.e("Event error!", e, stackTrace);
       yield BoardDetailStateError(e.toString());
     }
   }

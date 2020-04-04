@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
+import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/models/chan_post.dart';
 import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
 import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
@@ -14,18 +15,17 @@ import 'thread_detail_event.dart';
 import 'thread_detail_state.dart';
 
 class ThreadDetailBloc extends Bloc<ThreadDetailEvent, ThreadDetailState> {
-  final _repository = ChanRepository.getSync();
-  final _chanStorage = ChanStorage.getSync();
+  final ChanRepository _repository = getIt<ChanRepository>();
+  final ChanStorage _chanStorage = getIt<ChanStorage>();
   final String _boardId;
   final int _threadId;
   final bool _showDownloadsOnly;
   final bool _showAppBar;
-
-  ThreadDetailModel _threadDetailModel;
-
   bool _catalogMode;
   bool _isFavorite;
   int _preSelectedPostId;
+
+  ThreadDetailModel _threadDetailModel;
 
   ThreadDetailBloc(this._boardId, this._threadId, this._showAppBar, this._showDownloadsOnly, this._catalogMode, this._preSelectedPostId);
 
@@ -131,8 +131,8 @@ class ThreadDetailBloc extends Bloc<ThreadDetailEvent, ThreadDetailState> {
 
         yield _getShowListState();
       }
-    } catch (e) {
-      ChanLogger.e("Event error!", e);
+    } catch (e, stackTrace) {
+      ChanLogger.e("Event error!", e, stackTrace);
       yield ThreadDetailStateError(e.toString());
     }
   }

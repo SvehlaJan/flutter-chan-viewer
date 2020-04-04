@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chan_viewer/models/board_detail_model.dart';
 import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
-import 'package:flutter_chan_viewer/navigation/navigation_helper.dart';
+import 'package:flutter_chan_viewer/utils/navigation_helper.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
 import 'package:flutter_chan_viewer/pages/thread_detail/thread_detail_page.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
@@ -13,9 +13,7 @@ import 'bloc/favorites_bloc.dart';
 import 'bloc/favorites_event.dart';
 import 'bloc/favorites_state.dart';
 
-class FavoritesPage extends BasePage {
-  FavoritesPage();
-
+class FavoritesPage extends StatefulWidget {
   @override
   _FavoritesPageState createState() => _FavoritesPageState();
 }
@@ -57,7 +55,7 @@ class _FavoritesPageState extends BasePageState<FavoritesPage> {
         child: ListView.builder(
           itemBuilder: (BuildContext context, int index) {
             return InkWell(
-              child: ThreadListWidget(threads[index].thread),
+              child: ThreadListWidget(thread: threads[index].thread),
               onTap: () => _openThreadDetailPage(threads[index].thread),
             );
           },
@@ -73,7 +71,7 @@ class _FavoritesPageState extends BasePageState<FavoritesPage> {
     Navigator.of(context).push(
       NavigationHelper.getRoute(
         Constants.threadDetailRoute,
-        ThreadDetailPage.getArguments(thread.boardId, thread.threadId),
+        ThreadDetailPage.createArguments(thread.boardId, thread.threadId),
       ),
     );
   }

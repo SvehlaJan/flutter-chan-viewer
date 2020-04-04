@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
+import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/repositories/chan_downloader.dart';
 import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
 import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
@@ -15,10 +16,10 @@ class AppBloc extends Bloc<AppEvent, AppState> {
   AppBloc();
 
   Future<void> initBloc() async {
-    await Preferences.initAndGet();
-    await ChanDownloader.initAndGet();
-    await ChanStorage.initAndGet();
-    await ChanRepository.initAndGet();
+    await getIt.getAsync<Preferences>();
+    await getIt.getAsync<ChanDownloader>();
+    await getIt.getAsync<ChanStorage>();
+    await getIt.getAsync<ChanRepository>();
   }
 
   @override
@@ -36,8 +37,8 @@ class AppBloc extends Bloc<AppEvent, AppState> {
       if (event is AppEventSetTheme) {
         yield AppStateContent(event.appTheme);
       }
-    } catch (e) {
-      ChanLogger.e("Event error!", e);
+    } catch (e, stackTrace) {
+      ChanLogger.e("Event error!", e, stackTrace);
       yield AppStateError(e.toString());
     }
   }

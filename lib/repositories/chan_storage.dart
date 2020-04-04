@@ -21,11 +21,6 @@ class ChanStorage {
     // initialization code
   }
 
-  static ChanStorage getSync() {
-    if (!_initialized) throw Exception("Cache must be initialized at first!");
-    return _instance;
-  }
-
   static Future<ChanStorage> initAndGet() async {
     if (_initialized) return _instance;
 
@@ -53,8 +48,8 @@ class ChanStorage {
   File getMediaFile(String url, CacheDirective cacheDirective) {
     try {
       return File(getFileAbsolutePath(url, cacheDirective));
-    } catch (e) {
-      ChanLogger.e("File read error!", e);
+    } catch (e, stackTrace) {
+      ChanLogger.e("File read error!", e, stackTrace);
     }
     return null;
   }
@@ -64,8 +59,8 @@ class ChanStorage {
       File mediaFile = File(getFileAbsolutePath(url, cacheDirective));
       Uint8List data = await mediaFile.readAsBytes();
       return data;
-    } catch (e) {
-      ChanLogger.e("File read error!", e);
+    } catch (e, stackTrace) {
+      ChanLogger.e("File read error!", e, stackTrace);
     }
     return null;
   }
@@ -78,8 +73,8 @@ class ChanStorage {
       File mediaFile = File(join(directory.path, basename(url)));
       File result = await mediaFile.writeAsBytes(data, flush: false);
       return result;
-    } catch (e) {
-      ChanLogger.e("File write error!", e);
+    } catch (e, stackTrace) {
+      ChanLogger.e("File write error!", e, stackTrace);
     }
     return null;
   }
@@ -90,8 +85,8 @@ class ChanStorage {
       File file = File(join(directory.path, CONTENT_FILENAME));
       String text = await file.readAsString();
       return text;
-    } catch (e) {
-      ChanLogger.e("File read error!", e);
+    } catch (e, stackTrace) {
+      ChanLogger.e("File read error!", e, stackTrace);
       return null;
     }
   }
@@ -104,8 +99,8 @@ class ChanStorage {
       File file = File(join(directory.path, CONTENT_FILENAME));
       File result = await file.writeAsString(content);
       return result;
-    } catch (e) {
-      ChanLogger.e("File write error!", e);
+    } catch (e, stackTrace) {
+      ChanLogger.e("File write error!", e, stackTrace);
       return null;
     }
   }
@@ -118,8 +113,8 @@ class ChanStorage {
       if (!file.existsSync()) return null;
       file.deleteSync(recursive: true);
       return null;
-    } catch (e) {
-      ChanLogger.e("File delete error!", e);
+    } catch (e, stackTrace) {
+      ChanLogger.e("File delete error!", e, stackTrace);
       return null;
     }
   }
@@ -131,8 +126,8 @@ class ChanStorage {
 
       directory.deleteSync(recursive: true);
       return null;
-    } catch (e) {
-      ChanLogger.e("File delete error!", e);
+    } catch (e, stackTrace) {
+      ChanLogger.e("File delete error!", e, stackTrace);
       return null;
     }
   }
@@ -144,8 +139,8 @@ class ChanStorage {
 
       directory.deleteSync(recursive: true);
       return null;
-    } catch (e) {
-      ChanLogger.e("File delete error!", e);
+    } catch (e, stackTrace) {
+      ChanLogger.e("File delete error!", e, stackTrace);
       return null;
     }
   }
@@ -164,8 +159,8 @@ class ChanStorage {
       }
 
       return threadMap;
-    } catch (e) {
-      ChanLogger.e("Error listing downloads!", e);
+    } catch (e, stackTrace) {
+      ChanLogger.e("Error listing downloads!", e, stackTrace);
       return null;
     }
   }
@@ -189,8 +184,8 @@ class ChanStorage {
       }
 
       return downloadedFolders;
-    } catch (e) {
-      ChanLogger.e("File read error!", e);
+    } catch (e, stackTrace) {
+      ChanLogger.e("File read error!", e, stackTrace);
       return null;
     }
   }

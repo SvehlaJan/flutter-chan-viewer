@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/models/chan_post.dart';
 import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
@@ -9,9 +10,11 @@ import 'package:flutter_chan_viewer/view/view_cached_image.dart';
 import 'package:video_player/video_player.dart';
 
 class ChanVideoPlayer extends StatefulWidget {
-  final ChanPost _post;
+  final ChanPost post;
 
-  ChanVideoPlayer(this._post);
+  const ChanVideoPlayer({
+    @required this.post,
+  });
 
   @override
   _ChanVideoPlayerState createState() => _ChanVideoPlayerState();
@@ -25,12 +28,11 @@ class _ChanVideoPlayerState extends State<ChanVideoPlayer> {
   void initState() {
     super.initState();
 
-    ChanStorage cache = ChanStorage.getSync();
-    if (cache.mediaFileExists(widget._post.getMediaUrl(), widget._post.getCacheDirective())) {
-      File file = cache.getMediaFile(widget._post.getMediaUrl(), widget._post.getCacheDirective());
+    if (getIt<ChanStorage>().mediaFileExists(widget.post.getMediaUrl(), widget.post.getCacheDirective())) {
+      File file = getIt<ChanStorage>().getMediaFile(widget.post.getMediaUrl(), widget.post.getCacheDirective());
       _videoController = VideoPlayerController.file(file);
     } else {
-      _videoController = VideoPlayerController.network(widget._post.getMediaUrl());
+      _videoController = VideoPlayerController.network(widget.post.getMediaUrl());
     }
 
     _videoController.initialize().then((_) {
@@ -66,7 +68,7 @@ class _ChanVideoPlayerState extends State<ChanVideoPlayer> {
   Widget _buildLoadingView(BuildContext context) {
     return Stack(
       fit: StackFit.expand,
-      children: <Widget>[ChanCachedImage(widget._post, BoxFit.contain), Constants.centeredProgressIndicator],
+      children: <Widget>[ChanCachedImage(post: widget.post, boxFit: BoxFit.contain), Constants.centeredProgressIndicator],
     );
   }
 

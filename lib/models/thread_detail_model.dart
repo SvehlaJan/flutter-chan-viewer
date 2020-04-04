@@ -79,9 +79,9 @@ class ThreadDetailModel with EquatableMixin {
 
   ChanPost get firstPost => _posts?.first;
 
-  int getPostIndex(int postId) => ((postId ?? -1) > 0) ? _posts.indexWhere((post) => post.postId == postId) : -1;
+  int getPostIndex(int postId) => ((postId ?? -1) >= 0) ? _posts.indexWhere((post) => post.postId == postId) : -1;
 
-  int getMediaIndex(int postId) => ((postId ?? -1) > 0) ? mediaPosts.indexWhere((post) => post.postId == postId) : -1;
+  int getMediaIndex(int postId) => ((postId ?? -1) >= 0) ? mediaPosts.indexWhere((post) => post.postId == postId) : -1;
 
   ChanPost findPostById(int postId) => _posts.where((post) => post.postId == postId)?.first;
 

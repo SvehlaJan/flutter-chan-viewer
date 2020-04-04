@@ -15,7 +15,7 @@ import 'bloc/thread_detail_bloc.dart';
 import 'bloc/thread_detail_event.dart';
 import 'bloc/thread_detail_state.dart';
 
-class ThreadDetailPage extends BasePage {
+class ThreadDetailPage extends StatefulWidget {
   static const String ARG_BOARD_ID = "ThreadDetailPage.ARG_BOARD_ID";
   static const String ARG_THREAD_ID = "ThreadDetailPage.ARG_THREAD_ID";
   static const String ARG_SHOW_APP_BAR = "ThreadDetailPage.ARG_SHOW_APP_BAR";
@@ -23,8 +23,8 @@ class ThreadDetailPage extends BasePage {
   static const String ARG_CATALOG_MODE = "ThreadDetailPage.ARG_CATALOG_MODE";
   static const String ARG_PRESELECTED_POST_ID = "ThreadDetailPage.ARG_PRESELECTED_POST_ID";
 
-  static Map<String, dynamic> getArguments(final String boardId, final int threadId, {bool showAppBar = true,
-      final bool showDownloadsOnly = false, final bool catalogMode, final int preSelectedPostId = -1}) {
+  static Map<String, dynamic> createArguments(final String boardId, final int threadId,
+      {bool showAppBar = true, final bool showDownloadsOnly = false, final bool catalogMode, final int preSelectedPostId = -1}) {
     Map<String, dynamic> arguments = {
       ARG_BOARD_ID: boardId,
       ARG_THREAD_ID: threadId,
@@ -40,8 +40,6 @@ class ThreadDetailPage extends BasePage {
     }
     return arguments;
   }
-
-  ThreadDetailPage();
 
   @override
   _ThreadDetailPageState createState() => _ThreadDetailPageState();
@@ -86,12 +84,14 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ThreadDetailBloc, ThreadDetailState>(bloc: _threadDetailBloc, builder: (context, state) {
-      if (state is ThreadDetailStateContent && !state.showAppBar) {
-        return buildBody(context, state);
-      }
-      return buildScaffold(context, buildBody(context, state));
-    });
+    return BlocBuilder<ThreadDetailBloc, ThreadDetailState>(
+        bloc: _threadDetailBloc,
+        builder: (context, state) {
+          if (state is ThreadDetailStateContent && !state.showAppBar) {
+            return buildBody(context, state);
+          }
+          return buildScaffold(context, buildBody(context, state));
+        });
   }
 
   Widget buildBody(BuildContext context, ThreadDetailState state) {
@@ -126,7 +126,12 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
       itemScrollController: _listScrollController,
       initialScrollIndex: max(0, selectedPostIndex),
       itemBuilder: (context, index) {
-        return PostListWidget(posts[index], index == selectedPostIndex, true, () => _onItemTap(posts[index], context), (url) => _onLinkClicked(url, context));
+        return PostListWidget(
+          post: posts[index],
+          selected: index == selectedPostIndex,
+          onTap: () => _onItemTap(posts[index], context),
+          onLinkTap: (url) => _onLinkClicked(url, context),
+        );
       },
       padding: EdgeInsets.all(0.0),
     );
@@ -145,7 +150,11 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
       padding: const EdgeInsets.all(0.0),
       itemCount: mediaPosts.length,
       itemBuilder: (BuildContext context, int index) {
-        return PostGridWidget(mediaPosts[index], index == selectedMediaIndex, () => _onItemTap(mediaPosts[index], context));
+        return PostGridWidget(
+          post: mediaPosts[index],
+          selected: index == selectedMediaIndex,
+          onTap: () => _onItemTap(mediaPosts[index], context),
+        );
       },
     );
   }

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
+import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/repositories/chan_downloader.dart';
 import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
 import 'package:flutter_chan_viewer/utils/chan_logger.dart';
@@ -12,8 +13,9 @@ import 'settings_event.dart';
 import 'settings_state.dart';
 
 class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
-  final _downloader = ChanDownloader.getSync();
-  final _chanStorage = ChanStorage.getSync();
+  final ChanDownloader _downloader = getIt<ChanDownloader>();
+  final ChanStorage _chanStorage = getIt<ChanStorage>();
+
   AppTheme _appTheme;
   List<DownloadFolderInfo> _downloads = new List();
   bool _showSfwOnly;
@@ -57,8 +59,8 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
         _downloads = _chanStorage.getAllDownloadFoldersInfo();
         yield _contentState;
       }
-    } catch (e) {
-      ChanLogger.e("Event error!", e);
+    } catch (e, stackTrace) {
+      ChanLogger.e("Event error!", e, stackTrace);
       yield SettingsStateError(e.toString());
     }
   }

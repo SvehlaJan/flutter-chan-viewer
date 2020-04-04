@@ -3,9 +3,11 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_chan_viewer/models/board_list_model.dart';
 
 class BoardListWidget extends StatelessWidget {
-  final ChanBoard _board;
+  final ChanBoard board;
 
-  BoardListWidget(this._board);
+  const BoardListWidget({
+    @required this.board,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -15,8 +17,8 @@ class BoardListWidget extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text(_board.title, style: Theme.of(context).textTheme.title),
-            if (!_board.workSafe) Text(" !!!", style: Theme.of(context).textTheme.title.copyWith(color: Theme.of(context).errorColor)),
+            Text(board.title, style: Theme.of(context).textTheme.title),
+            if (!board.workSafe) Text(" !!!", style: Theme.of(context).textTheme.title.copyWith(color: Theme.of(context).errorColor)),
           ],
         ),
       ),

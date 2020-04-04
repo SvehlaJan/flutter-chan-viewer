@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/app_bloc/app_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/app_bloc/app_event.dart';
-import 'package:flutter_chan_viewer/navigation/navigation_helper.dart';
+import 'package:flutter_chan_viewer/utils/navigation_helper.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
 import 'package:flutter_chan_viewer/pages/settings/bloc/settings_bloc.dart';
 import 'package:flutter_chan_viewer/pages/settings/bloc/settings_event.dart';
@@ -14,11 +14,9 @@ import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/view/view_common_switch.dart';
 
-class SettingsPage extends BasePage {
-  SettingsPage();
-
+class SettingsPage extends StatefulWidget {
   @override
-  State<StatefulWidget> createState() => new _SettingsPageState();
+  State<StatefulWidget> createState() => _SettingsPageState();
 }
 
 class _SettingsPageState extends BasePageState<SettingsPage> {
@@ -120,7 +118,7 @@ class _SettingsPageState extends BasePageState<SettingsPage> {
     Navigator.of(context).push(
       NavigationHelper.getRoute(
         Constants.threadDetailRoute,
-        ThreadDetailPage.getArguments(folderInfo.cacheDirective.boardId, folderInfo.cacheDirective.threadId, showDownloadsOnly: true),
+        ThreadDetailPage.createArguments(folderInfo.cacheDirective.boardId, folderInfo.cacheDirective.threadId, showDownloadsOnly: true),
       ),
     );
   }

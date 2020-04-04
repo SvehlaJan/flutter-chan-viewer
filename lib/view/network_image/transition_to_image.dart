@@ -3,7 +3,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
-import 'package:flutter_chan_viewer/utils/network_image/chan_networkimage.dart';
+import 'package:flutter_chan_viewer/view/network_image/chan_networkimage.dart';
 
 import 'raw_image.dart' show MyRawImage;
 

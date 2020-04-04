@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chan_viewer/models/board_detail_model.dart';
-import 'package:flutter_chan_viewer/navigation/navigation_helper.dart';
+import 'package:flutter_chan_viewer/utils/navigation_helper.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
 import 'package:flutter_chan_viewer/pages/thread_detail/thread_detail_page.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
@@ -12,7 +12,7 @@ import 'bloc/board_detail_bloc.dart';
 import 'bloc/board_detail_event.dart';
 import 'bloc/board_detail_state.dart';
 
-class BoardDetailPage extends BasePage {
+class BoardDetailPage extends StatefulWidget {
   static const String ARG_BOARD_ID = "ChanBoardsPage.ARG_BOARD_ID";
 
   final String boardId;
@@ -75,7 +75,7 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
           itemCount: state.threads.length,
           itemBuilder: (context, index) {
             return InkWell(
-              child: ThreadListWidget(state.threads[index]),
+              child: ThreadListWidget(thread: state.threads[index]),
               onTap: () => onItemClicked(state.threads[index]),
             );
           },
@@ -90,7 +90,7 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
     Navigator.of(context).push(
       NavigationHelper.getRoute(
         Constants.threadDetailRoute,
-        ThreadDetailPage.getArguments(thread.boardId, thread.threadId),
+        ThreadDetailPage.createArguments(thread.boardId, thread.threadId),
       ),
     );
   }

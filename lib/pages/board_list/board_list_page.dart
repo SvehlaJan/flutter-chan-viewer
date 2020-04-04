@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chan_viewer/models/board_list_model.dart';
 import 'package:flutter_chan_viewer/models/helper/chan_board_item_wrapper.dart';
-import 'package:flutter_chan_viewer/navigation/navigation_helper.dart';
+import 'package:flutter_chan_viewer/utils/navigation_helper.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
 import 'package:flutter_chan_viewer/pages/board_detail/bloc/board_detail_bloc.dart';
 import 'package:flutter_chan_viewer/pages/board_detail/board_detail_page.dart';
@@ -14,7 +14,7 @@ import 'bloc/board_list_bloc.dart';
 import 'bloc/board_list_event.dart';
 import 'bloc/board_list_state.dart';
 
-class BoardListPage extends BasePage {
+class BoardListPage extends StatefulWidget {
   @override
   _BoardListPageState createState() => _BoardListPageState();
 }
@@ -67,7 +67,7 @@ class _BoardListPageState extends BasePageState<BoardListPage> {
           if (item.isHeader) {
             return Padding(padding: const EdgeInsets.all(8.0), child: Text(item.headerTitle, style: Theme.of(context).textTheme.subhead));
           } else {
-            return InkWell(child: BoardListWidget(item.chanBoard), onTap: (() => onItemClicked(item.chanBoard)));
+            return InkWell(child: BoardListWidget(board: item.chanBoard), onTap: (() => onItemClicked(item.chanBoard)));
           }
         },
       );

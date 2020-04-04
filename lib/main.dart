@@ -5,8 +5,8 @@ import 'package:flutter_chan_viewer/bloc/app_bloc/app_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/app_bloc/app_event.dart';
 import 'package:flutter_chan_viewer/bloc/app_bloc/app_state.dart';
 import 'package:flutter_chan_viewer/bloc/chan_viewer_bloc/chan_viewer_bloc.dart';
-import 'package:flutter_chan_viewer/utils/theme/theme_dark.dart';
-import 'package:flutter_chan_viewer/utils/theme/theme_light.dart';
+import 'package:flutter_chan_viewer/locator.dart';
+import 'package:flutter_chan_viewer/utils/theme_helper.dart';
 
 import 'app.dart';
 import 'bloc/simple_bloc_delegate.dart';
@@ -14,14 +14,19 @@ import 'utils/constants.dart';
 
 void main() async {
   BlocSupervisor.delegate = SimpleBlocDelegate();
-  runApp(
-    BlocProvider(
-      create: (context) {
-        return AppBloc()..add(AppEventAppStarted());
-      },
-      child: MainApp(),
-    ),
-  );
+  WidgetsFlutterBinding.ensureInitialized();
+  setupLocator();
+
+  getIt.allReady().then((value) {
+    runApp(
+      BlocProvider(
+        create: (context) {
+          return AppBloc()..add(AppEventAppStarted());
+        },
+        child: MainApp(),
+      ),
+    );
+  });
 }
 
 class MainApp extends StatelessWidget {
@@ -33,9 +38,9 @@ class MainApp extends StatelessWidget {
       } else if (state is AppStateContent) {
         ThemeData themeData;
         if (state.appTheme == AppTheme.light) {
-          themeData = themeLight;
+          themeData = ThemeHelper.getThemeLight(context);
         } else {
-          themeData = themeDark;
+          themeData = ThemeHelper.getThemeDark(context);
         }
 
         return BlocProvider(

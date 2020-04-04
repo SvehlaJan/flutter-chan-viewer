@@ -3,39 +3,41 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_chan_viewer/models/chan_post.dart';
 import 'package:flutter_chan_viewer/utils/chan_util.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
+import 'package:flutter_chan_viewer/utils/extensions.dart';
 import 'package:flutter_chan_viewer/view/view_cached_image.dart';
 import 'package:flutter_html/flutter_html.dart';
 
 class PostListWidget extends StatefulWidget {
-  final ChanPost _post;
-  final bool _selected;
-  final bool _showHeroAnimation;
-  final Function _onTap;
-  final Function(String url) _onLinkTap;
-
-  PostListWidget(this._post, this._selected, this._showHeroAnimation,
-      this._onTap, this._onLinkTap);
+  final ChanPost post;
+  final bool selected;
+  final bool showAsHeader;
+  final bool showHeroAnimation;
+  final Function onTap;
+  final Function(String url) onLinkTap;
 
   @override
   _PostListWidgetState createState() => _PostListWidgetState();
+
+  const PostListWidget({
+    @required this.post,
+    this.selected = false,
+    this.showAsHeader = false,
+    this.showHeroAnimation = true,
+    this.onTap,
+    this.onLinkTap,
+  });
 }
 
-class _PostListWidgetState extends State<PostListWidget>
-    with SingleTickerProviderStateMixin {
+class _PostListWidgetState extends State<PostListWidget> with SingleTickerProviderStateMixin {
   AnimationController _controller;
   Animation<double> _animation;
 
   initState() {
     super.initState();
 
-    if (widget._selected) {
-      _controller = AnimationController(
-          duration: const Duration(milliseconds: 2000),
-          vsync: this,
-          value: 0.6,
-          lowerBound: 0.5);
-      _animation =
-          CurvedAnimation(parent: _controller, curve: Curves.bounceInOut);
+    if (widget.selected) {
+      _controller = AnimationController(duration: const Duration(milliseconds: 2000), vsync: this, value: 0.6, lowerBound: 0.5);
+      _animation = CurvedAnimation(parent: _controller, curve: Curves.bounceInOut);
       _controller.forward();
     }
   }
@@ -49,7 +51,7 @@ class _PostListWidgetState extends State<PostListWidget>
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: widget._onTap,
+      onTap: widget.onTap,
       child: buildContent(context),
     );
   }
@@ -62,44 +64,32 @@ class _PostListWidgetState extends State<PostListWidget>
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          if (widget._post.getThumbnailUrl() != null)
+          if (!widget.showAsHeader && widget.post.getThumbnailUrl() != null)
             ConstrainedBox(
                 constraints: BoxConstraints(
                   maxWidth: Constants.avatarImageSize,
                   minWidth: Constants.avatarImageSize,
                   minHeight: Constants.avatarImageSize,
                 ),
-                child: widget._showHeroAnimation
-                    ? Hero(
-                        tag: widget._post.getMediaUrl(),
-                        child: ChanCachedImage(widget._post, BoxFit.fitWidth))
-                    : ChanCachedImage(widget._post, BoxFit.fitWidth)),
+                child: widget.showHeroAnimation
+                    ? Hero(tag: widget.post.getMediaUrl(), child: ChanCachedImage(post: widget.post, boxFit: BoxFit.fitWidth))
+                    : ChanCachedImage(post: widget.post, boxFit: BoxFit.fitWidth)),
           Flexible(
             child: Padding(
-              padding: const EdgeInsets.only(left: 4.0, right: 4.0),
+              padding: const EdgeInsets.symmetric(horizontal: 4.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
                   Row(
-                    children: <Widget>[
-                      Text(widget._post.postId.toString(),
-                          style: Theme.of(context).textTheme.caption),
-                      Spacer(),
-                      Text("${widget._post.repliesFrom.length}r",
-                          style: Theme.of(context).textTheme.caption),
-                      Spacer(),
-                      Text(ChanUtil.getHumanDate(widget._post.timestamp),
-                          style: Theme.of(context).textTheme.caption),
-                    ],
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      Text(widget.post.postId.toString(), style: Theme.of(context).textTheme.caption),
+                      Text("${widget.post.repliesFrom.length}r", style: Theme.of(context).textTheme.caption),
+                      Text(ChanUtil.getHumanDate(widget.post.timestamp), style: Theme.of(context).textTheme.caption),
+                    ],
                   ),
-                  if (widget._post.subtitle != null)
-                    Text(widget._post.subtitle,
-                        style: Theme.of(context).textTheme.subtitle),
-                  Html(
-                      data: ChanUtil.getReadableHtml(
-                          widget._post.content ?? "", false),
-                      onLinkTap: widget._onLinkTap),
+                  if (widget.post.subtitle.isNotNullNorEmpty) Text(widget.post.subtitle, style: Theme.of(context).textTheme.bodyText1),
+                  if (widget.post.content.isNotNullNorEmpty) Html(data: ChanUtil.getReadableHtml(widget.post.content, false), onLinkTap: widget.onLinkTap),
                 ],
               ),
             ),

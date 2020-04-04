@@ -8,9 +8,11 @@ import 'package:flutter_chan_viewer/view/view_cached_image.dart';
 import 'package:flutter_html/flutter_html.dart';
 
 class ThreadListWidget extends StatelessWidget {
-  final ChanThread _thread;
+  final ChanThread thread;
 
-  ThreadListWidget(this._thread);
+  const ThreadListWidget({
+    @required this.thread,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +23,7 @@ class ThreadListWidget extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          if (_thread.hasMedia())
+          if (thread.hasMedia())
             ConstrainedBox(
                 constraints: BoxConstraints(
                   maxWidth: Constants.avatarImageSize,
@@ -29,7 +31,7 @@ class ThreadListWidget extends StatelessWidget {
                   minHeight: Constants.avatarImageSize,
 //                  maxHeight: Constants.avatarImageMaxHeight,
                 ),
-                child: ChanCachedImage(_thread, BoxFit.fitWidth, forceThumbnail: true)),
+                child: ChanCachedImage(post: thread, boxFit: BoxFit.fitWidth, forceThumbnail: true)),
           Flexible(
             fit: FlexFit.tight,
             child: Padding(
@@ -39,17 +41,17 @@ class ThreadListWidget extends StatelessWidget {
                 children: <Widget>[
                   Row(
                     children: <Widget>[
-                      if (_thread.isFavorite) Padding(padding: const EdgeInsets.all(1.0), child: Icon(Icons.star, color: Colors.yellow, size: Constants.favoriteIconSize)),
-                      Text(_thread.threadId.toString(), style: Theme.of(context).textTheme.caption),
+                      if (thread.isFavorite) Padding(padding: const EdgeInsets.all(1.0), child: Icon(Icons.star, color: Colors.yellow, size: Constants.favoriteIconSize)),
+                      Text(thread.threadId.toString(), style: Theme.of(context).textTheme.caption),
                       Spacer(),
-                      Text("${_thread.replies ?? "?"}p/${_thread.images ?? "?"}m", style: Theme.of(context).textTheme.caption),
+                      Text("${thread.replies ?? "?"}p/${thread.images ?? "?"}m", style: Theme.of(context).textTheme.caption),
                       Spacer(),
-                      Text(ChanUtil.getHumanDate(_thread.timestamp), style: Theme.of(context).textTheme.caption),
+                      Text(ChanUtil.getHumanDate(thread.timestamp), style: Theme.of(context).textTheme.caption),
                     ],
                   ),
-                  if (_thread.subtitle != null) Text(_thread.subtitle, style: Theme.of(context).textTheme.subtitle),
+                  if (thread.subtitle != null) Text(thread.subtitle, style: Theme.of(context).textTheme.subtitle),
                   Html(
-                    data: ChanUtil.getReadableHtml(_thread.content ?? "", true),
+                    data: ChanUtil.getReadableHtml(thread.content ?? "", true),
                     onLinkTap: ((String url) {
                       ChanLogger.d("Html link clicked { url: $url }");
                     }),

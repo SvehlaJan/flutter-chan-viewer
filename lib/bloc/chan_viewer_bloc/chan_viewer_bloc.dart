@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
+import 'package:date_format/date_format.dart';
 import 'package:flutter_chan_viewer/utils/chan_logger.dart';
 
 import 'chan_viewer_event.dart';
@@ -15,8 +16,8 @@ class ChanViewerBloc extends Bloc<ChanViewerEvent, ChanViewerState> {
   @override
   Stream<ChanViewerState> mapEventToState(ChanViewerEvent event) async* {
     try {
-    } catch (e) {
-      ChanLogger.e("File read error!", e);
+    } catch (e, stackTrace) {
+      ChanLogger.e("File read error!", e, stackTrace);
       yield ChanViewerStateError(e.toString());
     }
   }

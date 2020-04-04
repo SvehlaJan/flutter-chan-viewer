@@ -10,14 +10,6 @@ class CommonSwitch extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return defaultTargetPlatform == TargetPlatform.android
-        ? Switch(
-            value: defValue,
-            onChanged: onChanged,
-          )
-        : CupertinoSwitch(
-            value: defValue,
-            onChanged: onChanged,
-          );
+    return defaultTargetPlatform == TargetPlatform.android ? Switch(value: defValue, onChanged: onChanged) : CupertinoSwitch(value: defValue, onChanged: onChanged);
   }
 }

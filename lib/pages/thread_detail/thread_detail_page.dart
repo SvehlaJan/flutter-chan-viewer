@@ -160,11 +160,15 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
   }
 
   void scrollToSelectedPost() {
+    if (_threadDetailBloc.selectedPostId < 0) {
+      return;
+    }
+
     // TODO - dirty! Fix
-    Future.delayed(const Duration(milliseconds: 100), () {
+    Future.delayed(const Duration(milliseconds: 500), () {
       if (_threadDetailBloc.catalogMode) {
 //      _gridScrollController.jumpTo(_getGridScrollOffset());
-        _gridScrollController.animateTo(_getGridScrollOffset(), duration: Duration(milliseconds: 500), curve: Curves.easeInOut);
+        _gridScrollController.animateTo(_getGridScrollOffset(_threadDetailBloc.selectedMediaIndex), duration: Duration(milliseconds: 500), curve: Curves.easeInOut);
       } else {
 //      _listScrollController.jumpTo(index: _threadDetailBloc.selectedPostIndex, alignment: 0.5);
         _listScrollController.scrollTo(index: _threadDetailBloc.selectedPostIndex, duration: Duration(milliseconds: 500), alignment: 0.5);
@@ -172,8 +176,7 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
     });
   }
 
-  double _getGridScrollOffset() {
-    int mediaIndex = _threadDetailBloc.selectedMediaIndex;
+  double _getGridScrollOffset(int mediaIndex) {
     double itemHeight = MediaQuery.of(context).size.width / _getGridColumnCount();
     int targetRow = mediaIndex ~/ _getGridColumnCount();
     return targetRow * itemHeight - itemHeight;

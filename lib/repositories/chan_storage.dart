@@ -60,7 +60,8 @@ class ChanStorage {
       Uint8List data = await mediaFile.readAsBytes();
       return data;
     } catch (e, stackTrace) {
-      ChanLogger.e("File read error!", e, stackTrace);
+//      ChanLogger.e("File read error!", e, stackTrace);
+      return null;
     }
     return null;
   }
@@ -75,6 +76,7 @@ class ChanStorage {
       return result;
     } catch (e, stackTrace) {
       ChanLogger.e("File write error!", e, stackTrace);
+      return null;
     }
     return null;
   }
@@ -86,7 +88,7 @@ class ChanStorage {
       String text = await file.readAsString();
       return text;
     } catch (e, stackTrace) {
-      ChanLogger.e("File read error!", e, stackTrace);
+//      ChanLogger.e("File read error!", e, stackTrace);
       return null;
     }
   }

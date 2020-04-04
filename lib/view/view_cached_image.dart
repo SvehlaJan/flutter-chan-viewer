@@ -19,7 +19,7 @@ class ChanCachedImage extends StatelessWidget {
     @required this.post,
     @required this.boxFit,
     this.forceThumbnail = false,
-    this.forceVideoThumbnail = true,
+    this.forceVideoThumbnail = false,
     this.showProgress = false,
   });
 

@@ -40,7 +40,7 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
   List<AppBarAction> getAppBarActions(BuildContext context) => [
         AppBarAction("Search", Icons.search, _onSearchClick),
         AppBarAction("Refresh", Icons.refresh, _onRefreshClick),
-        _boardDetailBloc.isFavorite ? AppBarAction("Unstar", Icons.star_border, _onFavoriteToggleClick) : AppBarAction("Star", Icons.star, _onFavoriteToggleClick),
+        _boardDetailBloc.isFavorite ? AppBarAction("Unstar", Icons.star, _onFavoriteToggleClick) : AppBarAction("Star", Icons.star_border, _onFavoriteToggleClick),
       ];
 
   void _onSearchClick() async {

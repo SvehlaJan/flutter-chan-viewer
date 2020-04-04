@@ -68,7 +68,7 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
 
   @override
   List<AppBarAction> getAppBarActions(BuildContext context) => [
-        _threadDetailBloc.isFavorite ? AppBarAction("Star", Icons.star, _onFavoriteToggleClick) : AppBarAction("Unstar", Icons.star_border, _onFavoriteToggleClick),
+        _threadDetailBloc.isFavorite ? AppBarAction("Unstar", Icons.star, _onFavoriteToggleClick) : AppBarAction("Star", Icons.star_border, _onFavoriteToggleClick),
         AppBarAction("Refresh", Icons.refresh, _onRefreshClick),
         _threadDetailBloc.catalogMode ? AppBarAction("List", Icons.list, _onCatalogModeToggleClick) : AppBarAction("Catalog", Icons.apps, _onCatalogModeToggleClick),
         AppBarAction("Download", Icons.file_download, _onDownloadClick)

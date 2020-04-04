@@ -57,7 +57,7 @@ class Preferences {
     _memoryPrefs[key] = value;
   }
 
-  static List<String> getStringList(String key, {List<String> def = const []}) {
+  static List<String> getStringList(String key) {
     List<String> val;
     if (_memoryPrefs.containsKey(key)) {
       val = _memoryPrefs[key];
@@ -66,7 +66,7 @@ class Preferences {
       val = _prefs.getStringList(key);
     }
     if (val == null) {
-      val = def;
+      val = List<String>();
     }
     _memoryPrefs[key] = val;
     return val;

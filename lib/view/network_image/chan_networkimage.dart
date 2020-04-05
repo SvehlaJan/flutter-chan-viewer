@@ -18,6 +18,7 @@ typedef Future<Uint8List> ImageProcessing(Uint8List data);
 class ChanNetworkImage extends ImageProvider<ChanNetworkImage> {
   ChanNetworkImage(
     this.url,
+    this.fallbackUrl,
     this.cacheDirective, {
     this.header,
     this.retryLimit: 5,
@@ -44,6 +45,7 @@ class ChanNetworkImage extends ImageProvider<ChanNetworkImage> {
         assert(printError != null);
 
   final String url;
+  final String fallbackUrl;
 
   final CacheDirective cacheDirective;
 
@@ -184,17 +186,12 @@ class ChanNetworkImage extends ImageProvider<ChanNetworkImage> {
       ')';
 
   Future<Uint8List> _loadData(ChanNetworkImage key, CacheDirective cacheDirective) async {
-    Uint8List cachedData = await getIt<ChanRepository>().getCachedMediaFile(key.url, cacheDirective);
+    Uint8List cachedData = await _tryLoadFromCache(key.url, cacheDirective);
     if (cachedData != null) {
-      if (key.url.endsWith(".webm")) {
-        Uint8List thumbnailData = await VideoThumbnail.thumbnailData(
-          video: getIt<ChanStorage>().getFileAbsolutePath(key.url, cacheDirective),
-          imageFormat: ImageFormat.JPEG,
-          maxHeight: 256,
-          quality: 75,
-        );
-        return thumbnailData;
-      } else {
+      return cachedData;
+    } else if (key.fallbackUrl != null) {
+      cachedData = await _tryLoadFromCache(key.fallbackUrl, cacheDirective);
+      if (cachedData != null) {
         return cachedData;
       }
     }
@@ -219,6 +216,24 @@ class ChanNetworkImage extends ImageProvider<ChanNetworkImage> {
       return remoteData;
     }
 
+    return null;
+  }
+
+  Future<Uint8List> _tryLoadFromCache(String url, CacheDirective cacheDirective) async {
+    Uint8List cachedData = await getIt<ChanRepository>().getCachedMediaFile(url, cacheDirective);
+    if (cachedData != null) {
+      if (url.endsWith(".webm")) {
+        Uint8List thumbnailData = await VideoThumbnail.thumbnailData(
+          video: getIt<ChanStorage>().getFileAbsolutePath(url, cacheDirective),
+          imageFormat: ImageFormat.JPEG,
+          maxHeight: 256,
+          quality: 75,
+        );
+        return thumbnailData;
+      } else {
+        return cachedData;
+      }
+    }
     return null;
   }
 

@@ -22,8 +22,11 @@ class BoardDetailModel extends Equatable {
 }
 
 class ChanThread extends ChanPostBase with EquatableMixin {
+  int replies;
+  int images;
+
   ChanThread(
-      String boardId, int threadId, int timestamp, String subtitle, String content, String filename, String imageId, String extension, this.replies, this.images, this.isFavorite)
+      String boardId, int threadId, int timestamp, String subtitle, String content, String filename, String imageId, String extension, bool isFavorite, this.replies, this.images)
       : super(
           boardId,
           threadId,
@@ -33,11 +36,8 @@ class ChanThread extends ChanPostBase with EquatableMixin {
           filename,
           imageId,
           extension,
+          isFavorite,
         );
-
-  int replies;
-  int images;
-  bool isFavorite;
 
   factory ChanThread.fromMappedJson(String boardId, int threadId, Map<String, dynamic> json) => ChanThread(
         json['board_id'] ?? boardId,
@@ -48,9 +48,9 @@ class ChanThread extends ChanPostBase with EquatableMixin {
         json['filename'],
         json['tim'].toString(),
         json['ext'],
+        json['is_favorite'] ?? json['isFavorite'] ?? false,
         json['replies'],
         json['images'],
-        json['is_favorite'] ?? json['isFavorite'] ?? false,
       );
 
   factory ChanThread.fromCacheDirective(CacheDirective cacheDirective) => ChanThread(
@@ -62,9 +62,9 @@ class ChanThread extends ChanPostBase with EquatableMixin {
         "",
         "",
         "",
-        0,
-        0,
         false,
+        0,
+        0,
       );
 
   Map<String, dynamic> toJson() => {
@@ -85,5 +85,5 @@ class ChanThread extends ChanPostBase with EquatableMixin {
   List<Object> get props => super.props;
 
   ChanThread copyWithPostData(ChanPost post) =>
-      ChanThread(boardId, threadId, post.timestamp, post.subtitle, post.content, post.filename, post.imageId, post.extension, replies, images, isFavorite);
+      ChanThread(boardId, threadId, post.timestamp, post.subtitle, post.content, post.filename, post.imageId, post.extension, isFavorite, replies, images);
 }

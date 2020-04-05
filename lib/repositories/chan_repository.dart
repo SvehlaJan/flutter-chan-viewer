@@ -135,14 +135,16 @@ class ChanRepository {
       }
     }
 
-    ThreadDetailModel threadDetailModel = await _chanApiProvider.fetchPostList(boardId, threadId);
-    threadDetailModel.thread.isFavorite = isThreadFavorite(cacheDirective);
-    if (threadDetailModel.thread.isFavorite) {
-      addThreadToFavorites(threadDetailModel); // update cached data
+    ThreadDetailModel model = await _chanApiProvider.fetchPostList(boardId, threadId);
+    bool isFavorite = isThreadFavorite(cacheDirective);
+    model.thread.isFavorite = isFavorite;
+    model.posts.forEach((post) {post.isFavorite = isFavorite;});
+    if (model.thread.isFavorite) {
+      await _favoriteThreadsStore.record(model.cacheKey).put(_db, model.toJson());
     }
 
-    threadDetailMemoryCache[threadDetailModel.cacheKey] = threadDetailModel;
-    return threadDetailModel;
+    threadDetailMemoryCache[model.cacheKey] = model;
+    return model;
   }
 
   bool isThreadFavorite(CacheDirective cacheDirective) {
@@ -158,6 +160,7 @@ class ChanRepository {
   Future<void> addThreadToFavorites(ThreadDetailModel model) async {
     try {
       model.thread.isFavorite = true;
+      model.posts.forEach((post) {post.isFavorite = true;});
       threadDetailMemoryCache[model.cacheKey] = model;
 
       await _favoriteThreadsStore.record(model.cacheKey).put(_db, model.toJson());
@@ -170,6 +173,7 @@ class ChanRepository {
   Future<void> removeThreadFromFavorites(ThreadDetailModel model) async {
     try {
       model.thread.isFavorite = false;
+      model.posts.forEach((post) {post.isFavorite = false;});
       threadDetailMemoryCache[model.cacheKey] = model;
 
       await _favoriteThreadsStore.record(model.cacheKey).delete(_db);

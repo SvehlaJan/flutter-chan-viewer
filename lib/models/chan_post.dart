@@ -21,6 +21,7 @@ class ChanPost extends ChanPostBase with EquatableMixin {
         json['filename'],
         json['tim'].toString(),
         json['ext'],
+        false,
         ChanUtil.getPostReferences(json['com']),
       );
 
@@ -37,6 +38,7 @@ class ChanPost extends ChanPostBase with EquatableMixin {
       fileName,
       imageId,
       extensionStr,
+      false,
       [],
     );
   }
@@ -53,7 +55,7 @@ class ChanPost extends ChanPostBase with EquatableMixin {
         'ext': this.extension,
       };
 
-  ChanPost(String boardId, int threadId, this.postId, int timestamp, String subtitle, String content, String filename, String imageId, String extension, this.repliesTo)
+  ChanPost(String boardId, int threadId, this.postId, int timestamp, String subtitle, String content, String filename, String imageId, String extension, bool isFavorite, this.repliesTo)
       : super(
           boardId,
           threadId,
@@ -63,6 +65,7 @@ class ChanPost extends ChanPostBase with EquatableMixin {
           filename,
           imageId,
           extension,
+          isFavorite
         );
 
   @override

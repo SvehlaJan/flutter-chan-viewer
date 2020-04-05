@@ -124,7 +124,6 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
     return ScrollablePositionedList.builder(
       itemCount: posts.length,
       itemScrollController: _listScrollController,
-      initialScrollIndex: max(0, selectedPostIndex),
       itemBuilder: (context, index) {
         return PostListWidget(
           post: posts[index],
@@ -160,7 +159,7 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
   }
 
   void scrollToSelectedPost() {
-    if (_threadDetailBloc.selectedPostId < 0) {
+    if (_threadDetailBloc.selectedPostIndex < 0) {
       return;
     }
 
@@ -194,7 +193,7 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
         opaque: false,
         pageBuilder: (BuildContext context, _, __) => BlocProvider.value(
               value: _threadDetailBloc,
-              child: GalleryPage(),
+              child: GalleryPage(showAsReply: false),
             )));
   }
 

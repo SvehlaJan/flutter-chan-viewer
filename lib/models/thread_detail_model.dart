@@ -107,7 +107,7 @@ class ThreadDetailModel with EquatableMixin {
         'tim': _thread.imageId,
         'ext': _thread.extension,
         'is_favorite': _thread.isFavorite,
-        'posts': _posts.map((post) => post.toJson()),
+        'posts': _posts.map((post) => post.toJson()).toList(),
         'selected_post': _selectedPostId
       };
 

@@ -25,13 +25,34 @@ class ChanCachedImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool thumbnailOnly = forceThumbnail || !post.hasImage();
-    final String mainUrl = (thumbnailOnly && !forceVideoThumbnail) ? post.getThumbnailUrl() : post.getMediaUrl();
-    final String thumbnailUrl = thumbnailOnly ? null : post.getThumbnailUrl();
-    final CacheDirective cacheDirective = (thumbnailOnly && !forceVideoThumbnail) ? null : post.getCacheDirective();
+    String mainUrl;
+    String fallbackUrl;
+    String thumbnailUrl;
+    CacheDirective cacheDirective = (post.isFavorite || !forceThumbnail) ? post.getCacheDirective() : null;
+
+    if (forceThumbnail) {
+      if (post.isFavorite) {
+        mainUrl = post.getMediaUrl();
+        fallbackUrl = post.getThumbnailUrl();
+      } else {
+        mainUrl = post.getThumbnailUrl();
+      }
+    } else {
+      if (post.hasWebm()) {
+        if (post.isFavorite) {
+          mainUrl = post.getMediaUrl();
+          fallbackUrl = post.getThumbnailUrl();
+        } else {
+          mainUrl = post.getThumbnailUrl();
+        }
+      } else {
+        mainUrl = post.getMediaUrl();
+      }
+      thumbnailUrl = post.getThumbnailUrl();
+    }
 
     return ChanTransitionToImage(
-      image: ChanNetworkImage(mainUrl, cacheDirective),
+      image: ChanNetworkImage(mainUrl, fallbackUrl, cacheDirective),
       loadFailedCallback: () {
         print('Failed to load image: $mainUrl');
       },
@@ -55,7 +76,7 @@ class ChanCachedImage extends StatelessWidget {
 
   Widget _buildLoadingWidget(String url) {
     return (url != null)
-        ? ChanTransitionToImage(image: ChanNetworkImage(url, null), fit: boxFit, loadingWidget: Center(child: Constants.progressIndicator))
+        ? ChanTransitionToImage(image: ChanNetworkImage(url, null, null), fit: boxFit, loadingWidget: Center(child: Constants.progressIndicator))
         : Center(child: Constants.progressIndicator);
   }
 }

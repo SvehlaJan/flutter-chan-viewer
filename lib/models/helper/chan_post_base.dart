@@ -11,7 +11,10 @@ abstract class ChanPostBase {
   final String imageId;
   final String extension;
 
-  ChanPostBase(this.boardId, this.threadId, this.timestamp, this.subtitle, this.content, this.filename, this.imageId, this.extension);
+  // helper field
+  bool isFavorite;
+
+  ChanPostBase(this.boardId, this.threadId, this.timestamp, this.subtitle, this.content, this.filename, this.imageId, this.extension, this.isFavorite);
 
   bool hasImage() => [".jpg", ".png", ".webp"].contains(extension) || hasGif();
 
@@ -44,5 +47,5 @@ abstract class ChanPostBase {
 
   CacheDirective getCacheDirective() => CacheDirective(boardId, threadId);
 
-  List<Object> get props => [boardId, threadId, timestamp, subtitle, content, filename, imageId, extension];
+  List<Object> get props => [boardId, threadId, timestamp, subtitle, content, filename, imageId, extension, isFavorite];
 }

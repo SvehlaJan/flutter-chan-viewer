@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/painting.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_chan_viewer/models/chan_post.dart';
 import 'package:flutter_chan_viewer/utils/chan_util.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/utils/extensions.dart';
+import 'package:flutter_chan_viewer/view/glare_decoration.dart';
 import 'package:flutter_chan_viewer/view/view_cached_image.dart';
 import 'package:flutter_html/flutter_html.dart';
 
@@ -29,30 +31,40 @@ class PostListWidget extends StatefulWidget {
 }
 
 class _PostListWidgetState extends State<PostListWidget> with SingleTickerProviderStateMixin {
-  AnimationController _controller;
-  Animation<double> _animation;
+  AnimationController _bounceController;
+  Animation<double> _bounceAnimation;
 
   initState() {
     super.initState();
 
+    _bounceController = AnimationController(duration: const Duration(milliseconds: 5000), vsync: this, value: 1.0);
+    _bounceAnimation = CurvedAnimation(parent: _bounceController, curve: Curves.bounceInOut);
+
     if (widget.selected) {
-      _controller = AnimationController(duration: const Duration(milliseconds: 2000), vsync: this, value: 0.6, lowerBound: 0.5);
-      _animation = CurvedAnimation(parent: _controller, curve: Curves.bounceInOut);
-      _controller.forward();
+      _bounceController.forward(from: 0.5);
     }
   }
 
   @override
   dispose() {
-    _controller?.dispose();
+    _bounceController?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    Widget card = ScaleTransition(scale: _bounceAnimation, child: buildContent(context));
+
     return InkWell(
       onTap: widget.onTap,
-      child: buildContent(context),
+      child: widget.selected
+          ? Stack(
+              children: <Widget>[
+                card,
+//                Positioned.fill(child: GlareDecoration()),
+              ],
+            )
+          : card,
     );
   }
 

@@ -9,6 +9,7 @@ import 'package:flutter_chan_viewer/utils/chan_util.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/view/list_widget_post.dart';
 import 'package:flutter_chan_viewer/view/network_image/chan_networkimage.dart';
+import 'package:flutter_chan_viewer/view/view_cached_image.dart';
 import 'package:flutter_chan_viewer/view/view_video_player.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
@@ -17,6 +18,14 @@ import '../thread_detail/bloc/thread_detail_bloc.dart';
 import '../thread_detail/bloc/thread_detail_state.dart';
 
 class GalleryPage extends StatefulWidget {
+  final bool showAsReply;
+  final int selectedPostId;
+
+  const GalleryPage({
+    @required this.showAsReply,
+    this.selectedPostId = -1,
+  });
+
   @override
   _GalleryPageState createState() => _GalleryPageState();
 }
@@ -42,16 +51,44 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
         bloc: _threadDetailBloc,
         builder: (context, state) => buildScaffold(
               context,
-              buildBody(context, state),
+              widget.showAsReply ? _buildSinglePostBody(context, state, widget.selectedPostId) : _buildCarouselBody(context, state),
               backgroundColor: Theme.of(context).scaffoldBackgroundColor.withOpacity(0.5),
             ));
   }
 
-  Widget buildBody(BuildContext context, ThreadDetailState state) {
+  Widget _buildSinglePostBody(BuildContext context, ThreadDetailState state, int postId) {
     if (state is ThreadDetailStateLoading) {
       return Constants.centeredProgressIndicator;
+    } else if (state is ThreadDetailStateContent) {
+      ChanPost post = state.model.findPostById(postId);
+
+      return SafeArea(
+        child: Stack(
+          children: <Widget>[
+            _buildSinglePostItem(context, post),
+            _buildBottomView(post),
+          ],
+        ),
+      );
+    } else {
+      return Constants.errorPlaceholder;
     }
-    if (state is ThreadDetailStateContent) {
+  }
+
+  Widget _buildSinglePostItem(BuildContext context, ChanPost post) {
+    if (post.hasImage() || post.hasGif()) {
+      return Center(child: ChanCachedImage(post: post, boxFit: BoxFit.fitWidth));
+    } else if (post.hasWebm()) {
+      return ChanVideoPlayer(post: post);
+    } else {
+      return Container();
+    }
+  }
+
+  Widget _buildCarouselBody(BuildContext context, ThreadDetailState state) {
+    if (state is ThreadDetailStateLoading) {
+      return Constants.centeredProgressIndicator;
+    } else if (state is ThreadDetailStateContent) {
       int mediaIndex = state.selectedMediaIndex;
       if (mediaIndex < 0) {
         // for case when non-media post is selected
@@ -65,7 +102,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
             PhotoViewGallery.builder(
               itemCount: state.model.mediaPosts.length,
               builder: (context, index) {
-                return buildItem(context, state.model.mediaPosts[index]);
+                return _buildCarouselItem(context, state.model.mediaPosts[index]);
               },
               scrollPhysics: BouncingScrollPhysics(),
               backgroundDecoration: BoxDecoration(color: Colors.transparent),
@@ -93,10 +130,10 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
     }
   }
 
-  PhotoViewGalleryPageOptions buildItem(BuildContext context, ChanPost post) {
+  PhotoViewGalleryPageOptions _buildCarouselItem(BuildContext context, ChanPost post) {
     if (post.hasImage() || post.hasGif()) {
       return PhotoViewGalleryPageOptions(
-        imageProvider: ChanNetworkImage(post.getImageUrl(), post.getCacheDirective()),
+        imageProvider: ChanNetworkImage(post.getImageUrl(), null, post.getCacheDirective()),
         heroAttributes: PhotoViewHeroAttributes(tag: post.getMediaUrl()),
         minScale: PhotoViewComputedScale.contained,
         maxScale: PhotoViewComputedScale.covered * 3,
@@ -114,8 +151,9 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
   }
 
   Widget _buildBottomView(ChanPost post) {
+    double initialChildSize = post.hasMedia() ? 0.05 : 0.2;
     return DraggableScrollableSheet(
-      initialChildSize: 0.05,
+      initialChildSize: initialChildSize,
       minChildSize: 0.05,
       maxChildSize: 0.9,
       builder: (context, scrollController) {
@@ -153,24 +191,31 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
     );
   }
 
-  void _onReplyPostClicked(BuildContext context, ChanPost post) {
-    showDialog(
-      context: context,
-      child: Dialog(
-        child: BlocProvider(
-          create: (context) => ThreadDetailBloc(
-            post.boardId,
-            post.threadId,
-            false,
-            false,
-            false,
-            post.postId,
-          ),
-          child: ThreadDetailPage(),
-        ),
-        insetPadding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
-      ),
-    );
+  void _onReplyPostClicked(BuildContext context, ChanPost replyPost) {
+    Navigator.of(context).push(PageRouteBuilder(
+        opaque: false,
+        pageBuilder: (BuildContext context, _, __) => BlocProvider.value(
+              value: _threadDetailBloc,
+              child: GalleryPage(showAsReply: true, selectedPostId: replyPost.postId),
+            )));
+
+//    showDialog(
+//      context: context,
+//      child: Dialog(
+//        child: BlocProvider(
+//          create: (context) => ThreadDetailBloc(
+//            replyPost.boardId,
+//            replyPost.threadId,
+//            false,
+//            false,
+//            false,
+//            replyPost.postId,
+//          ),
+//          child: ThreadDetailPage(),
+//        ),
+//        insetPadding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
+//      ),
+//    );
   }
 
   void _onLinkClicked(BuildContext context, String url) => _threadDetailBloc.add(ThreadDetailEventOnReplyClicked(ChanUtil.getPostIdFromUrl(url)));

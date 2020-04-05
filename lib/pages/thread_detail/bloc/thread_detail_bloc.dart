@@ -32,23 +32,23 @@ class ThreadDetailBloc extends Bloc<ThreadDetailEvent, ThreadDetailState> {
   @override
   get initialState => ThreadDetailStateLoading();
 
-  get selectedPostIndex => _threadDetailModel.selectedPostIndex;
+  int get selectedPostIndex => _threadDetailModel.selectedPostIndex;
 
   set selectedPostIndex(int postIndex) => _threadDetailModel.selectedPostIndex = postIndex;
 
-  get selectedMediaIndex => _threadDetailModel.selectedMediaIndex;
+  int get selectedMediaIndex => _threadDetailModel.selectedMediaIndex;
 
   set selectedMediaIndex(int mediaIndex) => _threadDetailModel.selectedMediaIndex = mediaIndex;
 
   set selectedPostId(int postId) => _threadDetailModel.selectedPostId = postId;
 
-  get selectedPostId => _threadDetailModel.selectedPostId;
+  int get selectedPostId => _threadDetailModel.selectedPostId;
 
-  get pageTitle => "/$_boardId/$_threadId";
+  String get pageTitle => "/$_boardId/$_threadId";
 
-  get catalogMode => _catalogMode ?? false;
+  bool get catalogMode => _catalogMode ?? false;
 
-  get isFavorite => _isFavorite ?? false;
+  bool get isFavorite => _isFavorite ?? false;
 
   @override
   Stream<ThreadDetailState> mapEventToState(ThreadDetailEvent event) async* {
@@ -60,10 +60,6 @@ class ThreadDetailBloc extends Bloc<ThreadDetailEvent, ThreadDetailState> {
           DownloadFolderInfo folderInfo = _chanStorage.getThreadDownloadFolderInfo(CacheDirective(_boardId, _threadId));
           _threadDetailModel = ThreadDetailModel.fromFolderInfo(folderInfo);
         } else {
-          _threadDetailModel = await _repository.fetchCachedThreadDetail(_boardId, _threadId);
-          if (_threadDetailModel != null) {
-            yield _getShowListState(lazyLoading: true);
-          }
           _threadDetailModel = await _repository.fetchThreadDetail(event.forceFetch, _boardId, _threadId);
         }
 

@@ -9,6 +9,15 @@ abstract class ThreadDetailEvent extends Equatable {
 
 class ThreadDetailEventToggleFavorite extends ThreadDetailEvent {}
 
+class ThreadDetailEventDialogAnswered extends ThreadDetailEvent {
+  final bool confirmed;
+
+  ThreadDetailEventDialogAnswered(this.confirmed);
+
+  @override
+  List<Object> get props => [confirmed];
+}
+
 class ThreadDetailEventToggleCatalogMode extends ThreadDetailEvent {}
 
 class ThreadDetailEventDownload extends ThreadDetailEvent {}

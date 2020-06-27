@@ -67,12 +67,13 @@ class _FavoritesPageState extends BasePageState<FavoritesPage> {
     }
   }
 
-  void _openThreadDetailPage(ChanThread thread) {
-    Navigator.of(context).push(
+  void _openThreadDetailPage(ChanThread thread) async {
+    await Navigator.of(context).push(
       NavigationHelper.getRoute(
         Constants.threadDetailRoute,
         ThreadDetailPage.createArguments(thread.boardId, thread.threadId),
       ),
     );
+    _favoritesBloc.add(FavoritesEventFetchData());
   }
 }

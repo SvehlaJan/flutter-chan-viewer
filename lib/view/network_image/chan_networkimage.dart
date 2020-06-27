@@ -11,6 +11,7 @@ import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
 import 'package:flutter_chan_viewer/utils/chan_logger.dart';
 import 'package:flutter_chan_viewer/view/network_image/networkimage_utils.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
+import 'package:flutter_chan_viewer/utils/extensions.dart';
 
 typedef Future<Uint8List> ImageProcessing(Uint8List data);
 
@@ -220,13 +221,13 @@ class ChanNetworkImage extends ImageProvider<ChanNetworkImage> {
   }
 
   Future<Uint8List> _tryLoadFromCache(String url, CacheDirective cacheDirective) async {
-    Uint8List cachedData = await getIt<ChanRepository>().getCachedMediaFile(url, cacheDirective);
+    final Uint8List cachedData = await getIt<ChanRepository>().getCachedMediaFile(url, cacheDirective);
     if (cachedData != null) {
       if (url.endsWith(".webm")) {
         Uint8List thumbnailData = await VideoThumbnail.thumbnailData(
           video: getIt<ChanStorage>().getFileAbsolutePath(url, cacheDirective),
           imageFormat: ImageFormat.JPEG,
-          maxHeight: 256,
+          maxHeight: 512,
           quality: 75,
         );
         return thumbnailData;

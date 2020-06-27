@@ -12,14 +12,14 @@ class ChanCachedImage extends StatelessWidget {
   final ChanPostBase post;
   final BoxFit boxFit;
   final bool forceThumbnail;
-  final bool forceVideoThumbnail;
+  final bool isDownloaded;
   final bool showProgress;
 
   const ChanCachedImage({
     @required this.post,
     @required this.boxFit,
     this.forceThumbnail = false,
-    this.forceVideoThumbnail = false,
+    this.isDownloaded = false,
     this.showProgress = false,
   });
 

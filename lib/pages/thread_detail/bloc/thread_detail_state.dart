@@ -29,8 +29,9 @@ class ThreadDetailStateContent extends ThreadDetailState {
   final bool isFavorite;
   final bool catalogMode;
   final bool lazyLoading;
+  final ThreadDetailSingleEvent event;
 
-  ThreadDetailStateContent(this.model, this.selectedPostId, this.showAppBar, this.isFavorite, this.catalogMode, this.lazyLoading);
+  ThreadDetailStateContent(this.model, this.selectedPostId, this.showAppBar, this.isFavorite, this.catalogMode, this.lazyLoading, this.event);
 
   get selectedMediaIndex => model.getMediaIndex(selectedPostId);
 
@@ -38,9 +39,16 @@ class ThreadDetailStateContent extends ThreadDetailState {
 
   @override
   String toString() {
-    return 'ThreadDetailStateContent{model: $model, selectedPostId: $selectedPostId, showAppBar: $showAppBar, isFavorite: $isFavorite, catalogMode: $catalogMode, lazyLoading: $lazyLoading}';
+    return 'ThreadDetailStateContent{model: $model, selectedPostId: $selectedPostId, showAppBar: $showAppBar, isFavorite: $isFavorite, catalogMode: $catalogMode, lazyLoading: $lazyLoading, event: $event}';
   }
 
   @override
   List<Object> get props => [model, selectedPostId, showAppBar, isFavorite, catalogMode, lazyLoading];
+}
+
+enum ThreadDetailSingleEvent {
+  SHOW_UNSTAR_WARNING,
+  SCROLL_TO_SELECTED,
+  CLOSE_PAGE,
+  SHOW_OFFLINE,
 }

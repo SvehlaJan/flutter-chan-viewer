@@ -66,7 +66,9 @@ class ChanRepository {
     // initialization code
   }
 
-  bool isFileDownloaded(ChanPost post) => _chanStorage.mediaFileExists(post.getMediaUrl(), post.getCacheDirective());
+  bool isPostDownloaded(ChanPost post) => isUrlDownloaded(post.getMediaUrl(), post.getCacheDirective());
+
+  bool isUrlDownloaded(String url, CacheDirective cacheDirective) => _chanStorage.mediaFileExists(url, cacheDirective);
 
   Future<BoardListModel> fetchBoardList(bool forceFetch) async {
     if (!forceFetch) {
@@ -126,19 +128,15 @@ class ChanRepository {
     return Future.value(null);
   }
 
-  Future<ThreadDetailModel> fetchThreadDetail(bool forceFetch, String boardId, int threadId) async {
+  Future<ThreadDetailModel> fetchRemoteThreadDetail(String boardId, int threadId) async {
     CacheDirective cacheDirective = CacheDirective(boardId, threadId);
-    if (!forceFetch) {
-      ThreadDetailModel model = await fetchCachedThreadDetail(boardId, threadId);
-      if (model != null) {
-        return model;
-      }
-    }
 
     ThreadDetailModel model = await _chanApiProvider.fetchPostList(boardId, threadId);
     bool isFavorite = isThreadFavorite(cacheDirective);
     model.thread.isFavorite = isFavorite;
-    model.posts.forEach((post) {post.isFavorite = isFavorite;});
+    model.posts.forEach((post) {
+      post.isFavorite = isFavorite;
+    });
     if (model.thread.isFavorite) {
       await _favoriteThreadsStore.record(model.cacheKey).put(_db, model.toJson());
     }
@@ -160,7 +158,9 @@ class ChanRepository {
   Future<void> addThreadToFavorites(ThreadDetailModel model) async {
     try {
       model.thread.isFavorite = true;
-      model.posts.forEach((post) {post.isFavorite = true;});
+      model.posts.forEach((post) {
+        post.isFavorite = true;
+      });
       threadDetailMemoryCache[model.cacheKey] = model;
 
       await _favoriteThreadsStore.record(model.cacheKey).put(_db, model.toJson());
@@ -173,7 +173,9 @@ class ChanRepository {
   Future<void> removeThreadFromFavorites(ThreadDetailModel model) async {
     try {
       model.thread.isFavorite = false;
-      model.posts.forEach((post) {post.isFavorite = false;});
+      model.posts.forEach((post) {
+        post.isFavorite = false;
+      });
       threadDetailMemoryCache[model.cacheKey] = model;
 
       await _favoriteThreadsStore.record(model.cacheKey).delete(_db);
@@ -196,11 +198,14 @@ class ChanRepository {
       records.forEach((record) {
         CacheDirective directive = CacheDirective.fromPath(record.key);
         ThreadDetailModel thread = ThreadDetailModel.fromJson(directive.boardId, directive.threadId, record.value, OnlineState.UNKNOWN);
+        thread.posts.forEach((post) {
+          post.isFavorite = true;
+        });
         threadMap[directive.boardId] ??= List<ThreadDetailModel>();
         threadMap[directive.boardId].add(thread);
       });
     } catch (e, stackTrace) {
-      ChanLogger.e("downloadAllMedia error", e, stackTrace);
+      ChanLogger.e("getFavoriteThreads error", e, stackTrace);
     }
 
     return threadMap;

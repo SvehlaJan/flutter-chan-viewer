@@ -23,26 +23,13 @@ class ThreadDetailBloc extends Bloc<ThreadDetailEvent, ThreadDetailState> {
   final bool _showAppBar;
   bool _catalogMode;
   bool _isFavorite;
-  int _preSelectedPostId;
 
   ThreadDetailModel _threadDetailModel;
 
-  ThreadDetailBloc(this._boardId, this._threadId, this._showAppBar, this._showDownloadsOnly, this._catalogMode, this._preSelectedPostId);
+  ThreadDetailBloc(this._boardId, this._threadId, this._showAppBar, this._showDownloadsOnly, this._catalogMode);
 
   @override
   get initialState => ThreadDetailStateLoading();
-
-  int get selectedPostIndex => _threadDetailModel.selectedPostIndex;
-
-  set selectedPostIndex(int postIndex) => _threadDetailModel.selectedPostIndex = postIndex;
-
-  int get selectedMediaIndex => _threadDetailModel.selectedMediaIndex;
-
-  set selectedMediaIndex(int mediaIndex) => _threadDetailModel.selectedMediaIndex = mediaIndex;
-
-  set selectedPostId(int postId) => _threadDetailModel.selectedPostId = postId;
-
-  int get selectedPostId => _threadDetailModel.selectedPostId;
 
   String get pageTitle => "/$_boardId/$_threadId";
 
@@ -56,42 +43,67 @@ class ThreadDetailBloc extends Bloc<ThreadDetailEvent, ThreadDetailState> {
       if (event is ThreadDetailEventFetchPosts) {
         yield ThreadDetailStateLoading();
 
-        if (_showDownloadsOnly ?? false) {
-          DownloadFolderInfo folderInfo = _chanStorage.getThreadDownloadFolderInfo(CacheDirective(_boardId, _threadId));
-          _threadDetailModel = ThreadDetailModel.fromFolderInfo(folderInfo);
-        } else {
-          _threadDetailModel = await _repository.fetchThreadDetail(event.forceFetch, _boardId, _threadId);
-        }
-
-        if (_preSelectedPostId >= 0) {
-          selectedPostId = _preSelectedPostId;
-          _preSelectedPostId = null;
-        }
-
-        _isFavorite = _repository.isThreadFavorite(_threadDetailModel.cacheDirective);
         if (_catalogMode == null) {
           _catalogMode = Preferences.getBool(Preferences.KEY_THREAD_CATALOG_MODE, def: false);
         }
+        _isFavorite = _repository.isThreadFavorite(CacheDirective(_boardId, _threadId));
 
-        yield _getShowListState();
-      } else if (event is ThreadDetailEventToggleFavorite) {
-        yield ThreadDetailStateLoading();
-
-        _isFavorite = !_isFavorite;
-        if (_isFavorite) {
-          await _repository.addThreadToFavorites(_threadDetailModel);
+        if (_showDownloadsOnly ?? false) {
+          DownloadFolderInfo folderInfo = _chanStorage.getThreadDownloadFolderInfo(CacheDirective(_boardId, _threadId));
+          _threadDetailModel = ThreadDetailModel.fromFolderInfo(folderInfo);
+          yield _getShowListState();
         } else {
-          await _repository.removeThreadFromFavorites(_threadDetailModel);
+          ThreadDetailModel cachedThreadDetailModel = await _repository.fetchCachedThreadDetail(_boardId, _threadId);
+          if (cachedThreadDetailModel != null) {
+            _threadDetailModel = cachedThreadDetailModel;
+            yield _getShowListState(lazyLoading: true, event: ThreadDetailSingleEvent.SCROLL_TO_SELECTED);
+          }
+
+          try {
+            _threadDetailModel = await _repository.fetchRemoteThreadDetail(_boardId, _threadId);
+            if (cachedThreadDetailModel == null) {
+              yield _getShowListState();
+            } else {
+              yield _getShowListState(event: ThreadDetailSingleEvent.SCROLL_TO_SELECTED);
+            }
+          } catch (e, stacktrace) {
+            ChanLogger.e("Fetch error", e, stacktrace);
+            yield _getShowListState(event: ThreadDetailSingleEvent.SHOW_OFFLINE);
+          }
+        }
+      } else if (event is ThreadDetailEventToggleFavorite) {
+        if (_isFavorite) {
+          yield _getShowListState(event: ThreadDetailSingleEvent.SHOW_UNSTAR_WARNING);
+          return;
+        } else {
+          yield ThreadDetailStateLoading();
+
+          _isFavorite = true;
+          await _repository.addThreadToFavorites(_threadDetailModel);
+
+          yield _getShowListState();
+        }
+      } else if (event is ThreadDetailEventDialogAnswered) {
+        if (!_isFavorite) {
+          // invalid state
+          yield _getShowListState();
+          return;
         }
 
-        yield _getShowListState();
+        if (event.confirmed) {
+          _isFavorite = false;
+          await _repository.removeThreadFromFavorites(_threadDetailModel);
+          yield _getShowListState(event: ThreadDetailSingleEvent.CLOSE_PAGE);
+        } else {
+          yield _getShowListState();
+        }
       } else if (event is ThreadDetailEventToggleCatalogMode) {
         yield ThreadDetailStateLoading();
 
         _catalogMode = !_catalogMode;
         Preferences.setBool(Preferences.KEY_THREAD_CATALOG_MODE, _catalogMode);
 
-        yield _getShowListState();
+        yield _getShowListState(event: ThreadDetailSingleEvent.SCROLL_TO_SELECTED);
       } else if (event is ThreadDetailEventDownload) {
         yield ThreadDetailStateLoading();
 
@@ -100,16 +112,16 @@ class ThreadDetailBloc extends Bloc<ThreadDetailEvent, ThreadDetailState> {
         yield _getShowListState();
       } else if (event is ThreadDetailEventOnPostSelected) {
         if (event.mediaIndex != null) {
-          selectedMediaIndex = event.mediaIndex;
+          _threadDetailModel.selectedMediaIndex = event.mediaIndex;
         } else if (event.postId != null) {
-          selectedPostId = event.postId;
+          _threadDetailModel.selectedPostId = event.postId;
         }
 
-        yield _getShowListState();
+        yield _getShowListState(event: ThreadDetailSingleEvent.SCROLL_TO_SELECTED);
       } else if (event is ThreadDetailEventOnLinkClicked) {
         ChanPost post = _threadDetailModel.findPostById(ChanUtil.getPostIdFromUrl(event.url));
         if (post != null) {
-          selectedPostId = post.postId;
+          _threadDetailModel.selectedPostId = post.postId;
           if (!post.hasMedia()) {
             _catalogMode = false;
           }
@@ -119,7 +131,7 @@ class ThreadDetailBloc extends Bloc<ThreadDetailEvent, ThreadDetailState> {
       } else if (event is ThreadDetailEventOnReplyClicked) {
         ChanPost post = _threadDetailModel.findPostById(event.postId);
         if (post != null) {
-          selectedPostId = post.postId;
+          _threadDetailModel.selectedPostId = post.postId;
           if (!post.hasMedia()) {
             _catalogMode = false;
           }
@@ -133,7 +145,7 @@ class ThreadDetailBloc extends Bloc<ThreadDetailEvent, ThreadDetailState> {
     }
   }
 
-  ThreadDetailStateContent _getShowListState({bool lazyLoading = false}) {
-    return ThreadDetailStateContent(_threadDetailModel, selectedPostId, _showAppBar, _isFavorite, _catalogMode, lazyLoading);
+  ThreadDetailStateContent _getShowListState({bool lazyLoading = false, ThreadDetailSingleEvent event}) {
+    return ThreadDetailStateContent(_threadDetailModel, _threadDetailModel.selectedPostId, _showAppBar, _isFavorite, _catalogMode, lazyLoading, event);
   }
 }

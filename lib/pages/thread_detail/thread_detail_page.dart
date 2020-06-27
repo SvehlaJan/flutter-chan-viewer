@@ -3,10 +3,12 @@ import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/models/chan_post.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
 import 'package:flutter_chan_viewer/pages/gallery/gallery_page.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
+import 'package:flutter_chan_viewer/utils/navigation_service.dart';
 import 'package:flutter_chan_viewer/view/grid_widget_post.dart';
 import 'package:flutter_chan_viewer/view/list_widget_post.dart';
 import 'package:flutter_widgets/flutter_widgets.dart';
@@ -21,20 +23,15 @@ class ThreadDetailPage extends StatefulWidget {
   static const String ARG_SHOW_APP_BAR = "ThreadDetailPage.ARG_SHOW_APP_BAR";
   static const String ARG_SHOW_DOWNLOADS_ONLY = "ThreadDetailPage.ARG_SHOW_DOWNLOADS_ONLY";
   static const String ARG_CATALOG_MODE = "ThreadDetailPage.ARG_CATALOG_MODE";
-  static const String ARG_PRESELECTED_POST_ID = "ThreadDetailPage.ARG_PRESELECTED_POST_ID";
 
-  static Map<String, dynamic> createArguments(final String boardId, final int threadId,
-      {bool showAppBar = true, final bool showDownloadsOnly = false, final bool catalogMode, final int preSelectedPostId = -1}) {
-    Map<String, dynamic> arguments = {
-      ARG_BOARD_ID: boardId,
-      ARG_THREAD_ID: threadId,
-      ARG_SHOW_APP_BAR: showAppBar,
-      ARG_SHOW_DOWNLOADS_ONLY: showDownloadsOnly,
-      ARG_PRESELECTED_POST_ID: preSelectedPostId
-    };
-    if (preSelectedPostId != null) {
-      arguments[ARG_PRESELECTED_POST_ID] = preSelectedPostId;
-    }
+  static Map<String, dynamic> createArguments(
+    final String boardId,
+    final int threadId, {
+    final bool showAppBar = true,
+    final bool showDownloadsOnly = false,
+    final bool catalogMode,
+  }) {
+    Map<String, dynamic> arguments = {ARG_BOARD_ID: boardId, ARG_THREAD_ID: threadId, ARG_SHOW_APP_BAR: showAppBar, ARG_SHOW_DOWNLOADS_ONLY: showDownloadsOnly};
     if (catalogMode != null) {
       arguments[ARG_CATALOG_MODE] = catalogMode;
     }
@@ -84,14 +81,33 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ThreadDetailBloc, ThreadDetailState>(
-        bloc: _threadDetailBloc,
-        builder: (context, state) {
-          if (state is ThreadDetailStateContent && !state.showAppBar) {
-            return buildBody(context, state);
-          }
-          return buildScaffold(context, buildBody(context, state));
-        });
+    return BlocConsumer<ThreadDetailBloc, ThreadDetailState>(listener: (context, state) {
+      if (state is ThreadDetailStateContent && state.event != null) {
+        switch (state.event) {
+          case ThreadDetailSingleEvent.SHOW_UNSTAR_WARNING:
+            showConfirmUnstarDialog();
+            break;
+          case ThreadDetailSingleEvent.SCROLL_TO_SELECTED:
+            scrollToSelectedPost(state.selectedPostIndex, state.selectedMediaIndex);
+            break;
+          case ThreadDetailSingleEvent.CLOSE_PAGE:
+            Navigator.of(context).pop();
+            break;
+          case ThreadDetailSingleEvent.SHOW_OFFLINE:
+            showOfflineSnackbar();
+            break;
+        }
+      }
+    }, builder: (context, state) {
+      return BlocBuilder<ThreadDetailBloc, ThreadDetailState>(
+          bloc: _threadDetailBloc,
+          builder: (context, state) {
+            if (state is ThreadDetailStateContent && !state.showAppBar) {
+              return buildBody(context, state);
+            }
+            return buildScaffold(context, buildBody(context, state));
+          });
+    });
   }
 
   Widget buildBody(BuildContext context, ThreadDetailState state) {
@@ -103,14 +119,10 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
         return Constants.noDataPlaceholder;
       }
 
-      scrollToSelectedPost();
-
-      return Column(
+      return Stack(
         children: <Widget>[
-          Flexible(
-            child: Scrollbar(
-              child: state.catalogMode ? buildGrid(context, state.model.mediaPosts, state.selectedMediaIndex) : buildList(context, state.model.posts, state.selectedPostIndex),
-            ),
+          Scrollbar(
+            child: state.catalogMode ? buildGrid(context, state.model.mediaPosts, state.selectedMediaIndex) : buildList(context, state.model.posts, state.selectedPostIndex),
           ),
           if (state.lazyLoading) LinearProgressIndicator()
         ],
@@ -158,19 +170,47 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
     );
   }
 
-  void scrollToSelectedPost() {
-    if (_threadDetailBloc.selectedPostIndex < 0) {
+  void showConfirmUnstarDialog() {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text("Warning"),
+            content: Text("This will delete downloaded content"),
+            actions: [
+              FlatButton(
+                  child: Text("OK, delete".toUpperCase()),
+                  onPressed: () {
+                    _threadDetailBloc.add(ThreadDetailEventDialogAnswered(true));
+                    Navigator.of(context).pop();
+                  }),
+              FlatButton(
+                  child: Text("Cancel".toUpperCase()),
+                  onPressed: () {
+                    _threadDetailBloc.add(ThreadDetailEventDialogAnswered(false));
+                    Navigator.of(context).pop();
+                  })
+            ],
+          );
+        });
+  }
+
+  void showOfflineSnackbar() {
+    final snackBar = SnackBar(content: Text("Thread seems to be no longer available."));
+    Scaffold.of(context).showSnackBar(snackBar);
+  }
+
+  void scrollToSelectedPost(int selectedPostIndex, int selectedMediaIndex) {
+    if (selectedPostIndex < 0) {
       return;
     }
 
-    // TODO - dirty! Fix
+    // TODO - dirty! Find a way how to scroll when list/grid is already shown
     Future.delayed(const Duration(milliseconds: 500), () {
       if (_threadDetailBloc.catalogMode) {
-//      _gridScrollController.jumpTo(_getGridScrollOffset());
-        _gridScrollController.animateTo(_getGridScrollOffset(_threadDetailBloc.selectedMediaIndex), duration: Duration(milliseconds: 500), curve: Curves.easeInOut);
+        _gridScrollController.animateTo(_getGridScrollOffset(selectedMediaIndex), duration: Duration(milliseconds: 500), curve: Curves.easeInOut);
       } else {
-//      _listScrollController.jumpTo(index: _threadDetailBloc.selectedPostIndex, alignment: 0.5);
-        _listScrollController.scrollTo(index: _threadDetailBloc.selectedPostIndex, duration: Duration(milliseconds: 500), alignment: 0.5);
+        _listScrollController.scrollTo(index: selectedPostIndex, duration: Duration(milliseconds: 500), alignment: 0.5);
       }
     });
   }

@@ -51,15 +51,14 @@ class _PostGridWidgetState extends State<PostGridWidget> with SingleTickerProvid
   }
 
   Widget buildContent(BuildContext context) {
-    final bool _isDownloaded = getIt<ChanRepository>().isFileDownloaded(widget.post);
-    final bool _forceVideoThumbnail = _isDownloaded && widget.post.hasWebm();
+    final bool _isDownloaded = getIt<ChanRepository>().isPostDownloaded(widget.post);
     return Card(
       margin: EdgeInsets.all(1.0),
       clipBehavior: Clip.antiAlias,
       child: Stack(
         fit: StackFit.passthrough,
         children: <Widget>[
-          Hero(tag: widget.post.getMediaUrl(), child: ChanCachedImage(post: widget.post, boxFit: BoxFit.cover, forceVideoThumbnail: _forceVideoThumbnail)),
+          Hero(tag: widget.post.getMediaUrl(), child: ChanCachedImage(post: widget.post, boxFit: BoxFit.cover, isDownloaded: _isDownloaded)),
           if (_isDownloaded) Align(alignment: Alignment.bottomRight, child: Icon(Icons.sd_storage)),
           if (widget.post.hasGif()) Align(alignment: Alignment.bottomLeft, child: Icon(Icons.gif)),
           if (widget.post.hasWebm()) Align(alignment: Alignment.bottomRight, child: Icon(Icons.play_arrow)),

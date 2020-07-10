@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:flutter_chan_viewer/models/chan_post.dart';
+import 'package:flutter_chan_viewer/models/post_item.dart';
 import 'package:flutter_chan_viewer/models/helper/chan_post_base.dart';
 import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
 import 'package:flutter_chan_viewer/utils/chan_util.dart';
@@ -84,6 +84,6 @@ class ChanThread extends ChanPostBase with EquatableMixin {
   @override
   List<Object> get props => super.props;
 
-  ChanThread copyWithPostData(ChanPost post) =>
+  ChanThread copyWithPostData(PostItem post) =>
       ChanThread(boardId, threadId, post.timestamp, post.subtitle, post.content, post.filename, post.imageId, post.extension, isFavorite, replies, images);
 }

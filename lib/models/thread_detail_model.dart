@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_chan_viewer/models/board_detail_model.dart';
-import 'package:flutter_chan_viewer/models/chan_post.dart';
+import 'package:flutter_chan_viewer/models/post_item.dart';
 import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
 import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
@@ -8,17 +8,17 @@ import 'package:kt_dart/kt.dart';
 
 class ThreadDetailModel with EquatableMixin {
   final ChanThread _thread;
-  final List<ChanPost> _posts;
+  final List<PostItem> _posts;
   int _selectedPostId;
   OnlineState onlineStatus;
 
   ThreadDetailModel._(this._thread, this._posts, this._selectedPostId, this.onlineStatus);
 
   factory ThreadDetailModel.fromJson(String boardId, int threadId, Map<String, dynamic> parsedJson, OnlineState isLive) {
-    List<ChanPost> posts = [];
-    Map<int, ChanPost> postMap = {};
+    List<PostItem> posts = [];
+    Map<int, PostItem> postMap = {};
     for (Map<String, dynamic> postData in parsedJson['posts']) {
-      ChanPost newPost = ChanPost.fromMappedJson(boardId, threadId, postData);
+      PostItem newPost = PostItem.fromMappedJson(boardId, threadId, postData);
 
       posts.add(newPost);
       postMap[newPost.postId] = newPost;
@@ -38,8 +38,8 @@ class ThreadDetailModel with EquatableMixin {
   }
 
   factory ThreadDetailModel.fromFolderInfo(DownloadFolderInfo folderInfo) {
-    List<ChanPost> posts = [];
-    folderInfo.fileNames.asMap().forEach((index, fileName) => posts.add(ChanPost.fromDownloadedFile(fileName, folderInfo.cacheDirective, index)));
+    List<PostItem> posts = [];
+    folderInfo.fileNames.asMap().forEach((index, fileName) => posts.add(PostItem.fromDownloadedFile(fileName, folderInfo.cacheDirective, index)));
     return ThreadDetailModel._(ChanThread.fromCacheDirective(folderInfo.cacheDirective), posts, 0, OnlineState.OFFLINE);
   }
 
@@ -73,17 +73,17 @@ class ThreadDetailModel with EquatableMixin {
 
   ChanThread get thread => _thread;
 
-  List<ChanPost> get posts => _posts;
+  List<PostItem> get posts => _posts;
 
-  List<ChanPost> get mediaPosts => _posts.where((post) => post.hasMedia()).toList();
+  List<PostItem> get mediaPosts => _posts.where((post) => post.hasMedia()).toList();
 
-  ChanPost get firstPost => _posts?.first;
+  PostItem get firstPost => _posts?.first;
 
   int getPostIndex(int postId) => ((postId ?? -1) >= 0) ? _posts.indexWhere((post) => post.postId == postId) : -1;
 
   int getMediaIndex(int postId) => ((postId ?? -1) >= 0) ? mediaPosts.indexWhere((post) => post.postId == postId) : -1;
 
-  ChanPost findPostById(int postId) => _posts.where((post) => post.postId == postId)?.first;
+  PostItem findPostById(int postId) => _posts.where((post) => post.postId == postId)?.first;
 
   get selectedPostIndex => getPostIndex(_selectedPostId);
 

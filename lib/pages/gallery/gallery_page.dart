@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_chan_viewer/models/chan_post.dart';
+import 'package:flutter_chan_viewer/models/post_item.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
 import 'package:flutter_chan_viewer/pages/thread_detail/bloc/thread_detail_event.dart';
 import 'package:flutter_chan_viewer/pages/thread_detail/thread_detail_page.dart';
@@ -60,7 +60,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
     if (state is ThreadDetailStateLoading) {
       return Constants.centeredProgressIndicator;
     } else if (state is ThreadDetailStateContent) {
-      ChanPost post = state.model.findPostById(postId);
+      PostItem post = state.model.findPostById(postId);
 
       return SafeArea(
         child: Stack(
@@ -75,7 +75,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
     }
   }
 
-  Widget _buildSinglePostItem(BuildContext context, ChanPost post) {
+  Widget _buildSinglePostItem(BuildContext context, PostItem post) {
     if (post.hasImage() || post.hasGif()) {
       return Center(child: ChanCachedImage(post: post, boxFit: BoxFit.fitWidth));
     } else if (post.hasWebm()) {
@@ -95,7 +95,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
         return Constants.noDataPlaceholder;
       }
 
-      ChanPost post = state.model.mediaPosts[mediaIndex];
+      PostItem post = state.model.mediaPosts[mediaIndex];
       return SafeArea(
         child: Stack(
           children: <Widget>[
@@ -130,7 +130,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
     }
   }
 
-  PhotoViewGalleryPageOptions _buildCarouselItem(BuildContext context, ChanPost post) {
+  PhotoViewGalleryPageOptions _buildCarouselItem(BuildContext context, PostItem post) {
     if (post.hasImage() || post.hasGif()) {
       return PhotoViewGalleryPageOptions(
         imageProvider: ChanNetworkImage(post.getImageUrl(), null, post.getCacheDirective()),
@@ -150,14 +150,14 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
     }
   }
 
-  Widget _buildBottomView(ChanPost post) {
+  Widget _buildBottomView(PostItem post) {
     double initialChildSize = post.hasMedia() ? 0.05 : 0.2;
     return DraggableScrollableSheet(
       initialChildSize: initialChildSize,
       minChildSize: 0.05,
       maxChildSize: 0.9,
       builder: (context, scrollController) {
-        List<ChanPost> allPosts = [post, ...post.repliesFrom];
+        List<PostItem> allPosts = [post, ...post.repliesFrom];
         return Material(
           child: ListView.builder(
             padding: EdgeInsets.symmetric(horizontal: 2.0),
@@ -165,7 +165,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
             controller: scrollController,
             itemCount: allPosts.length,
             itemBuilder: (context, index) {
-              ChanPost replyPost = allPosts[index];
+              PostItem replyPost = allPosts[index];
               if (index == 0) {
                 return Padding(
                   padding: const EdgeInsets.only(top: 2.0, bottom: 8.0),
@@ -191,7 +191,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
     );
   }
 
-  void _onReplyPostClicked(BuildContext context, ChanPost replyPost) {
+  void _onReplyPostClicked(BuildContext context, PostItem replyPost) {
     Navigator.of(context).push(PageRouteBuilder(
         opaque: false,
         pageBuilder: (BuildContext context, _, __) => BlocProvider.value(

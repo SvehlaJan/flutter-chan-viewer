@@ -2,11 +2,12 @@ import 'dart:async';
 import 'dart:collection';
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_chan_viewer/api/chan_api_provider.dart';
 import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/models/board_detail_model.dart';
 import 'package:flutter_chan_viewer/models/board_list_model.dart';
-import 'package:flutter_chan_viewer/models/chan_post.dart';
+import 'package:flutter_chan_viewer/models/post_item.dart';
 import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
 import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
 import 'package:flutter_chan_viewer/repositories/chan_downloader.dart';
@@ -66,7 +67,7 @@ class ChanRepository {
     // initialization code
   }
 
-  bool isPostDownloaded(ChanPost post) => isUrlDownloaded(post.getMediaUrl(), post.getCacheDirective());
+  bool isPostDownloaded(PostItem post) => isUrlDownloaded(post.getMediaUrl(), post.getCacheDirective());
 
   bool isUrlDownloaded(String url, CacheDirective cacheDirective) => _chanStorage.mediaFileExists(url, cacheDirective);
 
@@ -128,21 +129,33 @@ class ChanRepository {
     return Future.value(null);
   }
 
-  Future<ThreadDetailModel> fetchRemoteThreadDetail(String boardId, int threadId) async {
-    CacheDirective cacheDirective = CacheDirective(boardId, threadId);
-
-    ThreadDetailModel model = await _chanApiProvider.fetchPostList(boardId, threadId);
+  FutureOr<ThreadDetailModel> fetchRemoteThreadDetail(CacheDirective cacheDirective) async {
+    ThreadDetailModel model = await _chanApiProvider.fetchPostList(cacheDirective.boardId, cacheDirective.threadId);
     bool isFavorite = isThreadFavorite(cacheDirective);
     model.thread.isFavorite = isFavorite;
     model.posts.forEach((post) {
       post.isFavorite = isFavorite;
     });
+
+    await saveThreadDetail(model);
+    return model;
+  }
+
+  FutureOr<void> saveThreadDetail(ThreadDetailModel model) async {
     if (model.thread.isFavorite) {
       await _favoriteThreadsStore.record(model.cacheKey).put(_db, model.toJson());
     }
 
     threadDetailMemoryCache[model.cacheKey] = model;
-    return model;
+  }
+
+  Stream<ThreadDetailModel> listenToLocalThreadDetail(CacheDirective cacheDirective) {
+    return _favoriteThreadsStore.record(cacheDirective.getCacheKey()).onSnapshot(_db).asBroadcastStream().transform(StreamTransformer.fromHandlers(handleData: (entries, sink) {
+          ThreadDetailModel model = ThreadDetailModel.fromJson(cacheDirective.boardId, cacheDirective.threadId, entries.value, OnlineState.UNKNOWN);
+          sink.add(model);
+        }, handleError: (error, stacktrace, sink) {
+          debugPrint(error);
+        }));
   }
 
   bool isThreadFavorite(CacheDirective cacheDirective) {

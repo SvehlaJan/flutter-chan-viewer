@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_chan_viewer/locator.dart';
-import 'package:flutter_chan_viewer/models/chan_post.dart';
+import 'package:flutter_chan_viewer/models/post_item.dart';
 import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
 import 'package:flutter_chan_viewer/view/view_cached_image.dart';
 
 class PostGridWidget extends StatefulWidget {
-  final ChanPost post;
+  final PostItem post;
   final bool selected;
   final Function onTap;
 

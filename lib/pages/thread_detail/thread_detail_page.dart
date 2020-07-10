@@ -4,7 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chan_viewer/locator.dart';
-import 'package:flutter_chan_viewer/models/chan_post.dart';
+import 'package:flutter_chan_viewer/models/post_item.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
 import 'package:flutter_chan_viewer/pages/gallery/gallery_page.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
@@ -132,7 +132,7 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
     }
   }
 
-  Widget buildList(BuildContext context, List<ChanPost> posts, int selectedPostIndex) {
+  Widget buildList(BuildContext context, List<PostItem> posts, int selectedPostIndex) {
     return ScrollablePositionedList.builder(
       itemCount: posts.length,
       itemScrollController: _listScrollController,
@@ -148,7 +148,7 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
     );
   }
 
-  Widget buildGrid(BuildContext context, List<ChanPost> mediaPosts, int selectedMediaIndex) {
+  Widget buildGrid(BuildContext context, List<PostItem> mediaPosts, int selectedMediaIndex) {
     return GridView.builder(
       key: PageStorageKey<String>(KEY_GRID),
       controller: _gridScrollController,
@@ -226,7 +226,7 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
     return (orientation == Orientation.portrait) ? 2 : 3;
   }
 
-  void _onItemTap(ChanPost post, BuildContext context) {
+  void _onItemTap(PostItem post, BuildContext context) {
     _threadDetailBloc.add(ThreadDetailEventOnPostSelected(null, post.postId));
 
     Navigator.of(context).push(PageRouteBuilder(

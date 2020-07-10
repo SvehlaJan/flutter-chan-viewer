@@ -25,12 +25,14 @@ dependencies:
   flutter_bloc: ^4.0.1
   get_it: ^4.0.2
   http: ^0.12.1
+  dio: ^3.0.9
   logger_flutter: ^0.7.1
 
   sembast: ^2.4.5
   worker_manager: ^2.8.3
 
-  path_provider: ^1.6.11
+  path_provider:
+  path:
   filesize: ^1.0.4
   kt_dart: ^0.7.0+1
   equatable: ^1.2.0

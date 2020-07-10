@@ -1,4 +1,5 @@
 import 'package:flutter_chan_viewer/api/chan_api_provider.dart';
+import 'package:flutter_chan_viewer/repositories/new_repository.dart';
 import 'package:flutter_chan_viewer/utils/navigation_service.dart';
 import 'package:flutter_chan_viewer/repositories/chan_downloader.dart';
 import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
@@ -15,6 +16,7 @@ void setupLocator() {
   getIt.registerLazySingleton<ChanApiProvider>(() => ChanApiProvider());
   getIt.registerSingletonAsync<Preferences>(() async => Preferences.initAndGet());
   getIt.registerLazySingletonAsync<ChanRepository>(() async => ChanRepository.initAndGet());
+  getIt.registerLazySingletonAsync<NewChanRepository>(() async => NewChanRepository.initAndGet());
   getIt.registerLazySingletonAsync<ChanStorage>(() async => ChanStorage.initAndGet());
   getIt.registerLazySingletonAsync<ChanDownloader>(() async => ChanDownloader.initAndGet());
 }

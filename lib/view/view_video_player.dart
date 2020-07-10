@@ -3,14 +3,14 @@ import 'dart:io';
 import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chan_viewer/locator.dart';
-import 'package:flutter_chan_viewer/models/chan_post.dart';
+import 'package:flutter_chan_viewer/models/post_item.dart';
 import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/view/view_cached_image.dart';
 import 'package:video_player/video_player.dart';
 
 class ChanVideoPlayer extends StatefulWidget {
-  final ChanPost post;
+  final PostItem post;
 
   const ChanVideoPlayer({
     @required this.post,

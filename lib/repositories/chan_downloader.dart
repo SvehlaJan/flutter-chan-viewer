@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_chan_viewer/locator.dart';
-import 'package:flutter_chan_viewer/models/chan_post.dart';
+import 'package:flutter_chan_viewer/models/post_item.dart';
 import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
 import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
 import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
@@ -36,7 +36,7 @@ class ChanDownloader {
 
   Future<void> downloadAllMedia(ThreadDetailModel model) async {
     _chanStorage.createDirectory(model.cacheDirective);
-    for (ChanPost post in model.mediaPosts) {
+    for (PostItem post in model.mediaPosts) {
       if (!_chanStorage.mediaFileExists(post.getMediaUrl(), model.cacheDirective)) {
         _TaskInfo task = _TaskInfo(post);
         _requestDownload(task);
@@ -89,7 +89,7 @@ class ChanDownloader {
 }
 
 class _TaskInfo {
-  final ChanPost post;
+  final PostItem post;
   String taskId;
   int progress = 0;
   DownloadTaskStatus status = DownloadTaskStatus.undefined;

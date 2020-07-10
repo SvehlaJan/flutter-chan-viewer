@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:flutter_chan_viewer/locator.dart';
-import 'package:flutter_chan_viewer/models/chan_post.dart';
+import 'package:flutter_chan_viewer/models/post_item.dart';
 import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
 import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
 import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
@@ -37,6 +37,8 @@ class ThreadDetailBloc extends Bloc<ThreadDetailEvent, ThreadDetailState> {
 
   bool get isFavorite => _isFavorite ?? false;
 
+  CacheDirective get cacheDirective => CacheDirective(_boardId, _threadId);
+
   @override
   Stream<ThreadDetailState> mapEventToState(ThreadDetailEvent event) async* {
     try {
@@ -46,10 +48,10 @@ class ThreadDetailBloc extends Bloc<ThreadDetailEvent, ThreadDetailState> {
         if (_catalogMode == null) {
           _catalogMode = Preferences.getBool(Preferences.KEY_THREAD_CATALOG_MODE, def: false);
         }
-        _isFavorite = _repository.isThreadFavorite(CacheDirective(_boardId, _threadId));
+        _isFavorite = _repository.isThreadFavorite(cacheDirective);
 
         if (_showDownloadsOnly ?? false) {
-          DownloadFolderInfo folderInfo = _chanStorage.getThreadDownloadFolderInfo(CacheDirective(_boardId, _threadId));
+          DownloadFolderInfo folderInfo = _chanStorage.getThreadDownloadFolderInfo(cacheDirective);
           _threadDetailModel = ThreadDetailModel.fromFolderInfo(folderInfo);
           yield _getShowListState();
         } else {
@@ -60,7 +62,7 @@ class ThreadDetailBloc extends Bloc<ThreadDetailEvent, ThreadDetailState> {
           }
 
           try {
-            _threadDetailModel = await _repository.fetchRemoteThreadDetail(_boardId, _threadId);
+            _threadDetailModel = await _repository.fetchRemoteThreadDetail(cacheDirective);
             if (cachedThreadDetailModel == null) {
               yield _getShowListState();
             } else {
@@ -119,7 +121,7 @@ class ThreadDetailBloc extends Bloc<ThreadDetailEvent, ThreadDetailState> {
 
         yield _getShowListState(event: ThreadDetailSingleEvent.SCROLL_TO_SELECTED);
       } else if (event is ThreadDetailEventOnLinkClicked) {
-        ChanPost post = _threadDetailModel.findPostById(ChanUtil.getPostIdFromUrl(event.url));
+        PostItem post = _threadDetailModel.findPostById(ChanUtil.getPostIdFromUrl(event.url));
         if (post != null) {
           _threadDetailModel.selectedPostId = post.postId;
           if (!post.hasMedia()) {
@@ -129,7 +131,7 @@ class ThreadDetailBloc extends Bloc<ThreadDetailEvent, ThreadDetailState> {
 
         yield _getShowListState();
       } else if (event is ThreadDetailEventOnReplyClicked) {
-        ChanPost post = _threadDetailModel.findPostById(event.postId);
+        PostItem post = _threadDetailModel.findPostById(event.postId);
         if (post != null) {
           _threadDetailModel.selectedPostId = post.postId;
           if (!post.hasMedia()) {

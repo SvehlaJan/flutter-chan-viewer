@@ -1,17 +1,17 @@
 import 'package:equatable/equatable.dart';
-import 'package:flutter_chan_viewer/models/helper/chan_post_base.dart';
 import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
 import 'package:flutter_chan_viewer/utils/chan_util.dart';
+import 'package:flutter_chan_viewer/models/helper/chan_post_base.dart';
 import 'package:path/path.dart';
 
-class ChanPost extends ChanPostBase with EquatableMixin {
+class PostItem extends ChanPostBase with EquatableMixin {
   final int postId;
   final List<int> repliesTo;
-  final List<ChanPost> repliesFrom = [];
+  final List<PostItem> repliesFrom = [];
 
   bool get hasReplies => repliesFrom.isNotEmpty;
 
-  factory ChanPost.fromMappedJson(String boardId, int threadId, Map<String, dynamic> json) => ChanPost(
+  factory PostItem.fromMappedJson(String boardId, int threadId, Map<String, dynamic> json) => PostItem(
         json['board_id'] ?? boardId,
         json['thread_id'] ?? threadId,
         json['no'],
@@ -25,10 +25,10 @@ class ChanPost extends ChanPostBase with EquatableMixin {
         ChanUtil.getPostReferences(json['com']),
       );
 
-  factory ChanPost.fromDownloadedFile(String fileName, CacheDirective cacheDirective, int postId) {
+  factory PostItem.fromDownloadedFile(String fileName, CacheDirective cacheDirective, int postId) {
     String imageId = basenameWithoutExtension(fileName);
     String extensionStr = extension(fileName);
-    return ChanPost(
+    return PostItem(
       cacheDirective.boardId,
       cacheDirective.threadId,
       postId,
@@ -55,7 +55,7 @@ class ChanPost extends ChanPostBase with EquatableMixin {
         'ext': this.extension,
       };
 
-  ChanPost(String boardId, int threadId, this.postId, int timestamp, String subtitle, String content, String filename, String imageId, String extension, bool isFavorite, this.repliesTo)
+  PostItem(String boardId, int threadId, this.postId, int timestamp, String subtitle, String content, String filename, String imageId, String extension, bool isFavorite, this.repliesTo)
       : super(
           boardId,
           threadId,

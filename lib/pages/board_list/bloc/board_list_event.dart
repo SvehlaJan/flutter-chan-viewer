@@ -5,15 +5,13 @@ abstract class BoardListEvent extends Equatable {
 }
 
 class BoardListEventFetchBoards extends BoardListEvent {
-  final bool forceFetch;
-
-  BoardListEventFetchBoards(this.forceFetch);
+  BoardListEventFetchBoards();
 
   @override
-  String toString() => 'BoardListEventFetchBoards { forceFetch: $forceFetch }';
+  String toString() => 'BoardListEventFetchBoards{}';
 
   @override
-  List<Object> get props => [forceFetch];
+  List<Object> get props => [];
 }
 
 class BoardListEventSearchBoards extends BoardListEvent {

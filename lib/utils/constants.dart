@@ -9,6 +9,7 @@ class Constants {
   static const String favoritesRoute = "favorites";
   static const String boardsRoute = "boards";
   static const String boardDetailRoute = "board/detail";
+  static const String boardArchiveRoute = "board/archive";
   static const String threadDetailRoute = "board/detail/thread";
   static const String galleryRoute = "board/detail/thread/gallery";
   static const String settingsRoute = "settings";

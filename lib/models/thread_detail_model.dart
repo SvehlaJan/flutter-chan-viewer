@@ -43,6 +43,10 @@ class ThreadDetailModel with EquatableMixin {
     return ThreadDetailModel._(ChanThread.fromCacheDirective(folderInfo.cacheDirective), posts, 0, OnlineState.OFFLINE);
   }
 
+  factory ThreadDetailModel.fromCacheDirective(CacheDirective cacheDirective) {
+    return ThreadDetailModel._(ChanThread.fromCacheDirective(cacheDirective), [], 0, OnlineState.UNKNOWN);
+  }
+
   /*
   ThreadDetailModel.fromJson(String boardId, int threadId, Map<String, dynamic> parsedJson)
       : _thread = ChanThread.fromMappedJson(boardId, threadId, parsedJson),
@@ -97,20 +101,14 @@ class ThreadDetailModel with EquatableMixin {
 
   set selectedPostId(int postId) => _selectedPostId = getPostIndex(postId) >= 0 ? postId : throw IndexOutOfBoundsException();
 
-  Map<String, dynamic> toJson() => {
-        'board_id': _thread.boardId,
-        'no': _thread.threadId,
-        'time': _thread.timestamp,
-        'sub': _thread.subtitle,
-        'com': _thread.content,
-        'filename': _thread.filename,
-        'tim': _thread.imageId,
-        'ext': _thread.extension,
-        'is_favorite': _thread.isFavorite,
+  Map<String, dynamic> toJson() {
+    return {
+        ..._thread.toJson(),
         'posts': _posts.map((post) => post.toJson()).toList(),
         'selected_post': _selectedPostId
       };
+  }
 
   @override
-  List<Object> get props => [_thread, _posts, _selectedPostId];
+  List<Object> get props => [_thread, _posts, _selectedPostId, onlineStatus];
 }

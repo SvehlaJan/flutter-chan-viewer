@@ -13,7 +13,7 @@ import 'app_event.dart';
 import 'app_state.dart';
 
 class AppBloc extends Bloc<AppEvent, AppState> {
-  AppBloc();
+  AppBloc() : super(AppStateLoading());
 
   Future<void> initBloc() async {
     await getIt.getAsync<Preferences>();
@@ -21,9 +21,6 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     await getIt.getAsync<ChanStorage>();
     await getIt.getAsync<ChanRepository>();
   }
-
-  @override
-  get initialState => AppStateLoading();
 
   @override
   Stream<AppState> mapEventToState(AppEvent event) async* {

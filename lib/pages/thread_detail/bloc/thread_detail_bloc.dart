@@ -26,10 +26,7 @@ class ThreadDetailBloc extends Bloc<ThreadDetailEvent, ThreadDetailState> {
 
   ThreadDetailModel _threadDetailModel;
 
-  ThreadDetailBloc(this._boardId, this._threadId, this._showAppBar, this._showDownloadsOnly, this._catalogMode);
-
-  @override
-  get initialState => ThreadDetailStateLoading();
+  ThreadDetailBloc(this._boardId, this._threadId, this._showAppBar, this._showDownloadsOnly, this._catalogMode) : super(ThreadDetailStateLoading());
 
   String get pageTitle => "/$_boardId/$_threadId";
 
@@ -62,7 +59,7 @@ class ThreadDetailBloc extends Bloc<ThreadDetailEvent, ThreadDetailState> {
           }
 
           try {
-            _threadDetailModel = await _repository.fetchRemoteThreadDetail(cacheDirective);
+            _threadDetailModel = await _repository.fetchRemoteThreadDetail(_boardId, _threadId);
             if (cachedThreadDetailModel == null) {
               yield _getShowListState();
             } else {

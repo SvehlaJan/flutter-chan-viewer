@@ -13,15 +13,13 @@ class BoardDetailEventToggleFavorite extends BoardDetailEvent {
 }
 
 class BoardDetailEventFetchThreads extends BoardDetailEvent {
-  final bool forceFetch;
-
-  BoardDetailEventFetchThreads(this.forceFetch);
+  BoardDetailEventFetchThreads();
 
   @override
-  String toString() => 'BoardDetailEventFetchThreads { forceFetch: $forceFetch }';
+  String toString() => 'BoardDetailEventFetchThreads{}';
 
   @override
-  List<Object> get props => [forceFetch];
+  List<Object> get props => [];
 }
 
 class BoardDetailEventSearchBoards extends BoardDetailEvent {

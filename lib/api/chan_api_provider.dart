@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter_chan_viewer/models/archive_list_model.dart';
 import 'package:flutter_chan_viewer/models/board_detail_model.dart';
 import 'package:flutter_chan_viewer/models/board_list_model.dart';
 import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
@@ -44,6 +45,18 @@ class ChanApiProvider {
     ChanLogger.d("Post list fetched. { url: $url, response status: ${response.statusCode} }");
     if (response.statusCode == 200) {
       return ThreadDetailModel.fromJson(boardId, threadId, json.decode(response.body), OnlineState.ONLINE);
+    } else {
+      throw Exception('Error response: ${response.statusCode}');
+    }
+  }
+
+  Future<ArchiveListModel> fetchArchiveList(String boardId) async {
+    String url = "$_baseUrl/$boardId/archive.json";
+
+    final response = await client.get(url);
+    ChanLogger.d("Archive list fetched. { url: $url, response status: ${response.statusCode} }");
+    if (response.statusCode == 200) {
+      return ArchiveListModel.fromJson(boardId, json.decode(response.body));
     } else {
       throw Exception('Failed to load posts');
     }

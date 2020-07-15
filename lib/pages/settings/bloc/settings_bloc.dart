@@ -7,7 +7,6 @@ import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
 import 'package:flutter_chan_viewer/utils/chan_logger.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/utils/preferences.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'settings_event.dart';
 import 'settings_state.dart';
@@ -20,8 +19,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
   List<DownloadFolderInfo> _downloads = new List();
   bool _showSfwOnly;
 
-  @override
-  get initialState => SettingsStateLoading();
+  SettingsBloc() : super(SettingsStateLoading());
 
   get showNsfw => !_showSfwOnly;
 

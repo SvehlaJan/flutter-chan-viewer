@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chan_viewer/pages/base/notfound_page.dart';
+import 'package:flutter_chan_viewer/pages/board_archive/bloc/board_archive_bloc.dart';
+import 'package:flutter_chan_viewer/pages/board_archive/board_archive_page.dart';
 import 'package:flutter_chan_viewer/pages/board_detail/bloc/board_detail_bloc.dart';
 import 'package:flutter_chan_viewer/pages/board_detail/board_detail_page.dart';
-import 'package:flutter_chan_viewer/pages/board_list/bloc/board_list_bloc.dart';
-import 'package:flutter_chan_viewer/pages/board_list/board_list_page.dart';
-import 'package:flutter_chan_viewer/pages/favorites/bloc/favorites_bloc.dart';
-import 'package:flutter_chan_viewer/pages/favorites/favorites_page.dart';
-import 'package:flutter_chan_viewer/pages/settings/bloc/settings_bloc.dart';
-import 'package:flutter_chan_viewer/pages/settings/settings_page.dart';
 import 'package:flutter_chan_viewer/pages/thread_detail/bloc/thread_detail_bloc.dart';
 import 'package:flutter_chan_viewer/pages/thread_detail/thread_detail_page.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
@@ -72,6 +68,17 @@ class NavigationHelper {
             builder: (BuildContext context) => BlocProvider(
               create: (context) => BoardDetailBloc(boardId),
               child: BoardDetailPage(boardId),
+            ),
+          );
+        }
+        return null;
+      case Constants.boardArchiveRoute:
+        if (arguments != null && arguments.containsKey(BoardArchivePage.ARG_BOARD_ID)) {
+          String boardId = arguments[BoardArchivePage.ARG_BOARD_ID];
+          return MaterialPageRoute<void>(
+            builder: (BuildContext context) => BlocProvider(
+              create: (context) => BoardArchiveBloc(boardId),
+              child: BoardArchivePage(boardId),
             ),
           );
         }

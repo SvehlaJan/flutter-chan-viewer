@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chan_viewer/models/board_detail_model.dart';
+import 'package:flutter_chan_viewer/pages/board_archive/board_archive_page.dart';
 import 'package:flutter_chan_viewer/utils/navigation_helper.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
 import 'package:flutter_chan_viewer/pages/thread_detail/thread_detail_page.dart';
@@ -30,7 +31,7 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
   void initState() {
     super.initState();
     _boardDetailBloc = BlocProvider.of<BoardDetailBloc>(context);
-    _boardDetailBloc.add(BoardDetailEventFetchThreads(false));
+    _boardDetailBloc.add(BoardDetailEventFetchThreads());
   }
 
   @override
@@ -40,6 +41,7 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
   List<AppBarAction> getAppBarActions(BuildContext context) => [
         AppBarAction("Search", Icons.search, _onSearchClick),
         AppBarAction("Refresh", Icons.refresh, _onRefreshClick),
+        AppBarAction("Archive", Icons.history, _onArchiveClick),
         _boardDetailBloc.isFavorite ? AppBarAction("Unstar", Icons.star, _onFavoriteToggleClick) : AppBarAction("Star", Icons.star_border, _onFavoriteToggleClick),
       ];
 
@@ -52,7 +54,18 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
     }
   }
 
-  void _onRefreshClick() => _boardDetailBloc.add(BoardDetailEventFetchThreads(true));
+  void _onRefreshClick() => _boardDetailBloc.add(BoardDetailEventFetchThreads());
+
+  void _onArchiveClick() async {
+    await Navigator.of(context).push(NavigationHelper.getRoute(
+      Constants.boardArchiveRoute,
+      {
+        BoardArchivePage.ARG_BOARD_ID: widget.boardId,
+      },
+    ));
+
+    _boardDetailBloc.add(BoardDetailEventFetchThreads());
+  }
 
   void _onFavoriteToggleClick() => _boardDetailBloc.add(BoardDetailEventToggleFavorite());
 

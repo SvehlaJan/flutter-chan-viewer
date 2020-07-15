@@ -27,12 +27,13 @@ class BoardListStateError extends BoardListState {
 
 class BoardListStateContent extends BoardListState {
   final List<ChanBoardItemWrapper> items;
+  final bool lazyLoading;
 
-  BoardListStateContent(this.items);
-
-  @override
-  String toString() => 'BoardListStateContent { items: ${items.length} }';
+  BoardListStateContent(this.items, this.lazyLoading);
 
   @override
-  List<Object> get props => [items];
+  String toString() => 'BoardListStateContent{items: $items, lazyLoading: $lazyLoading}';
+
+  @override
+  List<Object> get props => [items, lazyLoading];
 }

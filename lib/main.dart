@@ -1,4 +1,5 @@
 import 'package:bloc/bloc.dart';
+import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/app_bloc/app_bloc.dart';
@@ -9,11 +10,10 @@ import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/utils/theme_helper.dart';
 
 import 'app.dart';
-import 'bloc/simple_bloc_delegate.dart';
 import 'utils/constants.dart';
 
 void main() async {
-  BlocSupervisor.delegate = SimpleBlocDelegate();
+  EquatableConfig.stringify = true;
   WidgetsFlutterBinding.ensureInitialized();
   setupLocator();
 

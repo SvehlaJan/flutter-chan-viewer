@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
-import 'package:date_format/date_format.dart';
 import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/models/board_detail_model.dart';
 import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
@@ -14,12 +13,7 @@ import 'board_detail_state.dart';
 class BoardDetailBloc extends Bloc<BoardDetailEvent, BoardDetailState> {
   final ChanRepository _repository = getIt<ChanRepository>();
 
-  BoardDetailBloc(this.boardId);
-
-  void initBloc() {}
-
-  @override
-  get initialState => BoardDetailStateLoading();
+  BoardDetailBloc(this.boardId) : super(BoardDetailStateLoading());
 
   final String boardId;
   bool isFavorite = false;
@@ -30,16 +24,22 @@ class BoardDetailBloc extends Bloc<BoardDetailEvent, BoardDetailState> {
     try {
       if (event is BoardDetailEventFetchThreads) {
         yield BoardDetailStateLoading();
-
-        BoardDetailModel boardDetailModel = await _repository.fetchBoardDetail(event.forceFetch, boardId);
+        List<ChanThread> filteredThreads;
         List<String> favoriteBoards = Preferences.getStringList(Preferences.KEY_FAVORITE_BOARDS);
         isFavorite = favoriteBoards.contains(boardId);
-        List<ChanThread> filteredThreads = boardDetailModel.threads.where((thread) => _matchesQuery(thread, searchQuery)).toList();
 
-        yield BoardDetailStateContent(filteredThreads, isFavorite);
+        BoardDetailModel boardDetailModel = await _repository.fetchCachedBoardDetail(boardId);
+        if (boardDetailModel != null) {
+          filteredThreads = boardDetailModel.threads.where((thread) => _matchesQuery(thread, searchQuery)).toList();
+          yield BoardDetailStateContent(filteredThreads, true, isFavorite);
+        }
+
+        boardDetailModel = await _repository.fetchRemoteBoardDetail(boardId);
+        filteredThreads = boardDetailModel.threads.where((thread) => _matchesQuery(thread, searchQuery)).toList();
+        yield BoardDetailStateContent(filteredThreads, false, isFavorite);
       } else if (event is BoardDetailEventSearchBoards) {
         searchQuery = event.query;
-        add(BoardDetailEventFetchThreads(false));
+        add(BoardDetailEventFetchThreads());
       } else if (event is BoardDetailEventToggleFavorite) {
         isFavorite = !isFavorite;
         List<String> favoriteBoards = Preferences.getStringList(Preferences.KEY_FAVORITE_BOARDS);
@@ -48,7 +48,7 @@ class BoardDetailBloc extends Bloc<BoardDetailEvent, BoardDetailState> {
           favoriteBoards.add(boardId);
         }
         Preferences.setStringList(Preferences.KEY_FAVORITE_BOARDS, favoriteBoards);
-        add(BoardDetailEventFetchThreads(false));
+        add(BoardDetailEventFetchThreads());
       }
     } catch (e, stackTrace) {
       ChanLogger.e("Event error!", e, stackTrace);
@@ -56,5 +56,7 @@ class BoardDetailBloc extends Bloc<BoardDetailEvent, BoardDetailState> {
     }
   }
 
-  bool _matchesQuery(ChanThread thread, String query) => thread.content?.toLowerCase()?.contains(query.toLowerCase()) ?? false;
+  bool _matchesQuery(ChanThread thread, String query) {
+    return thread.subtitle?.toLowerCase()?.contains(query.toLowerCase()) ?? thread.content?.toLowerCase()?.contains(query.toLowerCase()) ?? false;
+  }
 }

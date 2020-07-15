@@ -5,7 +5,6 @@ import 'package:flutter_chan_viewer/models/board_list_model.dart';
 import 'package:flutter_chan_viewer/models/helper/chan_board_item_wrapper.dart';
 import 'package:flutter_chan_viewer/utils/navigation_helper.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
-import 'package:flutter_chan_viewer/pages/board_detail/bloc/board_detail_bloc.dart';
 import 'package:flutter_chan_viewer/pages/board_detail/board_detail_page.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/view/list_widget_board.dart';
@@ -26,7 +25,7 @@ class _BoardListPageState extends BasePageState<BoardListPage> {
   void initState() {
     super.initState();
     _boardListBloc = BlocProvider.of<BoardListBloc>(context);
-    _boardListBloc.add(BoardListEventFetchBoards(false));
+    _boardListBloc.add(BoardListEventFetchBoards());
   }
 
   @override
@@ -44,7 +43,7 @@ class _BoardListPageState extends BasePageState<BoardListPage> {
     }
   }
 
-  void _onRefreshClick() => _boardListBloc.add(BoardListEventFetchBoards(true));
+  void _onRefreshClick() => _boardListBloc.add(BoardListEventFetchBoards());
 
   @override
   Widget build(BuildContext context) {
@@ -84,7 +83,7 @@ class _BoardListPageState extends BasePageState<BoardListPage> {
       },
     ));
 
-    _boardListBloc.add(BoardListEventFetchBoards(false));
+    _boardListBloc.add(BoardListEventFetchBoards());
   }
 }
 

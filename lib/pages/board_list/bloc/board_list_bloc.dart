@@ -14,10 +14,7 @@ import 'board_list_state.dart';
 class BoardListBloc extends Bloc<BoardListEvent, BoardListState> {
   final ChanRepository _repository = getIt<ChanRepository>();
 
-  void initBloc() {}
-
-  @override
-  get initialState => BoardListStateLoading();
+  BoardListBloc() : super(BoardListStateLoading());
 
   String searchQuery = "";
 
@@ -26,33 +23,45 @@ class BoardListBloc extends Bloc<BoardListEvent, BoardListState> {
     try {
       if (event is BoardListEventFetchBoards) {
         yield BoardListStateLoading();
+        List<ChanBoardItemWrapper> resultList;
 
-        BoardListModel boardListModel = await _repository.fetchBoardList(event.forceFetch);
         bool showSfwOnly = Preferences.getBool(Preferences.KEY_SETTINGS_SHOW_SFW_ONLY, def: true);
-        List<ChanBoard> filteredBoards = boardListModel.boards.where((board) => _matchesFilter(board, searchQuery, showSfwOnly)).toList();
         List<String> favoriteBoardIds = Preferences.getStringList(Preferences.KEY_FAVORITE_BOARDS);
-        List<ChanBoard> favoriteBoards = filteredBoards.where((board) => favoriteBoardIds.contains(board.boardId)).toList();
-        List<ChanBoard> otherBoards = filteredBoards.where((board) => !favoriteBoardIds.contains(board.boardId)).toList();
-        List<ChanBoardItemWrapper> resultList = [];
 
-        if (favoriteBoards.isNotEmpty) {
-          resultList.add(ChanBoardItemWrapper(headerTitle: "Favorites"));
-          resultList.addAll(favoriteBoards.map((board) => ChanBoardItemWrapper(chanBoard: board)));
-          if (otherBoards.isNotEmpty) {
-            resultList.add(ChanBoardItemWrapper(headerTitle: "Others"));
-          }
+        BoardListModel boardListModel = await _repository.fetchCachedBoardList();
+        if (boardListModel != null) {
+          resultList = _processBoardList(favoriteBoardIds, showSfwOnly, boardListModel);
+          yield BoardListStateContent(resultList, true);
         }
-        resultList.addAll(otherBoards.map((board) => ChanBoardItemWrapper(chanBoard: board)));
 
-        yield BoardListStateContent(resultList);
+        boardListModel = await _repository.fetchRemoteBoardList();
+        resultList = _processBoardList(favoriteBoardIds, showSfwOnly, boardListModel);
+        yield BoardListStateContent(resultList, false);
       } else if (event is BoardListEventSearchBoards) {
         searchQuery = event.query;
-        add(BoardListEventFetchBoards(false));
+        add(BoardListEventFetchBoards());
       }
     } catch (e, stackTrace) {
       ChanLogger.e("Event error!", e, stackTrace);
       yield BoardListStateError(e.toString());
     }
+  }
+
+  List<ChanBoardItemWrapper> _processBoardList(List<String> favoriteBoardIds, bool showSfwOnly, BoardListModel boardListModel) {
+    List<ChanBoard> filteredBoards = boardListModel.boards.where((board) => _matchesFilter(board, searchQuery, showSfwOnly)).toList();
+    List<ChanBoard> favoriteBoards = filteredBoards.where((board) => favoriteBoardIds.contains(board.boardId)).toList();
+    List<ChanBoard> otherBoards = filteredBoards.where((board) => !favoriteBoardIds.contains(board.boardId)).toList();
+    List<ChanBoardItemWrapper> resultList = [];
+
+    if (favoriteBoards.isNotEmpty) {
+      resultList.add(ChanBoardItemWrapper(headerTitle: "Favorites"));
+      resultList.addAll(favoriteBoards.map((board) => ChanBoardItemWrapper(chanBoard: board)));
+      if (otherBoards.isNotEmpty) {
+        resultList.add(ChanBoardItemWrapper(headerTitle: "Others"));
+      }
+    }
+    resultList.addAll(otherBoards.map((board) => ChanBoardItemWrapper(chanBoard: board)));
+    return resultList;
   }
 
   bool _matchesFilter(ChanBoard board, String query, bool showSfwOnly) {

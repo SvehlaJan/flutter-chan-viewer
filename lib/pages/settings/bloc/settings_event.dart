@@ -1,17 +1,8 @@
-import 'package:equatable/equatable.dart';
+import 'package:flutter_chan_viewer/bloc/chan_event.dart';
 import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 
-abstract class SettingsEvent extends Equatable {
-  SettingsEvent();
-
-  @override
-  List<Object> get props => [];
-}
-
-class SettingsEventFetchData extends SettingsEvent {}
-
-class SettingsEventSetTheme extends SettingsEvent {
+class SettingsEventSetTheme extends ChanEvent {
   final AppTheme theme;
 
   SettingsEventSetTheme(this.theme);
@@ -23,9 +14,9 @@ class SettingsEventSetTheme extends SettingsEvent {
   List<Object> get props => [theme];
 }
 
-class SettingsEventExperiment extends SettingsEvent {}
+class SettingsEventExperiment extends ChanEvent {}
 
-class SettingsEventToggleShowSfwOnly extends SettingsEvent {
+class SettingsEventToggleShowSfwOnly extends ChanEvent {
   final bool showNsfw;
 
   SettingsEventToggleShowSfwOnly(this.showNsfw);
@@ -34,9 +25,9 @@ class SettingsEventToggleShowSfwOnly extends SettingsEvent {
   List<Object> get props => [showNsfw];
 }
 
-class SettingsEventCancelDownloads extends SettingsEvent {}
+class SettingsEventCancelDownloads extends ChanEvent {}
 
-class SettingsEventDeleteFolder extends SettingsEvent {
+class SettingsEventDeleteFolder extends ChanEvent {
   final CacheDirective cacheDirective;
 
   SettingsEventDeleteFolder(this.cacheDirective);

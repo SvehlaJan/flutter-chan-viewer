@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
+import 'package:flutter_chan_viewer/bloc/chan_event.dart';
+import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/models/post_item.dart';
 import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
@@ -14,7 +16,7 @@ import 'package:flutter_chan_viewer/utils/preferences.dart';
 import 'thread_detail_event.dart';
 import 'thread_detail_state.dart';
 
-class ThreadDetailBloc extends Bloc<ThreadDetailEvent, ThreadDetailState> {
+class ThreadDetailBloc extends Bloc<ChanEvent, ChanState> {
   final ChanRepository _repository = getIt<ChanRepository>();
   final ChanStorage _chanStorage = getIt<ChanStorage>();
   final String _boardId;
@@ -26,7 +28,7 @@ class ThreadDetailBloc extends Bloc<ThreadDetailEvent, ThreadDetailState> {
 
   ThreadDetailModel _threadDetailModel;
 
-  ThreadDetailBloc(this._boardId, this._threadId, this._showAppBar, this._showDownloadsOnly, this._catalogMode) : super(ThreadDetailStateLoading());
+  ThreadDetailBloc(this._boardId, this._threadId, this._showAppBar, this._showDownloadsOnly, this._catalogMode) : super(ChanStateLoading());
 
   String get pageTitle => "/$_boardId/$_threadId";
 
@@ -37,10 +39,10 @@ class ThreadDetailBloc extends Bloc<ThreadDetailEvent, ThreadDetailState> {
   CacheDirective get cacheDirective => CacheDirective(_boardId, _threadId);
 
   @override
-  Stream<ThreadDetailState> mapEventToState(ThreadDetailEvent event) async* {
+  Stream<ChanState> mapEventToState(ChanEvent event) async* {
     try {
-      if (event is ThreadDetailEventFetchPosts) {
-        yield ThreadDetailStateLoading();
+      if (event is ChanEventFetchData) {
+        yield ChanStateLoading();
 
         if (_catalogMode == null) {
           _catalogMode = Preferences.getBool(Preferences.KEY_THREAD_CATALOG_MODE, def: false);
@@ -75,7 +77,7 @@ class ThreadDetailBloc extends Bloc<ThreadDetailEvent, ThreadDetailState> {
           yield _getShowListState(event: ThreadDetailSingleEvent.SHOW_UNSTAR_WARNING);
           return;
         } else {
-          yield ThreadDetailStateLoading();
+          yield ChanStateLoading();
 
           _isFavorite = true;
           await _repository.addThreadToFavorites(_threadDetailModel);
@@ -97,14 +99,14 @@ class ThreadDetailBloc extends Bloc<ThreadDetailEvent, ThreadDetailState> {
           yield _getShowListState();
         }
       } else if (event is ThreadDetailEventToggleCatalogMode) {
-        yield ThreadDetailStateLoading();
+        yield ChanStateLoading();
 
         _catalogMode = !_catalogMode;
         Preferences.setBool(Preferences.KEY_THREAD_CATALOG_MODE, _catalogMode);
 
         yield _getShowListState(event: ThreadDetailSingleEvent.SCROLL_TO_SELECTED);
       } else if (event is ThreadDetailEventDownload) {
-        yield ThreadDetailStateLoading();
+        yield ChanStateLoading();
 
         _repository.downloadAllMedia(_threadDetailModel);
 
@@ -140,7 +142,7 @@ class ThreadDetailBloc extends Bloc<ThreadDetailEvent, ThreadDetailState> {
       }
     } catch (e, stackTrace) {
       ChanLogger.e("Event error!", e, stackTrace);
-      yield ThreadDetailStateError(e.toString());
+      yield ChanStateError(e.toString());
     }
   }
 

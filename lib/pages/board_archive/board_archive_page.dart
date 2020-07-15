@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_chan_viewer/bloc/chan_event.dart';
+import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/models/board_detail_model.dart';
 import 'package:flutter_chan_viewer/utils/navigation_helper.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
@@ -33,7 +35,7 @@ class _BoardArchivePageState extends BasePageState<BoardArchivePage> {
   void initState() {
     super.initState();
     _archiveListBloc = BlocProvider.of<BoardArchiveBloc>(context);
-    _archiveListBloc.add(BoardArchiveEventFetchThreads());
+    _archiveListBloc.add(ChanEventFetchData());
     _scrollController.addListener(_onScroll);
   }
 
@@ -55,7 +57,7 @@ class _BoardArchivePageState extends BasePageState<BoardArchivePage> {
     }
   }
 
-  void _onRefreshClick() => _archiveListBloc.add(BoardArchiveEventFetchThreads());
+  void _onRefreshClick() => _archiveListBloc.add(ChanEventFetchData());
 
   void _onScroll() {
     final maxScroll = _scrollController.position.maxScrollExtent;
@@ -68,7 +70,7 @@ class _BoardArchivePageState extends BasePageState<BoardArchivePage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<BoardArchiveBloc, BoardArchiveState>(
+    return BlocBuilder<BoardArchiveBloc, ChanState>(
         bloc: _archiveListBloc,
         builder: (context, state) => buildScaffold(
               context,
@@ -76,8 +78,8 @@ class _BoardArchivePageState extends BasePageState<BoardArchivePage> {
             ));
   }
 
-  static Widget buildBody(BuildContext context, BoardArchiveState state, ScrollController scrollController, Function(ChanThread) onItemClicked) {
-    if (state is BoardArchiveStateLoading) {
+  static Widget buildBody(BuildContext context, ChanState state, ScrollController scrollController, Function(ChanThread) onItemClicked) {
+    if (state is ChanStateLoading) {
       return Constants.centeredProgressIndicator;
     } else if (state is BoardArchiveStateContent) {
       if (state.threads.isEmpty) {
@@ -131,16 +133,18 @@ class CustomSearchDelegate extends SearchDelegate<ChanThread> {
   List<Widget> buildActions(BuildContext context) => null;
 
   @override
-  Widget buildLeading(BuildContext context) => IconButton(icon: Icon(Icons.arrow_back), onPressed: () {
-    _boardDetailBloc.add(BoardArchiveEventSearchThreads(query));
-    close(context, null);
-  });
+  Widget buildLeading(BuildContext context) => IconButton(
+      icon: Icon(Icons.arrow_back),
+      onPressed: () {
+        _boardDetailBloc.add(ChanEventSearch(query));
+        close(context, null);
+      });
 
   @override
   Widget buildResults(BuildContext context) {
-    _boardDetailBloc.add(BoardArchiveEventSearchThreads(query));
+    _boardDetailBloc.add(ChanEventSearch(query));
 
-    return BlocBuilder<BoardArchiveBloc, BoardArchiveState>(
+    return BlocBuilder<BoardArchiveBloc, ChanState>(
       bloc: _boardDetailBloc,
       builder: (context, state) => _BoardArchivePageState.buildBody(context, state, null, ((thread) => close(context, thread))),
     );
@@ -148,9 +152,9 @@ class CustomSearchDelegate extends SearchDelegate<ChanThread> {
 
   @override
   Widget buildSuggestions(BuildContext context) {
-    _boardDetailBloc.add(BoardArchiveEventSearchThreads(query));
+    _boardDetailBloc.add(ChanEventSearch(query));
 
-    return BlocBuilder<BoardArchiveBloc, BoardArchiveState>(
+    return BlocBuilder<BoardArchiveBloc, ChanState>(
       bloc: _boardDetailBloc,
       builder: (context, state) => _BoardArchivePageState.buildBody(context, state, null, ((thread) => close(context, thread))),
     );

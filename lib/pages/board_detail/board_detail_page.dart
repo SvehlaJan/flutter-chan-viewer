@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_chan_viewer/bloc/chan_event.dart';
+import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/models/board_detail_model.dart';
 import 'package:flutter_chan_viewer/pages/board_archive/board_archive_page.dart';
 import 'package:flutter_chan_viewer/utils/navigation_helper.dart';
@@ -31,7 +33,7 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
   void initState() {
     super.initState();
     _boardDetailBloc = BlocProvider.of<BoardDetailBloc>(context);
-    _boardDetailBloc.add(BoardDetailEventFetchThreads());
+    _boardDetailBloc.add(ChanEventFetchData());
   }
 
   @override
@@ -54,7 +56,7 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
     }
   }
 
-  void _onRefreshClick() => _boardDetailBloc.add(BoardDetailEventFetchThreads());
+  void _onRefreshClick() => _boardDetailBloc.add(ChanEventFetchData());
 
   void _onArchiveClick() async {
     await Navigator.of(context).push(NavigationHelper.getRoute(
@@ -64,19 +66,19 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
       },
     ));
 
-    _boardDetailBloc.add(BoardDetailEventFetchThreads());
+    _boardDetailBloc.add(ChanEventFetchData());
   }
 
   void _onFavoriteToggleClick() => _boardDetailBloc.add(BoardDetailEventToggleFavorite());
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<BoardDetailBloc, BoardDetailState>(
+    return BlocBuilder<BoardDetailBloc, ChanState>(
         bloc: _boardDetailBloc, builder: (context, state) => buildScaffold(context, buildBody(context, state, ((thread) => _openThreadDetailPage(thread)))));
   }
 
-  static Widget buildBody(BuildContext context, BoardDetailState state, Function(ChanThread) onItemClicked) {
-    if (state is BoardDetailStateLoading) {
+  static Widget buildBody(BuildContext context, ChanState state, Function(ChanThread) onItemClicked) {
+    if (state is ChanStateLoading) {
       return Constants.centeredProgressIndicator;
     } else if (state is BoardDetailStateContent) {
       if (state.threads.isEmpty) {
@@ -125,17 +127,17 @@ class CustomSearchDelegate extends SearchDelegate<ChanThread> {
 
   @override
   Widget buildResults(BuildContext context) {
-    _boardDetailBloc.add(BoardDetailEventSearchBoards(query));
+    _boardDetailBloc.add(ChanEventSearch(query));
 
-    return BlocBuilder<BoardDetailBloc, BoardDetailState>(
+    return BlocBuilder<BoardDetailBloc, ChanState>(
         bloc: _boardDetailBloc, builder: (context, state) => _BoardDetailPageState.buildBody(context, state, ((thread) => close(context, thread))));
   }
 
   @override
   Widget buildSuggestions(BuildContext context) {
-    _boardDetailBloc.add(BoardDetailEventSearchBoards(query));
+    _boardDetailBloc.add(ChanEventSearch(query));
 
-    return BlocBuilder<BoardDetailBloc, BoardDetailState>(
+    return BlocBuilder<BoardDetailBloc, ChanState>(
         bloc: _boardDetailBloc, builder: (context, state) => _BoardDetailPageState.buildBody(context, state, ((thread) => close(context, thread))));
   }
 }

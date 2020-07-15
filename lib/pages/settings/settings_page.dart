@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/app_bloc/app_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/app_bloc/app_event.dart';
+import 'package:flutter_chan_viewer/bloc/chan_event.dart';
+import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/utils/navigation_helper.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
 import 'package:flutter_chan_viewer/pages/settings/bloc/settings_bloc.dart';
@@ -26,7 +28,7 @@ class _SettingsPageState extends BasePageState<SettingsPage> {
   void initState() {
     super.initState();
     _settingsBloc = BlocProvider.of<SettingsBloc>(context);
-    _settingsBloc.add(SettingsEventFetchData());
+    _settingsBloc.add(ChanEventFetchData());
   }
 
   @override
@@ -34,11 +36,11 @@ class _SettingsPageState extends BasePageState<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<SettingsBloc, SettingsState>(bloc: _settingsBloc, builder: (context, state) => buildScaffold(context, buildBody(context, state)));
+    return BlocBuilder<SettingsBloc, ChanState>(bloc: _settingsBloc, builder: (context, state) => buildScaffold(context, buildBody(context, state)));
   }
 
-  Widget buildBody(BuildContext context, SettingsState state) {
-    if (state is SettingsStateLoading) {
+  Widget buildBody(BuildContext context, ChanState state) {
+    if (state is ChanStateLoading) {
       return Constants.centeredProgressIndicator;
     } else if (state is SettingsStateContent) {
       return SingleChildScrollView(

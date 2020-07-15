@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_chan_viewer/bloc/chan_event.dart';
+import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/models/board_detail_model.dart';
 import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
 import 'package:flutter_chan_viewer/utils/navigation_helper.dart';
@@ -10,7 +12,6 @@ import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/view/list_widget_thread.dart';
 
 import 'bloc/favorites_bloc.dart';
-import 'bloc/favorites_event.dart';
 import 'bloc/favorites_state.dart';
 
 class FavoritesPage extends StatefulWidget {
@@ -25,7 +26,7 @@ class _FavoritesPageState extends BasePageState<FavoritesPage> {
   void initState() {
     super.initState();
     _favoritesBloc = BlocProvider.of<FavoritesBloc>(context);
-    _favoritesBloc.add(FavoritesEventFetchData());
+    _favoritesBloc.add(ChanEventFetchData());
   }
 
   @override
@@ -34,15 +35,15 @@ class _FavoritesPageState extends BasePageState<FavoritesPage> {
   @override
   List<AppBarAction> getAppBarActions(BuildContext context) => [AppBarAction("Refresh", Icons.refresh, _onRefreshClick)];
 
-  void _onRefreshClick() => _favoritesBloc.add(FavoritesEventFetchData());
+  void _onRefreshClick() => _favoritesBloc.add(ChanEventFetchData());
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<FavoritesBloc, FavoritesState>(bloc: _favoritesBloc, builder: (context, state) => buildScaffold(context, buildBody(context, state)));
+    return BlocBuilder<FavoritesBloc, ChanState>(bloc: _favoritesBloc, builder: (context, state) => buildScaffold(context, buildBody(context, state)));
   }
 
-  Widget buildBody(BuildContext context, FavoritesState state) {
-    if (state is FavoritesStateLoading) {
+  Widget buildBody(BuildContext context, ChanState state) {
+    if (state is ChanStateLoading) {
       return Constants.centeredProgressIndicator;
     } else if (state is FavoritesStateContent) {
       List<ThreadDetailModel> threads = state.threadMap.values.expand((list) => list).toList();
@@ -74,6 +75,6 @@ class _FavoritesPageState extends BasePageState<FavoritesPage> {
         ThreadDetailPage.createArguments(thread.boardId, thread.threadId),
       ),
     );
-    _favoritesBloc.add(FavoritesEventFetchData());
+    _favoritesBloc.add(ChanEventFetchData());
   }
 }

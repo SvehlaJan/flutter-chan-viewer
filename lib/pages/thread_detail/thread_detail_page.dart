@@ -1,14 +1,12 @@
-import 'dart:math';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_chan_viewer/locator.dart';
+import 'package:flutter_chan_viewer/bloc/chan_event.dart';
+import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/models/post_item.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
 import 'package:flutter_chan_viewer/pages/gallery/gallery_page.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
-import 'package:flutter_chan_viewer/utils/navigation_service.dart';
 import 'package:flutter_chan_viewer/view/grid_widget_post.dart';
 import 'package:flutter_chan_viewer/view/list_widget_post.dart';
 import 'package:flutter_widgets/flutter_widgets.dart';
@@ -54,7 +52,7 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
   void initState() {
     super.initState();
     _threadDetailBloc = BlocProvider.of<ThreadDetailBloc>(context);
-    _threadDetailBloc.add(ThreadDetailEventFetchPosts(false));
+    _threadDetailBloc.add(ChanEventFetchData());
 
     _gridScrollController = ScrollController();
     _listScrollController = ItemScrollController();
@@ -71,7 +69,7 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
         AppBarAction("Download", Icons.file_download, _onDownloadClick)
       ];
 
-  void _onRefreshClick() => _threadDetailBloc.add(ThreadDetailEventFetchPosts(true));
+  void _onRefreshClick() => _threadDetailBloc.add(ChanEventFetchData());
 
   void _onCatalogModeToggleClick() => _threadDetailBloc.add(ThreadDetailEventToggleCatalogMode());
 
@@ -81,7 +79,7 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<ThreadDetailBloc, ThreadDetailState>(listener: (context, state) {
+    return BlocConsumer<ThreadDetailBloc, ChanState>(listener: (context, state) {
       if (state is ThreadDetailStateContent && state.event != null) {
         switch (state.event) {
           case ThreadDetailSingleEvent.SHOW_UNSTAR_WARNING:
@@ -99,7 +97,7 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
         }
       }
     }, builder: (context, state) {
-      return BlocBuilder<ThreadDetailBloc, ThreadDetailState>(
+      return BlocBuilder<ThreadDetailBloc, ChanState>(
           bloc: _threadDetailBloc,
           builder: (context, state) {
             if (state is ThreadDetailStateContent && !state.showAppBar) {
@@ -110,8 +108,8 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
     });
   }
 
-  Widget buildBody(BuildContext context, ThreadDetailState state) {
-    if (state is ThreadDetailStateLoading) {
+  Widget buildBody(BuildContext context, ChanState state) {
+    if (state is ChanStateLoading) {
       return Constants.centeredProgressIndicator;
     }
     if (state is ThreadDetailStateContent) {

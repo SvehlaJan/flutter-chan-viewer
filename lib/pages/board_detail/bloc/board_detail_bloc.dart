@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
+import 'package:flutter_chan_viewer/bloc/chan_event.dart';
+import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/models/board_detail_model.dart';
 import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
@@ -10,20 +12,20 @@ import 'package:flutter_chan_viewer/utils/preferences.dart';
 import 'board_detail_event.dart';
 import 'board_detail_state.dart';
 
-class BoardDetailBloc extends Bloc<BoardDetailEvent, BoardDetailState> {
+class BoardDetailBloc extends Bloc<ChanEvent, ChanState> {
   final ChanRepository _repository = getIt<ChanRepository>();
 
-  BoardDetailBloc(this.boardId) : super(BoardDetailStateLoading());
+  BoardDetailBloc(this.boardId) : super(ChanStateLoading());
 
   final String boardId;
   bool isFavorite = false;
   String searchQuery = "";
 
   @override
-  Stream<BoardDetailState> mapEventToState(BoardDetailEvent event) async* {
+  Stream<ChanState> mapEventToState(ChanEvent event) async* {
     try {
-      if (event is BoardDetailEventFetchThreads) {
-        yield BoardDetailStateLoading();
+      if (event is ChanEventFetchData) {
+        yield ChanStateLoading();
         List<ChanThread> filteredThreads;
         List<String> favoriteBoards = Preferences.getStringList(Preferences.KEY_FAVORITE_BOARDS);
         isFavorite = favoriteBoards.contains(boardId);
@@ -37,9 +39,9 @@ class BoardDetailBloc extends Bloc<BoardDetailEvent, BoardDetailState> {
         boardDetailModel = await _repository.fetchRemoteBoardDetail(boardId);
         filteredThreads = boardDetailModel.threads.where((thread) => _matchesQuery(thread, searchQuery)).toList();
         yield BoardDetailStateContent(filteredThreads, false, isFavorite);
-      } else if (event is BoardDetailEventSearchBoards) {
+      } else if (event is ChanEventSearch) {
         searchQuery = event.query;
-        add(BoardDetailEventFetchThreads());
+        add(ChanEventFetchData());
       } else if (event is BoardDetailEventToggleFavorite) {
         isFavorite = !isFavorite;
         List<String> favoriteBoards = Preferences.getStringList(Preferences.KEY_FAVORITE_BOARDS);
@@ -48,11 +50,11 @@ class BoardDetailBloc extends Bloc<BoardDetailEvent, BoardDetailState> {
           favoriteBoards.add(boardId);
         }
         Preferences.setStringList(Preferences.KEY_FAVORITE_BOARDS, favoriteBoards);
-        add(BoardDetailEventFetchThreads());
+        add(ChanEventFetchData());
       }
     } catch (e, stackTrace) {
       ChanLogger.e("Event error!", e, stackTrace);
-      yield BoardDetailStateError(e.toString());
+      yield ChanStateError(e.toString());
     }
   }
 

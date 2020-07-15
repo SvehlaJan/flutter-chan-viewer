@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/models/post_item.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
 import 'package:flutter_chan_viewer/pages/thread_detail/bloc/thread_detail_event.dart';
-import 'package:flutter_chan_viewer/pages/thread_detail/thread_detail_page.dart';
 import 'package:flutter_chan_viewer/utils/chan_util.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/view/list_widget_post.dart';
@@ -47,7 +47,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ThreadDetailBloc, ThreadDetailState>(
+    return BlocBuilder<ThreadDetailBloc, ChanState>(
         bloc: _threadDetailBloc,
         builder: (context, state) => buildScaffold(
               context,
@@ -56,8 +56,8 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
             ));
   }
 
-  Widget _buildSinglePostBody(BuildContext context, ThreadDetailState state, int postId) {
-    if (state is ThreadDetailStateLoading) {
+  Widget _buildSinglePostBody(BuildContext context, ChanState state, int postId) {
+    if (state is ChanStateLoading) {
       return Constants.centeredProgressIndicator;
     } else if (state is ThreadDetailStateContent) {
       PostItem post = state.model.findPostById(postId);
@@ -85,8 +85,8 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
     }
   }
 
-  Widget _buildCarouselBody(BuildContext context, ThreadDetailState state) {
-    if (state is ThreadDetailStateLoading) {
+  Widget _buildCarouselBody(BuildContext context, ChanState state) {
+    if (state is ChanStateLoading) {
       return Constants.centeredProgressIndicator;
     } else if (state is ThreadDetailStateContent) {
       int mediaIndex = state.selectedMediaIndex;

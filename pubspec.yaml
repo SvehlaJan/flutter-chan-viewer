@@ -29,7 +29,9 @@ dependencies:
   logger_flutter: ^0.7.1
 
   sembast: ^2.4.7+4
-  worker_manager: ^2.8.7
+  worker_manager: ^2.8.9
+
+  local_auth: ^0.6.2+3
 
   path_provider:
   path:

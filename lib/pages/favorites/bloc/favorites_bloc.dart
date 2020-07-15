@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:collection';
 
 import 'package:bloc/bloc.dart';
+import 'package:flutter_chan_viewer/bloc/chan_event.dart';
+import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/models/board_list_model.dart';
 import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
@@ -9,19 +11,18 @@ import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
 import 'package:flutter_chan_viewer/utils/chan_logger.dart';
 import 'package:flutter_chan_viewer/utils/preferences.dart';
 
-import 'favorites_event.dart';
 import 'favorites_state.dart';
 
-class FavoritesBloc extends Bloc<FavoritesEvent, FavoritesState> {
+class FavoritesBloc extends Bloc<ChanEvent, ChanState> {
   final ChanRepository _repository = getIt<ChanRepository>();
 
-  FavoritesBloc() : super(FavoritesStateLoading());
+  FavoritesBloc() : super(ChanStateLoading());
 
   @override
-  Stream<FavoritesState> mapEventToState(FavoritesEvent event) async* {
+  Stream<ChanState> mapEventToState(ChanEvent event) async* {
     try {
-      if (event is FavoritesEventFetchData) {
-        yield FavoritesStateLoading();
+      if (event is ChanEventFetchData) {
+        yield ChanStateLoading();
 
         HashMap<String, List<ThreadDetailModel>> threadMap = await _repository.getFavoriteThreads();
         bool showSfwOnly = Preferences.getBool(Preferences.KEY_SETTINGS_SHOW_SFW_ONLY, def: true);
@@ -36,7 +37,7 @@ class FavoritesBloc extends Bloc<FavoritesEvent, FavoritesState> {
       }
     } catch (e, stackTrace) {
       ChanLogger.e("Event error!", e, stackTrace);
-      yield FavoritesStateError(e.toString());
+      yield ChanStateError(e.toString());
     }
   }
 }

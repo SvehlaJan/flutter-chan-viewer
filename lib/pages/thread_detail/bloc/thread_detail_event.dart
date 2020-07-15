@@ -1,15 +1,8 @@
-import 'package:equatable/equatable.dart';
+import 'package:flutter_chan_viewer/bloc/chan_event.dart';
 
-abstract class ThreadDetailEvent extends Equatable {
-  ThreadDetailEvent();
+class ThreadDetailEventToggleFavorite extends ChanEvent {}
 
-  @override
-  List<Object> get props => [];
-}
-
-class ThreadDetailEventToggleFavorite extends ThreadDetailEvent {}
-
-class ThreadDetailEventDialogAnswered extends ThreadDetailEvent {
+class ThreadDetailEventDialogAnswered extends ChanEvent {
   final bool confirmed;
 
   ThreadDetailEventDialogAnswered(this.confirmed);
@@ -18,13 +11,13 @@ class ThreadDetailEventDialogAnswered extends ThreadDetailEvent {
   List<Object> get props => [confirmed];
 }
 
-class ThreadDetailEventToggleCatalogMode extends ThreadDetailEvent {}
+class ThreadDetailEventToggleCatalogMode extends ChanEvent {}
 
-class ThreadDetailEventDownload extends ThreadDetailEvent {}
+class ThreadDetailEventDownload extends ChanEvent {}
 
-class ThreadDetailEventShowDownloaded extends ThreadDetailEvent {}
+class ThreadDetailEventShowDownloaded extends ChanEvent {}
 
-class ThreadDetailEventOnLinkClicked extends ThreadDetailEvent {
+class ThreadDetailEventOnLinkClicked extends ChanEvent {
   final String url;
 
   ThreadDetailEventOnLinkClicked(this.url);
@@ -33,39 +26,21 @@ class ThreadDetailEventOnLinkClicked extends ThreadDetailEvent {
   List<Object> get props => [url];
 }
 
-class ThreadDetailEventOnPostSelected extends ThreadDetailEvent {
+class ThreadDetailEventOnPostSelected extends ChanEvent {
   final int mediaIndex;
   final int postId;
 
   ThreadDetailEventOnPostSelected(this.mediaIndex, this.postId);
 
   @override
-  String toString() => 'ThreadDetailEventOnPostSelected { mediaIndex: $mediaIndex, postId: $postId }';
-
-  @override
   List<Object> get props => [mediaIndex, postId];
 }
 
-class ThreadDetailEventOnReplyClicked extends ThreadDetailEvent {
+class ThreadDetailEventOnReplyClicked extends ChanEvent {
   final int postId;
 
   ThreadDetailEventOnReplyClicked(this.postId);
 
   @override
-  String toString() => 'ThreadDetailEventOnReplyClicked { post: $postId }';
-
-  @override
   List<Object> get props => [postId];
-}
-
-class ThreadDetailEventFetchPosts extends ThreadDetailEvent {
-  final bool forceFetch;
-
-  ThreadDetailEventFetchPosts(this.forceFetch);
-
-  @override
-  String toString() => 'ThreadDetailEventFetchThreads { forceFetch: $forceFetch }';
-
-  @override
-  List<Object> get props => [forceFetch];
 }

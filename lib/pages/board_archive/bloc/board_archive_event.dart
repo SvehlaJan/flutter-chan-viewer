@@ -1,30 +1,12 @@
-import 'package:equatable/equatable.dart';
+import 'package:flutter_chan_viewer/bloc/chan_event.dart';
 
-abstract class BoardArchiveEvent extends Equatable {
-  BoardArchiveEvent();
+class BoardArchiveEventFetchDetailsLazy extends ChanEvent {}
 
-  @override
-  List<Object> get props => [];
-}
-
-class BoardArchiveEventFetchThreads extends BoardArchiveEvent {}
-
-class BoardArchiveEventFetchDetailsLazy extends BoardArchiveEvent {}
-
-class BoardArchiveEventFetchDetail extends BoardArchiveEvent {
+class BoardArchiveEventFetchDetail extends ChanEvent {
   final int index;
 
   BoardArchiveEventFetchDetail(this.index);
 
   @override
   List<Object> get props => [index];
-}
-
-class BoardArchiveEventSearchThreads extends BoardArchiveEvent {
-  final String query;
-
-  BoardArchiveEventSearchThreads(this.query);
-
-  @override
-  List<Object> get props => [query];
 }

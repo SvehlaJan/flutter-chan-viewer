@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
+import 'package:flutter_chan_viewer/bloc/chan_event.dart';
+import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/models/board_list_model.dart';
 import 'package:flutter_chan_viewer/models/helper/chan_board_item_wrapper.dart';
@@ -8,21 +10,20 @@ import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
 import 'package:flutter_chan_viewer/utils/chan_logger.dart';
 import 'package:flutter_chan_viewer/utils/preferences.dart';
 
-import 'board_list_event.dart';
 import 'board_list_state.dart';
 
-class BoardListBloc extends Bloc<BoardListEvent, BoardListState> {
+class BoardListBloc extends Bloc<ChanEvent, ChanState> {
   final ChanRepository _repository = getIt<ChanRepository>();
 
-  BoardListBloc() : super(BoardListStateLoading());
+  BoardListBloc() : super(ChanStateLoading());
 
   String searchQuery = "";
 
   @override
-  Stream<BoardListState> mapEventToState(BoardListEvent event) async* {
+  Stream<ChanState> mapEventToState(ChanEvent event) async* {
     try {
-      if (event is BoardListEventFetchBoards) {
-        yield BoardListStateLoading();
+      if (event is ChanEventFetchData) {
+        yield ChanStateLoading();
         List<ChanBoardItemWrapper> resultList;
 
         bool showSfwOnly = Preferences.getBool(Preferences.KEY_SETTINGS_SHOW_SFW_ONLY, def: true);
@@ -37,13 +38,13 @@ class BoardListBloc extends Bloc<BoardListEvent, BoardListState> {
         boardListModel = await _repository.fetchRemoteBoardList();
         resultList = _processBoardList(favoriteBoardIds, showSfwOnly, boardListModel);
         yield BoardListStateContent(resultList, false);
-      } else if (event is BoardListEventSearchBoards) {
+      } else if (event is ChanEventSearch) {
         searchQuery = event.query;
-        add(BoardListEventFetchBoards());
+        add(ChanEventFetchData());
       }
     } catch (e, stackTrace) {
       ChanLogger.e("Event error!", e, stackTrace);
-      yield BoardListStateError(e.toString());
+      yield ChanStateError(e.toString());
     }
   }
 

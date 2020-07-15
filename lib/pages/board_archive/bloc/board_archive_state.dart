@@ -1,25 +1,8 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
+import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 
-abstract class BoardArchiveState extends Equatable {
-  BoardArchiveState();
-
-  @override
-  List<Object> get props => [];
-}
-
-class BoardArchiveStateLoading extends BoardArchiveState {}
-
-class BoardArchiveStateError extends BoardArchiveState {
-  final String message;
-
-  BoardArchiveStateError(this.message);
-
-  @override
-  List<Object> get props => [message];
-}
-
-class BoardArchiveStateContent extends BoardArchiveState {
+class BoardArchiveStateContent extends ChanState {
   final List<ArchiveThreadWrapper> threads;
   final bool lazyLoading;
 

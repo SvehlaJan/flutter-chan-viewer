@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:bloc/bloc.dart';
+import 'package:flutter_chan_viewer/bloc/chan_event.dart';
+import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/models/archive_list_model.dart';
 import 'package:flutter_chan_viewer/models/board_detail_model.dart';
@@ -13,7 +15,7 @@ import 'package:flutter_chan_viewer/utils/chan_logger.dart';
 import 'board_archive_event.dart';
 import 'board_archive_state.dart';
 
-class BoardArchiveBloc extends Bloc<BoardArchiveEvent, BoardArchiveState> {
+class BoardArchiveBloc extends Bloc<ChanEvent, ChanState> {
   final ChanRepository _repository = getIt<ChanRepository>();
   final String boardId;
   final int _kLazyLoadingTake = 20;
@@ -21,15 +23,15 @@ class BoardArchiveBloc extends Bloc<BoardArchiveEvent, BoardArchiveState> {
   List<int> archiveThreadIds = [];
   List<ArchiveThreadWrapper> archiveThreads = List<ArchiveThreadWrapper>();
 
-  BoardArchiveBloc(this.boardId) : super(BoardArchiveStateLoading());
+  BoardArchiveBloc(this.boardId) : super(ChanStateLoading());
 
   String searchQuery = "";
 
   @override
-  Stream<BoardArchiveState> mapEventToState(BoardArchiveEvent event) async* {
+  Stream<ChanState> mapEventToState(ChanEvent event) async* {
     try {
-      if (event is BoardArchiveEventFetchThreads) {
-        yield BoardArchiveStateLoading();
+      if (event is ChanEventFetchData) {
+        yield ChanStateLoading();
         ArchiveListModel boardDetailModel = await _repository.fetchRemoteArchiveList(boardId);
         archiveThreadIds = boardDetailModel.threads;
 
@@ -58,14 +60,14 @@ class BoardArchiveBloc extends Bloc<BoardArchiveEvent, BoardArchiveState> {
         } else {
           yield BoardArchiveStateContent(List.from(archiveThreads), false);
         }
-      } else if (event is BoardArchiveEventSearchThreads) {
+      } else if (event is ChanEventSearch) {
         searchQuery = event.query;
         List<ArchiveThreadWrapper> filteredThreads = archiveThreads.where((thread) => _matchesQuery(thread.threadDetailModel.thread, searchQuery)).toList();
         yield BoardArchiveStateContent(List.from(filteredThreads), true);
       }
     } catch (e, stackTrace) {
       ChanLogger.e("Event error!", e, stackTrace);
-      yield BoardArchiveStateError(e.toString());
+      yield ChanStateError(e.toString());
     }
   }
 

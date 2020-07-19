@@ -112,7 +112,7 @@ class _SettingsPageState extends BasePageState<SettingsPage> {
         ),
       );
     } else {
-      return Constants.errorPlaceholder;
+      return BasePageState.buildErrorScreen(context, (state as ChanStateError)?.message);
     }
   }
 

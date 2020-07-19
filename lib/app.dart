@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/bloc/chan_viewer_bloc/chan_viewer_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/chan_viewer_bloc/chan_viewer_state.dart';
+import 'package:flutter_chan_viewer/pages/base/base_page.dart';
 import 'package:flutter_chan_viewer/pages/board_list/bloc/board_list_bloc.dart';
 import 'package:flutter_chan_viewer/pages/board_list/board_list_page.dart';
 import 'package:flutter_chan_viewer/pages/favorites/bloc/favorites_bloc.dart';
 import 'package:flutter_chan_viewer/pages/favorites/favorites_page.dart';
 import 'package:flutter_chan_viewer/pages/settings/bloc/settings_bloc.dart';
 import 'package:flutter_chan_viewer/pages/settings/settings_page.dart';
-import 'package:flutter_chan_viewer/utils/constants.dart';
 
 import 'utils/navigation_helper.dart';
 
@@ -34,7 +35,7 @@ class ChanViewerAppState extends State<ChanViewerApp> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ChanViewerBloc, ChanViewerState>(builder: (context, state) {
+    return BlocBuilder<ChanViewerBloc, ChanState>(builder: (context, state) {
       if (state is ChanViewerStateContent) {
         return Scaffold(
           body: _children[currentTab.index],
@@ -47,7 +48,7 @@ class ChanViewerAppState extends State<ChanViewerApp> {
           ),
         );
       } else {
-        return Constants.errorPlaceholder;
+        return BasePageState.buildErrorScreen(context, (state as ChanStateError)?.message);
       }
     });
   }

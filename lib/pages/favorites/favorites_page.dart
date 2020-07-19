@@ -64,7 +64,7 @@ class _FavoritesPageState extends BasePageState<FavoritesPage> {
         ),
       );
     } else {
-      return Constants.errorPlaceholder;
+      return BasePageState.buildErrorScreen(context, (state as ChanStateError)?.message);
     }
   }
 

@@ -17,7 +17,7 @@ class ThreadDetailStateContent extends ChanState {
   get selectedPostIndex => model.getPostIndex(selectedPostId);
 
   @override
-  List<Object> get props => [model, selectedPostId, showAppBar, isFavorite, catalogMode, lazyLoading];
+  List<Object> get props => [model, selectedPostId, showAppBar, isFavorite, catalogMode, lazyLoading, event];
 }
 
 enum ThreadDetailSingleEvent {

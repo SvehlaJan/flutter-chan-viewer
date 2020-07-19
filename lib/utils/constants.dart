@@ -24,7 +24,6 @@ class Constants {
   static const Widget progressIndicator = const SizedBox(width: Constants.progressPlaceholderSize, height: Constants.progressPlaceholderSize, child: CircularProgressIndicator());
   static const Widget centeredProgressIndicator = const Center(child: progressIndicator);
   static const Widget noDataPlaceholder = const Center(child: Text("No data :-("));
-  static const Widget errorPlaceholder = const Center(child: Text("Error :-("));
 
   //strings
   static const String appName = "Chan Viewer";

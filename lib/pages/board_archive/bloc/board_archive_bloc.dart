@@ -26,6 +26,7 @@ class BoardArchiveBloc extends Bloc<ChanEvent, ChanState> {
   BoardArchiveBloc(this.boardId) : super(ChanStateLoading());
 
   String searchQuery = "";
+  bool _didLoadNotCachedThread = false;
 
   @override
   Stream<ChanState> mapEventToState(ChanEvent event) async* {
@@ -37,6 +38,7 @@ class BoardArchiveBloc extends Bloc<ChanEvent, ChanState> {
 
         add(BoardArchiveEventFetchDetailsLazy());
       } else if (event is BoardArchiveEventFetchDetailsLazy) {
+        _didLoadNotCachedThread = false;
         lazyLoadingMax = min(archiveThreads.length + _kLazyLoadingTake, archiveThreadIds.length);
         add(BoardArchiveEventFetchDetail(archiveThreads.length));
       } else if (event is BoardArchiveEventFetchDetail) {
@@ -47,6 +49,7 @@ class BoardArchiveBloc extends Bloc<ChanEvent, ChanState> {
         try {
           ThreadDetailModel threadDetailModel = await _repository.fetchCachedThreadDetail(boardId, threadId);
           if (threadDetailModel == null) {
+            _didLoadNotCachedThread = true;
             threadDetailModel = await _repository.fetchRemoteThreadDetail(boardId, threadId);
           }
           archiveThreads[event.index] = ArchiveThreadWrapper(threadDetailModel, false);
@@ -57,6 +60,9 @@ class BoardArchiveBloc extends Bloc<ChanEvent, ChanState> {
         if (archiveThreads.length < lazyLoadingMax) {
           yield BoardArchiveStateContent(List.from(archiveThreads), true);
           add(BoardArchiveEventFetchDetail(archiveThreads.length));
+        } else if (!_didLoadNotCachedThread && isMoreThreadsAvailable()) {
+          // if only cached threads were loaded, we want to continue with next batch right away
+          add(BoardArchiveEventFetchDetailsLazy());
         } else {
           yield BoardArchiveStateContent(List.from(archiveThreads), false);
         }
@@ -70,6 +76,8 @@ class BoardArchiveBloc extends Bloc<ChanEvent, ChanState> {
       yield ChanStateError(e.toString());
     }
   }
+
+  bool isMoreThreadsAvailable() => archiveThreads.length < archiveThreadIds.length;
 
   void fetchNextDetails() {
     lazyLoadingMax = min(archiveThreads.length + _kLazyLoadingTake, archiveThreadIds.length);

@@ -63,7 +63,7 @@ class _BoardArchivePageState extends BasePageState<BoardArchivePage> {
     final maxScroll = _scrollController.position.maxScrollExtent;
     final currentScroll = _scrollController.position.pixels;
     bool isLoading = (_archiveListBloc.state as BoardArchiveStateContent)?.lazyLoading;
-    if (!isLoading && maxScroll - currentScroll <= _scrollThreshold) {
+    if (!isLoading && _archiveListBloc.isMoreThreadsAvailable() && maxScroll - currentScroll <= _scrollThreshold) {
       _archiveListBloc.add(BoardArchiveEventFetchDetailsLazy());
     }
   }
@@ -107,7 +107,7 @@ class _BoardArchivePageState extends BasePageState<BoardArchivePage> {
         ),
       );
     } else {
-      return Constants.errorPlaceholder;
+      return BasePageState.buildErrorScreen(context, (state as ChanStateError)?.message);
     }
   }
 

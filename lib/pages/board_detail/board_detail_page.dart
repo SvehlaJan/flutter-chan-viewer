@@ -85,20 +85,26 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
         return Constants.noDataPlaceholder;
       }
 
-      return Scrollbar(
-        child: ListView.builder(
-          itemCount: state.threads.length,
-          itemBuilder: (context, index) {
-            return InkWell(
-              child: ThreadListWidget(thread: state.threads[index]),
-              onTap: () => onItemClicked(state.threads[index]),
-            );
-          },
-        ),
+      return Stack(
+        children: <Widget>[Scrollbar(child: _buildListView(context, state, onItemClicked)), if (state.lazyLoading) LinearProgressIndicator()],
       );
     } else {
-      return Constants.errorPlaceholder;
+      return BasePageState.buildErrorScreen(context, (state as ChanStateError)?.message);
     }
+  }
+
+  static Widget _buildListView(BuildContext context, BoardDetailStateContent state, Function(ChanThread) onItemClicked) {
+    return Scrollbar(
+      child: ListView.builder(
+        itemCount: state.threads.length,
+        itemBuilder: (context, index) {
+          return InkWell(
+            child: ThreadListWidget(thread: state.threads[index]),
+            onTap: () => onItemClicked(state.threads[index]),
+          );
+        },
+      ),
+    );
   }
 
   void _openThreadDetailPage(ChanThread thread) {

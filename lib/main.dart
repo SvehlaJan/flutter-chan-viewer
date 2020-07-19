@@ -1,12 +1,13 @@
-import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/app_bloc/app_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/app_bloc/app_event.dart';
 import 'package:flutter_chan_viewer/bloc/app_bloc/app_state.dart';
+import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/bloc/chan_viewer_bloc/chan_viewer_bloc.dart';
 import 'package:flutter_chan_viewer/locator.dart';
+import 'package:flutter_chan_viewer/pages/base/base_page.dart';
 import 'package:flutter_chan_viewer/utils/theme_helper.dart';
 
 import 'app.dart';
@@ -32,8 +33,8 @@ void main() async {
 class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<AppBloc, AppState>(builder: (context, state) {
-      if (state is AppStateLoading) {
+    return BlocBuilder<AppBloc, ChanState>(builder: (context, state) {
+      if (state is ChanStateLoading) {
         return Constants.centeredProgressIndicator;
       } else if (state is AppStateContent) {
         ThemeData themeData;
@@ -52,7 +53,7 @@ class MainApp extends StatelessWidget {
           ),
         );
       } else {
-        return Constants.errorPlaceholder;
+        return BasePageState.buildErrorScreen(context, (state as ChanStateError)?.message);
       }
     });
   }

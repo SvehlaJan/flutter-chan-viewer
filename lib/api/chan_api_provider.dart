@@ -18,7 +18,7 @@ class ChanApiProvider {
     String url = "$_baseUrl/boards.json";
 
     final response = await client.get(url);
-    ChanLogger.d("Board list fetched. { url: $url, response status: ${response.statusCode} }");
+//    ChanLogger.d("Board list fetched. { url: $url, response status: ${response.statusCode} }");
     if (response.statusCode == 200) {
       return BoardListModel.fromJson(json.decode(response.body));
     } else {
@@ -30,7 +30,7 @@ class ChanApiProvider {
     String url = "$_baseUrl/$boardId/catalog.json";
 
     final response = await client.get(url);
-    ChanLogger.d("Thread list fetched. { url: $url, response status: ${response.statusCode} }");
+//    ChanLogger.d("Thread list fetched. { url: $url, response status: ${response.statusCode} }");
     if (response.statusCode == 200) {
       return BoardDetailModel.fromJson(boardId, json.decode(response.body));
     } else {
@@ -42,7 +42,7 @@ class ChanApiProvider {
     String url = "$_baseUrl/$boardId/thread/$threadId.json";
 
     final response = await client.get(url);
-    ChanLogger.d("Post list fetched. { url: $url, response status: ${response.statusCode} }");
+//    ChanLogger.d("Post list fetched. { url: $url, response status: ${response.statusCode} }");
     if (response.statusCode == 200) {
       return ThreadDetailModel.fromJson(boardId, threadId, json.decode(response.body), OnlineState.ONLINE);
     } else {
@@ -54,7 +54,7 @@ class ChanApiProvider {
     String url = "$_baseUrl/$boardId/archive.json";
 
     final response = await client.get(url);
-    ChanLogger.d("Archive list fetched. { url: $url, response status: ${response.statusCode} }");
+//    ChanLogger.d("Archive list fetched. { url: $url, response status: ${response.statusCode} }");
     if (response.statusCode == 200) {
       return ArchiveListModel.fromJson(boardId, json.decode(response.body));
     } else {

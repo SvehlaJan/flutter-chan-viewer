@@ -26,10 +26,10 @@ abstract class BasePageState<T extends StatefulWidget> extends State<T> {
         backgroundColor: backgroundColor != null ? backgroundColor : Theme.of(context).scaffoldBackgroundColor,
         appBar: showAppBar
             ? AppBar(
-          leading: ModalRoute.of(context).canPop ? IconButton(icon: BackButtonIcon(), onPressed: finishScreen) : null,
-          title: Text(getPageTitle()),
-          actions: _buildAppBarActions(context, appBarActions ?? getAppBarActions(context)),
-        )
+                leading: ModalRoute.of(context).canPop ? IconButton(icon: BackButtonIcon(), onPressed: finishScreen) : null,
+                title: Text(getPageTitle()),
+                actions: _buildAppBarActions(context, appBarActions ?? getAppBarActions(context)),
+              )
             : null,
         body: Builder(builder: (BuildContext context) => body),
         floatingActionButton: fab ?? getPageFab(context),
@@ -65,6 +65,10 @@ abstract class BasePageState<T extends StatefulWidget> extends State<T> {
             ]));
       }).toList(),
     );
+  }
+
+  static Widget buildErrorScreen(BuildContext context, String message) {
+    return Center(child: Text("Error:\n$message"));
   }
 }
 

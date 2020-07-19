@@ -71,7 +71,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
         ),
       );
     } else {
-      return Constants.errorPlaceholder;
+      return BasePageState.buildErrorScreen(context, (state as ChanStateError)?.message);
     }
   }
 
@@ -126,7 +126,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
         ),
       );
     } else {
-      return Constants.errorPlaceholder;
+      return BasePageState.buildErrorScreen(context, (state as ChanStateError)?.message);
     }
   }
 

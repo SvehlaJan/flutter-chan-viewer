@@ -92,7 +92,7 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
             Navigator.of(context).pop();
             break;
           case ThreadDetailSingleEvent.SHOW_OFFLINE:
-            showOfflineSnackbar();
+            showOfflineSnackbar(context);
             break;
         }
       }
@@ -126,7 +126,7 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
         ],
       );
     } else {
-      return Constants.errorPlaceholder;
+      return BasePageState.buildErrorScreen(context, (state as ChanStateError)?.message);
     }
   }
 
@@ -193,7 +193,7 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
         });
   }
 
-  void showOfflineSnackbar() {
+  void showOfflineSnackbar(BuildContext context) {
     final snackBar = SnackBar(content: Text("Thread seems to be no longer available."));
     Scaffold.of(context).showSnackBar(snackBar);
   }

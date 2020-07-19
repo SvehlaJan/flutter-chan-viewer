@@ -63,7 +63,17 @@ class _BoardListPageState extends BasePageState<BoardListPage> {
         return Constants.noDataPlaceholder;
       }
 
-      return ListView.builder(
+      return Stack(
+        children: <Widget>[Scrollbar(child: _buildListView(context, state, onItemClicked)), if (state.lazyLoading) LinearProgressIndicator()],
+      );
+    } else {
+      return BasePageState.buildErrorScreen(context, (state as ChanStateError)?.message);
+    }
+  }
+
+  static Widget _buildListView(BuildContext context, BoardListStateContent state, Function(ChanBoard) onItemClicked) {
+    return Scrollbar(
+      child: ListView.builder(
         itemCount: state.items.length,
         itemBuilder: (context, index) {
           ChanBoardItemWrapper item = state.items[index];
@@ -73,10 +83,8 @@ class _BoardListPageState extends BasePageState<BoardListPage> {
             return InkWell(child: BoardListWidget(board: item.chanBoard), onTap: (() => onItemClicked(item.chanBoard)));
           }
         },
-      );
-    } else {
-      return Constants.errorPlaceholder;
-    }
+      ),
+    );
   }
 
   void _openBoardDetailPage(ChanBoard board) async {

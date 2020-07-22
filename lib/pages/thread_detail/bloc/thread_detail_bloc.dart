@@ -147,6 +147,6 @@ class ThreadDetailBloc extends Bloc<ChanEvent, ChanState> {
   }
 
   ThreadDetailStateContent _getShowListState({bool lazyLoading = false, ThreadDetailSingleEvent event}) {
-    return ThreadDetailStateContent(_threadDetailModel, _threadDetailModel.selectedPostId, _showAppBar, _isFavorite, _catalogMode, lazyLoading, event);
+    return ThreadDetailStateContent(_threadDetailModel, _threadDetailModel?.selectedPostId, _showAppBar, _isFavorite, _catalogMode, lazyLoading, event);
   }
 }

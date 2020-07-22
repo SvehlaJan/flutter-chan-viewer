@@ -27,6 +27,7 @@ dependencies:
   http: ^0.12.1
   dio: ^3.0.9
   logger_flutter: ^0.7.1
+  moor_flutter: ^3.1.0
 
   sembast: ^2.4.7+4
   worker_manager: ^2.8.9
@@ -53,6 +54,9 @@ dependencies:
   flutter_advanced_networkimage: ^0.7.0
   carousel_slider: ^2.2.1
 
+dev_dependencies:
+  moor_generator:
+  build_runner:
 #dev_dependencies:
 #  flutter_test:
 #    sdk: flutter

@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_chan_viewer/api/chan_api_provider.dart';
+import 'package:flutter_chan_viewer/data/local/local_data_source.dart';
 import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/models/archive_list_model.dart';
 import 'package:flutter_chan_viewer/models/board_detail_model.dart';
@@ -31,6 +32,7 @@ class ChanRepository {
   ChanStorage _chanStorage;
   ChanDownloader _chanDownloader;
   ChanApiProvider _chanApiProvider;
+  LocalDataSource _localDataSource;
 
   Database _db;
   StoreRef<String, Map<String, dynamic>> _favoriteThreadsStore;
@@ -47,6 +49,7 @@ class ChanRepository {
     _instance._chanStorage = await getIt.getAsync<ChanStorage>();
     _instance._chanDownloader = await getIt.getAsync<ChanDownloader>();
     _instance._chanApiProvider = getIt<ChanApiProvider>();
+    _instance._localDataSource = getIt<LocalDataSource>();
 
     var dir = await getApplicationDocumentsDirectory();
     await dir.create(recursive: true);
@@ -153,6 +156,8 @@ class ChanRepository {
     } else {
       await _allThreadsStore.record(model.cacheKey).put(_db, model.toJson());
     }
+
+//    await _localDataSource.savePosts(model.posts);
 
     threadDetailMemoryCache[model.cacheKey] = model;
   }
@@ -307,6 +312,7 @@ class ChanRepository {
   Future<ThreadDetailModel> _tryToGetCachedThread(CacheDirective cacheDirective) async {
     try {
       var record = await _favoriteThreadsStore.record(cacheDirective.getCacheKey()).get(_db) ?? await _allThreadsStore.record(cacheDirective.getCacheKey()).get(_db);
+//      List<PostItem> posts = await _localDataSource.getPostsByThreadId(cacheDirective.threadId, cacheDirective.boardId);
       if (record != null) {
         return ThreadDetailModel.fromJson(cacheDirective.boardId, cacheDirective.threadId, record, OnlineState.UNKNOWN);
       } else {

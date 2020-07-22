@@ -8,6 +8,13 @@ extension TextUtilsStringExtension on String {
   bool get isNullEmptyOrWhitespace => this == null || this.isEmpty || this.trim().isEmpty;
 }
 
+extension StringExtension on String {
+  String getNameFromEnum() {
+    if (this == null || !contains(".")) return this;
+    return replaceRange(0, indexOf(".") + 1, "");
+  }
+}
+
 /// - [isNullOrEmpty], [isNullEmptyOrFalse], [isNullEmptyZeroOrFalse] are from [this StackOverflow answer](https://stackoverflow.com/a/59826129/10830091)
 extension GeneralUtilsObjectExtension on Object {
   /// Returns true if object is:

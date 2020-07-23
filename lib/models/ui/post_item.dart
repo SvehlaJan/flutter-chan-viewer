@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_chan_viewer/data/local/moor_db.dart';
+import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
 import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
 import 'package:flutter_chan_viewer/utils/chan_util.dart';
 import 'package:flutter_chan_viewer/models/helper/chan_post_base.dart';
@@ -9,12 +10,16 @@ class PostItem extends ChanPostBase with EquatableMixin {
   final int postId;
   final List<int> repliesTo;
   final List<PostItem> repliesFrom = [];
+  final ThreadItem thread;
 
   bool get hasReplies => repliesFrom.isNotEmpty;
 
-  factory PostItem.fromMappedJson(String boardId, int threadId, Map<String, dynamic> json) => PostItem(
-        json['board_id'] ?? boardId,
-        json['thread_id'] ?? threadId,
+  @override
+  bool isFavorite() => thread?.isFavorite() ?? false;
+
+  factory PostItem.fromMappedJson(ThreadItem thread, Map<String, dynamic> json) => PostItem(
+        json['board_id'] ?? thread.boardId,
+        json['thread_id'] ?? thread.threadId,
         json['no'],
         json['time'],
         ChanUtil.unescapeHtml(json['sub']),
@@ -22,8 +27,8 @@ class PostItem extends ChanPostBase with EquatableMixin {
         json['filename'],
         json['tim'].toString(),
         json['ext'],
-        false,
         ChanUtil.getPostReferences(json['com']),
+        thread,
       );
 
   factory PostItem.fromDownloadedFile(String fileName, CacheDirective cacheDirective, int postId) {
@@ -39,8 +44,8 @@ class PostItem extends ChanPostBase with EquatableMixin {
       fileName,
       imageId,
       extensionStr,
-      false,
       [],
+      null,
     );
   }
 
@@ -53,10 +58,9 @@ class PostItem extends ChanPostBase with EquatableMixin {
       content: this.content,
       filename: this.filename,
       imageId: this.imageId,
-      extension: this.extension,
-      isFavorite: this.isFavorite);
+      extension: this.extension);
 
-  factory PostItem.fromTableData(PostsTableData entry) => PostItem(
+  factory PostItem.fromTableData(PostsTableData entry, ThreadItem thread) => PostItem(
         entry.boardId,
         entry.threadId,
         entry.postId,
@@ -66,8 +70,8 @@ class PostItem extends ChanPostBase with EquatableMixin {
         entry.filename,
         entry.imageId,
         entry.extension,
-        entry.isFavorite,
         ChanUtil.getPostReferences(entry.content),
+        thread,
       );
 
   Map<String, dynamic> toJson() => {
@@ -83,9 +87,28 @@ class PostItem extends ChanPostBase with EquatableMixin {
       };
 
   PostItem(
-      String boardId, int threadId, this.postId, int timestamp, String subtitle, String content, String filename, String imageId, String extension, bool isFavorite, this.repliesTo)
-      : super(boardId, threadId, timestamp, subtitle, content, filename, imageId, extension, isFavorite);
+    String boardId,
+    int threadId,
+    this.postId,
+    int timestamp,
+    String subtitle,
+    String content,
+    String filename,
+    String imageId,
+    String extension,
+    this.repliesTo,
+    this.thread,
+  ) : super(
+          boardId,
+          threadId,
+          timestamp,
+          subtitle,
+          content,
+          filename,
+          imageId,
+          extension,
+        );
 
   @override
-  List<Object> get props => super.props + [postId];
+  List<Object> get props => super.props + [postId, repliesTo, repliesFrom, thread];
 }

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/chan_event.dart';
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
-import 'package:flutter_chan_viewer/models/post_item.dart';
+import 'package:flutter_chan_viewer/models/ui/post_item.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
 import 'package:flutter_chan_viewer/pages/gallery/gallery_page.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';

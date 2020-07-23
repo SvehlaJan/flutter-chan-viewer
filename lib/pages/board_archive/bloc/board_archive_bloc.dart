@@ -6,7 +6,7 @@ import 'package:flutter_chan_viewer/bloc/chan_event.dart';
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/models/archive_list_model.dart';
-import 'package:flutter_chan_viewer/models/board_detail_model.dart';
+import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
 import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
 import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
 import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
@@ -84,7 +84,7 @@ class BoardArchiveBloc extends Bloc<ChanEvent, ChanState> {
     add(BoardArchiveEventFetchDetailsLazy());
   }
 
-  bool _matchesQuery(ChanThread thread, String query) {
+  bool _matchesQuery(ThreadItem thread, String query) {
     return thread.subtitle?.toLowerCase()?.contains(query.toLowerCase()) ?? thread.content?.toLowerCase()?.contains(query.toLowerCase()) ?? false;
   }
 }

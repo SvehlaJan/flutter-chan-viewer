@@ -4,9 +4,8 @@ import 'dart:convert';
 import 'package:flutter_chan_viewer/models/archive_list_model.dart';
 import 'package:flutter_chan_viewer/models/board_detail_model.dart';
 import 'package:flutter_chan_viewer/models/board_list_model.dart';
+import 'package:flutter_chan_viewer/models/local/threads_table.dart';
 import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
-import 'package:flutter_chan_viewer/utils/chan_logger.dart';
-import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:http/http.dart' show Client;
 
 class ChanApiProvider {
@@ -32,7 +31,7 @@ class ChanApiProvider {
     final response = await client.get(url);
 //    ChanLogger.d("Thread list fetched. { url: $url, response status: ${response.statusCode} }");
     if (response.statusCode == 200) {
-      return BoardDetailModel.fromJson(boardId, json.decode(response.body));
+      return BoardDetailModel.fromJson(boardId, OnlineState.ONLINE, json.decode(response.body));
     } else {
       throw Exception('Failed to load threads');
     }
@@ -44,7 +43,7 @@ class ChanApiProvider {
     final response = await client.get(url);
 //    ChanLogger.d("Post list fetched. { url: $url, response status: ${response.statusCode} }");
     if (response.statusCode == 200) {
-      return ThreadDetailModel.fromJson(boardId, threadId, json.decode(response.body), OnlineState.ONLINE);
+      return ThreadDetailModel.fromJson(boardId, threadId, OnlineState.ONLINE, json.decode(response.body));
     } else {
       throw Exception('Error response: ${response.statusCode}');
     }

@@ -1,24 +1,26 @@
 import 'package:equatable/equatable.dart';
-import 'package:flutter_chan_viewer/models/board_detail_model.dart';
-import 'package:flutter_chan_viewer/models/post_item.dart';
+import 'package:flutter_chan_viewer/models/local/threads_table.dart';
+import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
+import 'package:flutter_chan_viewer/models/ui/post_item.dart';
 import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
 import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
-import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:kt_dart/kt.dart';
 
 class ThreadDetailModel with EquatableMixin {
-  final ChanThread _thread;
+  final ThreadItem _thread;
   final List<PostItem> _posts;
   int _selectedPostId;
-  OnlineState onlineStatus;
 
-  ThreadDetailModel._(this._thread, this._posts, this._selectedPostId, this.onlineStatus);
+  ThreadDetailModel._(this._thread, this._posts, this._selectedPostId);
 
-  factory ThreadDetailModel.fromJson(String boardId, int threadId, Map<String, dynamic> parsedJson, OnlineState isLive) {
+  factory ThreadDetailModel.fromJson(String boardId, int threadId, OnlineState onlineState, Map<String, dynamic> parsedJson) {
     List<PostItem> posts = [];
     Map<int, PostItem> postMap = {};
+
+    ThreadItem thread = ThreadItem.fromMappedJson(boardId, threadId, onlineState, parsedJson);
+
     for (Map<String, dynamic> postData in parsedJson['posts']) {
-      PostItem newPost = PostItem.fromMappedJson(boardId, threadId, postData);
+      PostItem newPost = PostItem.fromMappedJson(thread, postData);
 
       posts.add(newPost);
       postMap[newPost.postId] = newPost;
@@ -29,22 +31,20 @@ class ThreadDetailModel with EquatableMixin {
         }
       }
     }
-    ChanThread thread = ChanThread.fromMappedJson(boardId, threadId, parsedJson);
-    if (posts.isNotEmpty) thread = thread.copyWithPostData(posts.first);
 
     int selectedPost = parsedJson['selected_post'] ?? -1;
 
-    return ThreadDetailModel._(thread, posts, selectedPost, isLive);
+    return ThreadDetailModel._(thread, posts, selectedPost);
   }
 
   factory ThreadDetailModel.fromFolderInfo(DownloadFolderInfo folderInfo) {
     List<PostItem> posts = [];
     folderInfo.fileNames.asMap().forEach((index, fileName) => posts.add(PostItem.fromDownloadedFile(fileName, folderInfo.cacheDirective, index)));
-    return ThreadDetailModel._(ChanThread.fromCacheDirective(folderInfo.cacheDirective), posts, 0, OnlineState.OFFLINE);
+    return ThreadDetailModel._(ThreadItem.fromCacheDirective(folderInfo.cacheDirective), posts, 0);
   }
 
   factory ThreadDetailModel.fromCacheDirective(CacheDirective cacheDirective) {
-    return ThreadDetailModel._(ChanThread.fromCacheDirective(cacheDirective), [], 0, OnlineState.UNKNOWN);
+    return ThreadDetailModel._(ThreadItem.fromCacheDirective(cacheDirective), [], 0);
   }
 
   /*
@@ -75,7 +75,7 @@ class ThreadDetailModel with EquatableMixin {
 
   String get cacheKey => cacheDirective.getCacheKey();
 
-  ChanThread get thread => _thread;
+  ThreadItem get thread => _thread;
 
   List<PostItem> get posts => _posts;
 
@@ -110,5 +110,5 @@ class ThreadDetailModel with EquatableMixin {
   }
 
   @override
-  List<Object> get props => [_thread, _posts, _selectedPostId, onlineStatus];
+  List<Object> get props => [_thread, _posts, _selectedPostId];
 }

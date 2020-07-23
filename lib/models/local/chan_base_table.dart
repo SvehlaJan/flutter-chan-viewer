@@ -9,7 +9,4 @@ abstract class ChanBaseTable extends Table {
   TextColumn get filename => text().nullable()();
   TextColumn get imageId => text().nullable()();
   TextColumn get extension => text().nullable()();
-
-  // helper field
-  BoolColumn get isFavorite => boolean()();
 }

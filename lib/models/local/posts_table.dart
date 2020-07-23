@@ -3,7 +3,7 @@ import 'package:moor/moor.dart';
 
 class PostsTable extends ChanBaseTable {
   @override
-  Set<Column> get primaryKey => {postId, threadId};
+  Set<Column> get primaryKey => {postId, threadId, boardId};
 
   IntColumn get postId => integer()();
 }

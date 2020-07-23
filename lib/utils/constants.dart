@@ -4,8 +4,6 @@ import 'package:flutter_chan_viewer/utils/flavor_config.dart';
 
 enum AppTheme { light, dark }
 
-enum OnlineState { ONLINE, OFFLINE, UNKNOWN }
-
 class Constants {
   //routes
   static const String favoritesRoute = "favorites";

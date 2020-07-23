@@ -6,6 +6,7 @@ import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/models/board_list_model.dart';
 import 'package:flutter_chan_viewer/models/helper/chan_board_item_wrapper.dart';
+import 'package:flutter_chan_viewer/models/ui/board_item.dart';
 import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
 import 'package:flutter_chan_viewer/utils/chan_logger.dart';
 import 'package:flutter_chan_viewer/utils/preferences.dart';
@@ -49,9 +50,9 @@ class BoardListBloc extends Bloc<ChanEvent, ChanState> {
   }
 
   List<ChanBoardItemWrapper> _processBoardList(List<String> favoriteBoardIds, bool showSfwOnly, BoardListModel boardListModel) {
-    List<ChanBoard> filteredBoards = boardListModel.boards.where((board) => _matchesFilter(board, searchQuery, showSfwOnly)).toList();
-    List<ChanBoard> favoriteBoards = filteredBoards.where((board) => favoriteBoardIds.contains(board.boardId)).toList();
-    List<ChanBoard> otherBoards = filteredBoards.where((board) => !favoriteBoardIds.contains(board.boardId)).toList();
+    List<BoardItem> filteredBoards = boardListModel.boards.where((board) => _matchesFilter(board, searchQuery, showSfwOnly)).toList();
+    List<BoardItem> favoriteBoards = filteredBoards.where((board) => favoriteBoardIds.contains(board.boardId)).toList();
+    List<BoardItem> otherBoards = filteredBoards.where((board) => !favoriteBoardIds.contains(board.boardId)).toList();
     List<ChanBoardItemWrapper> resultList = [];
 
     if (favoriteBoards.isNotEmpty) {
@@ -65,7 +66,7 @@ class BoardListBloc extends Bloc<ChanEvent, ChanState> {
     return resultList;
   }
 
-  bool _matchesFilter(ChanBoard board, String query, bool showSfwOnly) {
+  bool _matchesFilter(BoardItem board, String query, bool showSfwOnly) {
     if (showSfwOnly && !board.workSafe) {
       return false;
     }

@@ -9,13 +9,14 @@ import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/models/archive_list_model.dart';
 import 'package:flutter_chan_viewer/models/board_detail_model.dart';
 import 'package:flutter_chan_viewer/models/board_list_model.dart';
-import 'package:flutter_chan_viewer/models/post_item.dart';
+import 'package:flutter_chan_viewer/models/local/threads_table.dart';
+import 'package:flutter_chan_viewer/models/ui/board_item.dart';
+import 'package:flutter_chan_viewer/models/ui/post_item.dart';
 import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
 import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
 import 'package:flutter_chan_viewer/repositories/chan_downloader.dart';
 import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
 import 'package:flutter_chan_viewer/utils/chan_logger.dart';
-import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/repositories/disk_cache.dart';
 import 'package:flutter_chan_viewer/utils/preferences.dart';
 import 'package:path/path.dart';
@@ -78,10 +79,10 @@ class ChanRepository {
 
   Future<BoardListModel> fetchCachedBoardList() async {
     try {
-      List<ChanBoard> boards = [];
+      List<BoardItem> boards = [];
       var records = await _boardsStore.find(_db);
       records.forEach((record) {
-        ChanBoard thread = ChanBoard.fromMappedJson(record.value);
+        BoardItem thread = BoardItem.fromMappedJson(record.value);
         boards.add(thread);
       });
       BoardListModel model = BoardListModel(boards);
@@ -112,7 +113,7 @@ class ChanRepository {
   Future<BoardDetailModel> fetchRemoteBoardDetail(String boardId) async {
     BoardDetailModel boardDetailModel = await _chanApiProvider.fetchThreadList(boardId);
     boardDetailModel.threads.forEach((thread) async {
-      return thread.isFavorite = isThreadFavorite(thread.getCacheDirective());
+      thread.setFavorite(isThreadFavorite(thread.getCacheDirective()));
     });
     boardDetailMemoryCache[boardId] = boardDetailModel;
     return boardDetailMemoryCache[boardId];
@@ -141,17 +142,14 @@ class ChanRepository {
   FutureOr<ThreadDetailModel> fetchRemoteThreadDetail(String boardId, int threadId) async {
     ThreadDetailModel model = await _chanApiProvider.fetchPostList(boardId, threadId);
     bool isFavorite = isThreadFavorite(CacheDirective(boardId, threadId));
-    model.thread.isFavorite = isFavorite;
-    model.posts.forEach((post) {
-      post.isFavorite = isFavorite;
-    });
+    model.thread.setFavorite(isFavorite);
 
     await saveThreadDetail(model);
     return model;
   }
 
   FutureOr<void> saveThreadDetail(ThreadDetailModel model) async {
-    if (model.thread.isFavorite) {
+    if (model.thread.isFavorite()) {
       await _favoriteThreadsStore.record(model.cacheKey).put(_db, model.toJson());
     } else {
       await _allThreadsStore.record(model.cacheKey).put(_db, model.toJson());
@@ -164,7 +162,7 @@ class ChanRepository {
 
   Stream<ThreadDetailModel> listenToLocalThreadDetail(CacheDirective cacheDirective) {
     return _favoriteThreadsStore.record(cacheDirective.getCacheKey()).onSnapshot(_db).asBroadcastStream().transform(StreamTransformer.fromHandlers(handleData: (entries, sink) {
-          ThreadDetailModel model = ThreadDetailModel.fromJson(cacheDirective.boardId, cacheDirective.threadId, entries.value, OnlineState.UNKNOWN);
+          ThreadDetailModel model = ThreadDetailModel.fromJson(cacheDirective.boardId, cacheDirective.threadId, OnlineState.UNKNOWN, entries.value);
           sink.add(model);
         }, handleError: (error, stacktrace, sink) {
           debugPrint(error);
@@ -173,7 +171,7 @@ class ChanRepository {
 
   bool isThreadFavorite(CacheDirective cacheDirective) {
     if (threadDetailMemoryCache.containsKey(cacheDirective.getCacheKey())) {
-      return threadDetailMemoryCache[cacheDirective.getCacheKey()].thread.isFavorite;
+      return threadDetailMemoryCache[cacheDirective.getCacheKey()].thread.isFavorite();
     }
 //    return _favoriteThreadsStore.record(cacheDirective.getCacheKey()).exists(_db);
     return false;
@@ -183,10 +181,7 @@ class ChanRepository {
 
   Future<void> addThreadToFavorites(ThreadDetailModel model) async {
     try {
-      model.thread.isFavorite = true;
-      model.posts.forEach((post) {
-        post.isFavorite = true;
-      });
+      model.thread.setFavorite(true);
       threadDetailMemoryCache[model.cacheKey] = model;
 
       await _favoriteThreadsStore.record(model.cacheKey).put(_db, model.toJson());
@@ -198,10 +193,7 @@ class ChanRepository {
 
   Future<void> removeThreadFromFavorites(ThreadDetailModel model) async {
     try {
-      model.thread.isFavorite = false;
-      model.posts.forEach((post) {
-        post.isFavorite = false;
-      });
+      model.thread.setFavorite(false);
       threadDetailMemoryCache[model.cacheKey] = model;
 
       await _favoriteThreadsStore.record(model.cacheKey).delete(_db);
@@ -223,10 +215,7 @@ class ChanRepository {
       var records = await _favoriteThreadsStore.find(_db);
       records.forEach((record) {
         CacheDirective directive = CacheDirective.fromPath(record.key);
-        ThreadDetailModel thread = ThreadDetailModel.fromJson(directive.boardId, directive.threadId, record.value, OnlineState.UNKNOWN);
-        thread.posts.forEach((post) {
-          post.isFavorite = true;
-        });
+        ThreadDetailModel thread = ThreadDetailModel.fromJson(directive.boardId, directive.threadId, OnlineState.UNKNOWN, record.value);
         threadMap[directive.boardId] ??= List<ThreadDetailModel>();
         threadMap[directive.boardId].add(thread);
       });
@@ -314,7 +303,7 @@ class ChanRepository {
       var record = await _favoriteThreadsStore.record(cacheDirective.getCacheKey()).get(_db) ?? await _allThreadsStore.record(cacheDirective.getCacheKey()).get(_db);
 //      List<PostItem> posts = await _localDataSource.getPostsByThreadId(cacheDirective.threadId, cacheDirective.boardId);
       if (record != null) {
-        return ThreadDetailModel.fromJson(cacheDirective.boardId, cacheDirective.threadId, record, OnlineState.UNKNOWN);
+        return ThreadDetailModel.fromJson(cacheDirective.boardId, cacheDirective.threadId, OnlineState.UNKNOWN, record);
       } else {
         return null;
       }

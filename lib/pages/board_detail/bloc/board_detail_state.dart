@@ -1,8 +1,8 @@
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
-import 'package:flutter_chan_viewer/models/board_detail_model.dart';
+import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
 
 class BoardDetailStateContent extends ChanState {
-  final List<ChanThread> threads;
+  final List<ThreadItem> threads;
   final bool lazyLoading;
   final bool isFavorite;
 

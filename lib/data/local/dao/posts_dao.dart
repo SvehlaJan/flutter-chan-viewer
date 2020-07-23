@@ -8,7 +8,7 @@ part 'posts_dao.g.dart';
 class PostsDao extends DatabaseAccessor<MoorDB> with _$PostsDaoMixin {
   PostsDao(MoorDB db) : super(db);
 
-  Stream<List<PostsTableData>> get allActivePostsItemsStream => select(postsTable).watch();
+//  Stream<List<PostsTableData>> get allActivePostItemsStream => select(postsTable).watch();
 
   Future<List<PostsTableData>> getAllPostsItems() => select(postsTable).get();
 
@@ -30,7 +30,7 @@ class PostsDao extends DatabaseAccessor<MoorDB> with _$PostsDaoMixin {
     });
   }
 
-  Future<int> deletePostById(int postId) => (delete(postsTable)..where((g) => g.postId.equals(postId))).go().then((value) {
+  Future<int> deletePostById(int postId, String boardId) => (delete(postsTable)..where((post) => post.postId.equals(postId) & post.boardId.equals(boardId))).go().then((value) {
         print("Row affecteds: $value");
         return value;
       });

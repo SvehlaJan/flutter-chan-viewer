@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/chan_event.dart';
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
-import 'package:flutter_chan_viewer/models/board_detail_model.dart';
+import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
 import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
 import 'package:flutter_chan_viewer/utils/navigation_helper.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
@@ -68,7 +68,7 @@ class _FavoritesPageState extends BasePageState<FavoritesPage> {
     }
   }
 
-  void _openThreadDetailPage(ChanThread thread) async {
+  void _openThreadDetailPage(ThreadItem thread) async {
     await Navigator.of(context).push(
       NavigationHelper.getRoute(
         Constants.threadDetailRoute,

@@ -13,6 +13,7 @@ import 'package:flutter_chan_viewer/models/local/threads_table.dart';
 import 'package:flutter_chan_viewer/models/ui/board_item.dart';
 import 'package:flutter_chan_viewer/models/ui/post_item.dart';
 import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
+import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
 import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
 import 'package:flutter_chan_viewer/repositories/chan_downloader.dart';
 import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
@@ -88,25 +89,31 @@ class ChanRepository {
 
   Future<BoardListModel> fetchRemoteBoardList() async {
     BoardListModel model = await _chanApiProvider.fetchBoardList();
-    _localDataSource.saveBoards(model.boards);
+    await _localDataSource.saveBoards(model.boards);
     return model;
   }
 
   Future<BoardDetailModel> fetchCachedBoardDetail(String boardId) async {
-    if (boardDetailMemoryCache.containsKey(boardId)) {
-      return boardDetailMemoryCache[boardId];
-    }
+    List<ThreadItem> threads =  await _localDataSource.getThreadsByBoardIdAndOnlineState(boardId, OnlineState.ONLINE);
+    return threads.isNotEmpty ? BoardDetailModel.withThreads(threads) : null;
 
-    return Future.value(null);
+//    if (boardDetailMemoryCache.containsKey(boardId)) {
+//      return boardDetailMemoryCache[boardId];
+//    }
+//    return Future.value(null);
   }
 
   Future<BoardDetailModel> fetchRemoteBoardDetail(String boardId) async {
     BoardDetailModel boardDetailModel = await _chanApiProvider.fetchThreadList(boardId);
-    boardDetailModel.threads.forEach((thread) async {
+    boardDetailModel.threads.forEach((thread) async { // TODO - not necessary?
       thread.setFavorite(isThreadFavorite(thread.getCacheDirective()));
     });
-    boardDetailMemoryCache[boardId] = boardDetailModel;
-    return boardDetailMemoryCache[boardId];
+    await _localDataSource.updateOnlineStateOfThreads(boardDetailModel.threads);
+    await _localDataSource.saveThreads(boardDetailModel.threads);
+    return boardDetailModel;
+
+//    boardDetailMemoryCache[boardId] = boardDetailModel;
+//    return boardDetailMemoryCache[boardId];
   }
 
   Future<ArchiveListModel> fetchRemoteArchiveList(String boardId) async {

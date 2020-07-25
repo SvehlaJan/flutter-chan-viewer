@@ -24,15 +24,15 @@ class NewChanRepository {
     // initialization code
   }
 
-  Stream<Resource<ThreadDetailModel>> threadDetailsStream(String boardId, int threadId) {
-    return NetworkBoundResources<ThreadDetailModel, ThreadDetailModel>().asStream(
-      loadFromDb: () => _repository.listenToLocalThreadDetail(CacheDirective(boardId, threadId)),
-      shouldFetch: (data) => data == null,
-      createCall: () => _repository.fetchRemoteThreadDetail(boardId, threadId, false),
-      processResponse: (result) => result,
-      saveCallResult: (model) => _repository.saveThreadDetail(model),
-    );
-  }
+//  Stream<Resource<ThreadDetailModel>> threadDetailsStream(String boardId, int threadId) {
+//    return NetworkBoundResources<ThreadDetailModel, ThreadDetailModel>().asStream(
+//      loadFromDb: () => _repository.listenToLocalThreadDetail(CacheDirective(boardId, threadId)),
+//      shouldFetch: (data) => data == null,
+//      createCall: () => _repository.fetchRemoteThreadDetail(boardId, threadId, false),
+//      processResponse: (result) => result,
+//      saveCallResult: (model) => _repository.saveThreadDetail(model),
+//    );
+//  }
 
 //  @override
 //  Future<Resource<List<PostItem>>> getToDoList() async {

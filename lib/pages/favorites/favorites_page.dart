@@ -49,9 +49,7 @@ class _FavoritesPageState extends BasePageState<FavoritesPage> {
     if (state is ChanStateLoading) {
       return Constants.centeredProgressIndicator;
     } else if (state is FavoritesStateContent) {
-      List<ThreadDetailModel> threads = state.threadMap.values.expand((list) => list).toList();
-
-      if (threads.isEmpty) {
+      if (state.threads.isEmpty) {
         return Constants.noDataPlaceholder;
       }
 
@@ -59,11 +57,11 @@ class _FavoritesPageState extends BasePageState<FavoritesPage> {
         child: ListView.builder(
           itemBuilder: (BuildContext context, int index) {
             return InkWell(
-              child: ThreadListWidget(thread: threads[index].thread),
-              onTap: () => _openThreadDetailPage(threads[index].thread),
+              child: ThreadListWidget(thread: state.threads[index].thread),
+              onTap: () => _openThreadDetailPage(state.threads[index].thread),
             );
           },
-          itemCount: threads.length,
+          itemCount: state.threads.length,
         ),
       );
     } else {

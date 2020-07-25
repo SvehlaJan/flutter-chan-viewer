@@ -17,11 +17,11 @@ class ThreadsDao extends DatabaseAccessor<MoorDB> with _$ThreadsDaoMixin {
 
   Future<List<ThreadsTableData>> getAllThreadItems() => select(threadsTable).get();
 
-  Future<List<ThreadsTableData>> getAllThreadsByBoardIdAndOnlineState(String boardId, OnlineState onlineState) => (select(threadsTable)
-        ..where((thread) => thread.boardId.equals(boardId)
-//      & thread.onlineState.equals(onlineState.index)
-            ))
-      .get();
+  Future<List<ThreadsTableData>> getFavoriteThreads() =>
+      (select(threadsTable)..where((thread) => thread.isFavorite.equals(true))).get();
+
+  Future<List<ThreadsTableData>> getThreadsByBoardIdAndOnlineState(String boardId, OnlineState onlineState) =>
+      (select(threadsTable)..where((thread) => thread.boardId.equals(boardId) & thread.onlineState.equals(onlineState.index))).get();
 
   Future<List<ThreadsTableData>> getThreadsByOnlineState(OnlineState onlineState) => (select(threadsTable)..where((thread) => thread.onlineState.equals(onlineState.index))).get();
 

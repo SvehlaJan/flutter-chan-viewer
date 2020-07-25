@@ -47,7 +47,7 @@ class ThreadDetailBloc extends Bloc<ChanEvent, ChanState> {
         if (_catalogMode == null) {
           _catalogMode = Preferences.getBool(Preferences.KEY_THREAD_CATALOG_MODE, def: false);
         }
-        _isFavorite = _repository.isThreadFavorite(cacheDirective);
+        _isFavorite = await _repository.isThreadFavorite(_boardId, _threadId);
 
         if (_showDownloadsOnly ?? false) {
           DownloadFolderInfo folderInfo = _chanStorage.getThreadDownloadFolderInfo(cacheDirective);

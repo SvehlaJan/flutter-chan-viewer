@@ -29,7 +29,6 @@ dependencies:
   logger_flutter: ^0.7.1
   moor_flutter: ^3.1.0
 
-  sembast: ^2.4.7+4
   worker_manager: ^2.9.0
 
   local_auth: ^0.6.2+3

@@ -22,8 +22,6 @@ class LocalDataSource {
     return posts.map((postData) => PostItem.fromTableData(postData, thread)).toList();
   }
 
-
-
   Future<void> saveThread(ThreadItem thread) async {
     return _threadsDao.insertThread(thread.toTableData());
   }
@@ -32,13 +30,22 @@ class LocalDataSource {
     return _threadsDao.insertThreadsList(threads.map((thread) => thread.toTableData()).toList());
   }
 
+  Future<void> updateThread(ThreadItem thread) async {
+    return _threadsDao.updateThread(thread.toTableData());
+  }
+
   Future<ThreadItem> getThreadById(String boardId, int threadId) async {
     ThreadsTableData threadTableData = await _threadsDao.getThreadById(boardId, threadId);
     return threadTableData != null ? ThreadItem.fromTableData(threadTableData) : null;
   }
 
+  Future<List<ThreadItem>> getFavoriteThreads() async {
+    List<ThreadsTableData> threads = await _threadsDao.getFavoriteThreads();
+    return threads.map((threadData) => ThreadItem.fromTableData(threadData)).toList();
+  }
+
   Future<List<ThreadItem>> getThreadsByBoardIdAndOnlineState(String boardId, OnlineState onlineState) async {
-    List<ThreadsTableData> threads = await _threadsDao.getAllThreadsByBoardIdAndOnlineState(boardId, onlineState);
+    List<ThreadsTableData> threads = await _threadsDao.getThreadsByBoardIdAndOnlineState(boardId, onlineState);
     return threads.map((threadData) => ThreadItem.fromTableData(threadData)).toList();
   }
 

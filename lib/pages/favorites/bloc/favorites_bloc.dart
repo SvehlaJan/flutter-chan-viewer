@@ -27,7 +27,7 @@ class FavoritesBloc extends Bloc<ChanEvent, ChanState> {
         HashMap<String, List<ThreadDetailModel>> threadMap = await _repository.getFavoriteThreads();
         bool showSfwOnly = Preferences.getBool(Preferences.KEY_SETTINGS_SHOW_SFW_ONLY, def: true);
         if (showSfwOnly) {
-          BoardListModel boardListModel = await _repository.fetchCachedBoardList();
+          BoardListModel boardListModel = await _repository.fetchCachedBoardList(true); // TODO - includeNsfw
           threadMap.removeWhere((boardId, threads) {
             bool isSfw = boardListModel.boards.where((board) => board.boardId == boardId).first.workSafe ?? false;
             return !isSfw;

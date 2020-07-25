@@ -73,7 +73,9 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<BoardDetailBloc, ChanState>(
-        bloc: _boardDetailBloc, builder: (context, state) => buildScaffold(context, buildBody(context, state, ((thread) => _openThreadDetailPage(thread)))));
+      cubit: _boardDetailBloc,
+      builder: (context, state) => buildScaffold(context, buildBody(context, state, ((thread) => _openThreadDetailPage(thread)))),
+    );
   }
 
   static Widget buildBody(BuildContext context, ChanState state, Function(ThreadItem) onItemClicked) {
@@ -135,7 +137,9 @@ class CustomSearchDelegate extends SearchDelegate<ThreadItem> {
     _boardDetailBloc.add(ChanEventSearch(query));
 
     return BlocBuilder<BoardDetailBloc, ChanState>(
-        bloc: _boardDetailBloc, builder: (context, state) => _BoardDetailPageState.buildBody(context, state, ((thread) => close(context, thread))));
+      cubit: _boardDetailBloc,
+      builder: (context, state) => _BoardDetailPageState.buildBody(context, state, ((thread) => close(context, thread))),
+    );
   }
 
   @override
@@ -143,6 +147,8 @@ class CustomSearchDelegate extends SearchDelegate<ThreadItem> {
     _boardDetailBloc.add(ChanEventSearch(query));
 
     return BlocBuilder<BoardDetailBloc, ChanState>(
-        bloc: _boardDetailBloc, builder: (context, state) => _BoardDetailPageState.buildBody(context, state, ((thread) => close(context, thread))));
+      cubit: _boardDetailBloc,
+      builder: (context, state) => _BoardDetailPageState.buildBody(context, state, ((thread) => close(context, thread))),
+    );
   }
 }

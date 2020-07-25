@@ -36,7 +36,10 @@ class _SettingsPageState extends BasePageState<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<SettingsBloc, ChanState>(bloc: _settingsBloc, builder: (context, state) => buildScaffold(context, buildBody(context, state)));
+    return BlocBuilder<SettingsBloc, ChanState>(
+      cubit: _settingsBloc,
+      builder: (context, state) => buildScaffold(context, buildBody(context, state)),
+    );
   }
 
   Widget buildBody(BuildContext context, ChanState state) {

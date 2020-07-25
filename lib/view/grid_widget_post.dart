@@ -51,7 +51,7 @@ class _PostGridWidgetState extends State<PostGridWidget> with SingleTickerProvid
   }
 
   Widget buildContent(BuildContext context) {
-    final bool _isDownloaded = getIt<ChanRepository>().isPostDownloaded(widget.post);
+    final bool _isDownloaded = getIt<ChanRepository>().isMediaDownloaded(widget.post);
     return Card(
       margin: EdgeInsets.all(1.0),
       clipBehavior: Clip.antiAlias,

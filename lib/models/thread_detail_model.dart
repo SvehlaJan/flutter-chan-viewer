@@ -32,6 +32,10 @@ class ThreadDetailModel with EquatableMixin {
       }
     }
 
+    if (posts.isNotEmpty) {
+      thread = thread.copyWithPostData(posts.first);
+    }
+
     int selectedPost = parsedJson['selected_post'] ?? -1;
 
     return ThreadDetailModel._(thread, posts, selectedPost);

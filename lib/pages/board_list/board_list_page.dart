@@ -52,7 +52,9 @@ class _BoardListPageState extends BasePageState<BoardListPage> {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<BoardListBloc, ChanState>(
-        bloc: _boardListBloc, builder: (context, state) => buildScaffold(context, buildBody(context, state, ((board) => _openBoardDetailPage(board)))));
+      cubit: _boardListBloc,
+      builder: (context, state) => buildScaffold(context, buildBody(context, state, ((board) => _openBoardDetailPage(board)))),
+    );
   }
 
   static Widget buildBody(BuildContext context, ChanState state, Function(BoardItem) onItemClicked) {
@@ -118,7 +120,9 @@ class CustomSearchDelegate extends SearchDelegate<BoardItem> {
     _boardListBloc.add(ChanEventSearch(query));
 
     return BlocBuilder<BoardListBloc, ChanState>(
-        bloc: _boardListBloc, builder: (context, state) => _BoardListPageState.buildBody(context, state, ((board) => close(context, board))));
+      cubit: _boardListBloc,
+      builder: (context, state) => _BoardListPageState.buildBody(context, state, ((board) => close(context, board))),
+    );
   }
 
   @override
@@ -126,6 +130,8 @@ class CustomSearchDelegate extends SearchDelegate<BoardItem> {
     _boardListBloc.add(ChanEventSearch(query));
 
     return BlocBuilder<BoardListBloc, ChanState>(
-        bloc: _boardListBloc, builder: (context, state) => _BoardListPageState.buildBody(context, state, ((board) => close(context, board))));
+      cubit: _boardListBloc,
+      builder: (context, state) => _BoardListPageState.buildBody(context, state, ((board) => close(context, board))),
+    );
   }
 }

@@ -9,3 +9,13 @@ class ApiException implements Exception {
     @required this.message,
   });
 }
+
+class HttpException implements Exception {
+  final String message;
+  final int errorCode;
+
+  const HttpException({
+    @required this.message,
+    @required this.errorCode,
+  });
+}

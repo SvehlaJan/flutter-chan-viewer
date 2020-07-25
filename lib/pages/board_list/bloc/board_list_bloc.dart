@@ -30,7 +30,7 @@ class BoardListBloc extends Bloc<ChanEvent, ChanState> {
         bool showSfwOnly = Preferences.getBool(Preferences.KEY_SETTINGS_SHOW_SFW_ONLY, def: true);
         List<String> favoriteBoardIds = Preferences.getStringList(Preferences.KEY_FAVORITE_BOARDS);
 
-        BoardListModel boardListModel = await _repository.fetchCachedBoardList();
+        BoardListModel boardListModel = await _repository.fetchCachedBoardList(true); // TODO - includeNsfw
         if (boardListModel != null) {
           resultList = _processBoardList(favoriteBoardIds, showSfwOnly, boardListModel);
           yield BoardListStateContent(resultList, true);

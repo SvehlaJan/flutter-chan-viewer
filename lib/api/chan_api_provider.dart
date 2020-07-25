@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter_chan_viewer/api/api_exception.dart';
 import 'package:flutter_chan_viewer/models/archive_list_model.dart';
 import 'package:flutter_chan_viewer/models/board_detail_model.dart';
 import 'package:flutter_chan_viewer/models/board_list_model.dart';
@@ -21,7 +22,7 @@ class ChanApiProvider {
     if (response.statusCode == 200) {
       return BoardListModel.fromJson(json.decode(response.body));
     } else {
-      throw Exception('Failed to load boards');
+      throw HttpException(message: response.body, errorCode: response.statusCode);
     }
   }
 
@@ -33,7 +34,7 @@ class ChanApiProvider {
     if (response.statusCode == 200) {
       return BoardDetailModel.fromJson(boardId, OnlineState.ONLINE, json.decode(response.body));
     } else {
-      throw Exception('Failed to load threads');
+      throw HttpException(message: response.body, errorCode: response.statusCode);
     }
   }
 
@@ -45,7 +46,7 @@ class ChanApiProvider {
     if (response.statusCode == 200) {
       return ThreadDetailModel.fromJson(boardId, threadId, OnlineState.ONLINE, json.decode(response.body));
     } else {
-      throw Exception('Error response: ${response.statusCode}');
+      throw HttpException(message: response.body, errorCode: response.statusCode);
     }
   }
 
@@ -57,7 +58,7 @@ class ChanApiProvider {
     if (response.statusCode == 200) {
       return ArchiveListModel.fromJson(boardId, json.decode(response.body));
     } else {
-      throw Exception('Failed to load posts');
+      throw HttpException(message: response.body, errorCode: response.statusCode);
     }
   }
 }

@@ -71,7 +71,7 @@ class _BoardArchivePageState extends BasePageState<BoardArchivePage> {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<BoardArchiveBloc, ChanState>(
-        bloc: _archiveListBloc,
+        cubit: _archiveListBloc,
         builder: (context, state) => buildScaffold(
               context,
               buildBody(context, state, _scrollController, ((thread) => _openThreadDetailPage(thread))),
@@ -145,7 +145,7 @@ class CustomSearchDelegate extends SearchDelegate<ThreadItem> {
     _boardDetailBloc.add(ChanEventSearch(query));
 
     return BlocBuilder<BoardArchiveBloc, ChanState>(
-      bloc: _boardDetailBloc,
+      cubit: _boardDetailBloc,
       builder: (context, state) => _BoardArchivePageState.buildBody(context, state, null, ((thread) => close(context, thread))),
     );
   }
@@ -155,7 +155,7 @@ class CustomSearchDelegate extends SearchDelegate<ThreadItem> {
     _boardDetailBloc.add(ChanEventSearch(query));
 
     return BlocBuilder<BoardArchiveBloc, ChanState>(
-      bloc: _boardDetailBloc,
+      cubit: _boardDetailBloc,
       builder: (context, state) => _BoardArchivePageState.buildBody(context, state, null, ((thread) => close(context, thread))),
     );
   }

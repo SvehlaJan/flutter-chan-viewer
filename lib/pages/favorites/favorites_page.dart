@@ -39,7 +39,10 @@ class _FavoritesPageState extends BasePageState<FavoritesPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<FavoritesBloc, ChanState>(bloc: _favoritesBloc, builder: (context, state) => buildScaffold(context, buildBody(context, state)));
+    return BlocBuilder<FavoritesBloc, ChanState>(
+      cubit: _favoritesBloc,
+      builder: (context, state) => buildScaffold(context, buildBody(context, state)),
+    );
   }
 
   Widget buildBody(BuildContext context, ChanState state) {

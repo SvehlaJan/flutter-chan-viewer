@@ -10,6 +10,10 @@ class BoardsDao extends DatabaseAccessor<MoorDB> with _$BoardsDaoMixin {
 
 //  Stream<List<PostsTableData>> get allActiveBoardItemsStream => select(boardsTable).watch();
 
+  Future<BoardsTableData> getBoardById(String boardId) {
+    return (select(boardsTable)..where((board) => board.boardId.equals(boardId))).getSingle();
+  }
+
   Future<List<BoardsTableData>> getBoardItems(bool includeNsfw) {
     if (includeNsfw) {
       return select(boardsTable).get();

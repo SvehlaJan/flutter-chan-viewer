@@ -48,7 +48,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<ThreadDetailBloc, ChanState>(
-        bloc: _threadDetailBloc,
+        cubit: _threadDetailBloc,
         builder: (context, state) => buildScaffold(
               context,
               widget.showAsReply ? _buildSinglePostBody(context, state, widget.selectedPostId) : _buildCarouselBody(context, state),

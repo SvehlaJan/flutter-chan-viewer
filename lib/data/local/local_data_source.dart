@@ -30,12 +30,17 @@ class LocalDataSource {
     return threads.map((threadData) => ThreadItem.fromTableData(threadData)).toList();
   }
 
-  Future<void> saveBoards(List<BoardItem> posts) async {
-    return _boardsDao.insertBoardsList(posts.map((post) => post.toTableData()).toList());
+  Future<BoardItem> getBoardById(String boardId) async {
+    BoardsTableData boardsTableData = await _boardsDao.getBoardById(boardId);
+    return boardsTableData != null ? BoardItem.fromTableData(boardsTableData) : Future(null);
   }
 
   Future<List<BoardItem>> getBoards(bool includeNsfw) async {
-    List<BoardsTableData> posts = await _boardsDao.getBoardItems(includeNsfw);
-    return posts.map((boardData) => BoardItem.fromTableData(boardData)).toList();
+    List<BoardsTableData> boards = await _boardsDao.getBoardItems(includeNsfw);
+    return boards.map((boardData) => BoardItem.fromTableData(boardData)).toList();
+  }
+
+  Future<void> saveBoards(List<BoardItem> boards) async {
+    return _boardsDao.insertBoardsList(boards.map((post) => post.toTableData()).toList());
   }
 }

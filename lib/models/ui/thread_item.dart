@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_chan_viewer/data/local/moor_db.dart';
 import 'package:flutter_chan_viewer/models/helper/chan_post_base.dart';
 import 'package:flutter_chan_viewer/models/local/threads_table.dart';
+import 'package:flutter_chan_viewer/models/ui/post_item.dart';
 import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
 import 'package:flutter_chan_viewer/utils/chan_util.dart';
 
@@ -69,6 +70,21 @@ class ThreadItem extends ChanPostBase with EquatableMixin {
         0,
         0,
       );
+
+  ThreadItem copyWithPostData(PostItem post) => ThreadItem(
+    this.boardId,
+    this.threadId,
+    post.timestamp,
+    post.subtitle,
+    post.content,
+    post.filename,
+    post.imageId,
+    post.extension,
+    this.onlineStatus,
+    this._isFavorite,
+    this.replies,
+    this.images,
+  );
 
   Map<String, dynamic> toJson() => {
         'board_id': boardId,

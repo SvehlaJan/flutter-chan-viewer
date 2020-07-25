@@ -73,20 +73,12 @@ class ChanRepository {
     // initialization code
   }
 
-  bool isPostDownloaded(PostItem post) => isUrlDownloaded(post.getMediaUrl(), post.getCacheDirective());
+  bool isMediaDownloaded(PostItem post) => _chanStorage.mediaFileExists(post.getMediaUrl(), post.getCacheDirective());
 
-  bool isUrlDownloaded(String url, CacheDirective cacheDirective) => _chanStorage.mediaFileExists(url, cacheDirective);
-
-  Future<BoardListModel> fetchCachedBoardList() async {
+  Future<BoardListModel> fetchCachedBoardList(bool includeNsfw) async {
     try {
-      List<BoardItem> boards = [];
-      var records = await _boardsStore.find(_db);
-      records.forEach((record) {
-        BoardItem thread = BoardItem.fromMappedJson(record.value);
-        boards.add(thread);
-      });
-      BoardListModel model = BoardListModel(boards);
-      return model;
+      List<BoardItem> boards = await _localDataSource.getBoards(includeNsfw);
+      return boards.isNotEmpty ? BoardListModel(boards) : null;
     } catch (e, stackTrace) {
       ChanLogger.e("fetchCachedBoardList error", e, stackTrace);
     }
@@ -95,11 +87,9 @@ class ChanRepository {
   }
 
   Future<BoardListModel> fetchRemoteBoardList() async {
-    BoardListModel boardList = await _chanApiProvider.fetchBoardList();
-    List<Map<String, dynamic>> map = boardList.boards.map((board) => board.toJson()).toList();
-    await _boardsStore.drop(_db);
-    await _boardsStore.addAll(_db, map);
-    return boardList;
+    BoardListModel model = await _chanApiProvider.fetchBoardList();
+    _localDataSource.saveBoards(model.boards);
+    return model;
   }
 
   Future<BoardDetailModel> fetchCachedBoardDetail(String boardId) async {

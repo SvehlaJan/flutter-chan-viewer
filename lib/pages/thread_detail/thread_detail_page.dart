@@ -98,7 +98,7 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
       }
     }, builder: (context, state) {
       return BlocBuilder<ThreadDetailBloc, ChanState>(
-          bloc: _threadDetailBloc,
+          cubit: _threadDetailBloc,
           builder: (context, state) {
             if (state is ThreadDetailStateContent && !state.showAppBar) {
               return buildBody(context, state);

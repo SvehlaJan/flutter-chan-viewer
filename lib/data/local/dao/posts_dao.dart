@@ -12,7 +12,7 @@ class PostsDao extends DatabaseAccessor<MoorDB> with _$PostsDaoMixin {
 
   Future<List<PostsTableData>> getAllPostsItems() => select(postsTable).get();
 
-  Future<List<PostsTableData>> getAllPostsFromThread(int threadId, String boardId) =>
+  Future<List<PostsTableData>> getAllPostsFromThread(String boardId, int threadId) =>
       (select(postsTable)..where((post) => post.threadId.equals(threadId) & post.boardId.equals(boardId))).get();
 
   Future<int> insertPost(PostsTableData entry) {

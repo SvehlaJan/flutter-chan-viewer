@@ -50,7 +50,7 @@ class BoardArchiveBloc extends Bloc<ChanEvent, ChanState> {
           ThreadDetailModel threadDetailModel = await _repository.fetchCachedThreadDetail(boardId, threadId);
           if (threadDetailModel == null) {
             _didLoadNotCachedThread = true;
-            threadDetailModel = await _repository.fetchRemoteThreadDetail(boardId, threadId);
+            threadDetailModel = await _repository.fetchRemoteThreadDetail(boardId, threadId, true);
           }
           archiveThreads[event.index] = ArchiveThreadWrapper(threadDetailModel, false);
         } catch (e) {

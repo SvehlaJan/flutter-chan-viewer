@@ -5,5 +5,9 @@ class PostsTable extends ChanBaseTable {
   @override
   Set<Column> get primaryKey => {postId, threadId, boardId};
 
+  TextColumn get boardId => text()();
+
+  IntColumn get threadId => integer().customConstraint('REFERENCES threads_table(threadId) ON DELETE CASCADE')();
+
   IntColumn get postId => integer()();
 }

@@ -28,7 +28,7 @@ class NewChanRepository {
     return NetworkBoundResources<ThreadDetailModel, ThreadDetailModel>().asStream(
       loadFromDb: () => _repository.listenToLocalThreadDetail(CacheDirective(boardId, threadId)),
       shouldFetch: (data) => data == null,
-      createCall: () => _repository.fetchRemoteThreadDetail(boardId, threadId),
+      createCall: () => _repository.fetchRemoteThreadDetail(boardId, threadId, false),
       processResponse: (result) => result,
       saveCallResult: (model) => _repository.saveThreadDetail(model),
     );

@@ -84,7 +84,7 @@ class ChanRepository {
       ChanLogger.e("fetchCachedBoardList error", e, stackTrace);
     }
 
-    return Future.value(null);
+    return null;
   }
 
   Future<BoardListModel> fetchRemoteBoardList() async {
@@ -100,7 +100,7 @@ class ChanRepository {
 //    if (boardDetailMemoryCache.containsKey(boardId)) {
 //      return boardDetailMemoryCache[boardId];
 //    }
-//    return Future.value(null);
+//    return null;
   }
 
   Future<BoardDetailModel> fetchRemoteBoardDetail(String boardId) async {
@@ -108,7 +108,8 @@ class ChanRepository {
     boardDetailModel.threads.forEach((thread) async { // TODO - not necessary?
       thread.setFavorite(isThreadFavorite(thread.getCacheDirective()));
     });
-    await _localDataSource.updateOnlineStateOfThreads(boardDetailModel.threads);
+    List<int> threadIds = boardDetailModel.threads.map((thread) => thread.threadId).toList();
+    await _localDataSource.syncWithNewOnlineThreads(threadIds);
     await _localDataSource.saveThreads(boardDetailModel.threads);
     return boardDetailModel;
 
@@ -118,26 +119,36 @@ class ChanRepository {
 
   Future<ArchiveListModel> fetchRemoteArchiveList(String boardId) async {
     ArchiveListModel archiveList = await _chanApiProvider.fetchArchiveList(boardId);
+    await _localDataSource.syncWithNewArchivedThreads(archiveList.threads);
     return archiveList;
   }
 
   Future<ThreadDetailModel> fetchCachedThreadDetail(String boardId, int threadId) async {
+    ThreadItem thread = await _localDataSource.getThreadById(boardId, threadId);
+    if (thread != null) {
+      List<PostItem> posts = await _localDataSource.getPostsByThread(thread);
+
+      ThreadDetailModel model = ThreadDetailModel.fromThreadAndPosts(thread, posts);
+      return model;
+    }
+
+
     CacheDirective cacheDirective = CacheDirective(boardId, threadId);
     if (threadDetailMemoryCache.containsKey(cacheDirective.getCacheKey())) {
       return threadDetailMemoryCache[cacheDirective.getCacheKey()];
     }
 
-    ThreadDetailModel thread = await _tryToGetCachedThread(cacheDirective);
+    ThreadDetailModel model = await _tryToGetCachedThread(cacheDirective);
     if (thread != null) {
-      threadDetailMemoryCache[thread.cacheKey] = thread;
-      return thread;
+      threadDetailMemoryCache[model.cacheKey] = model;
+      return model;
     }
 
-    return Future.value(null);
+    return null;
   }
 
-  FutureOr<ThreadDetailModel> fetchRemoteThreadDetail(String boardId, int threadId) async {
-    ThreadDetailModel model = await _chanApiProvider.fetchPostList(boardId, threadId);
+  FutureOr<ThreadDetailModel> fetchRemoteThreadDetail(String boardId, int threadId, bool isArchived) async {
+    ThreadDetailModel model = await _chanApiProvider.fetchThreadDetail(boardId, threadId, isArchived);
     bool isFavorite = isThreadFavorite(CacheDirective(boardId, threadId));
     model.thread.setFavorite(isFavorite);
 
@@ -146,14 +157,15 @@ class ChanRepository {
   }
 
   FutureOr<void> saveThreadDetail(ThreadDetailModel model) async {
+    await _localDataSource.saveThread(model.thread);
+    await _localDataSource.savePosts(model.posts);
+
+    // TODO - remove
     if (model.thread.isFavorite()) {
       await _favoriteThreadsStore.record(model.cacheKey).put(_db, model.toJson());
     } else {
       await _allThreadsStore.record(model.cacheKey).put(_db, model.toJson());
     }
-
-//    await _localDataSource.savePosts(model.posts);
-
     threadDetailMemoryCache[model.cacheKey] = model;
   }
 

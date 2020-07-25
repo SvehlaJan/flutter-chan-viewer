@@ -8,4 +8,5 @@ part of 'threads_dao.dart';
 
 mixin _$ThreadsDaoMixin on DatabaseAccessor<MoorDB> {
   $ThreadsTableTable get threadsTable => attachedDatabase.threadsTable;
+  $PostsTableTable get postsTable => attachedDatabase.postsTable;
 }

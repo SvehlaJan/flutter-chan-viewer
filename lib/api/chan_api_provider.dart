@@ -38,13 +38,13 @@ class ChanApiProvider {
     }
   }
 
-  Future<ThreadDetailModel> fetchPostList(String boardId, int threadId) async {
+  Future<ThreadDetailModel> fetchThreadDetail(String boardId, int threadId, bool isArchived) async {
     String url = "$_baseUrl/$boardId/thread/$threadId.json";
 
     final response = await client.get(url);
 //    ChanLogger.d("Post list fetched. { url: $url, response status: ${response.statusCode} }");
     if (response.statusCode == 200) {
-      return ThreadDetailModel.fromJson(boardId, threadId, OnlineState.ONLINE, json.decode(response.body));
+      return ThreadDetailModel.fromJson(boardId, threadId, isArchived ? OnlineState.ARCHIVED : OnlineState.ONLINE, json.decode(response.body));
     } else {
       throw HttpException(message: response.body, errorCode: response.statusCode);
     }

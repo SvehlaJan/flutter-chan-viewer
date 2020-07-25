@@ -61,7 +61,7 @@ class ThreadDetailBloc extends Bloc<ChanEvent, ChanState> {
           }
 
           try {
-            _threadDetailModel = await _repository.fetchRemoteThreadDetail(_boardId, _threadId);
+            _threadDetailModel = await _repository.fetchRemoteThreadDetail(_boardId, _threadId, false);
             if (cachedThreadDetailModel == null) {
               yield _getShowListState();
             } else {

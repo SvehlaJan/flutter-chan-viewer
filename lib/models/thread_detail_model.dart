@@ -51,6 +51,8 @@ class ThreadDetailModel with EquatableMixin {
     return ThreadDetailModel._(ThreadItem.fromCacheDirective(cacheDirective), [], 0);
   }
 
+  factory ThreadDetailModel.fromThreadAndPosts(ThreadItem thread, List<PostItem> posts) => ThreadDetailModel._(thread, posts, -1);
+
   /*
   ThreadDetailModel.fromJson(String boardId, int threadId, Map<String, dynamic> parsedJson)
       : _thread = ChanThread.fromMappedJson(boardId, threadId, parsedJson),
@@ -106,11 +108,7 @@ class ThreadDetailModel with EquatableMixin {
   set selectedPostId(int postId) => _selectedPostId = getPostIndex(postId) >= 0 ? postId : throw IndexOutOfBoundsException();
 
   Map<String, dynamic> toJson() {
-    return {
-        ..._thread.toJson(),
-        'posts': _posts.map((post) => post.toJson()).toList(),
-        'selected_post': _selectedPostId
-      };
+    return {..._thread.toJson(), 'posts': _posts.map((post) => post.toJson()).toList(), 'selected_post': _selectedPostId};
   }
 
   @override

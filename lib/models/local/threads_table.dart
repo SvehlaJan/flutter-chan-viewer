@@ -8,11 +8,15 @@ class ThreadsTable extends ChanBaseTable {
   @override
   Set<Column> get primaryKey => {threadId, boardId};
 
+  TextColumn get boardId => text()();
+
+  IntColumn get threadId => integer()();
+
   BoolColumn get isFavorite => boolean()();
 
   IntColumn get onlineState => intEnum<OnlineState>()();
 
-  IntColumn get replyCount => integer()();
+  IntColumn get replyCount => integer().nullable()();
 
-  IntColumn get imageCount => integer()();
+  IntColumn get imageCount => integer().nullable()();
 }

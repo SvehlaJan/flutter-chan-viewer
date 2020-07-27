@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:flutter_chan_viewer/api/api_exception.dart';
+import 'package:flutter_chan_viewer/data/remote/api_exception.dart';
 
 class ErrorMapper {
   static from(Exception e) {

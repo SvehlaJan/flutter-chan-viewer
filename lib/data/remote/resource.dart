@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:flutter_chan_viewer/api/api_exception.dart';
-import 'package:flutter_chan_viewer/api/error_mapper.dart';
-import 'package:flutter_chan_viewer/api/status.dart';
+import 'package:flutter_chan_viewer/data/remote/api_exception.dart';
+import 'package:flutter_chan_viewer/data/remote/error_mapper.dart';
+import 'package:flutter_chan_viewer/data/remote/status.dart';
 import 'package:meta/meta.dart';
 
 @immutable

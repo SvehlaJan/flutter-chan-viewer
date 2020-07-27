@@ -28,10 +28,10 @@ class ChanCachedImage extends StatelessWidget {
     String mainUrl;
     String fallbackUrl;
     String thumbnailUrl;
-    CacheDirective cacheDirective = (post.isFavorite || !forceThumbnail) ? post.getCacheDirective() : null;
+    CacheDirective cacheDirective = (post.isFavorite() || !forceThumbnail) ? post.getCacheDirective() : null;
 
     if (forceThumbnail) {
-      if (post.isFavorite) {
+      if (post.isFavorite()) {
         mainUrl = post.getMediaUrl();
         fallbackUrl = post.getThumbnailUrl();
       } else {
@@ -39,7 +39,7 @@ class ChanCachedImage extends StatelessWidget {
       }
     } else {
       if (post.hasWebm()) {
-        if (post.isFavorite) {
+        if (post.isFavorite()) {
           mainUrl = post.getMediaUrl();
           fallbackUrl = post.getThumbnailUrl();
         } else {

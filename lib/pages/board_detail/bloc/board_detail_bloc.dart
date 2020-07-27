@@ -5,6 +5,7 @@ import 'package:flutter_chan_viewer/bloc/chan_event.dart';
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/models/board_detail_model.dart';
+import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
 import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
 import 'package:flutter_chan_viewer/utils/chan_logger.dart';
 import 'package:flutter_chan_viewer/utils/preferences.dart';
@@ -26,7 +27,7 @@ class BoardDetailBloc extends Bloc<ChanEvent, ChanState> {
     try {
       if (event is ChanEventFetchData) {
         yield ChanStateLoading();
-        List<ChanThread> filteredThreads;
+        List<ThreadItem> filteredThreads;
         List<String> favoriteBoards = Preferences.getStringList(Preferences.KEY_FAVORITE_BOARDS);
         isFavorite = favoriteBoards.contains(boardId);
 
@@ -58,7 +59,7 @@ class BoardDetailBloc extends Bloc<ChanEvent, ChanState> {
     }
   }
 
-  bool _matchesQuery(ChanThread thread, String query) {
+  bool _matchesQuery(ThreadItem thread, String query) {
     return thread.subtitle?.toLowerCase()?.contains(query.toLowerCase()) ?? thread.content?.toLowerCase()?.contains(query.toLowerCase()) ?? false;
   }
 }

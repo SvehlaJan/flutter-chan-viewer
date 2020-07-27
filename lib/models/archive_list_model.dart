@@ -2,16 +2,15 @@ import 'package:equatable/equatable.dart';
 
 class ArchiveListModel extends Equatable {
   final List<int> _threads;
-  final String _boardId;
 
-  ArchiveListModel(this._threads, this._boardId);
+  ArchiveListModel(this._threads);
 
   factory ArchiveListModel.fromJson(String boardId, List<dynamic> parsedJson) {
     List<int> threads = [];
     for (int threadId in parsedJson) {
       threads.add(threadId);
     }
-    return ArchiveListModel(threads, boardId);
+    return ArchiveListModel(threads);
   }
 
   List<int> get threads => _threads;

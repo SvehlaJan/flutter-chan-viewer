@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter_chan_viewer/api/api_exception.dart';
 import 'package:flutter_chan_viewer/models/archive_list_model.dart';
 import 'package:flutter_chan_viewer/models/board_detail_model.dart';
 import 'package:flutter_chan_viewer/models/board_list_model.dart';
+import 'package:flutter_chan_viewer/models/local/threads_table.dart';
 import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
-import 'package:flutter_chan_viewer/utils/chan_logger.dart';
-import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:http/http.dart' show Client;
 
 class ChanApiProvider {
@@ -22,7 +22,7 @@ class ChanApiProvider {
     if (response.statusCode == 200) {
       return BoardListModel.fromJson(json.decode(response.body));
     } else {
-      throw Exception('Failed to load boards');
+      throw HttpException(message: response.body, errorCode: response.statusCode);
     }
   }
 
@@ -32,21 +32,21 @@ class ChanApiProvider {
     final response = await client.get(url);
 //    ChanLogger.d("Thread list fetched. { url: $url, response status: ${response.statusCode} }");
     if (response.statusCode == 200) {
-      return BoardDetailModel.fromJson(boardId, json.decode(response.body));
+      return BoardDetailModel.fromJson(boardId, OnlineState.ONLINE, json.decode(response.body));
     } else {
-      throw Exception('Failed to load threads');
+      throw HttpException(message: response.body, errorCode: response.statusCode);
     }
   }
 
-  Future<ThreadDetailModel> fetchPostList(String boardId, int threadId) async {
+  Future<ThreadDetailModel> fetchThreadDetail(String boardId, int threadId, bool isArchived) async {
     String url = "$_baseUrl/$boardId/thread/$threadId.json";
 
     final response = await client.get(url);
 //    ChanLogger.d("Post list fetched. { url: $url, response status: ${response.statusCode} }");
     if (response.statusCode == 200) {
-      return ThreadDetailModel.fromJson(boardId, threadId, json.decode(response.body), OnlineState.ONLINE);
+      return ThreadDetailModel.fromJson(boardId, threadId, isArchived ? OnlineState.ARCHIVED : OnlineState.ONLINE, json.decode(response.body));
     } else {
-      throw Exception('Error response: ${response.statusCode}');
+      throw HttpException(message: response.body, errorCode: response.statusCode);
     }
   }
 
@@ -58,7 +58,7 @@ class ChanApiProvider {
     if (response.statusCode == 200) {
       return ArchiveListModel.fromJson(boardId, json.decode(response.body));
     } else {
-      throw Exception('Failed to load posts');
+      throw HttpException(message: response.body, errorCode: response.statusCode);
     }
   }
 }

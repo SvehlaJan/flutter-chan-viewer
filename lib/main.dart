@@ -8,6 +8,7 @@ import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/bloc/chan_viewer_bloc/chan_viewer_bloc.dart';
 import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
+import 'package:flutter_chan_viewer/utils/flavor_config.dart';
 import 'package:flutter_chan_viewer/utils/theme_helper.dart';
 
 import 'app.dart';
@@ -33,6 +34,12 @@ void main() async {
 class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    FlavorConfig(
+      flavor: Flavor.dev,
+//      color: flavor == Flavor.dev ? Colors.green : Colors.deepPurpleAccent,
+      values: Constants.flavorDev,
+    );
+
     return BlocBuilder<AppBloc, ChanState>(builder: (context, state) {
       if (state is ChanStateLoading) {
         return Constants.centeredProgressIndicator;

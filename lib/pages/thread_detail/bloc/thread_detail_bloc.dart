@@ -4,7 +4,7 @@ import 'package:bloc/bloc.dart';
 import 'package:flutter_chan_viewer/bloc/chan_event.dart';
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/locator.dart';
-import 'package:flutter_chan_viewer/models/post_item.dart';
+import 'package:flutter_chan_viewer/models/ui/post_item.dart';
 import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
 import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
 import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
@@ -47,7 +47,7 @@ class ThreadDetailBloc extends Bloc<ChanEvent, ChanState> {
         if (_catalogMode == null) {
           _catalogMode = Preferences.getBool(Preferences.KEY_THREAD_CATALOG_MODE, def: false);
         }
-        _isFavorite = _repository.isThreadFavorite(cacheDirective);
+        _isFavorite = await _repository.isThreadFavorite(_boardId, _threadId);
 
         if (_showDownloadsOnly ?? false) {
           DownloadFolderInfo folderInfo = _chanStorage.getThreadDownloadFolderInfo(cacheDirective);
@@ -61,7 +61,7 @@ class ThreadDetailBloc extends Bloc<ChanEvent, ChanState> {
           }
 
           try {
-            _threadDetailModel = await _repository.fetchRemoteThreadDetail(_boardId, _threadId);
+            _threadDetailModel = await _repository.fetchRemoteThreadDetail(_boardId, _threadId, false);
             if (cachedThreadDetailModel == null) {
               yield _getShowListState();
             } else {
@@ -147,6 +147,6 @@ class ThreadDetailBloc extends Bloc<ChanEvent, ChanState> {
   }
 
   ThreadDetailStateContent _getShowListState({bool lazyLoading = false, ThreadDetailSingleEvent event}) {
-    return ThreadDetailStateContent(_threadDetailModel, _threadDetailModel.selectedPostId, _showAppBar, _isFavorite, _catalogMode, lazyLoading, event);
+    return ThreadDetailStateContent(_threadDetailModel, _threadDetailModel?.selectedPostId, _showAppBar, _isFavorite, _catalogMode, lazyLoading, event);
   }
 }

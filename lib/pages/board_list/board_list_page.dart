@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/chan_event.dart';
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
-import 'package:flutter_chan_viewer/models/board_list_model.dart';
 import 'package:flutter_chan_viewer/models/helper/chan_board_item_wrapper.dart';
+import 'package:flutter_chan_viewer/models/ui/board_item.dart';
 import 'package:flutter_chan_viewer/utils/navigation_helper.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
 import 'package:flutter_chan_viewer/pages/board_detail/board_detail_page.dart';
@@ -39,7 +39,7 @@ class _BoardListPageState extends BasePageState<BoardListPage> {
       ];
 
   void _onSearchClick() async {
-    ChanBoard board = await showSearch<ChanBoard>(context: context, delegate: CustomSearchDelegate(_boardListBloc));
+    BoardItem board = await showSearch<BoardItem>(context: context, delegate: CustomSearchDelegate(_boardListBloc));
     _boardListBloc.searchQuery = '';
 
     if (board != null) {
@@ -52,10 +52,12 @@ class _BoardListPageState extends BasePageState<BoardListPage> {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<BoardListBloc, ChanState>(
-        bloc: _boardListBloc, builder: (context, state) => buildScaffold(context, buildBody(context, state, ((board) => _openBoardDetailPage(board)))));
+      cubit: _boardListBloc,
+      builder: (context, state) => buildScaffold(context, buildBody(context, state, ((board) => _openBoardDetailPage(board)))),
+    );
   }
 
-  static Widget buildBody(BuildContext context, ChanState state, Function(ChanBoard) onItemClicked) {
+  static Widget buildBody(BuildContext context, ChanState state, Function(BoardItem) onItemClicked) {
     if (state is ChanStateLoading) {
       return Constants.centeredProgressIndicator;
     } else if (state is BoardListStateContent) {
@@ -71,7 +73,7 @@ class _BoardListPageState extends BasePageState<BoardListPage> {
     }
   }
 
-  static Widget _buildListView(BuildContext context, BoardListStateContent state, Function(ChanBoard) onItemClicked) {
+  static Widget _buildListView(BuildContext context, BoardListStateContent state, Function(BoardItem) onItemClicked) {
     return Scrollbar(
       child: ListView.builder(
         itemCount: state.items.length,
@@ -87,7 +89,7 @@ class _BoardListPageState extends BasePageState<BoardListPage> {
     );
   }
 
-  void _openBoardDetailPage(ChanBoard board) async {
+  void _openBoardDetailPage(BoardItem board) async {
     await Navigator.of(context).push(NavigationHelper.getRoute(
       Constants.boardDetailRoute,
       {
@@ -99,7 +101,7 @@ class _BoardListPageState extends BasePageState<BoardListPage> {
   }
 }
 
-class CustomSearchDelegate extends SearchDelegate<ChanBoard> {
+class CustomSearchDelegate extends SearchDelegate<BoardItem> {
   CustomSearchDelegate(this._boardListBloc);
 
   final BoardListBloc _boardListBloc;
@@ -118,7 +120,9 @@ class CustomSearchDelegate extends SearchDelegate<ChanBoard> {
     _boardListBloc.add(ChanEventSearch(query));
 
     return BlocBuilder<BoardListBloc, ChanState>(
-        bloc: _boardListBloc, builder: (context, state) => _BoardListPageState.buildBody(context, state, ((board) => close(context, board))));
+      cubit: _boardListBloc,
+      builder: (context, state) => _BoardListPageState.buildBody(context, state, ((board) => close(context, board))),
+    );
   }
 
   @override
@@ -126,6 +130,8 @@ class CustomSearchDelegate extends SearchDelegate<ChanBoard> {
     _boardListBloc.add(ChanEventSearch(query));
 
     return BlocBuilder<BoardListBloc, ChanState>(
-        bloc: _boardListBloc, builder: (context, state) => _BoardListPageState.buildBody(context, state, ((board) => close(context, board))));
+      cubit: _boardListBloc,
+      builder: (context, state) => _BoardListPageState.buildBody(context, state, ((board) => close(context, board))),
+    );
   }
 }

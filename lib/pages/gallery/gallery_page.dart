@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
-import 'package:flutter_chan_viewer/models/post_item.dart';
+import 'package:flutter_chan_viewer/models/ui/post_item.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
 import 'package:flutter_chan_viewer/pages/thread_detail/bloc/thread_detail_event.dart';
 import 'package:flutter_chan_viewer/utils/chan_util.dart';
@@ -48,7 +48,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<ThreadDetailBloc, ChanState>(
-        bloc: _threadDetailBloc,
+        cubit: _threadDetailBloc,
         builder: (context, state) => buildScaffold(
               context,
               widget.showAsReply ? _buildSinglePostBody(context, state, widget.selectedPostId) : _buildCarouselBody(context, state),

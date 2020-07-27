@@ -1,9 +1,8 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/chan_event.dart';
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
-import 'package:flutter_chan_viewer/models/board_detail_model.dart';
+import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
 import 'package:flutter_chan_viewer/pages/board_archive/board_archive_page.dart';
 import 'package:flutter_chan_viewer/utils/navigation_helper.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
@@ -48,7 +47,7 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
       ];
 
   void _onSearchClick() async {
-    ChanThread thread = await showSearch<ChanThread>(context: context, delegate: CustomSearchDelegate(_boardDetailBloc));
+    ThreadItem thread = await showSearch<ThreadItem>(context: context, delegate: CustomSearchDelegate(_boardDetailBloc));
     _boardDetailBloc.searchQuery = '';
 
     if (thread != null) {
@@ -74,10 +73,12 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<BoardDetailBloc, ChanState>(
-        bloc: _boardDetailBloc, builder: (context, state) => buildScaffold(context, buildBody(context, state, ((thread) => _openThreadDetailPage(thread)))));
+      cubit: _boardDetailBloc,
+      builder: (context, state) => buildScaffold(context, buildBody(context, state, ((thread) => _openThreadDetailPage(thread)))),
+    );
   }
 
-  static Widget buildBody(BuildContext context, ChanState state, Function(ChanThread) onItemClicked) {
+  static Widget buildBody(BuildContext context, ChanState state, Function(ThreadItem) onItemClicked) {
     if (state is ChanStateLoading) {
       return Constants.centeredProgressIndicator;
     } else if (state is BoardDetailStateContent) {
@@ -93,7 +94,7 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
     }
   }
 
-  static Widget _buildListView(BuildContext context, BoardDetailStateContent state, Function(ChanThread) onItemClicked) {
+  static Widget _buildListView(BuildContext context, BoardDetailStateContent state, Function(ThreadItem) onItemClicked) {
     return Scrollbar(
       child: ListView.builder(
         itemCount: state.threads.length,
@@ -107,7 +108,7 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
     );
   }
 
-  void _openThreadDetailPage(ChanThread thread) {
+  void _openThreadDetailPage(ThreadItem thread) {
     Navigator.of(context).push(
       NavigationHelper.getRoute(
         Constants.threadDetailRoute,
@@ -117,7 +118,7 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
   }
 }
 
-class CustomSearchDelegate extends SearchDelegate<ChanThread> {
+class CustomSearchDelegate extends SearchDelegate<ThreadItem> {
   CustomSearchDelegate(this._boardDetailBloc);
 
   final BoardDetailBloc _boardDetailBloc;
@@ -136,7 +137,9 @@ class CustomSearchDelegate extends SearchDelegate<ChanThread> {
     _boardDetailBloc.add(ChanEventSearch(query));
 
     return BlocBuilder<BoardDetailBloc, ChanState>(
-        bloc: _boardDetailBloc, builder: (context, state) => _BoardDetailPageState.buildBody(context, state, ((thread) => close(context, thread))));
+      cubit: _boardDetailBloc,
+      builder: (context, state) => _BoardDetailPageState.buildBody(context, state, ((thread) => close(context, thread))),
+    );
   }
 
   @override
@@ -144,6 +147,8 @@ class CustomSearchDelegate extends SearchDelegate<ChanThread> {
     _boardDetailBloc.add(ChanEventSearch(query));
 
     return BlocBuilder<BoardDetailBloc, ChanState>(
-        bloc: _boardDetailBloc, builder: (context, state) => _BoardDetailPageState.buildBody(context, state, ((thread) => close(context, thread))));
+      cubit: _boardDetailBloc,
+      builder: (context, state) => _BoardDetailPageState.buildBody(context, state, ((thread) => close(context, thread))),
+    );
   }
 }

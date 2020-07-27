@@ -1,11 +1,9 @@
 import 'dart:async';
-import 'dart:collection';
 
 import 'package:bloc/bloc.dart';
 import 'package:flutter_chan_viewer/bloc/chan_event.dart';
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/locator.dart';
-import 'package:flutter_chan_viewer/models/board_list_model.dart';
 import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
 import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
 import 'package:flutter_chan_viewer/utils/chan_logger.dart';
@@ -24,16 +22,13 @@ class FavoritesBloc extends Bloc<ChanEvent, ChanState> {
       if (event is ChanEventFetchData) {
         yield ChanStateLoading();
 
-        HashMap<String, List<ThreadDetailModel>> threadMap = await _repository.getFavoriteThreads();
+        List<ThreadDetailModel> threads = await _repository.getFavoriteThreads();
         bool showSfwOnly = Preferences.getBool(Preferences.KEY_SETTINGS_SHOW_SFW_ONLY, def: true);
         if (showSfwOnly) {
-          BoardListModel boardListModel = await _repository.fetchCachedBoardList();
-          threadMap.removeWhere((boardId, threads) {
-            bool isSfw = boardListModel.boards.where((board) => board.boardId == boardId).first.workSafe ?? false;
-            return !isSfw;
-          });
+          List<String> sfwBoardIds = (await _repository.fetchCachedBoardList(false)).boards.map((board) => board.boardId).toList();
+          threads.removeWhere((model) => !sfwBoardIds.contains(model.thread.boardId));
         }
-        yield FavoritesStateContent(threadMap);
+        yield FavoritesStateContent(threads);
       }
     } catch (e, stackTrace) {
       ChanLogger.e("Event error!", e, stackTrace);

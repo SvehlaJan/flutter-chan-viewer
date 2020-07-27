@@ -4,10 +4,10 @@ import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
 
 class FavoritesStateContent extends ChanState {
-  final HashMap<String, List<ThreadDetailModel>> threadMap;
+  final List<ThreadDetailModel> threads;
 
-  FavoritesStateContent(this.threadMap);
+  FavoritesStateContent(this.threads);
 
   @override
-  List<Object> get props => [threadMap];
+  List<Object> get props => [threads];
 }

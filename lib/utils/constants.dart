@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_chan_viewer/utils/features.dart';
+import 'package:flutter_chan_viewer/utils/flavor_config.dart';
 
 enum AppTheme { light, dark }
-
-enum OnlineState { ONLINE, OFFLINE, UNKNOWN }
 
 class Constants {
   //routes
@@ -14,6 +14,9 @@ class Constants {
   static const String galleryRoute = "board/detail/thread/gallery";
   static const String settingsRoute = "settings";
   static const String notFoundRoute = "not_found";
+
+  static const String baseUrl = "https://a.4cdn.org";
+  static const String baseImageUrl = "https://i.4cdn.org";
 
   static const double favoriteIconSize = 16.0;
   static const double avatarImageSize = 100.0;
@@ -47,4 +50,16 @@ class Constants {
       ),
     );
   }
+
+  static final flavorDev = FlavorValuesApp(
+    baseUrl: baseUrl,
+    baseImgUrl: baseImageUrl,
+    features: () => Features.devRemote,
+  );
+
+  static final flavorProd = FlavorValuesApp(
+    baseUrl: baseUrl,
+    baseImgUrl: baseImageUrl,
+    features: () => Features.prodRemote,
+  );
 }

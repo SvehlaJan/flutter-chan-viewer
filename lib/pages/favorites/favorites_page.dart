@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/chan_event.dart';
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
-import 'package:flutter_chan_viewer/models/board_detail_model.dart';
+import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
 import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
 import 'package:flutter_chan_viewer/utils/navigation_helper.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
@@ -39,16 +39,17 @@ class _FavoritesPageState extends BasePageState<FavoritesPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<FavoritesBloc, ChanState>(bloc: _favoritesBloc, builder: (context, state) => buildScaffold(context, buildBody(context, state)));
+    return BlocBuilder<FavoritesBloc, ChanState>(
+      cubit: _favoritesBloc,
+      builder: (context, state) => buildScaffold(context, buildBody(context, state)),
+    );
   }
 
   Widget buildBody(BuildContext context, ChanState state) {
     if (state is ChanStateLoading) {
       return Constants.centeredProgressIndicator;
     } else if (state is FavoritesStateContent) {
-      List<ThreadDetailModel> threads = state.threadMap.values.expand((list) => list).toList();
-
-      if (threads.isEmpty) {
+      if (state.threads.isEmpty) {
         return Constants.noDataPlaceholder;
       }
 
@@ -56,11 +57,11 @@ class _FavoritesPageState extends BasePageState<FavoritesPage> {
         child: ListView.builder(
           itemBuilder: (BuildContext context, int index) {
             return InkWell(
-              child: ThreadListWidget(thread: threads[index].thread),
-              onTap: () => _openThreadDetailPage(threads[index].thread),
+              child: ThreadListWidget(thread: state.threads[index].thread),
+              onTap: () => _openThreadDetailPage(state.threads[index].thread),
             );
           },
-          itemCount: threads.length,
+          itemCount: state.threads.length,
         ),
       );
     } else {
@@ -68,7 +69,7 @@ class _FavoritesPageState extends BasePageState<FavoritesPage> {
     }
   }
 
-  void _openThreadDetailPage(ChanThread thread) async {
+  void _openThreadDetailPage(ThreadItem thread) async {
     await Navigator.of(context).push(
       NavigationHelper.getRoute(
         Constants.threadDetailRoute,

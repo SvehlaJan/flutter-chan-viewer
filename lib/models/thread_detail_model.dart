@@ -51,7 +51,10 @@ class ThreadDetailModel with EquatableMixin {
     return ThreadDetailModel._(ThreadItem.fromCacheDirective(cacheDirective), [], 0);
   }
 
-  factory ThreadDetailModel.fromThreadAndPosts(ThreadItem thread, List<PostItem> posts) => ThreadDetailModel._(thread, posts, -1);
+  factory ThreadDetailModel.fromThreadAndPosts(ThreadItem thread, List<PostItem> posts) {
+    posts.forEach((post) => post.thread = thread);
+    return ThreadDetailModel._(thread, posts, -1);
+  }
 
   /*
   ThreadDetailModel.fromJson(String boardId, int threadId, Map<String, dynamic> parsedJson)
@@ -101,7 +104,8 @@ class ThreadDetailModel with EquatableMixin {
 
   get selectedMediaIndex => getMediaIndex(_selectedPostId);
 
-  set selectedMediaIndex(int mediaIndex) => _selectedPostId = mediaIndex < mediaPosts.length ? mediaPosts[mediaIndex].postId : throw IndexOutOfBoundsException();
+  set selectedMediaIndex(int mediaIndex) =>
+      _selectedPostId = mediaIndex < mediaPosts.length ? mediaPosts[mediaIndex].postId : throw IndexOutOfBoundsException();
 
   get selectedPostId => _selectedPostId;
 

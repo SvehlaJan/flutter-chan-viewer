@@ -17,6 +17,11 @@ import 'bloc/board_detail_state.dart';
 class BoardDetailPage extends StatefulWidget {
   static const String ARG_BOARD_ID = "ChanBoardsPage.ARG_BOARD_ID";
 
+  static Map<String, dynamic> createArguments(final String boardId) {
+    Map<String, dynamic> arguments = {ARG_BOARD_ID: boardId};
+    return arguments;
+  }
+
   final String boardId;
 
   BoardDetailPage(this.boardId);

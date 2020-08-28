@@ -7,7 +7,11 @@ abstract class ChanEvent extends Equatable {
   List<Object> get props => [];
 }
 
+class ChanEventInitBloc extends ChanEvent {}
+
 class ChanEventFetchData extends ChanEvent {}
+
+class ChanEventNewDataReceived extends ChanEvent {}
 
 class ChanEventSearch extends ChanEvent {
   final String query;

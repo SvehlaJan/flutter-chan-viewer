@@ -5,6 +5,8 @@ import 'package:flutter_chan_viewer/bloc/app_bloc/app_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/app_bloc/app_event.dart';
 import 'package:flutter_chan_viewer/bloc/chan_event.dart';
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
+import 'package:flutter_chan_viewer/models/helper/moor_db_overview.dart';
+import 'package:flutter_chan_viewer/pages/board_detail/board_detail_page.dart';
 import 'package:flutter_chan_viewer/utils/navigation_helper.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
 import 'package:flutter_chan_viewer/pages/settings/bloc/settings_bloc.dart';
@@ -90,6 +92,29 @@ class _SettingsPageState extends BasePageState<SettingsPage> {
                 ],
               ),
             ),
+            if (state.moorDbOverview.boards.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text("Db overview", style: Theme.of(context).textTheme.subhead),
+              ),
+            if (state.moorDbOverview.boards.isNotEmpty)
+              ListView.builder(
+                itemCount: state.moorDbOverview.boards.length,
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                itemBuilder: (context, index) {
+                  MoorBoardOverview boardOverview = state.moorDbOverview.boards[index];
+                  return Card(
+                    elevation: 2.0,
+                    child: ListTile(
+                      title: Text(boardOverview.boardId),
+                      subtitle: Text(
+                          "Online: ${boardOverview.onlineCount}\nArchived: ${boardOverview.archivedCount}\nNot found: ${boardOverview.notFoundCount}\nUnknown: ${boardOverview.unknownCount}"),
+                      onTap: () => _onMoorBoardOverviewClicked(boardOverview),
+                    ),
+                  );
+                },
+              ),
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Text("Downloads", style: Theme.of(context).textTheme.subhead),
@@ -124,6 +149,15 @@ class _SettingsPageState extends BasePageState<SettingsPage> {
       NavigationHelper.getRoute(
         Constants.threadDetailRoute,
         ThreadDetailPage.createArguments(folderInfo.cacheDirective.boardId, folderInfo.cacheDirective.threadId, showDownloadsOnly: true),
+      ),
+    );
+  }
+
+  void _onMoorBoardOverviewClicked(MoorBoardOverview boardOverview) {
+    Navigator.of(context).push(
+      NavigationHelper.getRoute(
+        Constants.boardDetailRoute,
+        BoardDetailPage.createArguments(boardOverview.boardId),
       ),
     );
   }

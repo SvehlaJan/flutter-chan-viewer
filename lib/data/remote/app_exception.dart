@@ -1,10 +1,10 @@
 import 'package:flutter/foundation.dart';
 
-class ApiException implements Exception {
+class AppException implements Exception {
   final Exception exception;
   final String message;
 
-  const ApiException({
+  const AppException({
     @required this.exception,
     @required this.message,
   });

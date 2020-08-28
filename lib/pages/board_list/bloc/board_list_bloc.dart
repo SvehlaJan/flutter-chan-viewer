@@ -49,6 +49,8 @@ class BoardListBloc extends Bloc<ChanEvent, ChanState> {
     }
   }
 
+//  https://pub.dev/packages/sliding_sheet
+
   List<ChanBoardItemWrapper> _processBoardList(List<String> favoriteBoardIds, bool showSfwOnly, BoardListModel boardListModel) {
     List<BoardItem> filteredBoards = boardListModel.boards.where((board) => _matchesFilter(board, searchQuery, showSfwOnly)).toList();
     List<BoardItem> favoriteBoards = filteredBoards.where((board) => favoriteBoardIds.contains(board.boardId)).toList();

@@ -1,4 +1,5 @@
 import 'package:flutter_chan_viewer/bloc/chan_event.dart';
+import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
 
 class ThreadDetailEventToggleFavorite extends ChanEvent {}
 
@@ -43,4 +44,13 @@ class ThreadDetailEventOnReplyClicked extends ChanEvent {
 
   @override
   List<Object> get props => [postId];
+}
+
+class ThreadDetailEventOnDataReceived extends ChanEvent {
+  final ThreadDetailModel model;
+
+  ThreadDetailEventOnDataReceived(this.model);
+
+  @override
+  List<Object> get props => [model];
 }

@@ -41,8 +41,12 @@ enum Flavor { dev, qa, production }
 
 abstract class FlavorValues {
   final String baseUrl;
+  final String baseImgUrl;
 
-  FlavorValues({this.baseUrl});
+  FlavorValues({
+    this.baseUrl,
+    this.baseImgUrl,
+  });
 }
 
 class FlavorValuesApp implements FlavorValues {
@@ -55,6 +59,7 @@ class FlavorValuesApp implements FlavorValues {
   final String baseUrl;
   final String baseImgUrl;
   final Map<String, bool> Function() _features;
+
   Map<String, bool> get features => _features();
 //Add other flavor specific values, e.g database name
 }

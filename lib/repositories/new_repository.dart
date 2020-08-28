@@ -1,12 +1,7 @@
 import 'dart:async';
 
-import 'package:flutter_chan_viewer/api/network_bound_resources.dart';
-import 'package:flutter_chan_viewer/api/resource.dart';
 import 'package:flutter_chan_viewer/locator.dart';
-import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
 import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
-
-import 'cache_directive.dart';
 
 class NewChanRepository {
   static final NewChanRepository _instance = NewChanRepository._internal();

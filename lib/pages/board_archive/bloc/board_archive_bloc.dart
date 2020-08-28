@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 import 'dart:math';
 
 import 'package:bloc/bloc.dart';
@@ -18,7 +19,7 @@ import 'board_archive_state.dart';
 class BoardArchiveBloc extends Bloc<ChanEvent, ChanState> {
   final ChanRepository _repository = getIt<ChanRepository>();
   final String boardId;
-  final int _kLazyLoadingTake = 20;
+  final int _kLazyLoadingTake = 100;
   int lazyLoadingMax = 0;
   List<int> archiveThreadIds = [];
   List<ArchiveThreadWrapper> archiveThreads = List<ArchiveThreadWrapper>();
@@ -34,7 +35,7 @@ class BoardArchiveBloc extends Bloc<ChanEvent, ChanState> {
       if (event is ChanEventFetchData) {
         yield ChanStateLoading();
         ArchiveListModel boardDetailModel = await _repository.fetchRemoteArchiveList(boardId);
-        archiveThreadIds = boardDetailModel.threads;
+        archiveThreadIds = boardDetailModel.threads.reversed.toList();
 
         add(BoardArchiveEventFetchDetailsLazy());
       } else if (event is BoardArchiveEventFetchDetailsLazy) {

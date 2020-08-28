@@ -1,5 +1,5 @@
-import 'package:flutter_chan_viewer/api/chan_api_provider.dart';
 import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
+import 'package:flutter_chan_viewer/utils/flavor_config.dart';
 
 abstract class ChanPostBase {
   final String boardId;
@@ -32,7 +32,7 @@ abstract class ChanPostBase {
   String _getMediaUrl(String boardId, String imageId, String extension, bool thumbnail) {
     if (boardId != null && imageId != null && extension != null) {
       String fileName = _getFileName(imageId, extension, thumbnail);
-      return "${ChanApiProvider.baseImageUrl}/$boardId/$fileName";
+      return "${FlavorConfig.values().baseImgUrl}/$boardId/$fileName";
     } else {
       return null;
     }

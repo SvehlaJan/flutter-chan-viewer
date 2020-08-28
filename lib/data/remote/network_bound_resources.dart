@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
-import 'package:flutter_chan_viewer/api/resource.dart';
+import 'package:flutter_chan_viewer/data/remote/resource.dart';
 
 class NetworkBoundResources<ResultType, RequestType> {
   StreamController<Resource<ResultType>> _result;

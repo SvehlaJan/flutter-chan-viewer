@@ -1,9 +1,9 @@
-import 'package:flutter_chan_viewer/api/chan_api_provider.dart';
 import 'package:flutter_chan_viewer/data/local/dao/boards_dao.dart';
 import 'package:flutter_chan_viewer/data/local/dao/posts_dao.dart';
 import 'package:flutter_chan_viewer/data/local/dao/threads_dao.dart';
 import 'package:flutter_chan_viewer/data/local/local_data_source.dart';
 import 'package:flutter_chan_viewer/data/local/moor_db.dart';
+import 'package:flutter_chan_viewer/data/remote/remote_data_source.dart';
 import 'package:flutter_chan_viewer/repositories/new_repository.dart';
 import 'package:flutter_chan_viewer/utils/navigation_service.dart';
 import 'package:flutter_chan_viewer/repositories/chan_downloader.dart';
@@ -18,7 +18,7 @@ GetIt getIt = GetIt.instance;
 void setupLocator() {
   getIt.registerLazySingleton(() => NavigationService());
   getIt.registerLazySingleton<DiskCache>(() => DiskCache());
-  getIt.registerLazySingleton<ChanApiProvider>(() => ChanApiProvider());
+  getIt.registerLazySingleton<RemoteDataSource>(() => RemoteDataSource());
   getIt.registerLazySingleton<MoorDB>(() => MoorDB());
   getIt.registerLazySingleton<PostsDao>(() => PostsDao(getIt<MoorDB>()));
   getIt.registerLazySingleton<ThreadsDao>(() => ThreadsDao(getIt<MoorDB>()));

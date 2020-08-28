@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter_chan_viewer/data/remote/api_exception.dart';
+import 'package:flutter_chan_viewer/data/remote/app_exception.dart';
 import 'package:flutter_chan_viewer/data/remote/error_mapper.dart';
 import 'package:flutter_chan_viewer/data/remote/status.dart';
 import 'package:meta/meta.dart';
@@ -10,7 +10,7 @@ class Resource<T> {
   final Status status;
   final T data;
   final String message;
-  final ApiException error;
+  final AppException error;
 
   const Resource({this.data, @required this.status, this.message, this.error});
 

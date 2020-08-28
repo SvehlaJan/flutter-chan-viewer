@@ -1,15 +1,24 @@
 import 'package:dio/dio.dart';
-import 'package:flutter_chan_viewer/data/remote/api_exception.dart';
+import 'package:flutter_chan_viewer/data/remote/app_exception.dart';
 
 class ErrorMapper {
   static from(Exception e) {
     if (e is DioError) {
-      return ApiException(exception: e, message: _dioError(e));
-    } else if (e is ApiException) {
+      return AppException(exception: e, message: _dioError(e));
+    } else if (e is HttpException) {
+      return AppException(exception: e, message: _httpError(e));
+    } else if (e is AppException) {
       return e;
     } else {
-      return ApiException(exception: e, message: e.toString());
+      return AppException(exception: e, message: e.toString());
     }
+  }
+
+  static String _httpError(HttpException exception) {
+    if (exception.errorCode == 200) {
+      return "Not found!";
+    }
+    return "Uknnown error.";
   }
 
   static String _dioError(DioError error) {

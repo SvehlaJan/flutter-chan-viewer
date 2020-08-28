@@ -19,6 +19,7 @@ import 'package:flutter_chan_viewer/utils/chan_logger.dart';
 import 'package:flutter_chan_viewer/repositories/disk_cache.dart';
 import 'package:flutter_chan_viewer/utils/preferences.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:stream_transform/stream_transform.dart';
 
 class ChanRepository {
   static final ChanRepository _instance = ChanRepository._internal();
@@ -82,21 +83,21 @@ class ChanRepository {
       thread.setFavorite(await isThreadFavorite(thread.boardId, thread.threadId));
     });
     List<int> threadIds = boardDetailModel.threads.map((thread) => thread.threadId).toList();
-    await _localDataSource.syncWithNewOnlineThreads(threadIds);
+    await _localDataSource.syncWithNewOnlineThreads(boardId, threadIds);
     await _localDataSource.saveThreads(boardDetailModel.threads);
     return boardDetailModel;
   }
 
   Future<ArchiveListModel> fetchRemoteArchiveList(String boardId) async {
     ArchiveListModel archiveList = await _chanApiProvider.fetchArchiveList(boardId);
-    await _localDataSource.syncWithNewArchivedThreads(archiveList.threads);
+    await _localDataSource.syncWithNewArchivedThreads(boardId, archiveList.threads);
     return archiveList;
   }
 
   Future<ThreadDetailModel> fetchCachedThreadDetail(String boardId, int threadId) async {
     ThreadItem thread = await _localDataSource.getThreadById(boardId, threadId);
     if (thread != null) {
-      List<PostItem> posts = await _localDataSource.getPostsByThread(thread);
+      List<PostItem> posts = await _localDataSource.getPostsFromThread(thread);
 
       if (posts.isNotEmpty) {
         ThreadDetailModel model = ThreadDetailModel.fromThreadAndPosts(thread, posts);
@@ -105,6 +106,24 @@ class ChanRepository {
     }
 
     return null;
+  }
+
+  Future<List<ThreadDetailModel>> fetchCachedThreadDetails(String boardId, List<int> threadIds) async {
+    List<ThreadItem> threads = await _localDataSource.getThreadsByIds(boardId, threadIds);
+
+    List<ThreadDetailModel> models = [];
+    for (ThreadItem thread in threads) {
+      List<PostItem> posts = await _localDataSource.getPostsFromThread(thread);
+      models.add(ThreadDetailModel.fromThreadAndPosts(thread, posts));
+    }
+
+    return models;
+  }
+
+  Stream<ThreadDetailModel> getThreadDetailStream(String boardId, int threadId) {
+    return _localDataSource
+        .getThreadByIdStream(boardId, threadId)
+        .combineLatest(_localDataSource.getPostsByThreadIdStream(boardId, threadId), (thread, posts) => ThreadDetailModel.fromThreadAndPosts(thread, posts));
   }
 
   FutureOr<ThreadDetailModel> fetchRemoteThreadDetail(String boardId, int threadId, bool isArchived) async {
@@ -148,7 +167,7 @@ class ChanRepository {
     List<ThreadItem> threads = await _localDataSource.getFavoriteThreads();
     List<ThreadDetailModel> models = [];
     for (ThreadItem thread in threads) {
-      List<PostItem> posts = await _localDataSource.getPostsByThread(thread);
+      List<PostItem> posts = await _localDataSource.getPostsFromThread(thread);
       models.add(ThreadDetailModel.fromThreadAndPosts(thread, posts));
     }
 

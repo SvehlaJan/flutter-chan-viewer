@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:flutter_chan_viewer/data/remote/api_exception.dart';
+import 'package:flutter_chan_viewer/data/remote/app_exception.dart';
+import 'package:flutter_chan_viewer/data/remote/resource.dart';
 import 'package:flutter_chan_viewer/models/archive_list_model.dart';
 import 'package:flutter_chan_viewer/models/board_detail_model.dart';
 import 'package:flutter_chan_viewer/models/board_list_model.dart';
@@ -23,6 +24,20 @@ class RemoteDataSource {
     } else {
       throw HttpException(message: response.body, errorCode: response.statusCode);
     }
+  }
+
+  Future<Resource<BoardListModel>> getBoardList() async {
+    String url = "${FlavorConfig.values().baseUrl}/boards.json";
+
+    return Resource.asFuture(() async {
+      return await client.get(url).then((response) {
+        if (response.statusCode == 200) {
+          return BoardListModel.fromJson(json.decode(response.body));
+        } else {
+          throw HttpException(message: response.body, errorCode: response.statusCode);
+        }
+      });
+    });
   }
 
   Future<BoardDetailModel> fetchThreadList(String boardId) async {

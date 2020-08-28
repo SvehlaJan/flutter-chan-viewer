@@ -10,7 +10,7 @@ class PostItem extends ChanPostBase with EquatableMixin {
   final int postId;
   final List<int> repliesTo;
   final List<PostItem> repliesFrom = [];
-  final ThreadItem thread;
+  ThreadItem thread;
 
   bool get hasReplies => repliesFrom.isNotEmpty;
 
@@ -60,7 +60,7 @@ class PostItem extends ChanPostBase with EquatableMixin {
       imageId: this.imageId,
       extension: this.extension);
 
-  factory PostItem.fromTableData(PostsTableData entry, ThreadItem thread) => PostItem(
+  factory PostItem.fromTableData(PostsTableData entry, {ThreadItem thread}) => PostItem(
         entry.boardId,
         entry.threadId,
         entry.postId,

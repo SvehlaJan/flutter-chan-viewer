@@ -11,19 +11,27 @@ class ThreadsDao extends DatabaseAccessor<MoorDB> with _$ThreadsDaoMixin {
 
 //  Stream<List<PostsTableData>> get allActiveThreadItemsStream => select(threadsTable).watch();
 
-  Future<ThreadsTableData> getThreadById(String boardId, int threadId) {
-    return (select(threadsTable)..where((thread) => thread.boardId.equals(boardId) & thread.threadId.equals(threadId))).getSingle();
-  }
+  Future<ThreadsTableData> getThreadById(String boardId, int threadId) =>
+      (select(threadsTable)..where((thread) => thread.boardId.equals(boardId) & thread.threadId.equals(threadId))).getSingle();
+
+  Future<List<ThreadsTableData>> getThreadsByIds(String boardId, List<int> threadIds) =>
+      (select(threadsTable)..where((thread) => thread.boardId.equals(boardId) & thread.threadId.isIn(threadIds))).get();
+
+  Stream<ThreadsTableData> getThreadByStream(String boardId, int threadId) =>
+      (select(threadsTable)..where((thread) => thread.boardId.equals(boardId) & thread.threadId.equals(threadId))).watchSingle();
 
   Future<List<ThreadsTableData>> getAllThreadItems() => select(threadsTable).get();
 
-  Future<List<ThreadsTableData>> getFavoriteThreads() =>
-      (select(threadsTable)..where((thread) => thread.isFavorite.equals(true))).get();
+  Future<List<ThreadsTableData>> getFavoriteThreads() => (select(threadsTable)..where((thread) => thread.isFavorite.equals(true))).get();
+
+  Future<List<ThreadsTableData>> getThreadsByBoardId(String boardId) =>
+      (select(threadsTable)..where((thread) => thread.boardId.equals(boardId))).get();
 
   Future<List<ThreadsTableData>> getThreadsByBoardIdAndOnlineState(String boardId, OnlineState onlineState) =>
       (select(threadsTable)..where((thread) => thread.boardId.equals(boardId) & thread.onlineState.equals(onlineState.index))).get();
 
-  Future<List<ThreadsTableData>> getThreadsByOnlineState(OnlineState onlineState) => (select(threadsTable)..where((thread) => thread.onlineState.equals(onlineState.index))).get();
+  Future<List<ThreadsTableData>> getThreadsByOnlineState(OnlineState onlineState) =>
+      (select(threadsTable)..where((thread) => thread.onlineState.equals(onlineState.index))).get();
 
   Future<int> insertThread(ThreadsTableData entry) {
     return into(threadsTable).insert(entry, mode: InsertMode.insertOrReplace);

@@ -25,10 +25,17 @@ class ThreadDetailBloc extends Bloc<ChanEvent, ChanState> {
   final bool _showAppBar;
   bool _catalogMode;
   bool _isFavorite;
+  StreamSubscription subscription;
 
   ThreadDetailModel _threadDetailModel;
 
-  ThreadDetailBloc(this._boardId, this._threadId, this._showAppBar, this._showDownloadsOnly, this._catalogMode) : super(ChanStateLoading());
+  ThreadDetailBloc(
+    this._boardId,
+    this._threadId,
+    this._showAppBar,
+    this._showDownloadsOnly,
+    this._catalogMode,
+  ) : super(ChanStateLoading());
 
   String get pageTitle => "/$_boardId/$_threadId";
 
@@ -41,7 +48,7 @@ class ThreadDetailBloc extends Bloc<ChanEvent, ChanState> {
   @override
   Stream<ChanState> mapEventToState(ChanEvent event) async* {
     try {
-      if (event is ChanEventFetchData) {
+      if (event is ChanEventInitBloc) {
         yield ChanStateLoading();
 
         if (_catalogMode == null) {
@@ -49,29 +56,47 @@ class ThreadDetailBloc extends Bloc<ChanEvent, ChanState> {
         }
         _isFavorite = await _repository.isThreadFavorite(_boardId, _threadId);
 
+        add(ChanEventFetchData());
+      }
+      if (event is ChanEventFetchData) {
+        yield ChanStateLoading();
+
         if (_showDownloadsOnly ?? false) {
           DownloadFolderInfo folderInfo = _chanStorage.getThreadDownloadFolderInfo(cacheDirective);
           _threadDetailModel = ThreadDetailModel.fromFolderInfo(folderInfo);
           yield _getShowListState();
         } else {
-          ThreadDetailModel cachedThreadDetailModel = await _repository.fetchCachedThreadDetail(_boardId, _threadId);
-          if (cachedThreadDetailModel != null) {
-            _threadDetailModel = cachedThreadDetailModel;
-            yield _getShowListState(lazyLoading: true, event: ThreadDetailSingleEvent.SCROLL_TO_SELECTED);
-          }
-
-          try {
-            _threadDetailModel = await _repository.fetchRemoteThreadDetail(_boardId, _threadId, false);
-            if (cachedThreadDetailModel == null) {
-              yield _getShowListState();
-            } else {
-              yield _getShowListState(event: ThreadDetailSingleEvent.SCROLL_TO_SELECTED);
+          subscription?.cancel();
+          subscription = _repository.getThreadDetailStream(_boardId, _threadId).listen((model) {
+            if (model?.posts?.isNotEmpty ?? false) {
+              add(ThreadDetailEventOnDataReceived(model));
             }
-          } catch (e, stacktrace) {
-            ChanLogger.e("Fetch error", e, stacktrace);
-            yield _getShowListState(event: ThreadDetailSingleEvent.SHOW_OFFLINE);
-          }
+          });
+
+          await _repository.fetchRemoteThreadDetail(_boardId, _threadId, false);
+
+//          ThreadDetailModel cachedThreadDetailModel = await _repository.fetchCachedThreadDetail(_boardId, _threadId);
+//          if (cachedThreadDetailModel != null) {
+//            _threadDetailModel = cachedThreadDetailModel;
+//            yield _getShowListState(lazyLoading: true, event: ThreadDetailSingleEvent.SCROLL_TO_SELECTED);
+//          }
+//
+//          try {
+//            _threadDetailModel = await _repository.fetchRemoteThreadDetail(_boardId, _threadId, false);
+//            if (cachedThreadDetailModel == null) {
+//              yield _getShowListState();
+//            } else {
+//              yield _getShowListState(event: ThreadDetailSingleEvent.SCROLL_TO_SELECTED);
+//            }
+//          } catch (e, stacktrace) {
+//            ChanLogger.e("Fetch error", e, stacktrace);
+//            yield _getShowListState(event: ThreadDetailSingleEvent.SHOW_OFFLINE);
+//          }
         }
+      } else if (event is ThreadDetailEventOnDataReceived) {
+        bool firstData = _threadDetailModel == null;
+        _threadDetailModel = event.model;
+        yield _getShowListState(lazyLoading: firstData, event: firstData ? ThreadDetailSingleEvent.SCROLL_TO_SELECTED : null);
       } else if (event is ThreadDetailEventToggleFavorite) {
         if (_isFavorite) {
           yield _getShowListState(event: ThreadDetailSingleEvent.SHOW_UNSTAR_WARNING);
@@ -148,5 +173,11 @@ class ThreadDetailBloc extends Bloc<ChanEvent, ChanState> {
 
   ThreadDetailStateContent _getShowListState({bool lazyLoading = false, ThreadDetailSingleEvent event}) {
     return ThreadDetailStateContent(_threadDetailModel, _threadDetailModel?.selectedPostId, _showAppBar, _isFavorite, _catalogMode, lazyLoading, event);
+  }
+
+  @override
+  Future<void> close() {
+    subscription?.cancel();
+    return super.close();
   }
 }

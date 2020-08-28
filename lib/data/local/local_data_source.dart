@@ -17,9 +17,13 @@ class LocalDataSource {
     return _postsDao.insertPostsList(posts.map((post) => post.toTableData()).toList());
   }
 
-  Future<List<PostItem>> getPostsByThread(ThreadItem thread) async {
+  Future<List<PostItem>> getPostsFromThread(ThreadItem thread) async {
     List<PostsTableData> posts = await _postsDao.getAllPostsFromThread(thread.boardId, thread.threadId);
-    return posts.map((postData) => PostItem.fromTableData(postData, thread)).toList();
+    return posts.map((postData) => PostItem.fromTableData(postData, thread: thread)).toList();
+  }
+
+  Stream<List<PostItem>> getPostsByThreadIdStream(String boardId, int threadId) {
+    return _postsDao.getAllPostsFromThreadStream(boardId, threadId).map((posts) => posts.map((postData) => PostItem.fromTableData(postData)).toList());
   }
 
   Future<void> saveThread(ThreadItem thread) async {
@@ -39,6 +43,20 @@ class LocalDataSource {
     return threadTableData != null ? ThreadItem.fromTableData(threadTableData) : null;
   }
 
+  Future<List<ThreadItem>> getThreadsByIds(String boardId, List<int> threadIds) async {
+    List<ThreadsTableData> threads = await _threadsDao.getThreadsByIds(boardId, threadIds);
+    return threads.map((threadData) => ThreadItem.fromTableData(threadData)).toList();
+  }
+
+  Future<List<ThreadItem>> getThreadsByBoardId(String boardId) async {
+    List<ThreadsTableData> threads = await _threadsDao.getThreadsByBoardId(boardId);
+    return threads.map((threadData) => ThreadItem.fromTableData(threadData)).toList();
+  }
+
+  Stream<ThreadItem> getThreadByIdStream(String boardId, int threadId) {
+    return _threadsDao.getThreadByStream(boardId, threadId).map((threadData) => ThreadItem.fromTableData(threadData));
+  }
+
   Future<List<ThreadItem>> getFavoriteThreads() async {
     List<ThreadsTableData> threads = await _threadsDao.getFavoriteThreads();
     return threads.map((threadData) => ThreadItem.fromTableData(threadData)).toList();
@@ -50,8 +68,8 @@ class LocalDataSource {
   }
 
   /// Sets state to UNKNOWN of local threads which are no longer online
-  Future<void> syncWithNewOnlineThreads(List<int> onlineThreadIds) async {
-    List<ThreadsTableData> localThreads = await _threadsDao.getThreadsByOnlineState(OnlineState.ONLINE);
+  Future<void> syncWithNewOnlineThreads(String boardId, List<int> onlineThreadIds) async {
+    List<ThreadsTableData> localThreads = await _threadsDao.getThreadsByBoardIdAndOnlineState(boardId, OnlineState.ONLINE);
     List<ThreadsTableData> notFoundThreads = localThreads.where((thread) => !onlineThreadIds.contains(thread.threadId)).toList();
     await _threadsDao.updateThreadsOnlineState(notFoundThreads, OnlineState.UNKNOWN);
 
@@ -60,8 +78,8 @@ class LocalDataSource {
     return null;
   }
 
-  Future<void> deleteRedundantUnknownThreads() async {
-    List<ThreadsTableData> unknownThreads = await _threadsDao.getThreadsByOnlineState(OnlineState.UNKNOWN);
+  Future<void> deleteRedundantUnknownThreads(String boardId) async {
+    List<ThreadsTableData> unknownThreads = await _threadsDao.getThreadsByBoardIdAndOnlineState(boardId, OnlineState.UNKNOWN);
     unknownThreads.sort((a, b) => a.timestamp.compareTo(b.timestamp));
     ThreadsTableData pivotingUnknownThread = unknownThreads.elementAt(200);
     if (pivotingUnknownThread != null) {
@@ -70,8 +88,8 @@ class LocalDataSource {
   }
 
   /// Deletes old archived threads, which are no login in archive.
-  Future<void> syncWithNewArchivedThreads(List<int> archivedThreadIds) async {
-    List<ThreadsTableData> localThreads = await _threadsDao.getThreadsByOnlineState(OnlineState.ARCHIVED);
+  Future<void> syncWithNewArchivedThreads(String boardId, List<int> archivedThreadIds) async {
+    List<ThreadsTableData> localThreads = await _threadsDao.getThreadsByBoardIdAndOnlineState(boardId, OnlineState.ARCHIVED);
     List<ThreadsTableData> notFoundThreads = localThreads.where((thread) => !archivedThreadIds.contains(thread.threadId) & !thread.isFavorite).toList();
     List<int> notFoundThreadIds = notFoundThreads.map((thread) => thread.threadId).toList();
     await _threadsDao.deleteThreadsByIds(notFoundThreadIds);

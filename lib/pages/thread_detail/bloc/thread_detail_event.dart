@@ -14,8 +14,6 @@ class ThreadDetailEventDialogAnswered extends ChanEvent {
 
 class ThreadDetailEventToggleCatalogMode extends ChanEvent {}
 
-class ThreadDetailEventDownload extends ChanEvent {}
-
 class ThreadDetailEventShowDownloaded extends ChanEvent {}
 
 class ThreadDetailEventOnLinkClicked extends ChanEvent {

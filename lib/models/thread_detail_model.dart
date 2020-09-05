@@ -13,27 +13,24 @@ class ThreadDetailModel with EquatableMixin {
 
   ThreadDetailModel._(this._thread, this._posts, this._selectedPostId);
 
-  factory ThreadDetailModel.fromJson(String boardId, int threadId, OnlineState onlineState, Map<String, dynamic> parsedJson) {
+  factory ThreadDetailModel.fromJson(
+    String boardId,
+    int threadId,
+    OnlineState onlineState,
+    bool isFavorite,
+    Map<String, dynamic> parsedJson,
+  ) {
+    ThreadItem thread = ThreadItem.fromMappedJson(boardId, threadId, onlineState, isFavorite, parsedJson);
+
     List<PostItem> posts = [];
-    Map<int, PostItem> postMap = {};
-
-    ThreadItem thread = ThreadItem.fromMappedJson(boardId, threadId, onlineState, parsedJson);
-
     for (Map<String, dynamic> postData in parsedJson['posts']) {
-      PostItem newPost = PostItem.fromMappedJson(thread, postData);
-
-      posts.add(newPost);
-      postMap[newPost.postId] = newPost;
-
-      for (int replyTo in newPost.repliesTo) {
-        if (postMap.containsKey(replyTo)) {
-          postMap[replyTo].repliesFrom.add(newPost);
-        }
-      }
+      posts.add(PostItem.fromMappedJson(thread, postData));
     }
 
+    _calculateReplies(posts);
+
     if (posts.isNotEmpty) {
-      thread = thread.copyWithPostData(posts.first);
+      thread = thread.copyWithPostData(posts);
     }
 
     int selectedPost = parsedJson['selected_post'] ?? -1;
@@ -53,7 +50,21 @@ class ThreadDetailModel with EquatableMixin {
 
   factory ThreadDetailModel.fromThreadAndPosts(ThreadItem thread, List<PostItem> posts) {
     posts.forEach((post) => post.thread = thread);
+    _calculateReplies(posts);
     return ThreadDetailModel._(thread, posts, -1);
+  }
+
+  static void _calculateReplies(List<PostItem> posts) {
+    Map<int, PostItem> postMap = {};
+    for (PostItem post in posts) {
+      postMap[post.postId] = post;
+
+      for (int replyTo in post.repliesTo) {
+        if (postMap.containsKey(replyTo)) {
+          postMap[replyTo].repliesFrom.add(post);
+        }
+      }
+    }
   }
 
   /*
@@ -104,8 +115,7 @@ class ThreadDetailModel with EquatableMixin {
 
   get selectedMediaIndex => getMediaIndex(_selectedPostId);
 
-  set selectedMediaIndex(int mediaIndex) =>
-      _selectedPostId = mediaIndex < mediaPosts.length ? mediaPosts[mediaIndex].postId : throw IndexOutOfBoundsException();
+  set selectedMediaIndex(int mediaIndex) => _selectedPostId = mediaIndex < mediaPosts.length ? mediaPosts[mediaIndex].postId : throw IndexOutOfBoundsException();
 
   get selectedPostId => _selectedPostId;
 

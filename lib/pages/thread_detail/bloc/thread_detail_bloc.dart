@@ -74,28 +74,16 @@ class ThreadDetailBloc extends Bloc<ChanEvent, ChanState> {
           });
 
           await _repository.fetchRemoteThreadDetail(_boardId, _threadId, false);
-
-//          ThreadDetailModel cachedThreadDetailModel = await _repository.fetchCachedThreadDetail(_boardId, _threadId);
-//          if (cachedThreadDetailModel != null) {
-//            _threadDetailModel = cachedThreadDetailModel;
-//            yield _getShowListState(lazyLoading: true, event: ThreadDetailSingleEvent.SCROLL_TO_SELECTED);
-//          }
-//
-//          try {
-//            _threadDetailModel = await _repository.fetchRemoteThreadDetail(_boardId, _threadId, false);
-//            if (cachedThreadDetailModel == null) {
-//              yield _getShowListState();
-//            } else {
-//              yield _getShowListState(event: ThreadDetailSingleEvent.SCROLL_TO_SELECTED);
-//            }
-//          } catch (e, stacktrace) {
-//            ChanLogger.e("Fetch error", e, stacktrace);
-//            yield _getShowListState(event: ThreadDetailSingleEvent.SHOW_OFFLINE);
-//          }
         }
       } else if (event is ThreadDetailEventOnDataReceived) {
-        bool firstData = _threadDetailModel == null;
+        if (_isFavorite && _threadDetailModel != null) {
+          int newReplies = (event.model.thread.replies ?? 0) - (_threadDetailModel.thread.replies ?? 0);
+          if (newReplies > 0) {
+            _repository.downloadAllMedia(_threadDetailModel);
+          }
+        }
         _threadDetailModel = event.model;
+        bool firstData = _threadDetailModel == null;
         yield _getShowListState(lazyLoading: firstData, event: firstData ? ThreadDetailSingleEvent.SCROLL_TO_SELECTED : null);
       } else if (event is ThreadDetailEventToggleFavorite) {
         if (_isFavorite) {
@@ -106,6 +94,7 @@ class ThreadDetailBloc extends Bloc<ChanEvent, ChanState> {
 
           _isFavorite = true;
           await _repository.addThreadToFavorites(_threadDetailModel);
+          _repository.downloadAllMedia(_threadDetailModel);
 
           yield _getShowListState();
         }
@@ -130,12 +119,6 @@ class ThreadDetailBloc extends Bloc<ChanEvent, ChanState> {
         Preferences.setBool(Preferences.KEY_THREAD_CATALOG_MODE, _catalogMode);
 
         yield _getShowListState(event: ThreadDetailSingleEvent.SCROLL_TO_SELECTED);
-      } else if (event is ThreadDetailEventDownload) {
-        yield ChanStateLoading();
-
-        _repository.downloadAllMedia(_threadDetailModel);
-
-        yield _getShowListState();
       } else if (event is ThreadDetailEventOnPostSelected) {
         if (event.mediaIndex != null) {
           _threadDetailModel.selectedMediaIndex = event.mediaIndex;

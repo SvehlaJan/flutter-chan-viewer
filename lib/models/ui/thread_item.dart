@@ -41,7 +41,14 @@ class ThreadItem extends ChanPostBase with EquatableMixin {
           extension,
         );
 
-  factory ThreadItem.fromMappedJson(String boardId, int threadId, OnlineState onlineState, Map<String, dynamic> json) => ThreadItem(
+  factory ThreadItem.fromMappedJson(
+    String boardId,
+    int threadId,
+    OnlineState onlineState,
+    bool isFavorite,
+    Map<String, dynamic> json,
+  ) =>
+      ThreadItem(
         json['board_id'] ?? boardId,
         json['no'] ?? threadId,
         json['time'],
@@ -51,7 +58,7 @@ class ThreadItem extends ChanPostBase with EquatableMixin {
         json['tim'].toString(),
         json['ext'],
         onlineState,
-        json['is_favorite'],
+        json['is_favorite'] ?? isFavorite,
         json['replies'],
         json['images'],
       );
@@ -71,20 +78,25 @@ class ThreadItem extends ChanPostBase with EquatableMixin {
         0,
       );
 
-  ThreadItem copyWithPostData(PostItem post) => ThreadItem(
-    this.boardId,
-    this.threadId,
-    post.timestamp,
-    post.subtitle,
-    post.content,
-    post.filename,
-    post.imageId,
-    post.extension,
-    this.onlineStatus,
-    this._isFavorite,
-    this.replies,
-    this.images,
-  );
+  ThreadItem copyWithPostData(List<PostItem> posts) {
+    PostItem firstPost = posts.first;
+    int replies = this.replies ?? posts.length;
+    int images = this.images ?? posts.where((post) => post.hasMedia()).length;
+    return ThreadItem(
+      this.boardId,
+      this.threadId,
+      firstPost.timestamp,
+      firstPost.subtitle,
+      firstPost.content,
+      firstPost.filename,
+      firstPost.imageId,
+      firstPost.extension,
+      this.onlineStatus,
+      this._isFavorite,
+      replies,
+      images,
+    );
+  }
 
   Map<String, dynamic> toJson() => {
         'board_id': boardId,

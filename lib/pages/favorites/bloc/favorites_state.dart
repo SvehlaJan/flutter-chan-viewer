@@ -1,13 +1,23 @@
-import 'dart:collection';
-
+import 'package:equatable/equatable.dart';
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
 
 class FavoritesStateContent extends ChanState {
-  final List<ThreadDetailModel> threads;
+  final List<FavoritesThreadWrapper> threads;
+  final bool lazyLoading;
 
-  FavoritesStateContent(this.threads);
+  FavoritesStateContent(this.threads, this.lazyLoading);
 
   @override
-  List<Object> get props => [threads];
+  List<Object> get props => [threads, lazyLoading];
+}
+
+class FavoritesThreadWrapper extends Equatable {
+  final ThreadDetailModel threadDetailModel;
+  final bool isLoading;
+
+  FavoritesThreadWrapper(this.threadDetailModel, this.isLoading);
+
+  @override
+  List<Object> get props => [threadDetailModel, isLoading];
 }

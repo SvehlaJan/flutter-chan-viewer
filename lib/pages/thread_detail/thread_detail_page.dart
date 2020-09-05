@@ -41,8 +41,8 @@ class ThreadDetailPage extends StatefulWidget {
 }
 
 class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
-  static const String KEY_LIST = "KEY_LIST";
-  static const String KEY_GRID = "KEY_GRID";
+  static const String KEY_LIST = "_ThreadDetailPageState.KEY_LIST";
+  static const String KEY_GRID = "_ThreadDetailPageState.KEY_GRID";
 
   ThreadDetailBloc _threadDetailBloc;
   ScrollController _gridScrollController;
@@ -66,7 +66,6 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
         _threadDetailBloc.isFavorite ? AppBarAction("Unstar", Icons.star, _onFavoriteToggleClick) : AppBarAction("Star", Icons.star_border, _onFavoriteToggleClick),
         AppBarAction("Refresh", Icons.refresh, _onRefreshClick),
         _threadDetailBloc.catalogMode ? AppBarAction("List", Icons.list, _onCatalogModeToggleClick) : AppBarAction("Catalog", Icons.apps, _onCatalogModeToggleClick),
-        AppBarAction("Download", Icons.file_download, _onDownloadClick)
       ];
 
   void _onRefreshClick() => _threadDetailBloc.add(ChanEventFetchData());
@@ -74,8 +73,6 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
   void _onCatalogModeToggleClick() => _threadDetailBloc.add(ThreadDetailEventToggleCatalogMode());
 
   void _onFavoriteToggleClick() => _threadDetailBloc.add(ThreadDetailEventToggleFavorite());
-
-  void _onDownloadClick() => _threadDetailBloc.add(ThreadDetailEventDownload());
 
   @override
   Widget build(BuildContext context) {
@@ -132,6 +129,7 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
 
   Widget buildList(BuildContext context, List<PostItem> posts, int selectedPostIndex) {
     return ScrollablePositionedList.builder(
+      key: PageStorageKey<String>(KEY_LIST),
       itemCount: posts.length,
       itemScrollController: _listScrollController,
       itemBuilder: (context, index) {

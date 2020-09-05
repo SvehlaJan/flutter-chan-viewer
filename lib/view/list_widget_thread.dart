@@ -9,9 +9,11 @@ import 'package:flutter_html/flutter_html.dart';
 
 class ThreadListWidget extends StatelessWidget {
   final ThreadItem thread;
+  final bool showProgress;
 
   const ThreadListWidget({
     @required this.thread,
+    @required this.showProgress,
   });
 
   @override
@@ -34,30 +36,37 @@ class ThreadListWidget extends StatelessWidget {
                 child: ChanCachedImage(post: thread, boxFit: BoxFit.fitWidth, forceThumbnail: true)),
           Flexible(
             fit: FlexFit.tight,
-            child: Padding(
-              padding: const EdgeInsets.only(left: 4.0, right: 4.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: <Widget>[
-                  Row(
+            child: Stack(
+              alignment: Alignment.bottomCenter,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(left: 4.0, right: 4.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: <Widget>[
-                      if (thread?.isFavorite() ?? false) Padding(padding: const EdgeInsets.all(1.0), child: Icon(Icons.star, color: Colors.yellow, size: Constants.favoriteIconSize)),
-                      Text(thread.threadId.toString(), style: Theme.of(context).textTheme.caption),
-                      Spacer(),
-                      Text("${thread.replies ?? "?"}p/${thread.images ?? "?"}m", style: Theme.of(context).textTheme.caption),
-                      Spacer(),
-                      Text(ChanUtil.getHumanDate(thread.timestamp), style: Theme.of(context).textTheme.caption),
+                      Row(
+                        children: <Widget>[
+                          if (thread?.isFavorite() ?? false)
+                            Padding(padding: const EdgeInsets.all(1.0), child: Icon(Icons.star, color: Colors.yellow, size: Constants.favoriteIconSize)),
+                          Text(thread.threadId.toString(), style: Theme.of(context).textTheme.caption),
+                          Spacer(),
+                          Text("${thread.replies ?? "?"}p/${thread.images ?? "?"}m", style: Theme.of(context).textTheme.caption),
+                          Spacer(),
+                          Text(ChanUtil.getHumanDate(thread.timestamp), style: Theme.of(context).textTheme.caption),
+                        ],
+                      ),
+                      if (thread.subtitle != null) Text(thread.subtitle, style: Theme.of(context).textTheme.subtitle),
+                      Html(
+                        data: ChanUtil.getReadableHtml(thread.content ?? "", true),
+                        onLinkTap: ((String url) {
+                          ChanLogger.d("Html link clicked { url: $url }");
+                        }),
+                      )
                     ],
                   ),
-                  if (thread.subtitle != null) Text(thread.subtitle, style: Theme.of(context).textTheme.subtitle),
-                  Html(
-                    data: ChanUtil.getReadableHtml(thread.content ?? "", true),
-                    onLinkTap: ((String url) {
-                      ChanLogger.d("Html link clicked { url: $url }");
-                    }),
-                  )
-                ],
-              ),
+                ),
+                if (showProgress) LinearProgressIndicator(),
+              ],
             ),
           ),
         ],

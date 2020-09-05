@@ -4,7 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/chan_event.dart';
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
-import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
 import 'package:flutter_chan_viewer/utils/navigation_helper.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
 import 'package:flutter_chan_viewer/pages/thread_detail/thread_detail_page.dart';
@@ -20,6 +19,7 @@ class FavoritesPage extends StatefulWidget {
 }
 
 class _FavoritesPageState extends BasePageState<FavoritesPage> {
+  static const String KEY_LIST = "_FavoritesPageState.KEY_LIST";
   FavoritesBloc _favoritesBloc;
 
   @override
@@ -55,10 +55,14 @@ class _FavoritesPageState extends BasePageState<FavoritesPage> {
 
       return Scrollbar(
         child: ListView.builder(
+          key: PageStorageKey<String>(KEY_LIST),
           itemBuilder: (BuildContext context, int index) {
             return InkWell(
-              child: ThreadListWidget(thread: state.threads[index].thread),
-              onTap: () => _openThreadDetailPage(state.threads[index].thread),
+              child: ThreadListWidget(
+                thread: state.threads[index].threadDetailModel.thread,
+                showProgress: state.threads[index].isLoading,
+              ),
+              onTap: () => _openThreadDetailPage(state.threads[index].threadDetailModel.thread),
             );
           },
           itemCount: state.threads.length,

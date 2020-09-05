@@ -127,9 +127,8 @@ class ChanRepository {
   }
 
   FutureOr<ThreadDetailModel> fetchRemoteThreadDetail(String boardId, int threadId, bool isArchived) async {
-    ThreadDetailModel model = await _chanApiProvider.fetchThreadDetail(boardId, threadId, isArchived);
     bool isFavorite = await isThreadFavorite(boardId, threadId);
-    model.thread.setFavorite(isFavorite);
+    ThreadDetailModel model = await _chanApiProvider.fetchThreadDetail(boardId, threadId, isFavorite, isArchived);
 
     await _localDataSource.saveThread(model.thread);
     await _localDataSource.savePosts(model.posts);
@@ -165,11 +164,12 @@ class ChanRepository {
 
   Future<List<ThreadDetailModel>> getFavoriteThreads() async {
     List<ThreadItem> threads = await _localDataSource.getFavoriteThreads();
-    List<ThreadDetailModel> models = [];
-    for (ThreadItem thread in threads) {
-      List<PostItem> posts = await _localDataSource.getPostsFromThread(thread);
-      models.add(ThreadDetailModel.fromThreadAndPosts(thread, posts));
-    }
+    List<ThreadDetailModel> models = threads.map((thread) => ThreadDetailModel.fromThreadAndPosts(thread, [])).toList();
+//    List<ThreadDetailModel> models = [];
+//    for (ThreadItem thread in threads) {
+//      List<PostItem> posts = await _localDataSource.getPostsFromThread(thread);
+//      models.add(ThreadDetailModel.fromThreadAndPosts(thread, posts));
+//    }
 
     return models;
   }

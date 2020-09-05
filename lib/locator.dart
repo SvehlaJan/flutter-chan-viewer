@@ -4,7 +4,6 @@ import 'package:flutter_chan_viewer/data/local/dao/threads_dao.dart';
 import 'package:flutter_chan_viewer/data/local/local_data_source.dart';
 import 'package:flutter_chan_viewer/data/local/moor_db.dart';
 import 'package:flutter_chan_viewer/data/remote/remote_data_source.dart';
-import 'package:flutter_chan_viewer/repositories/new_repository.dart';
 import 'package:flutter_chan_viewer/utils/navigation_service.dart';
 import 'package:flutter_chan_viewer/repositories/chan_downloader.dart';
 import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
@@ -26,7 +25,6 @@ void setupLocator() {
   getIt.registerLazySingleton<LocalDataSource>(() => LocalDataSource());
   getIt.registerSingletonAsync<Preferences>(() async => Preferences.initAndGet());
   getIt.registerLazySingletonAsync<ChanRepository>(() async => ChanRepository.initAndGet());
-  getIt.registerLazySingletonAsync<NewChanRepository>(() async => NewChanRepository.initAndGet());
   getIt.registerLazySingletonAsync<ChanStorage>(() async => ChanStorage.initAndGet());
   getIt.registerLazySingletonAsync<ChanDownloader>(() async => ChanDownloader.initAndGet());
 }

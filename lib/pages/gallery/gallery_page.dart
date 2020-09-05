@@ -13,6 +13,7 @@ import 'package:flutter_chan_viewer/view/view_cached_image.dart';
 import 'package:flutter_chan_viewer/view/view_video_player.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
+import 'package:sliding_sheet/sliding_sheet.dart';
 
 import '../thread_detail/bloc/thread_detail_bloc.dart';
 import '../thread_detail/bloc/thread_detail_state.dart';
@@ -31,18 +32,23 @@ class GalleryPage extends StatefulWidget {
 }
 
 class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderStateMixin {
-  static const int DOUBLE_TAP_TIMEOUT = 300;
-  static const double SCALE_MIN = 1.0;
-  static const double SCALE_MAX = 10.0;
-  static const double IS_SCALED_THRESHOLD = 1.2;
-  static const int SCALE_ANIMATION_DURATION = 200;
-
   ThreadDetailBloc _threadDetailBloc;
+  SheetController _sheetController;
 
   @override
   void initState() {
     super.initState();
     _threadDetailBloc = BlocProvider.of<ThreadDetailBloc>(context);
+    _sheetController = SheetController.of(context) ?? SheetController();
+  }
+
+  @override
+  Future<bool> onBackPressed() {
+    if (!_sheetController.state.isCollapsed) {
+      _sheetController.collapse();
+      return Future.value(false);
+    }
+    return Future.value(true);
   }
 
   @override
@@ -119,7 +125,10 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
               alignment: Alignment.topLeft,
               child: Padding(
                 padding: const EdgeInsets.all(4.0),
-                child: Text("${state.selectedMediaIndex + 1}/${state.model.mediaPosts.length}", style: Theme.of(context).textTheme.caption),
+                child: Text(
+                  "${state.selectedMediaIndex + 1}/${state.model.mediaPosts.length} ${post.filename}${post.extension}",
+                  style: Theme.of(context).textTheme.caption,
+                ),
               ),
             ),
           ],
@@ -151,18 +160,23 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
   }
 
   Widget _buildBottomView(PostItem post) {
-    double initialChildSize = post.hasMedia() ? 0.05 : 0.2;
-    return DraggableScrollableSheet(
-      initialChildSize: initialChildSize,
-      minChildSize: 0.05,
-      maxChildSize: 0.9,
-      builder: (context, scrollController) {
-        List<PostItem> allPosts = [post, ...post.repliesFrom];
+    List<PostItem> allPosts = [post, ...post.repliesFrom];
+
+    return SlidingSheet(
+      elevation: 4,
+      cornerRadius: 0,
+      controller: _sheetController,
+      snapSpec: const SnapSpec(
+        snap: false,
+        snappings: [20, 1000],
+        positioning: SnapPositioning.pixelOffset,
+      ),
+      builder: (context, state) {
         return Material(
           child: ListView.builder(
             padding: EdgeInsets.symmetric(horizontal: 2.0),
             shrinkWrap: true,
-            controller: scrollController,
+            physics: NeverScrollableScrollPhysics(),
             itemCount: allPosts.length,
             itemBuilder: (context, index) {
               PostItem replyPost = allPosts[index];

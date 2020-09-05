@@ -11,7 +11,7 @@ class BoardDetailModel extends Equatable {
     List<ThreadItem> threads = [];
     for (Map<String, dynamic> page in parsedJson) {
       for (Map<String, dynamic> thread in page['threads'] ?? []) {
-        threads.add(ThreadItem.fromMappedJson(boardId, null, onlineState, thread));
+        threads.add(ThreadItem.fromMappedJson(boardId, null, onlineState, false, thread));
       }
     }
     return BoardDetailModel(threads);

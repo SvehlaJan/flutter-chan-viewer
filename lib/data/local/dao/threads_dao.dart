@@ -2,6 +2,7 @@ import 'package:flutter_chan_viewer/data/local/moor_db.dart';
 import 'package:flutter_chan_viewer/models/local/posts_table.dart';
 import 'package:flutter_chan_viewer/models/local/threads_table.dart';
 import 'package:moor/moor.dart';
+import 'package:moor_flutter/moor_flutter.dart';
 
 part 'threads_dao.g.dart';
 
@@ -22,16 +23,17 @@ class ThreadsDao extends DatabaseAccessor<MoorDB> with _$ThreadsDaoMixin {
 
   Future<List<ThreadsTableData>> getAllThreadItems() => select(threadsTable).get();
 
-  Future<List<ThreadsTableData>> getFavoriteThreads() => (select(threadsTable)..where((thread) => thread.isFavorite.equals(true))).get();
+  Future<List<ThreadsTableData>> getFavoriteThreads() => (select(threadsTable)
+        ..where((thread) => thread.isFavorite.equals(true))
+        ..orderBy([(thread) => OrderingTerm(expression: thread.timestamp, mode: OrderingMode.desc)]))
+      .get();
 
-  Future<List<ThreadsTableData>> getThreadsByBoardId(String boardId) =>
-      (select(threadsTable)..where((thread) => thread.boardId.equals(boardId))).get();
+  Future<List<ThreadsTableData>> getThreadsByBoardId(String boardId) => (select(threadsTable)..where((thread) => thread.boardId.equals(boardId))).get();
 
   Future<List<ThreadsTableData>> getThreadsByBoardIdAndOnlineState(String boardId, OnlineState onlineState) =>
       (select(threadsTable)..where((thread) => thread.boardId.equals(boardId) & thread.onlineState.equals(onlineState.index))).get();
 
-  Future<List<ThreadsTableData>> getThreadsByOnlineState(OnlineState onlineState) =>
-      (select(threadsTable)..where((thread) => thread.onlineState.equals(onlineState.index))).get();
+  Future<List<ThreadsTableData>> getThreadsByOnlineState(OnlineState onlineState) => (select(threadsTable)..where((thread) => thread.onlineState.equals(onlineState.index))).get();
 
   Future<int> insertThread(ThreadsTableData entry) {
     return into(threadsTable).insert(entry, mode: InsertMode.insertOrReplace);

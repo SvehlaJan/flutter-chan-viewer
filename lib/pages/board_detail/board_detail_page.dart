@@ -105,10 +105,7 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
         itemCount: state.threads.length,
         itemBuilder: (context, index) {
           return InkWell(
-            child: ThreadListWidget(
-              thread: state.threads[index],
-              showProgress: false,
-            ),
+            child: ThreadListWidget(thread: state.threads[index]),
             onTap: () => onItemClicked(state.threads[index]),
           );
         },

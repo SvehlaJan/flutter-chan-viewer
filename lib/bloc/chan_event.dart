@@ -9,7 +9,14 @@ abstract class ChanEvent extends Equatable {
 
 class ChanEventInitBloc extends ChanEvent {}
 
-class ChanEventFetchData extends ChanEvent {}
+class ChanEventFetchData extends ChanEvent {
+  final bool forceRefresh;
+
+  ChanEventFetchData({this.forceRefresh = false});
+
+  @override
+  List<Object> get props => [forceRefresh];
+}
 
 class ChanEventNewDataReceived extends ChanEvent {}
 

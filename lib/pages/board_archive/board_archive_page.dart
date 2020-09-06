@@ -99,10 +99,7 @@ class _BoardArchivePageState extends BasePageState<BoardArchivePage> {
               );
             } else {
               return InkWell(
-                child: ThreadListWidget(
-                  thread: thread,
-                  showProgress: false,
-                ),
+                child: ThreadListWidget(thread: thread),
                 onTap: () => onItemClicked(thread),
               );
             }

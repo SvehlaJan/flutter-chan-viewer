@@ -77,8 +77,8 @@ class ThreadDetailBloc extends Bloc<ChanEvent, ChanState> {
         }
       } else if (event is ThreadDetailEventOnDataReceived) {
         if (_isFavorite && _threadDetailModel != null) {
-          int newReplies = (event.model.thread.replies ?? 0) - (_threadDetailModel.thread.replies ?? 0);
-          if (newReplies > 0) {
+          int newMedia = (event.model.thread.images ?? 0) - (_threadDetailModel.thread.images ?? 0);
+          if (newMedia > 0) {
             _repository.downloadAllMedia(_threadDetailModel);
           }
         }

@@ -15,9 +15,10 @@ class FavoritesStateContent extends ChanState {
 class FavoritesThreadWrapper extends Equatable {
   final ThreadDetailModel threadDetailModel;
   final bool isLoading;
+  final int newReplies;
 
-  FavoritesThreadWrapper(this.threadDetailModel, this.isLoading);
+  FavoritesThreadWrapper(this.threadDetailModel, {this.isLoading = false, this.newReplies = 0});
 
   @override
-  List<Object> get props => [threadDetailModel, isLoading];
+  List<Object> get props => [threadDetailModel, isLoading, newReplies];
 }

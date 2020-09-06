@@ -14,8 +14,10 @@ import 'favorites_state.dart';
 
 class FavoritesBloc extends Bloc<ChanEvent, ChanState> {
   final ChanRepository _repository = getIt<ChanRepository>();
+  static const int DETAIL_REFRESH_TIMEOUT = 60 * 1000; // 60 seconds
   List<FavoritesThreadWrapper> _favoriteThreads = List<FavoritesThreadWrapper>();
   int _currentRefreshIndex = 0;
+  int _lastDetailRefreshTimestamp = 0;
 
   FavoritesBloc() : super(ChanStateLoading());
 
@@ -31,27 +33,36 @@ class FavoritesBloc extends Bloc<ChanEvent, ChanState> {
           List<String> sfwBoardIds = (await _repository.fetchCachedBoardList(false)).boards.map((board) => board.boardId).toList();
           threads.removeWhere((model) => !sfwBoardIds.contains(model.thread.boardId));
         }
-        _favoriteThreads = threads.map((e) => FavoritesThreadWrapper(e, false)).toList();
+        _favoriteThreads = threads.map((e) => FavoritesThreadWrapper(e)).toList();
         _currentRefreshIndex = 0;
-        add(FavoritesEventFetchDetail(_currentRefreshIndex));
+
+        int currentTimestamp = DateTime.now().millisecondsSinceEpoch;
+        if (event.forceRefresh || currentTimestamp - _lastDetailRefreshTimestamp > DETAIL_REFRESH_TIMEOUT) {
+          _lastDetailRefreshTimestamp = currentTimestamp;
+          add(FavoritesEventFetchDetail(_currentRefreshIndex));
+        } else {
+          yield FavoritesStateContent(List.from(_favoriteThreads), false);
+        }
       } else if (event is FavoritesEventFetchDetail) {
         ThreadDetailModel cachedThread = _favoriteThreads[_currentRefreshIndex].threadDetailModel;
         ThreadDetailModel refreshedThread;
 
-        _favoriteThreads[_currentRefreshIndex] = FavoritesThreadWrapper(cachedThread, true);
+        _favoriteThreads[_currentRefreshIndex] = FavoritesThreadWrapper(cachedThread, isLoading: true);
         yield FavoritesStateContent(List.from(_favoriteThreads), true);
 
+        int newReplies = _favoriteThreads[_currentRefreshIndex].newReplies;
         try {
           refreshedThread = await _repository.fetchRemoteThreadDetail(cachedThread.thread.boardId, cachedThread.thread.threadId, false);
-          int newReplies = refreshedThread.thread.replies - cachedThread.thread.replies;
-          if (newReplies > 0) {
+          int newMedia = refreshedThread.thread.images - cachedThread.thread.images;
+          newReplies += refreshedThread.thread.replies - cachedThread.thread.replies;
+          if (newMedia > 0) {
             _repository.downloadAllMedia(refreshedThread);
           }
         } catch (e) {
           ChanLogger.e("Failed to load favorite thread", e);
         }
 
-        _favoriteThreads[_currentRefreshIndex] = FavoritesThreadWrapper(refreshedThread ?? cachedThread, false);
+        _favoriteThreads[_currentRefreshIndex] = FavoritesThreadWrapper(refreshedThread ?? cachedThread, newReplies: newReplies);
         _currentRefreshIndex++;
         if (_currentRefreshIndex < _favoriteThreads.length) {
           yield FavoritesStateContent(List.from(_favoriteThreads), true);

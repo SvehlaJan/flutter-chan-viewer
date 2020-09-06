@@ -35,7 +35,7 @@ class _FavoritesPageState extends BasePageState<FavoritesPage> {
   @override
   List<AppBarAction> getAppBarActions(BuildContext context) => [AppBarAction("Refresh", Icons.refresh, _onRefreshClick)];
 
-  void _onRefreshClick() => _favoritesBloc.add(ChanEventFetchData());
+  void _onRefreshClick() => _favoritesBloc.add(ChanEventFetchData(forceRefresh: true));
 
   @override
   Widget build(BuildContext context) {
@@ -57,12 +57,14 @@ class _FavoritesPageState extends BasePageState<FavoritesPage> {
         child: ListView.builder(
           key: PageStorageKey<String>(KEY_LIST),
           itemBuilder: (BuildContext context, int index) {
+            FavoritesThreadWrapper threadWrapper = state.threads[index];
             return InkWell(
               child: ThreadListWidget(
-                thread: state.threads[index].threadDetailModel.thread,
-                showProgress: state.threads[index].isLoading,
+                thread: threadWrapper.threadDetailModel.thread,
+                showProgress: threadWrapper.isLoading,
+                newReplies: threadWrapper.newReplies,
               ),
-              onTap: () => _openThreadDetailPage(state.threads[index].threadDetailModel.thread),
+              onTap: () => _openThreadDetailPage(threadWrapper),
             );
           },
           itemCount: state.threads.length,
@@ -73,7 +75,9 @@ class _FavoritesPageState extends BasePageState<FavoritesPage> {
     }
   }
 
-  void _openThreadDetailPage(ThreadItem thread) async {
+  void _openThreadDetailPage(FavoritesThreadWrapper threadWrapper) async {
+    _favoritesBloc.add(ChanEventFetchData());
+    ThreadItem thread = threadWrapper.threadDetailModel.thread;
     await Navigator.of(context).push(
       NavigationHelper.getRoute(
         Constants.threadDetailRoute,

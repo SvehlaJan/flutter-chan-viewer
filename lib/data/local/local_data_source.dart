@@ -17,6 +17,10 @@ class LocalDataSource {
     return _postsDao.insertPostsList(posts.map((post) => post.toTableData()).toList());
   }
 
+  Future<PostItem> getPostById(int postId, int threadId, String boardId) async {
+    return PostItem.fromTableData(await _postsDao.getPostById(postId, threadId, boardId));
+  }
+
   Future<List<PostItem>> getPostsFromThread(ThreadItem thread) async {
     List<PostsTableData> posts = await _postsDao.getAllPostsFromThread(thread.boardId, thread.threadId);
     return posts.map((postData) => PostItem.fromTableData(postData, thread: thread)).toList();
@@ -57,8 +61,20 @@ class LocalDataSource {
     return _threadsDao.getThreadByStream(boardId, threadId).map((threadData) => ThreadItem.fromTableData(threadData));
   }
 
+  Future<List<int>> getFavoriteThreadIds() async => await _threadsDao.getFavoriteThreadIds();
+
   Future<List<ThreadItem>> getFavoriteThreads() async {
     List<ThreadsTableData> threads = await _threadsDao.getFavoriteThreads();
+    return threads.map((threadData) => ThreadItem.fromTableData(threadData)).toList();
+  }
+
+  Future<List<ThreadItem>> getCustomThreads() async {
+    List<ThreadsTableData> threads = await _threadsDao.getCustomThreads();
+    return threads.map((threadData) => ThreadItem.fromTableData(threadData)).toList();
+  }
+
+  Future<List<ThreadItem>> getArchivedThreads() async {
+    List<ThreadsTableData> threads = await _threadsDao.getArchivedThreads();
     return threads.map((threadData) => ThreadItem.fromTableData(threadData)).toList();
   }
 
@@ -94,6 +110,11 @@ class LocalDataSource {
     List<int> notFoundThreadIds = notFoundThreads.map((thread) => thread.threadId).toList();
     await _threadsDao.deleteThreadsByIds(notFoundThreadIds);
     return null;
+  }
+
+  Future<PostItem> addPostToThread(PostItem post, ThreadItem thread) async {
+    await _postsDao.insertPost(post.toTableData());
+    return PostItem.fromTableData(await _postsDao.getPostById(post.postId, thread.threadId, thread.boardId));
   }
 
   Future<BoardItem> getBoardById(String boardId) async {

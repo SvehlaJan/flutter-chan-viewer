@@ -17,6 +17,7 @@ class PostsTableData extends DataClass implements Insertable<PostsTableData> {
   final String boardId;
   final int threadId;
   final int postId;
+  final bool isHidden;
   PostsTableData(
       {@required this.timestamp,
       this.subtitle,
@@ -26,13 +27,15 @@ class PostsTableData extends DataClass implements Insertable<PostsTableData> {
       this.extension,
       @required this.boardId,
       @required this.threadId,
-      @required this.postId});
+      @required this.postId,
+      @required this.isHidden});
   factory PostsTableData.fromData(
       Map<String, dynamic> data, GeneratedDatabase db,
       {String prefix}) {
     final effectivePrefix = prefix ?? '';
     final intType = db.typeSystem.forDartType<int>();
     final stringType = db.typeSystem.forDartType<String>();
+    final boolType = db.typeSystem.forDartType<bool>();
     return PostsTableData(
       timestamp:
           intType.mapFromDatabaseResponse(data['${effectivePrefix}timestamp']),
@@ -52,6 +55,8 @@ class PostsTableData extends DataClass implements Insertable<PostsTableData> {
           intType.mapFromDatabaseResponse(data['${effectivePrefix}thread_id']),
       postId:
           intType.mapFromDatabaseResponse(data['${effectivePrefix}post_id']),
+      isHidden:
+          boolType.mapFromDatabaseResponse(data['${effectivePrefix}is_hidden']),
     );
   }
   @override
@@ -84,6 +89,9 @@ class PostsTableData extends DataClass implements Insertable<PostsTableData> {
     if (!nullToAbsent || postId != null) {
       map['post_id'] = Variable<int>(postId);
     }
+    if (!nullToAbsent || isHidden != null) {
+      map['is_hidden'] = Variable<bool>(isHidden);
+    }
     return map;
   }
 
@@ -115,6 +123,9 @@ class PostsTableData extends DataClass implements Insertable<PostsTableData> {
           : Value(threadId),
       postId:
           postId == null && nullToAbsent ? const Value.absent() : Value(postId),
+      isHidden: isHidden == null && nullToAbsent
+          ? const Value.absent()
+          : Value(isHidden),
     );
   }
 
@@ -131,6 +142,7 @@ class PostsTableData extends DataClass implements Insertable<PostsTableData> {
       boardId: serializer.fromJson<String>(json['boardId']),
       threadId: serializer.fromJson<int>(json['threadId']),
       postId: serializer.fromJson<int>(json['postId']),
+      isHidden: serializer.fromJson<bool>(json['isHidden']),
     );
   }
   @override
@@ -146,6 +158,7 @@ class PostsTableData extends DataClass implements Insertable<PostsTableData> {
       'boardId': serializer.toJson<String>(boardId),
       'threadId': serializer.toJson<int>(threadId),
       'postId': serializer.toJson<int>(postId),
+      'isHidden': serializer.toJson<bool>(isHidden),
     };
   }
 
@@ -158,7 +171,8 @@ class PostsTableData extends DataClass implements Insertable<PostsTableData> {
           String extension,
           String boardId,
           int threadId,
-          int postId}) =>
+          int postId,
+          bool isHidden}) =>
       PostsTableData(
         timestamp: timestamp ?? this.timestamp,
         subtitle: subtitle ?? this.subtitle,
@@ -169,6 +183,7 @@ class PostsTableData extends DataClass implements Insertable<PostsTableData> {
         boardId: boardId ?? this.boardId,
         threadId: threadId ?? this.threadId,
         postId: postId ?? this.postId,
+        isHidden: isHidden ?? this.isHidden,
       );
   @override
   String toString() {
@@ -181,7 +196,8 @@ class PostsTableData extends DataClass implements Insertable<PostsTableData> {
           ..write('extension: $extension, ')
           ..write('boardId: $boardId, ')
           ..write('threadId: $threadId, ')
-          ..write('postId: $postId')
+          ..write('postId: $postId, ')
+          ..write('isHidden: $isHidden')
           ..write(')'))
         .toString();
   }
@@ -199,8 +215,12 @@ class PostsTableData extends DataClass implements Insertable<PostsTableData> {
                       imageId.hashCode,
                       $mrjc(
                           extension.hashCode,
-                          $mrjc(boardId.hashCode,
-                              $mrjc(threadId.hashCode, postId.hashCode)))))))));
+                          $mrjc(
+                              boardId.hashCode,
+                              $mrjc(
+                                  threadId.hashCode,
+                                  $mrjc(postId.hashCode,
+                                      isHidden.hashCode))))))))));
   @override
   bool operator ==(dynamic other) =>
       identical(this, other) ||
@@ -213,7 +233,8 @@ class PostsTableData extends DataClass implements Insertable<PostsTableData> {
           other.extension == this.extension &&
           other.boardId == this.boardId &&
           other.threadId == this.threadId &&
-          other.postId == this.postId);
+          other.postId == this.postId &&
+          other.isHidden == this.isHidden);
 }
 
 class PostsTableCompanion extends UpdateCompanion<PostsTableData> {
@@ -226,6 +247,7 @@ class PostsTableCompanion extends UpdateCompanion<PostsTableData> {
   final Value<String> boardId;
   final Value<int> threadId;
   final Value<int> postId;
+  final Value<bool> isHidden;
   const PostsTableCompanion({
     this.timestamp = const Value.absent(),
     this.subtitle = const Value.absent(),
@@ -236,6 +258,7 @@ class PostsTableCompanion extends UpdateCompanion<PostsTableData> {
     this.boardId = const Value.absent(),
     this.threadId = const Value.absent(),
     this.postId = const Value.absent(),
+    this.isHidden = const Value.absent(),
   });
   PostsTableCompanion.insert({
     @required int timestamp,
@@ -247,10 +270,12 @@ class PostsTableCompanion extends UpdateCompanion<PostsTableData> {
     @required String boardId,
     @required int threadId,
     @required int postId,
+    @required bool isHidden,
   })  : timestamp = Value(timestamp),
         boardId = Value(boardId),
         threadId = Value(threadId),
-        postId = Value(postId);
+        postId = Value(postId),
+        isHidden = Value(isHidden);
   static Insertable<PostsTableData> custom({
     Expression<int> timestamp,
     Expression<String> subtitle,
@@ -261,6 +286,7 @@ class PostsTableCompanion extends UpdateCompanion<PostsTableData> {
     Expression<String> boardId,
     Expression<int> threadId,
     Expression<int> postId,
+    Expression<bool> isHidden,
   }) {
     return RawValuesInsertable({
       if (timestamp != null) 'timestamp': timestamp,
@@ -272,6 +298,7 @@ class PostsTableCompanion extends UpdateCompanion<PostsTableData> {
       if (boardId != null) 'board_id': boardId,
       if (threadId != null) 'thread_id': threadId,
       if (postId != null) 'post_id': postId,
+      if (isHidden != null) 'is_hidden': isHidden,
     });
   }
 
@@ -284,7 +311,8 @@ class PostsTableCompanion extends UpdateCompanion<PostsTableData> {
       Value<String> extension,
       Value<String> boardId,
       Value<int> threadId,
-      Value<int> postId}) {
+      Value<int> postId,
+      Value<bool> isHidden}) {
     return PostsTableCompanion(
       timestamp: timestamp ?? this.timestamp,
       subtitle: subtitle ?? this.subtitle,
@@ -295,6 +323,7 @@ class PostsTableCompanion extends UpdateCompanion<PostsTableData> {
       boardId: boardId ?? this.boardId,
       threadId: threadId ?? this.threadId,
       postId: postId ?? this.postId,
+      isHidden: isHidden ?? this.isHidden,
     );
   }
 
@@ -328,6 +357,9 @@ class PostsTableCompanion extends UpdateCompanion<PostsTableData> {
     if (postId.present) {
       map['post_id'] = Variable<int>(postId.value);
     }
+    if (isHidden.present) {
+      map['is_hidden'] = Variable<bool>(isHidden.value);
+    }
     return map;
   }
 
@@ -342,7 +374,8 @@ class PostsTableCompanion extends UpdateCompanion<PostsTableData> {
           ..write('extension: $extension, ')
           ..write('boardId: $boardId, ')
           ..write('threadId: $threadId, ')
-          ..write('postId: $postId')
+          ..write('postId: $postId, ')
+          ..write('isHidden: $isHidden')
           ..write(')'))
         .toString();
   }
@@ -459,6 +492,18 @@ class $PostsTableTable extends PostsTable
     );
   }
 
+  final VerificationMeta _isHiddenMeta = const VerificationMeta('isHidden');
+  GeneratedBoolColumn _isHidden;
+  @override
+  GeneratedBoolColumn get isHidden => _isHidden ??= _constructIsHidden();
+  GeneratedBoolColumn _constructIsHidden() {
+    return GeneratedBoolColumn(
+      'is_hidden',
+      $tableName,
+      false,
+    );
+  }
+
   @override
   List<GeneratedColumn> get $columns => [
         timestamp,
@@ -469,7 +514,8 @@ class $PostsTableTable extends PostsTable
         extension,
         boardId,
         threadId,
-        postId
+        postId,
+        isHidden
       ];
   @override
   $PostsTableTable get asDslTable => this;
@@ -526,6 +572,12 @@ class $PostsTableTable extends PostsTable
     } else if (isInserting) {
       context.missing(_postIdMeta);
     }
+    if (data.containsKey('is_hidden')) {
+      context.handle(_isHiddenMeta,
+          isHidden.isAcceptableOrUnknown(data['is_hidden'], _isHiddenMeta));
+    } else if (isInserting) {
+      context.missing(_isHiddenMeta);
+    }
     return context;
   }
 
@@ -553,10 +605,12 @@ class ThreadsTableData extends DataClass
   final String extension;
   final String boardId;
   final int threadId;
+  final int selectedPostId;
   final bool isFavorite;
   final OnlineState onlineState;
   final int replyCount;
   final int imageCount;
+  final int unreadRepliesCount;
   ThreadsTableData(
       {@required this.timestamp,
       this.subtitle,
@@ -566,10 +620,12 @@ class ThreadsTableData extends DataClass
       this.extension,
       @required this.boardId,
       @required this.threadId,
+      @required this.selectedPostId,
       @required this.isFavorite,
       @required this.onlineState,
       this.replyCount,
-      this.imageCount});
+      this.imageCount,
+      this.unreadRepliesCount});
   factory ThreadsTableData.fromData(
       Map<String, dynamic> data, GeneratedDatabase db,
       {String prefix}) {
@@ -594,6 +650,8 @@ class ThreadsTableData extends DataClass
           .mapFromDatabaseResponse(data['${effectivePrefix}board_id']),
       threadId:
           intType.mapFromDatabaseResponse(data['${effectivePrefix}thread_id']),
+      selectedPostId: intType
+          .mapFromDatabaseResponse(data['${effectivePrefix}selected_post_id']),
       isFavorite: boolType
           .mapFromDatabaseResponse(data['${effectivePrefix}is_favorite']),
       onlineState: $ThreadsTableTable.$converter0.mapToDart(intType
@@ -602,6 +660,8 @@ class ThreadsTableData extends DataClass
           .mapFromDatabaseResponse(data['${effectivePrefix}reply_count']),
       imageCount: intType
           .mapFromDatabaseResponse(data['${effectivePrefix}image_count']),
+      unreadRepliesCount: intType.mapFromDatabaseResponse(
+          data['${effectivePrefix}unread_replies_count']),
     );
   }
   @override
@@ -631,6 +691,9 @@ class ThreadsTableData extends DataClass
     if (!nullToAbsent || threadId != null) {
       map['thread_id'] = Variable<int>(threadId);
     }
+    if (!nullToAbsent || selectedPostId != null) {
+      map['selected_post_id'] = Variable<int>(selectedPostId);
+    }
     if (!nullToAbsent || isFavorite != null) {
       map['is_favorite'] = Variable<bool>(isFavorite);
     }
@@ -643,6 +706,9 @@ class ThreadsTableData extends DataClass
     }
     if (!nullToAbsent || imageCount != null) {
       map['image_count'] = Variable<int>(imageCount);
+    }
+    if (!nullToAbsent || unreadRepliesCount != null) {
+      map['unread_replies_count'] = Variable<int>(unreadRepliesCount);
     }
     return map;
   }
@@ -673,6 +739,9 @@ class ThreadsTableData extends DataClass
       threadId: threadId == null && nullToAbsent
           ? const Value.absent()
           : Value(threadId),
+      selectedPostId: selectedPostId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(selectedPostId),
       isFavorite: isFavorite == null && nullToAbsent
           ? const Value.absent()
           : Value(isFavorite),
@@ -685,6 +754,9 @@ class ThreadsTableData extends DataClass
       imageCount: imageCount == null && nullToAbsent
           ? const Value.absent()
           : Value(imageCount),
+      unreadRepliesCount: unreadRepliesCount == null && nullToAbsent
+          ? const Value.absent()
+          : Value(unreadRepliesCount),
     );
   }
 
@@ -700,10 +772,12 @@ class ThreadsTableData extends DataClass
       extension: serializer.fromJson<String>(json['extension']),
       boardId: serializer.fromJson<String>(json['boardId']),
       threadId: serializer.fromJson<int>(json['threadId']),
+      selectedPostId: serializer.fromJson<int>(json['selectedPostId']),
       isFavorite: serializer.fromJson<bool>(json['isFavorite']),
       onlineState: serializer.fromJson<OnlineState>(json['onlineState']),
       replyCount: serializer.fromJson<int>(json['replyCount']),
       imageCount: serializer.fromJson<int>(json['imageCount']),
+      unreadRepliesCount: serializer.fromJson<int>(json['unreadRepliesCount']),
     );
   }
   @override
@@ -718,10 +792,12 @@ class ThreadsTableData extends DataClass
       'extension': serializer.toJson<String>(extension),
       'boardId': serializer.toJson<String>(boardId),
       'threadId': serializer.toJson<int>(threadId),
+      'selectedPostId': serializer.toJson<int>(selectedPostId),
       'isFavorite': serializer.toJson<bool>(isFavorite),
       'onlineState': serializer.toJson<OnlineState>(onlineState),
       'replyCount': serializer.toJson<int>(replyCount),
       'imageCount': serializer.toJson<int>(imageCount),
+      'unreadRepliesCount': serializer.toJson<int>(unreadRepliesCount),
     };
   }
 
@@ -734,10 +810,12 @@ class ThreadsTableData extends DataClass
           String extension,
           String boardId,
           int threadId,
+          int selectedPostId,
           bool isFavorite,
           OnlineState onlineState,
           int replyCount,
-          int imageCount}) =>
+          int imageCount,
+          int unreadRepliesCount}) =>
       ThreadsTableData(
         timestamp: timestamp ?? this.timestamp,
         subtitle: subtitle ?? this.subtitle,
@@ -747,10 +825,12 @@ class ThreadsTableData extends DataClass
         extension: extension ?? this.extension,
         boardId: boardId ?? this.boardId,
         threadId: threadId ?? this.threadId,
+        selectedPostId: selectedPostId ?? this.selectedPostId,
         isFavorite: isFavorite ?? this.isFavorite,
         onlineState: onlineState ?? this.onlineState,
         replyCount: replyCount ?? this.replyCount,
         imageCount: imageCount ?? this.imageCount,
+        unreadRepliesCount: unreadRepliesCount ?? this.unreadRepliesCount,
       );
   @override
   String toString() {
@@ -763,10 +843,12 @@ class ThreadsTableData extends DataClass
           ..write('extension: $extension, ')
           ..write('boardId: $boardId, ')
           ..write('threadId: $threadId, ')
+          ..write('selectedPostId: $selectedPostId, ')
           ..write('isFavorite: $isFavorite, ')
           ..write('onlineState: $onlineState, ')
           ..write('replyCount: $replyCount, ')
-          ..write('imageCount: $imageCount')
+          ..write('imageCount: $imageCount, ')
+          ..write('unreadRepliesCount: $unreadRepliesCount')
           ..write(')'))
         .toString();
   }
@@ -789,11 +871,17 @@ class ThreadsTableData extends DataClass
                               $mrjc(
                                   threadId.hashCode,
                                   $mrjc(
-                                      isFavorite.hashCode,
+                                      selectedPostId.hashCode,
                                       $mrjc(
-                                          onlineState.hashCode,
-                                          $mrjc(replyCount.hashCode,
-                                              imageCount.hashCode))))))))))));
+                                          isFavorite.hashCode,
+                                          $mrjc(
+                                              onlineState.hashCode,
+                                              $mrjc(
+                                                  replyCount.hashCode,
+                                                  $mrjc(
+                                                      imageCount.hashCode,
+                                                      unreadRepliesCount
+                                                          .hashCode))))))))))))));
   @override
   bool operator ==(dynamic other) =>
       identical(this, other) ||
@@ -806,10 +894,12 @@ class ThreadsTableData extends DataClass
           other.extension == this.extension &&
           other.boardId == this.boardId &&
           other.threadId == this.threadId &&
+          other.selectedPostId == this.selectedPostId &&
           other.isFavorite == this.isFavorite &&
           other.onlineState == this.onlineState &&
           other.replyCount == this.replyCount &&
-          other.imageCount == this.imageCount);
+          other.imageCount == this.imageCount &&
+          other.unreadRepliesCount == this.unreadRepliesCount);
 }
 
 class ThreadsTableCompanion extends UpdateCompanion<ThreadsTableData> {
@@ -821,10 +911,12 @@ class ThreadsTableCompanion extends UpdateCompanion<ThreadsTableData> {
   final Value<String> extension;
   final Value<String> boardId;
   final Value<int> threadId;
+  final Value<int> selectedPostId;
   final Value<bool> isFavorite;
   final Value<OnlineState> onlineState;
   final Value<int> replyCount;
   final Value<int> imageCount;
+  final Value<int> unreadRepliesCount;
   const ThreadsTableCompanion({
     this.timestamp = const Value.absent(),
     this.subtitle = const Value.absent(),
@@ -834,10 +926,12 @@ class ThreadsTableCompanion extends UpdateCompanion<ThreadsTableData> {
     this.extension = const Value.absent(),
     this.boardId = const Value.absent(),
     this.threadId = const Value.absent(),
+    this.selectedPostId = const Value.absent(),
     this.isFavorite = const Value.absent(),
     this.onlineState = const Value.absent(),
     this.replyCount = const Value.absent(),
     this.imageCount = const Value.absent(),
+    this.unreadRepliesCount = const Value.absent(),
   });
   ThreadsTableCompanion.insert({
     @required int timestamp,
@@ -848,13 +942,16 @@ class ThreadsTableCompanion extends UpdateCompanion<ThreadsTableData> {
     this.extension = const Value.absent(),
     @required String boardId,
     @required int threadId,
+    @required int selectedPostId,
     @required bool isFavorite,
     @required OnlineState onlineState,
     this.replyCount = const Value.absent(),
     this.imageCount = const Value.absent(),
+    this.unreadRepliesCount = const Value.absent(),
   })  : timestamp = Value(timestamp),
         boardId = Value(boardId),
         threadId = Value(threadId),
+        selectedPostId = Value(selectedPostId),
         isFavorite = Value(isFavorite),
         onlineState = Value(onlineState);
   static Insertable<ThreadsTableData> custom({
@@ -866,10 +963,12 @@ class ThreadsTableCompanion extends UpdateCompanion<ThreadsTableData> {
     Expression<String> extension,
     Expression<String> boardId,
     Expression<int> threadId,
+    Expression<int> selectedPostId,
     Expression<bool> isFavorite,
     Expression<int> onlineState,
     Expression<int> replyCount,
     Expression<int> imageCount,
+    Expression<int> unreadRepliesCount,
   }) {
     return RawValuesInsertable({
       if (timestamp != null) 'timestamp': timestamp,
@@ -880,10 +979,13 @@ class ThreadsTableCompanion extends UpdateCompanion<ThreadsTableData> {
       if (extension != null) 'extension': extension,
       if (boardId != null) 'board_id': boardId,
       if (threadId != null) 'thread_id': threadId,
+      if (selectedPostId != null) 'selected_post_id': selectedPostId,
       if (isFavorite != null) 'is_favorite': isFavorite,
       if (onlineState != null) 'online_state': onlineState,
       if (replyCount != null) 'reply_count': replyCount,
       if (imageCount != null) 'image_count': imageCount,
+      if (unreadRepliesCount != null)
+        'unread_replies_count': unreadRepliesCount,
     });
   }
 
@@ -896,10 +998,12 @@ class ThreadsTableCompanion extends UpdateCompanion<ThreadsTableData> {
       Value<String> extension,
       Value<String> boardId,
       Value<int> threadId,
+      Value<int> selectedPostId,
       Value<bool> isFavorite,
       Value<OnlineState> onlineState,
       Value<int> replyCount,
-      Value<int> imageCount}) {
+      Value<int> imageCount,
+      Value<int> unreadRepliesCount}) {
     return ThreadsTableCompanion(
       timestamp: timestamp ?? this.timestamp,
       subtitle: subtitle ?? this.subtitle,
@@ -909,10 +1013,12 @@ class ThreadsTableCompanion extends UpdateCompanion<ThreadsTableData> {
       extension: extension ?? this.extension,
       boardId: boardId ?? this.boardId,
       threadId: threadId ?? this.threadId,
+      selectedPostId: selectedPostId ?? this.selectedPostId,
       isFavorite: isFavorite ?? this.isFavorite,
       onlineState: onlineState ?? this.onlineState,
       replyCount: replyCount ?? this.replyCount,
       imageCount: imageCount ?? this.imageCount,
+      unreadRepliesCount: unreadRepliesCount ?? this.unreadRepliesCount,
     );
   }
 
@@ -943,6 +1049,9 @@ class ThreadsTableCompanion extends UpdateCompanion<ThreadsTableData> {
     if (threadId.present) {
       map['thread_id'] = Variable<int>(threadId.value);
     }
+    if (selectedPostId.present) {
+      map['selected_post_id'] = Variable<int>(selectedPostId.value);
+    }
     if (isFavorite.present) {
       map['is_favorite'] = Variable<bool>(isFavorite.value);
     }
@@ -956,6 +1065,9 @@ class ThreadsTableCompanion extends UpdateCompanion<ThreadsTableData> {
     }
     if (imageCount.present) {
       map['image_count'] = Variable<int>(imageCount.value);
+    }
+    if (unreadRepliesCount.present) {
+      map['unread_replies_count'] = Variable<int>(unreadRepliesCount.value);
     }
     return map;
   }
@@ -971,10 +1083,12 @@ class ThreadsTableCompanion extends UpdateCompanion<ThreadsTableData> {
           ..write('extension: $extension, ')
           ..write('boardId: $boardId, ')
           ..write('threadId: $threadId, ')
+          ..write('selectedPostId: $selectedPostId, ')
           ..write('isFavorite: $isFavorite, ')
           ..write('onlineState: $onlineState, ')
           ..write('replyCount: $replyCount, ')
-          ..write('imageCount: $imageCount')
+          ..write('imageCount: $imageCount, ')
+          ..write('unreadRepliesCount: $unreadRepliesCount')
           ..write(')'))
         .toString();
   }
@@ -1062,11 +1176,9 @@ class $ThreadsTableTable extends ThreadsTable
   @override
   GeneratedTextColumn get boardId => _boardId ??= _constructBoardId();
   GeneratedTextColumn _constructBoardId() {
-    return GeneratedTextColumn(
-      'board_id',
-      $tableName,
-      false,
-    );
+    return GeneratedTextColumn('board_id', $tableName, false,
+        $customConstraints:
+            'REFERENCES boards_table(boardId) ON DELETE CASCADE');
   }
 
   final VerificationMeta _threadIdMeta = const VerificationMeta('threadId');
@@ -1076,6 +1188,20 @@ class $ThreadsTableTable extends ThreadsTable
   GeneratedIntColumn _constructThreadId() {
     return GeneratedIntColumn(
       'thread_id',
+      $tableName,
+      false,
+    );
+  }
+
+  final VerificationMeta _selectedPostIdMeta =
+      const VerificationMeta('selectedPostId');
+  GeneratedIntColumn _selectedPostId;
+  @override
+  GeneratedIntColumn get selectedPostId =>
+      _selectedPostId ??= _constructSelectedPostId();
+  GeneratedIntColumn _constructSelectedPostId() {
+    return GeneratedIntColumn(
+      'selected_post_id',
       $tableName,
       false,
     );
@@ -1131,6 +1257,20 @@ class $ThreadsTableTable extends ThreadsTable
     );
   }
 
+  final VerificationMeta _unreadRepliesCountMeta =
+      const VerificationMeta('unreadRepliesCount');
+  GeneratedIntColumn _unreadRepliesCount;
+  @override
+  GeneratedIntColumn get unreadRepliesCount =>
+      _unreadRepliesCount ??= _constructUnreadRepliesCount();
+  GeneratedIntColumn _constructUnreadRepliesCount() {
+    return GeneratedIntColumn(
+      'unread_replies_count',
+      $tableName,
+      true,
+    );
+  }
+
   @override
   List<GeneratedColumn> get $columns => [
         timestamp,
@@ -1141,10 +1281,12 @@ class $ThreadsTableTable extends ThreadsTable
         extension,
         boardId,
         threadId,
+        selectedPostId,
         isFavorite,
         onlineState,
         replyCount,
-        imageCount
+        imageCount,
+        unreadRepliesCount
       ];
   @override
   $ThreadsTableTable get asDslTable => this;
@@ -1195,6 +1337,14 @@ class $ThreadsTableTable extends ThreadsTable
     } else if (isInserting) {
       context.missing(_threadIdMeta);
     }
+    if (data.containsKey('selected_post_id')) {
+      context.handle(
+          _selectedPostIdMeta,
+          selectedPostId.isAcceptableOrUnknown(
+              data['selected_post_id'], _selectedPostIdMeta));
+    } else if (isInserting) {
+      context.missing(_selectedPostIdMeta);
+    }
     if (data.containsKey('is_favorite')) {
       context.handle(
           _isFavoriteMeta,
@@ -1215,6 +1365,12 @@ class $ThreadsTableTable extends ThreadsTable
           _imageCountMeta,
           imageCount.isAcceptableOrUnknown(
               data['image_count'], _imageCountMeta));
+    }
+    if (data.containsKey('unread_replies_count')) {
+      context.handle(
+          _unreadRepliesCountMeta,
+          unreadRepliesCount.isAcceptableOrUnknown(
+              data['unread_replies_count'], _unreadRepliesCountMeta));
     }
     return context;
   }

@@ -91,6 +91,8 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
           case ThreadDetailSingleEvent.SHOW_OFFLINE:
             showOfflineSnackbar(context);
             break;
+          default:
+            break;
         }
       }
     }, builder: (context, state) {
@@ -172,28 +174,23 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
         builder: (BuildContext context) {
           return AlertDialog(
             title: Text("Warning"),
-            content: Text("This will delete downloaded content"),
+            content: Text("This will delete downloaded content for this thread"),
             actions: [
+              FlatButton(
+                  child: Text("Cancel".toUpperCase()),
+                  onPressed: () {
+                    _threadDetailBloc.add(ThreadDetailEventDialogAnswered(false));
+                    Navigator.of(context).pop();
+                  }),
               FlatButton(
                   child: Text("OK, delete".toUpperCase()),
                   onPressed: () {
                     _threadDetailBloc.add(ThreadDetailEventDialogAnswered(true));
                     Navigator.of(context).pop();
                   }),
-              FlatButton(
-                  child: Text("Cancel".toUpperCase()),
-                  onPressed: () {
-                    _threadDetailBloc.add(ThreadDetailEventDialogAnswered(false));
-                    Navigator.of(context).pop();
-                  })
             ],
           );
         });
-  }
-
-  void showOfflineSnackbar(BuildContext context) {
-    final snackBar = SnackBar(content: Text("Thread seems to be no longer available."));
-    Scaffold.of(context).showSnackBar(snackBar);
   }
 
   void scrollToSelectedPost(int selectedPostIndex, int selectedMediaIndex) {

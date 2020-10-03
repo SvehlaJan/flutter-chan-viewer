@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
 import 'package:flutter_chan_viewer/utils/flavor_config.dart';
 
@@ -11,7 +12,16 @@ abstract class ChanPostBase {
   final String imageId;
   final String extension;
 
-  ChanPostBase(this.boardId, this.threadId, this.timestamp, this.subtitle, this.content, this.filename, this.imageId, this.extension);
+  const ChanPostBase({
+    @required this.boardId,
+    @required this.threadId,
+    @required this.timestamp,
+    @required this.subtitle,
+    @required this.content,
+    @required this.filename,
+    @required this.imageId,
+    @required this.extension,
+  });
 
   bool isFavorite();
 

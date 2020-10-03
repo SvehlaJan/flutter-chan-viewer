@@ -23,6 +23,8 @@ class ThreadsDao extends DatabaseAccessor<MoorDB> with _$ThreadsDaoMixin {
 
   Future<List<ThreadsTableData>> getAllThreadItems() => select(threadsTable).get();
 
+  Future<List<int>> getFavoriteThreadIds() => (select(threadsTable)..where((thread) => thread.isFavorite.equals(true))).map((thread) => thread.threadId).get();
+
   Future<List<ThreadsTableData>> getFavoriteThreads() => (select(threadsTable)
         ..where((thread) => thread.isFavorite.equals(true))
         ..orderBy([(thread) => OrderingTerm(expression: thread.timestamp, mode: OrderingMode.desc)]))
@@ -33,9 +35,13 @@ class ThreadsDao extends DatabaseAccessor<MoorDB> with _$ThreadsDaoMixin {
   Future<List<ThreadsTableData>> getThreadsByBoardIdAndOnlineState(String boardId, OnlineState onlineState) =>
       (select(threadsTable)..where((thread) => thread.boardId.equals(boardId) & thread.onlineState.equals(onlineState.index))).get();
 
+  Future<List<ThreadsTableData>> getCustomThreads() => getThreadsByOnlineState(OnlineState.CUSTOM);
+
+  Future<List<ThreadsTableData>> getArchivedThreads() => getThreadsByOnlineState(OnlineState.ARCHIVED);
+
   Future<List<ThreadsTableData>> getThreadsByOnlineState(OnlineState onlineState) => (select(threadsTable)..where((thread) => thread.onlineState.equals(onlineState.index))).get();
 
-  Future<int> insertThread(ThreadsTableData entry) {
+  Future<void> insertThread(ThreadsTableData entry) {
     return into(threadsTable).insert(entry, mode: InsertMode.insertOrReplace);
   }
 
@@ -53,8 +59,8 @@ class ThreadsDao extends DatabaseAccessor<MoorDB> with _$ThreadsDaoMixin {
   Future<int> updateThreadsOnlineState(List<ThreadsTableData> threads, OnlineState onlineState) {
     List<int> threadIds = threads.map((e) => e.threadId).toList();
     return (update(threadsTable)..where((t) => t.threadId.isIn(threadIds))).write(
-      ThreadsTableData(
-        onlineState: onlineState,
+      ThreadsTableCompanion(
+        onlineState: Value(onlineState),
       ),
     );
   }

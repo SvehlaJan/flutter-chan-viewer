@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_chan_viewer/data/local/moor_db.dart';
 import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
 import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
@@ -9,106 +10,136 @@ import 'package:path/path.dart';
 class PostItem extends ChanPostBase with EquatableMixin {
   final int postId;
   final List<int> repliesTo;
-  final List<PostItem> repliesFrom = [];
+  final List<PostItem> repliesFrom;
+  final bool isHidden;
   ThreadItem thread;
 
   bool get hasReplies => repliesFrom.isNotEmpty;
+
+  PostItem({
+    @required boardId,
+    @required threadId,
+    @required timestamp,
+    @required subtitle,
+    @required content,
+    @required filename,
+    @required imageId,
+    @required extension,
+    @required this.postId,
+    @required this.repliesTo,
+    @required this.repliesFrom,
+    this.isHidden = false,
+    this.thread,
+  }) : super(
+          boardId: boardId,
+          threadId: threadId,
+          timestamp: timestamp,
+          subtitle: subtitle,
+          content: content,
+          filename: filename,
+          imageId: imageId,
+          extension: extension,
+        );
 
   @override
   bool isFavorite() => thread?.isFavorite() ?? false;
 
   factory PostItem.fromMappedJson(ThreadItem thread, Map<String, dynamic> json) => PostItem(
-        json['board_id'] ?? thread.boardId,
-        json['thread_id'] ?? thread.threadId,
-        json['no'],
-        json['time'],
-        ChanUtil.unescapeHtml(json['sub']),
-        ChanUtil.unescapeHtml(json['com']),
-        json['filename'],
-        json['tim'].toString(),
-        json['ext'],
-        ChanUtil.getPostReferences(json['com']),
-        thread,
+        boardId: json['board_id'] ?? thread.boardId,
+        threadId: json['thread_id'] ?? thread.threadId,
+        postId: json['no'],
+        timestamp: json['time'],
+        subtitle: ChanUtil.unescapeHtml(json['sub']),
+        content: ChanUtil.unescapeHtml(json['com']),
+        filename: json['filename'],
+        imageId: json['tim'].toString(),
+        extension: json['ext'],
+        repliesTo: ChanUtil.getPostReferences(json['com']),
+        repliesFrom: [],
+        thread: thread,
+        isHidden: false,
       );
 
   factory PostItem.fromDownloadedFile(String fileName, CacheDirective cacheDirective, int postId) {
     String imageId = basenameWithoutExtension(fileName);
     String extensionStr = extension(fileName);
     return PostItem(
-      cacheDirective.boardId,
-      cacheDirective.threadId,
-      postId,
-      0,
-      "",
-      "",
-      fileName,
-      imageId,
-      extensionStr,
-      [],
-      null,
+      boardId: cacheDirective.boardId,
+      threadId: cacheDirective.threadId,
+      postId: postId,
+      timestamp: 0,
+      subtitle: "",
+      content: "",
+      filename: fileName,
+      imageId: imageId,
+      extension: extensionStr,
+      repliesTo: [],
+      repliesFrom: [],
+      thread: null,
+      isHidden: false,
     );
   }
 
   PostsTableData toTableData() => PostsTableData(
-      postId: this.postId,
-      boardId: this.boardId,
-      threadId: this.threadId,
-      timestamp: this.timestamp,
-      subtitle: this.subtitle,
-      content: this.content,
-      filename: this.filename,
-      imageId: this.imageId,
-      extension: this.extension);
-
-  factory PostItem.fromTableData(PostsTableData entry, {ThreadItem thread}) => PostItem(
-        entry.boardId,
-        entry.threadId,
-        entry.postId,
-        entry.timestamp,
-        entry.subtitle,
-        entry.content,
-        entry.filename,
-        entry.imageId,
-        entry.extension,
-        ChanUtil.getPostReferences(entry.content),
-        thread,
+        postId: this.postId,
+        boardId: this.boardId,
+        threadId: this.threadId,
+        timestamp: this.timestamp,
+        subtitle: this.subtitle,
+        content: this.content,
+        filename: this.filename,
+        imageId: this.imageId,
+        extension: this.extension,
+        isHidden: this.isHidden,
       );
 
-  Map<String, dynamic> toJson() => {
-        'board_id': this.boardId,
-        'thread_id': this.threadId,
-        'no': this.postId,
-        'time': this.timestamp,
-        'sub': this.subtitle,
-        'com': this.content,
-        'filename': this.filename,
-        'tim': this.imageId,
-        'ext': this.extension,
-      };
+  factory PostItem.fromTableData(PostsTableData entry, {ThreadItem thread}) => PostItem(
+        boardId: entry.boardId,
+        threadId: entry.threadId,
+        postId: entry.postId,
+        timestamp: entry.timestamp,
+        subtitle: entry.subtitle,
+        content: entry.content,
+        filename: entry.filename,
+        imageId: entry.imageId,
+        extension: entry.extension,
+        repliesTo: ChanUtil.getPostReferences(entry.content),
+        repliesFrom: [],
+        thread: thread,
+      );
 
-  PostItem(
+  PostItem copyWith({
+    int postId,
+    List<int> repliesTo,
+    List<PostItem> repliesFrom,
+    bool isHidden,
+    ThreadItem thread,
     String boardId,
     int threadId,
-    this.postId,
     int timestamp,
     String subtitle,
     String content,
     String filename,
     String imageId,
     String extension,
-    this.repliesTo,
-    this.thread,
-  ) : super(
-          boardId,
-          threadId,
-          timestamp,
-          subtitle,
-          content,
-          filename,
-          imageId,
-          extension,
-        );
+  }) {
+    return new PostItem(
+      postId: postId ?? this.postId,
+      repliesTo: repliesTo ?? this.repliesTo,
+      repliesFrom: repliesFrom ?? this.repliesFrom,
+      isHidden: isHidden ?? this.isHidden,
+      thread: thread ?? this.thread,
+      boardId: boardId ?? this.boardId,
+      threadId: threadId ?? this.threadId,
+      timestamp: timestamp ?? this.timestamp,
+      subtitle: subtitle ?? this.subtitle,
+      content: content ?? this.content,
+      filename: filename ?? this.filename,
+      imageId: imageId ?? this.imageId,
+      extension: extension ?? this.extension,
+    );
+  }
 
   @override
-  List<Object> get props => super.props + [postId, repliesTo, repliesFrom, thread];
+  List<Object> get props => super.props + [postId, repliesTo, repliesFrom, thread, isHidden];
 }

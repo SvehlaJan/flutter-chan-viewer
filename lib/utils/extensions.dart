@@ -15,6 +15,10 @@ extension StringExtension on String {
   }
 }
 
+extension MyIterable<T> on Iterable<T> {
+  T get firstOrNull => this.isEmpty ? null : this.first;
+}
+
 /// - [isNullOrEmpty], [isNullEmptyOrFalse], [isNullEmptyZeroOrFalse] are from [this StackOverflow answer](https://stackoverflow.com/a/59826129/10830091)
 extension GeneralUtilsObjectExtension on Object {
   /// Returns true if object is:

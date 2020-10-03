@@ -197,9 +197,7 @@ class ChanNetworkImage extends ImageProvider<ChanNetworkImage> {
       }
     }
 
-    Uint8List remoteData;
-
-    remoteData = await loadFromRemote(
+    Uint8List remoteData = await loadFromRemote(
       key.url,
       key.header,
       key.retryLimit,

@@ -10,4 +10,6 @@ class PostsTable extends ChanBaseTable {
   IntColumn get threadId => integer().customConstraint('REFERENCES threads_table(threadId) ON DELETE CASCADE')();
 
   IntColumn get postId => integer()();
+
+  BoolColumn get isHidden => boolean()();
 }

@@ -20,6 +20,8 @@ class BoardListPage extends StatefulWidget {
 }
 
 class _BoardListPageState extends BasePageState<BoardListPage> {
+  static const String KEY_LIST = "_BoardListPageState.KEY_LIST";
+
   BoardListBloc _boardListBloc;
 
   @override
@@ -76,6 +78,7 @@ class _BoardListPageState extends BasePageState<BoardListPage> {
   static Widget _buildListView(BuildContext context, BoardListStateContent state, Function(BoardItem) onItemClicked) {
     return Scrollbar(
       child: ListView.builder(
+        key: PageStorageKey<String>(KEY_LIST),
         itemCount: state.items.length,
         itemBuilder: (context, index) {
           ChanBoardItemWrapper item = state.items[index];

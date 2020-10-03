@@ -10,7 +10,15 @@ import 'package:moor_flutter/moor_flutter.dart';
 
 part 'moor_db.g.dart';
 
-@UseMoor(tables: [PostsTable, ThreadsTable, BoardsTable], daos: [PostsDao, ThreadsDao, BoardsDao])
+@UseMoor(tables: [
+  PostsTable,
+  ThreadsTable,
+  BoardsTable,
+], daos: [
+  PostsDao,
+  ThreadsDao,
+  BoardsDao
+])
 class MoorDB extends _$MoorDB {
   MoorDB() : super(FlutterQueryExecutor.inDatabaseFolder(path: "chan_viewer_db_${FlavorConfig.name.toLowerCase()}.sqlite", logStatements: true));
 

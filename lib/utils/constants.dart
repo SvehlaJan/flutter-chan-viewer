@@ -18,6 +18,8 @@ class Constants {
   static const String baseUrl = "https://a.4cdn.org";
   static const String baseImageUrl = "https://i.4cdn.org";
 
+  static const String customBoardId = "--CUSTOM--";
+
   static const double favoriteIconSize = 16.0;
   static const double avatarImageSize = 100.0;
   static const double avatarImageMaxHeight = 600.0;

@@ -17,6 +17,8 @@ import 'package:flutter_chan_viewer/repositories/chan_downloader.dart';
 import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
 import 'package:flutter_chan_viewer/utils/chan_logger.dart';
 import 'package:flutter_chan_viewer/repositories/disk_cache.dart';
+import 'package:flutter_chan_viewer/utils/constants.dart';
+import 'package:flutter_chan_viewer/utils/database_helper.dart';
 import 'package:flutter_chan_viewer/utils/preferences.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:stream_transform/stream_transform.dart';
@@ -77,13 +79,11 @@ class ChanRepository {
   }
 
   Future<BoardDetailModel> fetchRemoteBoardDetail(String boardId) async {
-    BoardDetailModel boardDetailModel = await _chanApiProvider.fetchThreadList(boardId);
-    boardDetailModel.threads.forEach((thread) async {
-      // TODO - not necessary?
-      thread.setFavorite(await isThreadFavorite(thread.boardId, thread.threadId));
-    });
-    List<int> threadIds = boardDetailModel.threads.map((thread) => thread.threadId).toList();
-    await _localDataSource.syncWithNewOnlineThreads(boardId, threadIds);
+    List<int> favoriteThreadIds = await _localDataSource.getFavoriteThreadIds();
+    BoardDetailModel boardDetailModel = await _chanApiProvider.fetchThreadList(boardId, favoriteThreadIds);
+
+    List<int> newThreadIds = boardDetailModel.threads.map((thread) => thread.threadId).toList();
+    await _localDataSource.syncWithNewOnlineThreads(boardId, newThreadIds);
     await _localDataSource.saveThreads(boardDetailModel.threads);
     return boardDetailModel;
   }
@@ -92,6 +92,16 @@ class ChanRepository {
     ArchiveListModel archiveList = await _chanApiProvider.fetchArchiveList(boardId);
     await _localDataSource.syncWithNewArchivedThreads(boardId, archiveList.threads);
     return archiveList;
+  }
+
+  Future<Map<int, ThreadDetailModel>> getCachedArchiveMap(String boardId) async {
+    List<ThreadItem> archivedThreads = await _localDataSource.getArchivedThreads();
+    Map<int, ThreadDetailModel> models = {};
+    for (ThreadItem thread in archivedThreads) {
+      List<PostItem> posts = await _localDataSource.getPostsFromThread(thread);
+      models[thread.threadId] = (ThreadDetailModel.fromThreadAndPosts(thread, posts));
+    }
+    return models;
   }
 
   Future<ThreadDetailModel> fetchCachedThreadDetail(String boardId, int threadId) async {
@@ -136,6 +146,33 @@ class ChanRepository {
     return model;
   }
 
+  Future<ThreadItem> createCustomThread(String name) async {
+    ThreadItem customThread = ThreadItem(
+      threadId: DatabaseHelper.nextThreadId(),
+      boardId: Constants.customBoardId,
+      timestamp: DateTime.now().millisecondsSinceEpoch,
+      subtitle: name,
+      onlineStatus: OnlineState.CUSTOM,
+    );
+
+    await _localDataSource.saveThread(customThread);
+
+    return _localDataSource.getThreadById(customThread.boardId, customThread.threadId);
+  }
+
+  Future<PostItem> addPostToCustomThread(PostItem originalPost, ThreadItem newThread) async {
+    PostItem newPost = originalPost.copyWith(
+      postId: DatabaseHelper.nextPostId(),
+      threadId: newThread.threadId,
+      boardId: Constants.customBoardId,
+    );
+
+    await _localDataSource.addPostToThread(newPost, newThread);
+    _chanStorage.copyMediaFile(newPost.getMediaUrl(), originalPost.getCacheDirective(), newThread.getCacheDirective());
+
+    return _localDataSource.getPostById(newPost.postId, newThread.threadId, newThread.boardId);
+  }
+
   Future<bool> isThreadFavorite(String boardId, int threadId) async {
     ThreadItem thread = await _localDataSource.getThreadById(boardId, threadId);
     return thread?.isFavorite() ?? false;
@@ -144,18 +181,20 @@ class ChanRepository {
   bool isBoardFavorite(String boardId) => (Preferences.getStringList(Preferences.KEY_FAVORITE_BOARDS)).contains(boardId);
 
   Future<void> addThreadToFavorites(ThreadDetailModel model) async {
-    model.thread.setFavorite(true);
-    await _localDataSource.updateThread(model.thread);
-
+    await _localDataSource.updateThread(model.thread.copyWith(isThreadFavorite: true));
     await moveMediaToPermanentCache(model);
+    _chanDownloader.downloadAllMedia(model);
   }
 
   Future<void> removeThreadFromFavorites(ThreadDetailModel model) async {
-    model.thread.setFavorite(false);
-    await _localDataSource.updateThread(model.thread);
+    await _localDataSource.updateThread(model.thread.copyWith(isThreadFavorite: false));
 
     await moveMediaToTemporaryCache(model);
-    await _chanStorage.deleteCacheFolder(model.thread.getCacheDirective());
+    await _chanStorage.deleteMediaDirectory(model.thread.getCacheDirective());
+  }
+
+  Future<void> updateThread(ThreadItem thread) async {
+    await _localDataSource.updateThread(thread);
   }
 
   Future<void> downloadAllMedia(ThreadDetailModel model) async {
@@ -165,14 +204,11 @@ class ChanRepository {
   Future<List<ThreadDetailModel>> getFavoriteThreads() async {
     List<ThreadItem> threads = await _localDataSource.getFavoriteThreads();
     List<ThreadDetailModel> models = threads.map((thread) => ThreadDetailModel.fromThreadAndPosts(thread, [])).toList();
-//    List<ThreadDetailModel> models = [];
-//    for (ThreadItem thread in threads) {
-//      List<PostItem> posts = await _localDataSource.getPostsFromThread(thread);
-//      models.add(ThreadDetailModel.fromThreadAndPosts(thread, posts));
-//    }
 
     return models;
   }
+
+  Future<List<ThreadItem>> getCustomThreads() async => await _localDataSource.getCustomThreads();
 
   Future<void> moveMediaToPermanentCache(ThreadDetailModel model) async {
     model.mediaPosts.forEach((post) async {

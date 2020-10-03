@@ -58,9 +58,6 @@ dependencies:
     git:
       url: git://github.com/mchome/flutter_advanced_networkimage.git
 
-dependency_overrides:
-  flutter_svg: 0.18.0
-
 dev_dependencies:
   moor_generator:
   build_runner:

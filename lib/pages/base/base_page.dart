@@ -70,6 +70,11 @@ abstract class BasePageState<T extends StatefulWidget> extends State<T> {
   static Widget buildErrorScreen(BuildContext context, String message) {
     return Center(child: Text("Error:\n$message"));
   }
+
+  void showOfflineSnackbar(BuildContext context) {
+    final snackBar = SnackBar(content: Text("Thread seems to be no longer available."));
+    Scaffold.of(context).showSnackBar(snackBar);
+  }
 }
 
 class AppBarAction {

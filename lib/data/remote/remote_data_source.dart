@@ -40,13 +40,13 @@ class RemoteDataSource {
     });
   }
 
-  Future<BoardDetailModel> fetchThreadList(String boardId) async {
+  Future<BoardDetailModel> fetchThreadList(String boardId, List<int> favoriteThreadIds) async {
     String url = "${FlavorConfig.values().baseUrl}/$boardId/catalog.json";
 
     final response = await client.get(url);
 //    ChanLogger.d("Thread list fetched. { url: $url, response status: ${response.statusCode} }");
     if (response.statusCode == 200) {
-      return BoardDetailModel.fromJson(boardId, OnlineState.ONLINE, json.decode(response.body));
+      return BoardDetailModel.fromJson(boardId, OnlineState.ONLINE, favoriteThreadIds, json.decode(response.body));
     } else {
       throw HttpException(message: response.body, errorCode: response.statusCode);
     }

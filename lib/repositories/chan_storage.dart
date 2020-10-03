@@ -12,7 +12,6 @@ class ChanStorage {
   static bool _initialized = false;
 
   static const String PERMANENT_DIR = "saved";
-  static const String CONTENT_FILENAME = "content.json";
   static const String SEPARATOR = "/";
 
   Directory _permanentDirectory;
@@ -33,8 +32,6 @@ class ChanStorage {
 
   bool mediaFileExists(String url, CacheDirective cacheDirective) => File(join(_permanentDirectory.path, _getFileRelativePath(url, cacheDirective))).existsSync();
 
-  bool contentFileExists(CacheDirective cacheDirective) => File(join(_permanentDirectory.path, _getFolderRelativePath(cacheDirective), CONTENT_FILENAME)).existsSync();
-
   List<String> listDirectory(CacheDirective cacheDirective) => Directory(getFolderAbsolutePath(cacheDirective)).listSync(recursive: true).map((file) => file.path);
 
   String getFolderAbsolutePath(CacheDirective cacheDirective) => join(_permanentDirectory.path, _getFolderRelativePath(cacheDirective));
@@ -54,64 +51,36 @@ class ChanStorage {
     return null;
   }
 
-  Future<Uint8List> readMediaFile(String url, CacheDirective cacheDirective) async {
+  Future<Uint8List> readMediaFile(String name, CacheDirective cacheDirective) async {
     try {
-      File mediaFile = File(getFileAbsolutePath(url, cacheDirective));
+      File mediaFile = File(getFileAbsolutePath(name, cacheDirective));
       Uint8List data = await mediaFile.readAsBytes();
       return data;
     } catch (e, stackTrace) {
 //      ChanLogger.e("File read error!", e, stackTrace);
       return null;
     }
-    return null;
   }
 
-  Future<File> writeMediaFile(String url, CacheDirective cacheDirective, Uint8List data) async {
+  Future<File> writeMediaFile(String name, CacheDirective cacheDirective, Uint8List data) async {
     try {
       Directory directory = Directory(getFolderAbsolutePath(cacheDirective));
       if (!directory.existsSync()) await directory.create(recursive: true);
 
-      File mediaFile = File(join(directory.path, basename(url)));
+      File mediaFile = File(join(directory.path, basename(name)));
       File result = await mediaFile.writeAsBytes(data, flush: false);
       return result;
     } catch (e, stackTrace) {
       ChanLogger.e("File write error!", e, stackTrace);
       return null;
     }
-    return null;
   }
 
-  Future<String> readContentString(CacheDirective cacheDirective) async {
-    try {
-      Directory directory = Directory(getFolderAbsolutePath(cacheDirective));
-      File file = File(join(directory.path, CONTENT_FILENAME));
-      String text = await file.readAsString();
-      return text;
-    } catch (e, stackTrace) {
-//      ChanLogger.e("File read error!", e, stackTrace);
-      return null;
-    }
-  }
-
-  Future<File> saveContentString(CacheDirective cacheDirective, String content) async {
-    try {
-      Directory directory = Directory(getFolderAbsolutePath(cacheDirective));
-      if (!directory.existsSync()) await directory.create(recursive: true);
-
-      File file = File(join(directory.path, CONTENT_FILENAME));
-      File result = await file.writeAsString(content);
-      return result;
-    } catch (e, stackTrace) {
-      ChanLogger.e("File write error!", e, stackTrace);
-      return null;
-    }
-  }
-
-  Future<void> deleteMediaFile(String url, CacheDirective cacheDirective) async {
+  Future<void> deleteMediaFile(String name, CacheDirective cacheDirective) async {
     try {
       Directory directory = Directory(getFolderAbsolutePath(cacheDirective));
       if (!directory.existsSync()) return null;
-      File file = File(join(directory.path, CONTENT_FILENAME));
+      File file = File(join(directory.path, name));
       if (!file.existsSync()) return null;
       file.deleteSync(recursive: true);
       return null;
@@ -121,20 +90,24 @@ class ChanStorage {
     }
   }
 
-  Future<void> deleteCacheFolder(CacheDirective cacheDirective) async {
+  Future<File> copyMediaFile(String name, CacheDirective sourceCacheDirective, CacheDirective targetCacheDirective) async {
     try {
-      Directory directory = Directory(getFolderAbsolutePath(cacheDirective));
-      if (!directory.existsSync()) return null;
+      File sourceMediaFile = File(getFileAbsolutePath(name, sourceCacheDirective));
+      Uint8List data = await sourceMediaFile.readAsBytes();
 
-      directory.deleteSync(recursive: true);
-      return null;
+      Directory targetDirectory = Directory(getFolderAbsolutePath(targetCacheDirective));
+      if (!targetDirectory.existsSync()) await targetDirectory.create(recursive: true);
+
+      File targetMediaFile = File(join(targetDirectory.path, basename(name)));
+      File result = await targetMediaFile.writeAsBytes(data, flush: false);
+      return result;
     } catch (e, stackTrace) {
-      ChanLogger.e("File delete error!", e, stackTrace);
+      ChanLogger.e("File write error!", e, stackTrace);
       return null;
     }
   }
 
-  Future<void> moveFolderToTempCache(CacheDirective cacheDirective) async {
+  Future<void> deleteMediaDirectory(CacheDirective cacheDirective) async {
     try {
       Directory directory = Directory(getFolderAbsolutePath(cacheDirective));
       if (!directory.existsSync()) return null;

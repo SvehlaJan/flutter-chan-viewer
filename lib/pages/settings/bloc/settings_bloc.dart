@@ -80,7 +80,7 @@ class SettingsBloc extends Bloc<ChanEvent, ChanState> {
         yield _contentState;
       } else if (event is SettingsEventDeleteFolder) {
         yield ChanStateLoading();
-        _chanStorage.deleteCacheFolder(event.cacheDirective);
+        _chanStorage.deleteMediaDirectory(event.cacheDirective);
         _downloads = _chanStorage.getAllDownloadFoldersInfo();
         yield _contentState;
       }

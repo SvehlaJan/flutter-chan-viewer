@@ -44,11 +44,22 @@ class ThreadDetailEventOnReplyClicked extends ChanEvent {
   List<Object> get props => [postId];
 }
 
-class ThreadDetailEventOnDataReceived extends ChanEvent {
-  final ThreadDetailModel model;
+class ThreadDetailEventHidePost extends ChanEvent {}
 
-  ThreadDetailEventOnDataReceived(this.model);
+class ThreadDetailEventCreateNewCollection extends ChanEvent {
+  final String name;
+
+  ThreadDetailEventCreateNewCollection(this.name);
 
   @override
-  List<Object> get props => [model];
+  List<Object> get props => [name];
+}
+
+class ThreadDetailEventAddPostToCollection extends ChanEvent {
+  final String name;
+
+  ThreadDetailEventAddPostToCollection(this.name);
+
+  @override
+  List<Object> get props => [name];
 }

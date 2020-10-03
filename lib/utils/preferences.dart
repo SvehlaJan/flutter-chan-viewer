@@ -18,6 +18,8 @@ class Preferences {
   static const String KEY_SETTINGS_SHOW_SFW_ONLY = "settings_show_sfw_only";
   static const String KEY_FAVORITE_BOARDS = "favorite_boards";
   static const String KEY_THREAD_CATALOG_MODE = "thread_catalog_mode";
+  static const String KEY_NEXT_POST_ID = "next_post_id";
+  static const String KEY_NEXT_THREAD_ID = "next_thread_id";
 
   Preferences._internal() {
     // initialization code

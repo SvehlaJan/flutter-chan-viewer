@@ -31,6 +31,8 @@ class BoardDetailPage extends StatefulWidget {
 }
 
 class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
+  static const String KEY_LIST = "_BoardDetailPageState.KEY_LIST";
+
   BoardDetailBloc _boardDetailBloc;
 
   @override
@@ -102,6 +104,7 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
   static Widget _buildListView(BuildContext context, BoardDetailStateContent state, Function(ThreadItem) onItemClicked) {
     return Scrollbar(
       child: ListView.builder(
+        key: PageStorageKey<String>(KEY_LIST),
         itemCount: state.threads.length,
         itemBuilder: (context, index) {
           return InkWell(

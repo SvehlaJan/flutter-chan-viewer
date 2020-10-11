@@ -58,7 +58,7 @@ class _PostGridWidgetState extends State<PostGridWidget> with SingleTickerProvid
       child: Stack(
         fit: StackFit.passthrough,
         children: <Widget>[
-          Hero(tag: widget.post.getMediaUrl(), child: ChanCachedImage(post: widget.post, boxFit: BoxFit.cover, isDownloaded: _isDownloaded)),
+          Hero(tag: widget.post.getMediaUrl(), child: ChanCachedImage(post: widget.post, boxFit: BoxFit.cover)),
           if (_isDownloaded) Align(alignment: Alignment.bottomRight, child: Icon(Icons.sd_storage)),
           if (widget.post.hasGif()) Align(alignment: Alignment.bottomLeft, child: Icon(Icons.gif)),
           if (widget.post.hasWebm()) Align(alignment: Alignment.bottomRight, child: Icon(Icons.play_arrow)),

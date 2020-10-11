@@ -1,82 +1,77 @@
-import 'dart:typed_data';
+import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/models/helper/chan_post_base.dart';
-import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
+import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
+import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
-import 'package:flutter_chan_viewer/view/network_image/chan_networkimage.dart';
-import 'package:flutter_chan_viewer/view/network_image/transition_to_image.dart';
+import 'package:flutter_chan_viewer/utils/chan_cache_manager.dart';
 
 class ChanCachedImage extends StatelessWidget {
   final ChanPostBase post;
   final BoxFit boxFit;
   final bool forceThumbnail;
-  final bool isDownloaded;
-  final bool showProgress;
+  final Duration animationDuration = const Duration(milliseconds: 400);
 
   const ChanCachedImage({
     @required this.post,
     @required this.boxFit,
     this.forceThumbnail = false,
-    this.isDownloaded = false,
-    this.showProgress = false,
   });
 
   @override
   Widget build(BuildContext context) {
     String mainUrl;
-    String fallbackUrl;
     String thumbnailUrl;
-    CacheDirective cacheDirective = (post.isFavorite() || !forceThumbnail) ? post.getCacheDirective() : null;
+    bool isDownloaded = getIt<ChanRepository>().isMediaDownloaded(post);
 
-    if (forceThumbnail) {
-      if (post.isFavorite()) {
-        mainUrl = post.getMediaUrl();
-        fallbackUrl = post.getThumbnailUrl();
-      } else {
-        mainUrl = post.getThumbnailUrl();
-      }
+    if (forceThumbnail || post.hasWebm()) {
+      mainUrl = post.getThumbnailUrl();
     } else {
-      if (post.hasWebm()) {
-        if (post.isFavorite()) {
-          mainUrl = post.getMediaUrl();
-          fallbackUrl = post.getThumbnailUrl();
-        } else {
-          mainUrl = post.getThumbnailUrl();
-        }
-      } else {
-        mainUrl = post.getMediaUrl();
-      }
+      mainUrl = post.getMediaUrl();
       thumbnailUrl = post.getThumbnailUrl();
     }
 
-    return ChanTransitionToImage(
-      image: ChanNetworkImage(mainUrl, fallbackUrl, cacheDirective),
-      loadFailedCallback: () {
-        print('Failed to load image: $mainUrl');
-      },
-      placeholder: Icon(Icons.sync_problem, size: Constants.errorPlaceholderSize),
-      loadingWidgetBuilder: showProgress
-          ? (BuildContext context, double progress, Uint8List imageData) {
-              return Stack(
-                fit: StackFit.passthrough,
-                children: <Widget>[
-                  _buildLoadingWidget(thumbnailUrl),
-                  if (progress > 0) Align(alignment: Alignment.bottomCenter, child: SizedBox(height: 2.0, child: LinearProgressIndicator(value: progress))),
-                ],
-              );
-            }
-          : null,
+    if (isDownloaded) {
+      File imageFile = getIt<ChanStorage>().getMediaFile(post.getMediaUrl(), post.getCacheDirective());
+      return Image.file(
+        imageFile,
+        fit: boxFit,
+      );
+    } else if (post.isFavorite()) {
+      getIt<ChanCacheManager>().downloadFile(post.getMediaUrl()).then((fileInfo) {
+        return fileInfo.file.readAsBytes().then((imageData) {
+          return getIt<ChanStorage>().writeMediaFile(post.getMediaUrl(), post.getCacheDirective(), imageData);
+        });
+      });
+    }
+
+    return CachedNetworkImage(
+      cacheManager: getIt<ChanCacheManager>(),
+      imageUrl: mainUrl,
+      placeholder: (context, url) => _buildPlaceholderWidget(thumbnailUrl),
+      errorWidget: (context, url, error) => Icon(Icons.error),
+      fadeInDuration: animationDuration,
+      fadeOutDuration: animationDuration,
+      placeholderFadeInDuration: animationDuration,
       fit: boxFit,
-      enableRefresh: true,
-      printError: true,
     );
   }
 
-  Widget _buildLoadingWidget(String url) {
+  Widget _buildPlaceholderWidget(String url) {
     return (url != null)
-        ? ChanTransitionToImage(image: ChanNetworkImage(url, null, null), fit: boxFit, loadingWidget: Center(child: Constants.progressIndicator))
-        : Center(child: Constants.progressIndicator);
+        ? CachedNetworkImage(
+            cacheManager: getIt<ChanCacheManager>(),
+            imageUrl: url,
+            fit: boxFit,
+            placeholder: (context, url) => Constants.centeredProgressIndicator,
+            fadeInDuration: Duration.zero,
+            fadeOutDuration: Duration.zero,
+            placeholderFadeInDuration: Duration.zero,
+          )
+        : Constants.centeredProgressIndicator;
   }
 }

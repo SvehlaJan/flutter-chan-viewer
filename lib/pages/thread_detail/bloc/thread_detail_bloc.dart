@@ -26,7 +26,6 @@ class ThreadDetailBloc extends Bloc<ChanEvent, ChanState> {
   final String _boardId;
   final int _threadId;
   final bool _showDownloadsOnly;
-  final bool _showAppBar;
   bool _catalogMode;
 
   ThreadDetailModel _threadDetailModel;
@@ -34,9 +33,7 @@ class ThreadDetailBloc extends Bloc<ChanEvent, ChanState> {
   ThreadDetailBloc(
     this._boardId,
     this._threadId,
-    this._showAppBar,
-    this._showDownloadsOnly,
-    this._catalogMode,
+    this._showDownloadsOnly
   ) : super(ChanStateLoading());
 
   String get pageTitle => "/$_boardId/$_threadId";
@@ -164,6 +161,6 @@ class ThreadDetailBloc extends Bloc<ChanEvent, ChanState> {
   }
 
   ThreadDetailStateContent _getShowListState({bool lazyLoading = false, ThreadDetailSingleEvent event}) {
-    return ThreadDetailStateContent(_threadDetailModel, _threadDetailModel?.selectedPostId, _showAppBar, isFavorite, _catalogMode, lazyLoading, event);
+    return ThreadDetailStateContent(_threadDetailModel, _threadDetailModel?.selectedPostId, isFavorite, _catalogMode, lazyLoading, event);
   }
 }

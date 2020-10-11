@@ -8,7 +8,7 @@ import 'package:flutter_chan_viewer/utils/navigation_helper.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
 import 'package:flutter_chan_viewer/pages/thread_detail/thread_detail_page.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
-import 'package:flutter_chan_viewer/view/list_widget_archive_thread.dart';
+import 'package:flutter_chan_viewer/view/list_widget_thread_archive.dart';
 import 'package:flutter_chan_viewer/view/list_widget_thread.dart';
 
 import 'bloc/board_archive_bloc.dart';
@@ -43,9 +43,9 @@ class _BoardArchivePageState extends BasePageState<BoardArchivePage> {
   String getPageTitle() => "/${widget.boardId}";
 
   @override
-  List<AppBarAction> getAppBarActions(BuildContext context) => [
-        AppBarAction("Search", Icons.search, _onSearchClick),
-        AppBarAction("Refresh", Icons.refresh, _onRefreshClick),
+  List<PageAction> getAppBarActions(BuildContext context) => [
+        PageAction("Search", Icons.search, _onSearchClick),
+        PageAction("Refresh", Icons.refresh, _onRefreshClick),
       ];
 
   void _onSearchClick() async {
@@ -70,12 +70,13 @@ class _BoardArchivePageState extends BasePageState<BoardArchivePage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<BoardArchiveBloc, ChanState>(
+    return buildScaffold(
+      context,
+      BlocBuilder<BoardArchiveBloc, ChanState>(
         cubit: _archiveListBloc,
-        builder: (context, state) => buildScaffold(
-              context,
-              buildBody(context, state, _scrollController, ((thread) => _openThreadDetailPage(thread))),
-            ));
+        builder: (context, state) => buildBody(context, state, _scrollController, ((thread) => _openThreadDetailPage(thread))),
+      ),
+    );
   }
 
   static Widget buildBody(BuildContext context, ChanState state, ScrollController scrollController, Function(ThreadItem) onItemClicked) {

@@ -18,21 +18,14 @@ import 'bloc/thread_detail_state.dart';
 class ThreadDetailPage extends StatefulWidget {
   static const String ARG_BOARD_ID = "ThreadDetailPage.ARG_BOARD_ID";
   static const String ARG_THREAD_ID = "ThreadDetailPage.ARG_THREAD_ID";
-  static const String ARG_SHOW_APP_BAR = "ThreadDetailPage.ARG_SHOW_APP_BAR";
   static const String ARG_SHOW_DOWNLOADS_ONLY = "ThreadDetailPage.ARG_SHOW_DOWNLOADS_ONLY";
-  static const String ARG_CATALOG_MODE = "ThreadDetailPage.ARG_CATALOG_MODE";
 
   static Map<String, dynamic> createArguments(
     final String boardId,
     final int threadId, {
-    final bool showAppBar = true,
     final bool showDownloadsOnly = false,
-    final bool catalogMode,
   }) {
-    Map<String, dynamic> arguments = {ARG_BOARD_ID: boardId, ARG_THREAD_ID: threadId, ARG_SHOW_APP_BAR: showAppBar, ARG_SHOW_DOWNLOADS_ONLY: showDownloadsOnly};
-    if (catalogMode != null) {
-      arguments[ARG_CATALOG_MODE] = catalogMode;
-    }
+    Map<String, dynamic> arguments = {ARG_BOARD_ID: boardId, ARG_THREAD_ID: threadId, ARG_SHOW_DOWNLOADS_ONLY: showDownloadsOnly};
     return arguments;
   }
 
@@ -62,10 +55,10 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
   String getPageTitle() => _threadDetailBloc.pageTitle;
 
   @override
-  List<AppBarAction> getAppBarActions(BuildContext context) => [
-        _threadDetailBloc.isFavorite ? AppBarAction("Unstar", Icons.star, _onFavoriteToggleClick) : AppBarAction("Star", Icons.star_border, _onFavoriteToggleClick),
-        AppBarAction("Refresh", Icons.refresh, _onRefreshClick),
-        _threadDetailBloc.catalogMode ? AppBarAction("List", Icons.list, _onCatalogModeToggleClick) : AppBarAction("Catalog", Icons.apps, _onCatalogModeToggleClick),
+  List<PageAction> getAppBarActions(BuildContext context) => [
+        _threadDetailBloc.isFavorite ? PageAction("Unstar", Icons.star, _onFavoriteToggleClick) : PageAction("Star", Icons.star_border, _onFavoriteToggleClick),
+        PageAction("Refresh", Icons.refresh, _onRefreshClick),
+        _threadDetailBloc.catalogMode ? PageAction("List", Icons.list, _onCatalogModeToggleClick) : PageAction("Catalog", Icons.apps, _onCatalogModeToggleClick),
       ];
 
   void _onRefreshClick() => _threadDetailBloc.add(ChanEventFetchData());
@@ -76,35 +69,31 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<ThreadDetailBloc, ChanState>(listener: (context, state) {
-      if (state is ThreadDetailStateContent && state.event != null) {
-        switch (state.event) {
-          case ThreadDetailSingleEvent.SHOW_UNSTAR_WARNING:
-            showConfirmUnstarDialog();
-            break;
-          case ThreadDetailSingleEvent.SCROLL_TO_SELECTED:
-            scrollToSelectedPost(state.selectedPostIndex, state.selectedMediaIndex);
-            break;
-          case ThreadDetailSingleEvent.CLOSE_PAGE:
-            Navigator.of(context).pop();
-            break;
-          case ThreadDetailSingleEvent.SHOW_OFFLINE:
-            showOfflineSnackbar(context);
-            break;
-          default:
-            break;
+    return buildScaffold(
+      context,
+      BlocConsumer<ThreadDetailBloc, ChanState>(listener: (context, state) {
+        if (state is ThreadDetailStateContent && state.event != null) {
+          switch (state.event) {
+            case ThreadDetailSingleEvent.SHOW_UNSTAR_WARNING:
+              showConfirmUnstarDialog();
+              break;
+            case ThreadDetailSingleEvent.SCROLL_TO_SELECTED:
+              scrollToSelectedPost(state.selectedPostIndex, state.selectedMediaIndex);
+              break;
+            case ThreadDetailSingleEvent.CLOSE_PAGE:
+              Navigator.of(context).pop();
+              break;
+            case ThreadDetailSingleEvent.SHOW_OFFLINE:
+              showOfflineSnackbar(context);
+              break;
+            default:
+              break;
+          }
         }
-      }
-    }, builder: (context, state) {
-      return BlocBuilder<ThreadDetailBloc, ChanState>(
-          cubit: _threadDetailBloc,
-          builder: (context, state) {
-            if (state is ThreadDetailStateContent && !state.showAppBar) {
-              return buildBody(context, state);
-            }
-            return buildScaffold(context, buildBody(context, state));
-          });
-    });
+      }, builder: (context, state) {
+        return BlocBuilder<ThreadDetailBloc, ChanState>(cubit: _threadDetailBloc, builder: (context, state) => buildBody(context, state));
+      }),
+    );
   }
 
   Widget buildBody(BuildContext context, ChanState state) {

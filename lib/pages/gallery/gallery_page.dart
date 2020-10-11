@@ -3,22 +3,18 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/models/ui/post_item.dart';
-import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
+import 'package:flutter_chan_viewer/pages/thread_detail/bloc/thread_detail_bloc.dart';
 import 'package:flutter_chan_viewer/pages/thread_detail/bloc/thread_detail_event.dart';
-import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
+import 'package:flutter_chan_viewer/pages/thread_detail/bloc/thread_detail_state.dart';
 import 'package:flutter_chan_viewer/utils/chan_util.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/view/list_widget_post.dart';
-import 'package:flutter_chan_viewer/view/network_image/chan_networkimage.dart';
 import 'package:flutter_chan_viewer/view/view_cached_image.dart';
 import 'package:flutter_chan_viewer/view/view_video_player.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:sliding_sheet/sliding_sheet.dart';
-
-import '../thread_detail/bloc/thread_detail_bloc.dart';
-import '../thread_detail/bloc/thread_detail_state.dart';
 
 class GalleryPage extends StatefulWidget {
   final bool showAsReply;
@@ -45,7 +41,9 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
     _newCollectionTextController = TextEditingController();
     _sheetController = SheetController.of(context) ?? SheetController();
     if (widget.showAsReply) {
-      _sheetController.expand();
+      Future.delayed(const Duration(milliseconds: 200), () {
+        _sheetController.expand();
+      });
     }
   }
 
@@ -166,74 +164,106 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
   }
 
   PhotoViewGalleryPageOptions _buildCarouselItem(BuildContext context, PostItem post) {
-    if (post.hasImage() || post.hasGif()) {
-      return PhotoViewGalleryPageOptions(
-        imageProvider: ChanNetworkImage(post.getImageUrl(), null, post.getCacheDirective()),
-        heroAttributes: PhotoViewHeroAttributes(tag: post.getMediaUrl()),
-        minScale: PhotoViewComputedScale.contained,
-        maxScale: PhotoViewComputedScale.covered * 3,
-      );
-    } else if (post.hasWebm()) {
-      return PhotoViewGalleryPageOptions.customChild(
-        child: ChanVideoPlayer(post: post),
-        heroAttributes: PhotoViewHeroAttributes(tag: post.getMediaUrl()),
-        minScale: PhotoViewComputedScale.contained,
-        maxScale: PhotoViewComputedScale.covered * 3,
-      );
-    } else {
+    if (!post.hasMedia()) {
       return null;
     }
+
+    return PhotoViewGalleryPageOptions.customChild(
+      child: (post.hasImage() || post.hasGif()) ? ChanCachedImage(post: post, boxFit: BoxFit.contain) : ChanVideoPlayer(post: post),
+      heroAttributes: PhotoViewHeroAttributes(tag: post.getMediaUrl()),
+      initialScale: PhotoViewComputedScale.contained,
+      minScale: PhotoViewComputedScale.contained * 0.8,
+      maxScale: PhotoViewComputedScale.covered * 32,
+      disableGestures: false,
+    );
   }
 
   Widget _buildBottomView(PostItem post) {
-    List<PostItem> allPosts = [post, ...post.repliesFrom];
+    List<PostItem> repliesPosts = [post, ...post.repliesFrom];
 
     return SlidingSheet(
-      elevation: 4,
-      cornerRadius: 0,
+      color: Colors.transparent,
+      shadowColor: Colors.transparent,
       controller: _sheetController,
-      duration: Duration(milliseconds: 200),
+      duration: Duration(milliseconds: 600),
       snapSpec: const SnapSpec(
         snap: false,
         snappings: [20, 1000],
         positioning: SnapPositioning.pixelOffset,
       ),
       builder: (context, state) {
-        return Material(
-          child: ListView.builder(
-            padding: EdgeInsets.symmetric(horizontal: 2.0),
-            shrinkWrap: true,
-            physics: NeverScrollableScrollPhysics(),
-            itemCount: allPosts.length,
-            itemBuilder: (context, index) {
-              PostItem replyPost = allPosts[index];
-              if (index == 0) {
-                return Padding(
-                  padding: const EdgeInsets.only(top: 2.0, bottom: 4.0),
-                  child: Column(
-                    children: [
-                      PostListWidget(
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            _buildBottomViewHeader(repliesPosts[0]),
+            Material(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 4.0),
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
+                  itemCount: repliesPosts.length,
+                  itemBuilder: (context, index) {
+                    PostItem replyPost = repliesPosts[index];
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 2.0),
+                      child: PostListWidget(
                         post: replyPost,
-                        showAsHeader: true,
                         showHeroAnimation: false,
+                        onTap: () => _onReplyPostClicked(context, replyPost),
                         onLinkTap: (url) => _onLinkClicked(context, url),
                       ),
-                      _buildControlPanel(context),
-                    ],
-                  ),
-                );
-              } else {
-                return PostListWidget(
-                  post: replyPost,
-                  showHeroAnimation: false,
-                  onTap: () => _onReplyPostClicked(context, replyPost),
-                  onLinkTap: (url) => _onLinkClicked(context, url),
-                );
-              }
-            },
-          ),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ],
         );
       },
+    );
+  }
+
+  Widget _buildBottomViewHeader(PostItem post) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4.0, left: 2.0, right: 2.0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Card(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(4.0),
+                topRight: Radius.circular(4.0),
+              ),
+            ),
+            margin: EdgeInsets.zero,
+            child: Padding(
+              padding: const EdgeInsets.all(4.0),
+              child: Text("${post.repliesFrom.length} replies", style: Theme.of(context).textTheme.caption),
+            ),
+          ),
+          Card(
+            clipBehavior: Clip.antiAlias,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(4.0),
+                bottomLeft: Radius.circular(4.0),
+                bottomRight: Radius.circular(4.0),
+              ),
+            ),
+            margin: EdgeInsets.zero,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(icon: Icon(Icons.visibility_off), onPressed: () => _onHidePostClicked(context)),
+                IconButton(icon: Icon(Icons.add), onPressed: () => showCustomCollectionPickerDialog(context)),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -253,19 +283,6 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
   void _onAddPostToCollectionClicked(BuildContext context, String name) => _threadDetailBloc.add(ThreadDetailEventAddPostToCollection(name));
 
   void _onCreateNewCollectionClicked(BuildContext context, String name) => _threadDetailBloc.add(ThreadDetailEventCreateNewCollection(name));
-
-  Widget _buildControlPanel(BuildContext context) {
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      margin: EdgeInsets.symmetric(horizontal: 2.0),
-      child: Row(
-        children: [
-          IconButton(icon: Icon(Icons.visibility_off), onPressed: () => _onHidePostClicked(context)),
-          IconButton(icon: Icon(Icons.add), onPressed: () => showCustomCollectionPickerDialog(context)),
-        ],
-      ),
-    );
-  }
 
   void showPostAddedToCollectionSuccessSnackbar(BuildContext context) {
     final snackBar = SnackBar(content: Text("Post added to collection."));

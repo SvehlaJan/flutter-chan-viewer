@@ -12,6 +12,11 @@ class CacheDirective {
     return new CacheDirective(path.substring(0, dividerIndex), int.parse(path.substring(dividerIndex)));
   }
 
+  // static CacheDirective fromUrl(String url) {
+  //
+  //   return new CacheDirective(path.substring(0, dividerIndex), int.parse(path.substring(dividerIndex)));
+  // }
+
   String toPath() => "$boardId$DIVIDER$threadId";
 
   @override

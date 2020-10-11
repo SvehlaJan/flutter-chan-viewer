@@ -9,6 +9,7 @@ import 'package:flutter_chan_viewer/pages/base/base_page.dart';
 import 'package:flutter_chan_viewer/pages/thread_detail/thread_detail_page.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/view/list_widget_thread.dart';
+import 'package:flutter_chan_viewer/view/list_widget_thread_custom.dart';
 
 import 'bloc/favorites_bloc.dart';
 import 'bloc/favorites_state.dart';
@@ -33,15 +34,18 @@ class _FavoritesPageState extends BasePageState<FavoritesPage> {
   String getPageTitle() => "Favorites";
 
   @override
-  List<AppBarAction> getAppBarActions(BuildContext context) => [AppBarAction("Refresh", Icons.refresh, _onRefreshClick)];
+  List<PageAction> getAppBarActions(BuildContext context) => [PageAction("Refresh", Icons.refresh, _onRefreshClick)];
 
   void _onRefreshClick() => _favoritesBloc.add(ChanEventFetchData(forceRefresh: true));
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<FavoritesBloc, ChanState>(
-      cubit: _favoritesBloc,
-      builder: (context, state) => buildScaffold(context, buildBody(context, state)),
+    return buildScaffold(
+      context,
+      BlocBuilder<FavoritesBloc, ChanState>(
+        cubit: _favoritesBloc,
+        builder: (context, state) => buildBody(context, state),
+      ),
     );
   }
 
@@ -61,12 +65,11 @@ class _FavoritesPageState extends BasePageState<FavoritesPage> {
             if (item.isHeader) {
               return Padding(padding: const EdgeInsets.all(8.0), child: Text(item.headerTitle, style: Theme.of(context).textTheme.subhead));
             } else {
+              Widget threadWidget = item.thread.isCustom
+                  ? CustomThreadListWidget(thread: item.thread.threadDetailModel.thread)
+                  : ThreadListWidget(thread: item.thread.threadDetailModel.thread, showProgress: item.thread.isLoading, newReplies: item.thread.newReplies);
               return InkWell(
-                child: ThreadListWidget(
-                  thread: item.thread.threadDetailModel.thread,
-                  showProgress: item.thread.isLoading,
-                  newReplies: item.thread.newReplies,
-                ),
+                child: threadWidget,
                 onTap: () => _openThreadDetailPage(item.thread),
               );
             }

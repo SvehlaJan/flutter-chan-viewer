@@ -7,6 +7,7 @@ import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/models/archive_list_model.dart';
 import 'package:flutter_chan_viewer/models/board_detail_model.dart';
 import 'package:flutter_chan_viewer/models/board_list_model.dart';
+import 'package:flutter_chan_viewer/models/helper/chan_post_base.dart';
 import 'package:flutter_chan_viewer/models/local/threads_table.dart';
 import 'package:flutter_chan_viewer/models/ui/board_item.dart';
 import 'package:flutter_chan_viewer/models/ui/post_item.dart';
@@ -20,6 +21,7 @@ import 'package:flutter_chan_viewer/repositories/disk_cache.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/utils/database_helper.dart';
 import 'package:flutter_chan_viewer/utils/preferences.dart';
+import 'package:flutter_chan_viewer/utils/chan_cache_manager.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:stream_transform/stream_transform.dart';
 
@@ -54,7 +56,7 @@ class ChanRepository {
     // initialization code
   }
 
-  bool isMediaDownloaded(PostItem post) => _chanStorage.mediaFileExists(post.getMediaUrl(), post.getCacheDirective());
+  bool isMediaDownloaded(ChanPostBase postBase) => _chanStorage.mediaFileExists(postBase.getMediaUrl(), postBase.getCacheDirective());
 
   Future<BoardListModel> fetchCachedBoardList(bool includeNsfw) async {
     try {
@@ -212,28 +214,32 @@ class ChanRepository {
 
   Future<void> moveMediaToPermanentCache(ThreadDetailModel model) async {
     model.mediaPosts.forEach((post) async {
-      Uint8List data = await _diskCache.loadByUrl(post.getMediaUrl());
-      if (data != null) {
-        await _chanStorage.writeMediaFile(post.getMediaUrl(), post.getCacheDirective(), data);
+      Uint8List fileData = await (await getIt<ChanCacheManager>().getFileFromCache(post.getMediaUrl())).file.readAsBytes();
+      // Uint8List data = await _diskCache.loadByUrl(post.getMediaUrl());
+      if (fileData != null) {
+        await _chanStorage.writeMediaFile(post.getMediaUrl(), post.getCacheDirective(), fileData);
       }
     });
   }
 
   Future<void> moveMediaToTemporaryCache(ThreadDetailModel model) async {
     model.mediaPosts.forEach((post) async {
-      Uint8List data = await _chanStorage.readMediaFile(post.getMediaUrl(), post.getCacheDirective());
+      Uint8List data = await _chanStorage.readMediaData(post.getMediaUrl(), post.getCacheDirective());
       if (data != null) {
-        _diskCache.save(post.getMediaUrl(), data);
+        getIt<ChanCacheManager>().putFile(post.getMediaUrl(), data);
+        // _diskCache.save(post.getMediaUrl(), data);
       }
     });
   }
+
+  Future<Uint8List> getCachedPostMediaFile(ChanPostBase postBase) async => getCachedMediaFile(postBase.getMediaUrl(), postBase.getCacheDirective());
 
   Future<Uint8List> getCachedMediaFile(String url, CacheDirective cacheDirective) async {
     String uId = DiskCache.uid(url);
     Uint8List data;
 
     if (cacheDirective != null) {
-      data = await _chanStorage.readMediaFile(url, cacheDirective);
+      data = await _chanStorage.readMediaData(url, cacheDirective);
     }
     if (data == null) {
       data = await DiskCache().load(uId);

@@ -35,8 +35,6 @@ abstract class ChanPostBase {
 
   String getMediaUrl() => _getMediaUrl(this.boardId, this.imageId, this.extension, false);
 
-  String getImageUrl() => hasImage() ? _getMediaUrl(this.boardId, this.imageId, this.extension, false) : null;
-
   String getThumbnailUrl() => _getMediaUrl(this.boardId, this.imageId, this.extension, true);
 
   String _getMediaUrl(String boardId, String imageId, String extension, bool thumbnail) {

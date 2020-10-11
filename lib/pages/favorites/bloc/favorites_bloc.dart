@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:flutter_chan_viewer/bloc/chan_event.dart';
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
+import 'package:flutter_chan_viewer/data/remote/app_exception.dart';
 import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
 import 'package:flutter_chan_viewer/pages/favorites/bloc/favorites_event.dart';
@@ -42,7 +43,12 @@ class FavoritesBloc extends Bloc<ChanEvent, ChanState> {
         }
         _favoriteThreads = threads.map((e) => FavoritesThreadWrapper(e)).toList();
         _currentFavoritesRefreshIndex = 0;
-        _customThreads = (await _repository.getCustomThreads()).map((thread) => FavoritesThreadWrapper(ThreadDetailModel.fromThreadAndPosts(thread, []))).toList();
+        _customThreads = (await _repository.getCustomThreads())
+            .map((thread) => FavoritesThreadWrapper(
+                  ThreadDetailModel.fromThreadAndPosts(thread, []),
+                  isCustom: true,
+                ))
+            .toList();
 
         int currentTimestamp = DateTime.now().millisecondsSinceEpoch;
         bool shouldRefreshDetails = event.forceRefresh || currentTimestamp - _lastDetailRefreshTimestamp > DETAIL_REFRESH_TIMEOUT;
@@ -67,8 +73,8 @@ class FavoritesBloc extends Bloc<ChanEvent, ChanState> {
           if (newMedia > 0) {
             _repository.downloadAllMedia(refreshedThread);
           }
-        } catch (e) {
-          ChanLogger.e("Failed to load favorite thread", e);
+        } on HttpException catch (e, stackTrace) {
+          ChanLogger.v("Thread not found. Probably offline. Ignoring");
         }
 
         _favoriteThreads[_currentFavoritesRefreshIndex] = FavoritesThreadWrapper(refreshedThread ?? cachedThread, newReplies: newReplies);

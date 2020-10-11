@@ -46,11 +46,11 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
   String getPageTitle() => "/${widget.boardId}";
 
   @override
-  List<AppBarAction> getAppBarActions(BuildContext context) => [
-        AppBarAction("Search", Icons.search, _onSearchClick),
-        AppBarAction("Refresh", Icons.refresh, _onRefreshClick),
-        AppBarAction("Archive", Icons.history, _onArchiveClick),
-        _boardDetailBloc.isFavorite ? AppBarAction("Unstar", Icons.star, _onFavoriteToggleClick) : AppBarAction("Star", Icons.star_border, _onFavoriteToggleClick),
+  List<PageAction> getAppBarActions(BuildContext context) => [
+        PageAction("Search", Icons.search, _onSearchClick),
+        PageAction("Refresh", Icons.refresh, _onRefreshClick),
+        PageAction("Archive", Icons.history, _onArchiveClick),
+        _boardDetailBloc.isFavorite ? PageAction("Unstar", Icons.star, _onFavoriteToggleClick) : PageAction("Star", Icons.star_border, _onFavoriteToggleClick),
       ];
 
   void _onSearchClick() async {
@@ -79,9 +79,12 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<BoardDetailBloc, ChanState>(
-      cubit: _boardDetailBloc,
-      builder: (context, state) => buildScaffold(context, buildBody(context, state, ((thread) => _openThreadDetailPage(thread)))),
+    return buildScaffold(
+      context,
+      BlocBuilder<BoardDetailBloc, ChanState>(
+        cubit: _boardDetailBloc,
+        builder: (context, state) => buildBody(context, state, ((thread) => _openThreadDetailPage(thread))),
+      ),
     );
   }
 

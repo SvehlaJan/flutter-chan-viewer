@@ -6,6 +6,7 @@ import 'package:flutter_chan_viewer/utils/chan_util.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/view/view_cached_image.dart';
 import 'package:flutter_html/flutter_html.dart';
+import 'package:flutter_html/style.dart';
 
 class ThreadListWidget extends StatelessWidget {
   final ThreadItem thread;
@@ -42,7 +43,7 @@ class ThreadListWidget extends StatelessWidget {
                 alignment: Alignment.bottomCenter,
                 children: [
                   Padding(
-                    padding: const EdgeInsets.only(left: 4.0, right: 4.0),
+                    padding: const EdgeInsets.only(left: 8.0, right: 4.0, top: 2.0, bottom: 4.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: <Widget>[
@@ -58,14 +59,18 @@ class ThreadListWidget extends StatelessWidget {
                           ],
                         ),
                         Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            if (thread.subtitle != null) Text(thread.subtitle, style: Theme.of(context).textTheme.subtitle2),
-                            Spacer(),
+                            if (thread.subtitle?.isNotEmpty)
+                              Flexible(
+                                  child: Padding(
+                                      padding: const EdgeInsets.only(bottom: 8.0), child: Text(thread.subtitle, style: Theme.of(context).textTheme.headline6, maxLines: 2))),
                             if (newReplies > 0) Text("$newReplies NEW", style: Theme.of(context).textTheme.caption.copyWith(backgroundColor: Colors.red)),
                           ],
                         ),
                         Html(
                           data: ChanUtil.getReadableHtml(thread.content ?? "", true),
+                          style: {"*": Style(margin: EdgeInsets.zero)},
                           onLinkTap: ((String url) {
                             ChanLogger.d("Html link clicked { url: $url }");
                           }),

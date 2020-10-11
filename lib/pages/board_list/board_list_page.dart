@@ -35,9 +35,9 @@ class _BoardListPageState extends BasePageState<BoardListPage> {
   String getPageTitle() => "Boards";
 
   @override
-  List<AppBarAction> getAppBarActions(BuildContext context) => [
-        AppBarAction("Search", Icons.search, _onSearchClick),
-        AppBarAction("Refresh", Icons.refresh, _onRefreshClick),
+  List<PageAction> getAppBarActions(BuildContext context) => [
+        PageAction("Search", Icons.search, _onSearchClick),
+        PageAction("Refresh", Icons.refresh, _onRefreshClick),
       ];
 
   void _onSearchClick() async {
@@ -53,9 +53,12 @@ class _BoardListPageState extends BasePageState<BoardListPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<BoardListBloc, ChanState>(
-      cubit: _boardListBloc,
-      builder: (context, state) => buildScaffold(context, buildBody(context, state, ((board) => _openBoardDetailPage(board)))),
+    return buildScaffold(
+      context,
+      BlocBuilder<BoardListBloc, ChanState>(
+        cubit: _boardListBloc,
+        builder: (context, state) => buildBody(context, state, ((board) => _openBoardDetailPage(board))),
+      ),
     );
   }
 

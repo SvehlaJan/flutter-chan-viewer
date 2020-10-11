@@ -51,7 +51,7 @@ class ChanStorage {
     return null;
   }
 
-  Future<Uint8List> readMediaFile(String name, CacheDirective cacheDirective) async {
+  Future<Uint8List> readMediaData(String name, CacheDirective cacheDirective) async {
     try {
       File mediaFile = File(getFileAbsolutePath(name, cacheDirective));
       Uint8List data = await mediaFile.readAsBytes();

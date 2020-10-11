@@ -8,7 +8,7 @@ class ChanLogger {
     var printer = PrettyPrinter(
         methodCount: 2,
         errorMethodCount: 16,
-        lineLength: 120,
+        lineLength: 200,
         colors: true,
         printEmojis: true,
         printTime: false

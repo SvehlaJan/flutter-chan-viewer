@@ -7,12 +7,11 @@ class BoardDetailModel extends Equatable {
 
   BoardDetailModel(this._threads);
 
-  factory BoardDetailModel.fromJson(String boardId, OnlineState onlineState, List<int> favoriteThreadIds, List<dynamic> parsedJson) {
+  factory BoardDetailModel.fromJson(String boardId, OnlineState onlineState, List<dynamic> parsedJson) {
     List<ThreadItem> threads = [];
     for (Map<String, dynamic> page in parsedJson) {
       for (Map<String, dynamic> thread in page['threads'] ?? []) {
-        bool isFavorite = favoriteThreadIds.contains(thread['no']);
-        threads.add(ThreadItem.fromMappedJson(boardId, null, onlineState, isFavorite, thread));
+        threads.add(ThreadItem.fromMappedJson(boardId, null, onlineState, thread));
       }
     }
     return BoardDetailModel(threads);

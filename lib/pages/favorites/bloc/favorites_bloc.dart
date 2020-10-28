@@ -36,8 +36,8 @@ class FavoritesBloc extends Bloc<ChanEvent, ChanState> {
         }
 
         List<ThreadDetailModel> threads = await _repository.getFavoriteThreads();
-        bool showSfwOnly = Preferences.getBool(Preferences.KEY_SETTINGS_SHOW_SFW_ONLY, def: true);
-        if (showSfwOnly) {
+        bool showNsfw = Preferences.getBool(Preferences.KEY_SETTINGS_SHOW_NSFW, def: false);
+        if (!showNsfw) {
           List<String> sfwBoardIds = (await _repository.fetchCachedBoardList(false)).boards.map((board) => board.boardId).toList();
           threads.removeWhere((model) => !sfwBoardIds.contains(model.thread.boardId));
         }
@@ -74,7 +74,7 @@ class FavoritesBloc extends Bloc<ChanEvent, ChanState> {
             _repository.downloadAllMedia(refreshedThread);
           }
         } on HttpException catch (e, stackTrace) {
-          ChanLogger.v("Thread not found. Probably offline. Ignoring");
+          // ChanLogger.v("Thread not found. Probably offline. Ignoring");
         }
 
         _favoriteThreads[_currentFavoritesRefreshIndex] = FavoritesThreadWrapper(refreshedThread ?? cachedThread, newReplies: newReplies);

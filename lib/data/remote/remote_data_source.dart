@@ -46,19 +46,19 @@ class RemoteDataSource {
     final response = await client.get(url);
 //    ChanLogger.d("Thread list fetched. { url: $url, response status: ${response.statusCode} }");
     if (response.statusCode == 200) {
-      return BoardDetailModel.fromJson(boardId, OnlineState.ONLINE, favoriteThreadIds, json.decode(response.body));
+      return BoardDetailModel.fromJson(boardId, OnlineState.ONLINE, json.decode(response.body));
     } else {
       throw HttpException(message: response.body, errorCode: response.statusCode);
     }
   }
 
-  Future<ThreadDetailModel> fetchThreadDetail(String boardId, int threadId, bool isFavorite, bool isArchived) async {
+  Future<ThreadDetailModel> fetchThreadDetail(String boardId, int threadId, bool isArchived) async {
     String url = "${FlavorConfig.values().baseUrl}/$boardId/thread/$threadId.json";
 
     final response = await client.get(url);
 //    ChanLogger.d("Post list fetched. { url: $url, response status: ${response.statusCode} }");
     if (response.statusCode == 200) {
-      return ThreadDetailModel.fromJson(boardId, threadId, isArchived ? OnlineState.ARCHIVED : OnlineState.ONLINE, isFavorite, json.decode(response.body));
+      return ThreadDetailModel.fromJson(boardId, threadId, isArchived ? OnlineState.ARCHIVED : OnlineState.ONLINE, json.decode(response.body));
     } else {
       throw HttpException(message: response.body, errorCode: response.statusCode);
     }

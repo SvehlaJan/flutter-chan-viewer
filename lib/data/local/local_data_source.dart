@@ -21,6 +21,10 @@ class LocalDataSource {
     return PostItem.fromTableData(await _postsDao.getPostById(postId, threadId, boardId));
   }
 
+  Future<void> updatePost(PostItem post) async {
+    return _postsDao.updatePost(post.toTableData());
+  }
+
   Future<List<PostItem>> getPostsFromThread(ThreadItem thread) async {
     List<PostsTableData> posts = await _postsDao.getAllPostsFromThread(thread.boardId, thread.threadId);
     return posts.map((postData) => PostItem.fromTableData(postData, thread: thread)).toList();

@@ -8,7 +8,6 @@ import 'package:flutter_chan_viewer/utils/navigation_service.dart';
 import 'package:flutter_chan_viewer/repositories/chan_downloader.dart';
 import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
 import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
-import 'package:flutter_chan_viewer/repositories/disk_cache.dart';
 import 'package:flutter_chan_viewer/utils/preferences.dart';
 import 'package:flutter_chan_viewer/utils/chan_cache_manager.dart';
 import 'package:get_it/get_it.dart';
@@ -17,7 +16,6 @@ GetIt getIt = GetIt.instance;
 
 void setupLocator() {
   getIt.registerLazySingleton<NavigationService>(() => NavigationService());
-  getIt.registerLazySingleton<DiskCache>(() => DiskCache());
   getIt.registerLazySingleton<ChanCacheManager>(() => ChanCacheManager());
   getIt.registerLazySingleton<RemoteDataSource>(() => RemoteDataSource());
   getIt.registerLazySingleton<MoorDB>(() => MoorDB());

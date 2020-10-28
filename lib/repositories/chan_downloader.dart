@@ -1,11 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter_chan_viewer/locator.dart';
-import 'package:flutter_chan_viewer/models/ui/post_item.dart';
 import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
-import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
+import 'package:flutter_chan_viewer/models/ui/post_item.dart';
 import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
-import 'package:flutter_chan_viewer/repositories/disk_cache.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -36,7 +34,7 @@ class ChanDownloader {
 
   Future<void> downloadAllMedia(ThreadDetailModel model) async {
     _chanStorage.createDirectory(model.cacheDirective);
-    for (PostItem post in model.mediaPosts) {
+    for (PostItem post in model.allMediaPosts) {
       if (!_chanStorage.mediaFileExists(post.getMediaUrl(), model.cacheDirective)) {
         _TaskInfo task = _TaskInfo(post);
         _requestDownload(task);
@@ -56,14 +54,6 @@ class ChanDownloader {
     print('Background Isolate Callback: task ($id) is in status ($status) and process ($progress)');
 //    final SendPort send = IsolateNameServer.lookupPortByName('downloader_send_port');
 //    send.send([id, status, progress]);
-  }
-
-  Future<Null> deleteMediaFile(String url, CacheDirective cacheDirective) async {
-    String uId = DiskCache.uid(url);
-    if (cacheDirective != null) {
-      await _chanStorage.deleteMediaFile(uId, cacheDirective);
-    }
-    await DiskCache().evict(uId);
   }
 
   Future<Null> cancelAllDownloads() async => FlutterDownloader.cancelAll();

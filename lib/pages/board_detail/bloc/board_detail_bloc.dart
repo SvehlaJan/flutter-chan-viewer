@@ -6,12 +6,12 @@ import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/models/board_detail_model.dart';
 import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
+import 'package:flutter_chan_viewer/pages/board_detail/bloc/board_detail_event.dart';
+import 'package:flutter_chan_viewer/pages/board_detail/bloc/board_detail_state.dart';
 import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
 import 'package:flutter_chan_viewer/utils/chan_logger.dart';
+import 'package:flutter_chan_viewer/utils/extensions.dart';
 import 'package:flutter_chan_viewer/utils/preferences.dart';
-
-import 'board_detail_event.dart';
-import 'board_detail_state.dart';
 
 class BoardDetailBloc extends Bloc<ChanEvent, ChanState> {
   final ChanRepository _repository = getIt<ChanRepository>();
@@ -27,19 +27,20 @@ class BoardDetailBloc extends Bloc<ChanEvent, ChanState> {
     try {
       if (event is ChanEventFetchData) {
         yield ChanStateLoading();
-        List<ThreadItem> filteredThreads;
         List<String> favoriteBoards = Preferences.getStringList(Preferences.KEY_FAVORITE_BOARDS);
         isFavorite = favoriteBoards.contains(boardId);
 
         BoardDetailModel boardDetailModel = await _repository.fetchCachedBoardDetail(boardId);
         if (boardDetailModel != null) {
-          filteredThreads = boardDetailModel.threads.where((thread) => _matchesQuery(thread, searchQuery)).toList();
-          yield BoardDetailStateContent(filteredThreads, true, isFavorite);
+          List<ThreadItem> titleMatchThreads = boardDetailModel.threads.where((thread) => (thread.subtitle ?? "").containsIgnoreCase(searchQuery)).toList();
+          List<ThreadItem> bodyMatchThreads = boardDetailModel.threads.where((thread) => (thread.content ?? "").containsIgnoreCase(searchQuery)).toList();
+          yield BoardDetailStateContent(titleMatchThreads + bodyMatchThreads, true, isFavorite);
         }
 
         boardDetailModel = await _repository.fetchRemoteBoardDetail(boardId);
-        filteredThreads = boardDetailModel.threads.where((thread) => _matchesQuery(thread, searchQuery)).toList();
-        yield BoardDetailStateContent(filteredThreads, false, isFavorite);
+        List<ThreadItem> titleMatchThreads = boardDetailModel.threads.where((thread) => (thread.subtitle ?? "").containsIgnoreCase(searchQuery)).toList();
+        List<ThreadItem> bodyMatchThreads = boardDetailModel.threads.where((thread) => (thread.content ?? "").containsIgnoreCase(searchQuery)).toList();
+        yield BoardDetailStateContent(titleMatchThreads + bodyMatchThreads, false, isFavorite);
       } else if (event is ChanEventSearch) {
         searchQuery = event.query;
         add(ChanEventFetchData());
@@ -57,9 +58,5 @@ class BoardDetailBloc extends Bloc<ChanEvent, ChanState> {
       ChanLogger.e("Event error!", e, stackTrace);
       yield ChanStateError(e.toString());
     }
-  }
-
-  bool _matchesQuery(ThreadItem thread, String query) {
-    return thread.subtitle?.toLowerCase()?.contains(query.toLowerCase()) ?? thread.content?.toLowerCase()?.contains(query.toLowerCase()) ?? false;
   }
 }

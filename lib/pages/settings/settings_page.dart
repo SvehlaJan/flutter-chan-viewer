@@ -170,7 +170,7 @@ class _SettingsPageState extends BasePageState<SettingsPage> {
 
   void _onExperimentClicked() => _settingsBloc.add(SettingsEventExperiment());
 
-  void _onToggleShowSfwOnlyClicked(bool enabled) => _settingsBloc.add(SettingsEventToggleShowSfwOnly(enabled));
+  void _onToggleShowSfwOnlyClicked(bool enabled) => _settingsBloc.add(SettingsEventToggleShowNsfw(enabled));
 
   void _onCancelDownloadsClicked() => _settingsBloc.add(SettingsEventCancelDownloads());
 

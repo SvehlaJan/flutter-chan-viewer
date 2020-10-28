@@ -16,10 +16,10 @@ class SettingsEventSetTheme extends ChanEvent {
 
 class SettingsEventExperiment extends ChanEvent {}
 
-class SettingsEventToggleShowSfwOnly extends ChanEvent {
+class SettingsEventToggleShowNsfw extends ChanEvent {
   final bool showNsfw;
 
-  SettingsEventToggleShowSfwOnly(this.showNsfw);
+  SettingsEventToggleShowNsfw(this.showNsfw);
 
   @override
   List<Object> get props => [showNsfw];

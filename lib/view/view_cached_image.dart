@@ -35,7 +35,7 @@ class ChanCachedImage extends StatelessWidget {
       thumbnailUrl = post.getThumbnailUrl();
     }
 
-    if (isDownloaded) {
+    if (isDownloaded && post.hasImage()) {
       File imageFile = getIt<ChanStorage>().getMediaFile(post.getMediaUrl(), post.getCacheDirective());
       return Image.file(
         imageFile,

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:bloc/bloc.dart';
 import 'package:flutter_chan_viewer/bloc/chan_event.dart';
@@ -118,20 +119,20 @@ class ThreadDetailBloc extends Bloc<ChanEvent, ChanState> {
       } else if (event is ThreadDetailEventOnPostSelected) {
         int newPostId = -1;
         if (event.mediaIndex != null) {
-          newPostId = _threadDetailModel.mediaPosts[event.mediaIndex].postId;
+          newPostId = _threadDetailModel.visibleMediaPosts[event.mediaIndex].postId;
         } else if (event.postId != null) {
           newPostId = event.postId;
         }
 
         _threadDetailModel.thread = _threadDetailModel.thread.copyWith(selectedPostId: newPostId);
-        _repository.updateThread(_threadDetailModel.thread);
+        await _repository.updateThread(_threadDetailModel.thread);
 
         yield _getShowListState(event: ThreadDetailSingleEvent.SCROLL_TO_SELECTED);
       } else if (event is ThreadDetailEventOnLinkClicked) {
         PostItem post = _threadDetailModel.findPostById(ChanUtil.getPostIdFromUrl(event.url));
         if (post != null) {
           _threadDetailModel.thread = _threadDetailModel.thread.copyWith(selectedPostId: post.postId);
-          _repository.updateThread(_threadDetailModel.thread);
+          await _repository.updateThread(_threadDetailModel.thread);
         }
 
         yield _getShowListState(event: ThreadDetailSingleEvent.SCROLL_TO_SELECTED);
@@ -139,11 +140,31 @@ class ThreadDetailBloc extends Bloc<ChanEvent, ChanState> {
         PostItem post = _threadDetailModel.findPostById(event.postId);
         if (post != null) {
           _threadDetailModel.thread = _threadDetailModel.thread.copyWith(selectedPostId: post.postId);
-          _repository.updateThread(_threadDetailModel.thread);
+          await _repository.updateThread(_threadDetailModel.thread);
         }
 
         yield _getShowListState(event: ThreadDetailSingleEvent.SCROLL_TO_SELECTED);
       } else if (event is ThreadDetailEventHidePost) {
+        PostItem post = _threadDetailModel.selectedPost.copyWith(isHidden: true);
+        await _repository.updatePost(post);
+
+        int newSelectedPostId = -1;
+        for (int i = 0; i < _threadDetailModel.allPosts.length; i++) {
+          int dilatation = (i ~/ 2) + 1;
+          int orientation = i % 2;
+          int diff = orientation == 0 ? -dilatation : dilatation;
+          int newSelectedPostIndex = (_threadDetailModel.selectedPostIndex + diff) % _threadDetailModel.allPosts.length;
+          PostItem newSelectedPost = _threadDetailModel.allPosts[newSelectedPostIndex];
+          if (!newSelectedPost.isHidden) {
+            newSelectedPostId = newSelectedPost.postId;
+            break;
+          }
+        }
+        _threadDetailModel.thread = _threadDetailModel.thread.copyWith(selectedPostId: newSelectedPostId);
+        await _repository.updateThread(_threadDetailModel.thread);
+
+        _threadDetailModel = await _repository.fetchCachedThreadDetail(_boardId, _threadId);
+        yield _getShowListState(lazyLoading: false, event: ThreadDetailSingleEvent.SCROLL_TO_SELECTED);
       } else if (event is ThreadDetailEventCreateNewCollection) {
         await _repository.createCustomThread(event.name);
         customThreads = await _repository.getCustomThreads();
@@ -151,7 +172,7 @@ class ThreadDetailBloc extends Bloc<ChanEvent, ChanState> {
       } else if (event is ThreadDetailEventAddPostToCollection) {
         ThreadItem thread = customThreads.where((element) => element.subtitle == event.name).firstOrNull;
         PostItem post = _threadDetailModel.selectedPost;
-        _repository.addPostToCustomThread(post, thread);
+        await _repository.addPostToCustomThread(post, thread);
         yield _getShowListState(event: ThreadDetailSingleEvent.SHOW_POST_ADDED_TO_COLLECTION_SUCCESS);
       }
     } catch (e, stackTrace) {

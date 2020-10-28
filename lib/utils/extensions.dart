@@ -13,6 +13,10 @@ extension StringExtension on String {
     if (this == null || !contains(".")) return this;
     return replaceRange(0, indexOf(".") + 1, "");
   }
+
+  bool containsIgnoreCase(String other) {
+    return this.toLowerCase().contains(other.toLowerCase());
+  }
 }
 
 extension MyIterable<T> on Iterable<T> {

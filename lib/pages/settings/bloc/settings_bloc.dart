@@ -26,13 +26,10 @@ class SettingsBloc extends Bloc<ChanEvent, ChanState> {
   AppTheme _appTheme;
   List<DownloadFolderInfo> _downloads = List();
   MoorDbOverview _dbOverview = MoorDbOverview();
-  bool _showSfwOnly;
 
   SettingsBloc() : super(ChanStateLoading());
 
-  get showNsfw => !_showSfwOnly;
-
-  get _contentState => SettingsStateContent(_appTheme, _downloads, showNsfw, _dbOverview);
+  get _contentState => SettingsStateContent(_appTheme, _downloads, Preferences.getBool(Preferences.KEY_SETTINGS_SHOW_NSFW, def: false), _dbOverview);
 
   @override
   Stream<ChanState> mapEventToState(ChanEvent event) async* {
@@ -45,7 +42,6 @@ class SettingsBloc extends Bloc<ChanEvent, ChanState> {
         int appThemeIndex = Preferences.getInt(Preferences.KEY_SETTINGS_THEME) ?? 0;
         _appTheme = AppTheme.values[appThemeIndex];
         _downloads = _chanStorage.getAllDownloadFoldersInfo();
-        _showSfwOnly = Preferences.getBool(Preferences.KEY_SETTINGS_SHOW_SFW_ONLY, def: true);
 
         yield _contentState;
       } else if (event is SettingsEventExperiment) {
@@ -69,10 +65,9 @@ class SettingsBloc extends Bloc<ChanEvent, ChanState> {
         }
 
         yield _contentState;
-      } else if (event is SettingsEventToggleShowSfwOnly) {
+      } else if (event is SettingsEventToggleShowNsfw) {
         yield ChanStateLoading();
-        _showSfwOnly = !event.showNsfw;
-        Preferences.setBool(Preferences.KEY_SETTINGS_SHOW_SFW_ONLY, _showSfwOnly);
+        Preferences.setBool(Preferences.KEY_SETTINGS_SHOW_NSFW, event.showNsfw);
         yield _contentState;
       } else if (event is SettingsEventCancelDownloads) {
         yield ChanStateLoading();

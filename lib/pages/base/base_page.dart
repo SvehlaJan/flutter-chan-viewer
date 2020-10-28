@@ -5,6 +5,8 @@ abstract class BasePageState<T extends StatefulWidget> extends State<T> with Sin
   Animation<double> _fabAnimation;
   AnimationController _fabAnimationController;
 
+  TextEditingController _searchQueryController = TextEditingController();
+
   @override
   void initState() {
     _fabAnimationController = AnimationController(vsync: this, duration: Duration(milliseconds: 500));
@@ -63,24 +65,60 @@ abstract class BasePageState<T extends StatefulWidget> extends State<T> with Sin
 
   Widget buildWillPopScope(BuildContext context, Widget body) => WillPopScope(onWillPop: onBackPressed, child: body);
 
-  Widget buildScaffold(BuildContext context, Widget body, {Color backgroundColor, FloatingActionButton fab, List<PageAction> appBarActions}) {
+  Widget buildScaffold(BuildContext context, Widget body, {Color backgroundColor, FloatingActionButton fab, List<PageAction> appBarActions, bool showSearchBar = false}) {
     bool showAppBar = getPageTitle() != null || getAppBarActions(context) != null;
     return WillPopScope(
       onWillPop: onBackPressed,
       child: Scaffold(
         backgroundColor: backgroundColor != null ? backgroundColor : Theme.of(context).scaffoldBackgroundColor,
-        appBar: showAppBar
-            ? AppBar(
-                leading: ModalRoute.of(context).canPop ? IconButton(icon: BackButtonIcon(), onPressed: finishScreen) : null,
-                title: Text(getPageTitle()),
-                // actions: _buildAppBarActions(context, appBarActions ?? getAppBarActions(context)),
-              )
-            : null,
+        appBar: showSearchBar
+            ? _buildSearchAppBar(context)
+            : showAppBar
+                ? _buildAppBar(context)
+                : null,
         body: Builder(builder: (BuildContext context) => body),
         floatingActionButton: fab ?? getPageFab(context),
         floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       ),
     );
+  }
+
+  Widget _buildAppBar(BuildContext context) {
+    return AppBar(
+      leading: ModalRoute.of(context).canPop ? IconButton(icon: BackButtonIcon(), onPressed: finishScreen) : null,
+      title: Text(getPageTitle()),
+      // actions: _buildAppBarActions(context, appBarActions ?? getAppBarActions(context)),
+    );
+  }
+
+  Widget _buildSearchAppBar(BuildContext context) {
+    return AppBar(
+      leading: IconButton(icon: Icon(Icons.search), onPressed: finishScreen),
+      title: TextField(
+        controller: _searchQueryController,
+        autofocus: true,
+        decoration: InputDecoration(
+          hintText: "Search...",
+          border: InputBorder.none,
+          hintStyle: TextStyle(color: Colors.white30),
+        ),
+        onChanged: (query) => updateSearchQuery(query),
+      ),
+      // actions: _buildAppBarActions(context, appBarActions ?? getAppBarActions(context)),
+    );
+  }
+
+  void updateSearchQuery(String newQuery) {
+    throw UnimplementedError();
+  }
+
+  void startSearch() {
+    ModalRoute.of(context).addLocalHistoryEntry(LocalHistoryEntry(onRemove: cancelSearching));
+  }
+
+  void cancelSearching() {
+      _searchQueryController.clear();
+      updateSearchQuery("");
   }
 
   static Widget buildErrorScreen(BuildContext context, String message) {

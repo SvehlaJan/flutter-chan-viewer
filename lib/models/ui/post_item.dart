@@ -104,6 +104,7 @@ class PostItem extends ChanPostBase with EquatableMixin {
         imageId: entry.imageId,
         extension: entry.extension,
         repliesTo: ChanUtil.getPostReferences(entry.content),
+        isHidden: entry.isHidden,
         repliesFrom: [],
         thread: thread,
       );

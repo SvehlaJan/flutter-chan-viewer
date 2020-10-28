@@ -2,7 +2,6 @@ import 'package:flutter_chan_viewer/data/local/moor_db.dart';
 import 'package:flutter_chan_viewer/models/local/posts_table.dart';
 import 'package:flutter_chan_viewer/models/local/threads_table.dart';
 import 'package:moor/moor.dart';
-import 'package:moor_flutter/moor_flutter.dart';
 
 part 'threads_dao.g.dart';
 
@@ -32,8 +31,10 @@ class ThreadsDao extends DatabaseAccessor<MoorDB> with _$ThreadsDaoMixin {
 
   Future<List<ThreadsTableData>> getThreadsByBoardId(String boardId) => (select(threadsTable)..where((thread) => thread.boardId.equals(boardId))).get();
 
-  Future<List<ThreadsTableData>> getThreadsByBoardIdAndOnlineState(String boardId, OnlineState onlineState) =>
-      (select(threadsTable)..where((thread) => thread.boardId.equals(boardId) & thread.onlineState.equals(onlineState.index))).get();
+  Future<List<ThreadsTableData>> getThreadsByBoardIdAndOnlineState(String boardId, OnlineState onlineState) => (select(threadsTable)
+        ..where((thread) => thread.boardId.equals(boardId) & thread.onlineState.equals(onlineState.index))
+        ..orderBy([(thread) => OrderingTerm(expression: thread.timestamp, mode: OrderingMode.desc)]))
+      .get();
 
   Future<List<ThreadsTableData>> getCustomThreads() => getThreadsByOnlineState(OnlineState.CUSTOM);
 
@@ -42,11 +43,11 @@ class ThreadsDao extends DatabaseAccessor<MoorDB> with _$ThreadsDaoMixin {
   Future<List<ThreadsTableData>> getThreadsByOnlineState(OnlineState onlineState) => (select(threadsTable)..where((thread) => thread.onlineState.equals(onlineState.index))).get();
 
   Future<void> insertThread(ThreadsTableData entry) {
-    return into(threadsTable).insert(entry, mode: InsertMode.insertOrReplace);
+    return into(threadsTable).insert(entry, onConflict: DoUpdate((old) => ThreadsTableCompanion.custom(isFavorite: old.isFavorite)));
   }
 
   Future<void> insertThreadsList(List<ThreadsTableData> entries) async {
-    return await batch((batch) => batch.insertAll(threadsTable, entries, mode: InsertMode.insertOrReplace));
+    return await batch((batch) => batch.insertAll(threadsTable, entries, onConflict: DoUpdate((old) => ThreadsTableCompanion.custom(isFavorite: old.isFavorite))));
   }
 
   Future<bool> updateThread(ThreadsTableData entry) {

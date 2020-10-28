@@ -1,3 +1,4 @@
+import 'package:draggable_scrollbar/draggable_scrollbar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -9,7 +10,8 @@ import 'package:flutter_chan_viewer/pages/gallery/gallery_page.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/view/grid_widget_post.dart';
 import 'package:flutter_chan_viewer/view/list_widget_post.dart';
-import 'package:flutter_widgets/flutter_widgets.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 import 'bloc/thread_detail_bloc.dart';
 import 'bloc/thread_detail_event.dart';
@@ -40,6 +42,7 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
   ThreadDetailBloc _threadDetailBloc;
   ScrollController _gridScrollController;
   ItemScrollController _listScrollController;
+  RefreshController _refreshController = RefreshController(initialRefresh: false);
 
   @override
   void initState() {
@@ -58,7 +61,7 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
   List<PageAction> getAppBarActions(BuildContext context) => [
         _threadDetailBloc.isFavorite ? PageAction("Unstar", Icons.star, _onFavoriteToggleClick) : PageAction("Star", Icons.star_border, _onFavoriteToggleClick),
         PageAction("Refresh", Icons.refresh, _onRefreshClick),
-        _threadDetailBloc.catalogMode ? PageAction("List", Icons.list, _onCatalogModeToggleClick) : PageAction("Catalog", Icons.apps, _onCatalogModeToggleClick),
+        _threadDetailBloc.catalogMode ? PageAction("Show as list", Icons.list, _onCatalogModeToggleClick) : PageAction("Show catalog", Icons.apps, _onCatalogModeToggleClick),
       ];
 
   void _onRefreshClick() => _threadDetailBloc.add(ChanEventFetchData());
@@ -101,15 +104,13 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
       return Constants.centeredProgressIndicator;
     }
     if (state is ThreadDetailStateContent) {
-      if (state.model.posts.isEmpty) {
+      if (state.model.visiblePosts.isEmpty) {
         return Constants.noDataPlaceholder;
       }
 
       return Stack(
         children: <Widget>[
-          Scrollbar(
-            child: state.catalogMode ? buildGrid(context, state.model.mediaPosts, state.selectedMediaIndex) : buildList(context, state.model.posts, state.selectedPostIndex),
-          ),
+          state.catalogMode ? buildGrid(context, state.model.visibleMediaPosts, state.selectedMediaIndex) : buildList(context, state.model.visiblePosts, state.selectedPostIndex),
           if (state.lazyLoading) LinearProgressIndicator()
         ],
       );
@@ -119,6 +120,7 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
   }
 
   Widget buildList(BuildContext context, List<PostItem> posts, int selectedPostIndex) {
+    // return DraggableScrollbar.semicircle(child: null, controller: _listScrollController);
     return ScrollablePositionedList.builder(
       key: PageStorageKey<String>(KEY_LIST),
       itemCount: posts.length,
@@ -136,24 +138,27 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
   }
 
   Widget buildGrid(BuildContext context, List<PostItem> mediaPosts, int selectedMediaIndex) {
-    return GridView.builder(
-      key: PageStorageKey<String>(KEY_GRID),
+    return DraggableScrollbar.semicircle(
       controller: _gridScrollController,
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: _getGridColumnCount(),
-        mainAxisSpacing: 0.0,
-        crossAxisSpacing: 0.0,
-        childAspectRatio: 1.0,
+      child: GridView.builder(
+        key: PageStorageKey<String>(KEY_GRID),
+        controller: _gridScrollController,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: _getGridColumnCount(),
+          mainAxisSpacing: 0.0,
+          crossAxisSpacing: 0.0,
+          childAspectRatio: 1.0,
+        ),
+        padding: const EdgeInsets.all(0.0),
+        itemCount: mediaPosts.length,
+        itemBuilder: (BuildContext context, int index) {
+          return PostGridWidget(
+            post: mediaPosts[index],
+            selected: index == selectedMediaIndex,
+            onTap: () => _onItemTap(mediaPosts[index], context),
+          );
+        },
       ),
-      padding: const EdgeInsets.all(0.0),
-      itemCount: mediaPosts.length,
-      itemBuilder: (BuildContext context, int index) {
-        return PostGridWidget(
-          post: mediaPosts[index],
-          selected: index == selectedMediaIndex,
-          onTap: () => _onItemTap(mediaPosts[index], context),
-        );
-      },
     );
   }
 

@@ -4,15 +4,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/chan_event.dart';
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
-import 'package:flutter_chan_viewer/utils/navigation_helper.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
 import 'package:flutter_chan_viewer/pages/thread_detail/thread_detail_page.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
-import 'package:flutter_chan_viewer/view/list_widget_thread_archive.dart';
+import 'package:flutter_chan_viewer/utils/navigation_helper.dart';
 import 'package:flutter_chan_viewer/view/list_widget_thread.dart';
+import 'package:flutter_chan_viewer/view/list_widget_thread_archive.dart';
 
 import 'bloc/board_archive_bloc.dart';
-import 'bloc/board_archive_event.dart';
 import 'bloc/board_archive_state.dart';
 
 class BoardArchivePage extends StatefulWidget {
@@ -28,19 +27,16 @@ class BoardArchivePage extends StatefulWidget {
 
 class _BoardArchivePageState extends BasePageState<BoardArchivePage> {
   BoardArchiveBloc _archiveListBloc;
-  final _scrollController = ScrollController();
-  final _scrollThreshold = 200.0;
 
   @override
   void initState() {
     super.initState();
     _archiveListBloc = BlocProvider.of<BoardArchiveBloc>(context);
     _archiveListBloc.add(ChanEventFetchData());
-    _scrollController.addListener(_onScroll);
   }
 
   @override
-  String getPageTitle() => "/${widget.boardId}";
+  String getPageTitle() => "/${widget.boardId} Archive";
 
   @override
   List<PageAction> getAppBarActions(BuildContext context) => [
@@ -49,6 +45,7 @@ class _BoardArchivePageState extends BasePageState<BoardArchivePage> {
       ];
 
   void _onSearchClick() async {
+    startSearch();
     ThreadItem thread = await showSearch<ThreadItem>(context: context, delegate: CustomSearchDelegate(_archiveListBloc));
     _archiveListBloc.searchQuery = '';
 
@@ -59,13 +56,9 @@ class _BoardArchivePageState extends BasePageState<BoardArchivePage> {
 
   void _onRefreshClick() => _archiveListBloc.add(ChanEventFetchData());
 
-  void _onScroll() {
-    final maxScroll = _scrollController.position.maxScrollExtent;
-    final currentScroll = _scrollController.position.pixels;
-    bool isLoading = (_archiveListBloc.state as BoardArchiveStateContent)?.lazyLoading;
-    if (!isLoading && _archiveListBloc.isMoreThreadsAvailable() && maxScroll - currentScroll <= _scrollThreshold) {
-      _archiveListBloc.add(BoardArchiveEventFetchDetailsLazy());
-    }
+  @override
+  void updateSearchQuery(String newQuery) {
+    _archiveListBloc.searchQuery = newQuery;
   }
 
   @override
@@ -74,12 +67,12 @@ class _BoardArchivePageState extends BasePageState<BoardArchivePage> {
       context,
       BlocBuilder<BoardArchiveBloc, ChanState>(
         cubit: _archiveListBloc,
-        builder: (context, state) => buildBody(context, state, _scrollController, ((thread) => _openThreadDetailPage(thread))),
+        builder: (context, state) => buildBody(context, state, ((thread) => _openThreadDetailPage(thread))),
       ),
     );
   }
 
-  static Widget buildBody(BuildContext context, ChanState state, ScrollController scrollController, Function(ThreadItem) onItemClicked) {
+  static Widget buildBody(BuildContext context, ChanState state, Function(ThreadItem) onItemClicked) {
     if (state is ChanStateLoading) {
       return Constants.centeredProgressIndicator;
     } else if (state is BoardArchiveStateContent) {
@@ -89,7 +82,6 @@ class _BoardArchivePageState extends BasePageState<BoardArchivePage> {
 
       return Scrollbar(
         child: ListView.builder(
-          controller: scrollController,
           itemCount: state.threads.length,
           itemBuilder: (context, index) {
             ThreadItem thread = state.threads[index].threadDetailModel.thread;
@@ -147,7 +139,7 @@ class CustomSearchDelegate extends SearchDelegate<ThreadItem> {
 
     return BlocBuilder<BoardArchiveBloc, ChanState>(
       cubit: _boardDetailBloc,
-      builder: (context, state) => _BoardArchivePageState.buildBody(context, state, null, ((thread) => close(context, thread))),
+      builder: (context, state) => _BoardArchivePageState.buildBody(context, state, ((thread) => close(context, thread))),
     );
   }
 
@@ -157,7 +149,7 @@ class CustomSearchDelegate extends SearchDelegate<ThreadItem> {
 
     return BlocBuilder<BoardArchiveBloc, ChanState>(
       cubit: _boardDetailBloc,
-      builder: (context, state) => _BoardArchivePageState.buildBody(context, state, null, ((thread) => close(context, thread))),
+      builder: (context, state) => _BoardArchivePageState.buildBody(context, state, ((thread) => close(context, thread))),
     );
   }
 }

@@ -7,11 +7,12 @@ import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/utils/extensions.dart';
 import 'package:flutter_chan_viewer/view/view_cached_image.dart';
 import 'package:flutter_html/flutter_html.dart';
+import 'package:flutter_html/style.dart';
 
 class PostListWidget extends StatefulWidget {
   final PostItem post;
   final bool selected;
-  final bool showAsHeader;
+  final bool showImage;
   final bool showHeroAnimation;
   final Function onTap;
   final Function(String url) onLinkTap;
@@ -22,7 +23,7 @@ class PostListWidget extends StatefulWidget {
   const PostListWidget({
     @required this.post,
     this.selected = false,
-    this.showAsHeader = false,
+    this.showImage = true,
     this.showHeroAnimation = true,
     this.onTap,
     this.onLinkTap,
@@ -75,7 +76,7 @@ class _PostListWidgetState extends State<PostListWidget> with SingleTickerProvid
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          if (!widget.showAsHeader && widget.post.getThumbnailUrl() != null)
+          if (widget.showImage && widget.post.getThumbnailUrl() != null)
             ConstrainedBox(
                 constraints: BoxConstraints(
                   maxWidth: Constants.avatarImageSize,
@@ -87,7 +88,7 @@ class _PostListWidgetState extends State<PostListWidget> with SingleTickerProvid
                     : ChanCachedImage(post: widget.post, boxFit: BoxFit.fitWidth)),
           Flexible(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4.0),
+              padding: const EdgeInsets.all(4.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
@@ -100,7 +101,12 @@ class _PostListWidgetState extends State<PostListWidget> with SingleTickerProvid
                     ],
                   ),
                   if (widget.post.subtitle.isNotNullNorEmpty) Text(widget.post.subtitle, style: Theme.of(context).textTheme.bodyText1),
-                  if (widget.post.content.isNotNullNorEmpty) Html(data: ChanUtil.getReadableHtml(widget.post.content, false), onLinkTap: widget.onLinkTap),
+                  if (widget.post.content.isNotNullNorEmpty)
+                    Html(
+                      data: ChanUtil.getReadableHtml(widget.post.content, false),
+                      style: {"*": Style(margin: EdgeInsets.zero)},
+                      onLinkTap: widget.onLinkTap,
+                    ),
                 ],
               ),
             ),

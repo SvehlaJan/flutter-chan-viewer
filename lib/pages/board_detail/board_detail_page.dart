@@ -1,3 +1,4 @@
+import 'package:draggable_scrollbar/draggable_scrollbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/chan_event.dart';
@@ -34,12 +35,15 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
   static const String KEY_LIST = "_BoardDetailPageState.KEY_LIST";
 
   BoardDetailBloc _boardDetailBloc;
+  ScrollController _scrollController;
 
   @override
   void initState() {
     super.initState();
     _boardDetailBloc = BlocProvider.of<BoardDetailBloc>(context);
     _boardDetailBloc.add(ChanEventFetchData());
+
+    _scrollController = ScrollController();
   }
 
   @override

@@ -48,7 +48,6 @@ class ThreadItem extends ChanPostBase with EquatableMixin {
     String boardId,
     int threadId,
     OnlineState onlineState,
-    bool isFavorite,
     Map<String, dynamic> json,
   ) =>
       ThreadItem(
@@ -61,7 +60,6 @@ class ThreadItem extends ChanPostBase with EquatableMixin {
         imageId: json['tim'].toString(),
         extension: json['ext'],
         onlineStatus: onlineState,
-        isThreadFavorite: isFavorite,
         replies: json['replies'],
         images: json['images'],
       );

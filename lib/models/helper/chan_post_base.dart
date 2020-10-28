@@ -25,7 +25,7 @@ abstract class ChanPostBase {
 
   bool isFavorite();
 
-  bool hasImage() => [".jpg", ".png", ".webp"].contains(extension) || hasGif();
+  bool hasImage() => [".jpg", ".png", ".webp", ".gif"].contains(extension);
 
   bool hasGif() => [".gif"].contains(extension);
 

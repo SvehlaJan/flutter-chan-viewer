@@ -105,7 +105,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
   }
 
   Widget _buildSinglePostItem(BuildContext context, PostItem post) {
-    if (post.hasImage() || post.hasGif()) {
+    if (post.hasImage()) {
       return Center(child: ChanCachedImage(post: post, boxFit: BoxFit.fitWidth));
     } else if (post.hasWebm()) {
       return ChanVideoPlayer(post: post);
@@ -124,22 +124,22 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
         return Constants.noDataPlaceholder;
       }
 
-      PostItem post = state.model.mediaPosts[mediaIndex];
+      PostItem post = state.model.visibleMediaPosts[mediaIndex];
       return SafeArea(
         child: Stack(
           children: <Widget>[
             PhotoViewGallery.builder(
-              itemCount: state.model.mediaPosts.length,
+              itemCount: state.model.visibleMediaPosts.length,
               builder: (context, index) {
-                return _buildCarouselItem(context, state.model.mediaPosts[index]);
+                return _buildCarouselItem(context, state.model.visibleMediaPosts[index]);
               },
               scrollPhysics: BouncingScrollPhysics(),
               backgroundDecoration: BoxDecoration(color: Colors.transparent),
               loadingBuilder: (context, index) => Constants.progressIndicator,
               pageController: PageController(initialPage: state.selectedMediaIndex),
-              onPageChanged: ((pageIndex) {
-                if (pageIndex != state.selectedMediaIndex) {
-                  _threadDetailBloc.add(ThreadDetailEventOnPostSelected(pageIndex, null));
+              onPageChanged: ((newMediaIndex) {
+                if (newMediaIndex != state.selectedMediaIndex) {
+                  _threadDetailBloc.add(ThreadDetailEventOnPostSelected(newMediaIndex, null));
                   _sheetController.collapse();
                 }
               }),
@@ -150,7 +150,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
               child: Padding(
                 padding: const EdgeInsets.all(4.0),
                 child: Text(
-                  "${state.selectedMediaIndex + 1}/${state.model.mediaPosts.length} ${post.filename}${post.extension}",
+                  "${state.selectedMediaIndex + 1}/${state.model.visibleMediaPosts.length} ${post.filename}${post.extension}",
                   style: Theme.of(context).textTheme.caption,
                 ),
               ),
@@ -169,7 +169,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
     }
 
     return PhotoViewGalleryPageOptions.customChild(
-      child: (post.hasImage() || post.hasGif()) ? ChanCachedImage(post: post, boxFit: BoxFit.contain) : ChanVideoPlayer(post: post),
+      child: post.hasImage() ? ChanCachedImage(post: post, boxFit: BoxFit.contain) : ChanVideoPlayer(post: post),
       heroAttributes: PhotoViewHeroAttributes(tag: post.getMediaUrl()),
       initialScale: PhotoViewComputedScale.contained,
       minScale: PhotoViewComputedScale.contained * 0.8,
@@ -210,7 +210,8 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
                       child: PostListWidget(
                         post: replyPost,
                         showHeroAnimation: false,
-                        onTap: () => _onReplyPostClicked(context, replyPost),
+                        showImage: index != 0,
+                        onTap: () => index != 0 ? _onReplyPostClicked(context, replyPost) : null,
                         onLinkTap: (url) => _onLinkClicked(context, url),
                       ),
                     );
@@ -231,17 +232,20 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          Card(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(4.0),
-                topRight: Radius.circular(4.0),
+          InkWell(
+            onTap: () => _sheetController.expand(),
+            child: Card(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(4.0),
+                  topRight: Radius.circular(4.0),
+                ),
               ),
-            ),
-            margin: EdgeInsets.zero,
-            child: Padding(
-              padding: const EdgeInsets.all(4.0),
-              child: Text("${post.repliesFrom.length} replies", style: Theme.of(context).textTheme.caption),
+              margin: EdgeInsets.zero,
+              child: Padding(
+                padding: const EdgeInsets.all(4.0),
+                child: Text("${post.repliesFrom.length} replies", style: Theme.of(context).textTheme.caption),
+              ),
             ),
           ),
           Card(

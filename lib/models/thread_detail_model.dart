@@ -20,10 +20,9 @@ class ThreadDetailModel with EquatableMixin {
     String boardId,
     int threadId,
     OnlineState onlineState,
-    bool isFavorite,
     Map<String, dynamic> parsedJson,
   ) {
-    ThreadItem thread = ThreadItem.fromMappedJson(boardId, threadId, onlineState, isFavorite, parsedJson);
+    ThreadItem thread = ThreadItem.fromMappedJson(boardId, threadId, onlineState, parsedJson);
 
     List<PostItem> posts = [];
     for (Map<String, dynamic> postData in parsedJson['posts']) {
@@ -80,23 +79,29 @@ class ThreadDetailModel with EquatableMixin {
 
   CacheDirective get cacheDirective => thread.getCacheDirective();
 
-  List<PostItem> get posts => _posts ?? [];
+  List<PostItem> get visiblePosts => _posts.where((post) => !post.isHidden).toList() ?? [];
 
-  List<PostItem> get mediaPosts => _posts.where((post) => post.hasMedia()).toList();
+  List<PostItem> get hiddenPosts => _posts.where((post) => post.isHidden).toList() ?? [];
+
+  List<PostItem> get allPosts => _posts ?? [];
+
+  List<PostItem> get visibleMediaPosts => _posts.where((post) => post.hasMedia() && !post.isHidden).toList();
+
+  List<PostItem> get allMediaPosts => _posts.where((post) => post.hasMedia()).toList();
 
   int getPostIndex(int postId) => ((postId ?? -1) >= 0) ? _posts.indexWhere((post) => post.postId == postId) : -1;
 
-  int getMediaIndex(int postId) => ((postId ?? -1) >= 0) ? mediaPosts.indexWhere((post) => post.postId == postId) : -1;
+  int getMediaIndex(int postId) => ((postId ?? -1) >= 0) ? allMediaPosts.indexWhere((post) => post.postId == postId) : -1;
 
   PostItem findPostById(int postId) => _posts.where((post) => post.postId == postId)?.first;
 
-  get selectedPostId => thread.selectedPostId ?? -1;
+  int get selectedPostId => thread.selectedPostId ?? -1;
 
-  get selectedPostIndex => getPostIndex(selectedPostId);
+  int get selectedPostIndex => getPostIndex(selectedPostId);
 
-  get selectedMediaIndex => getMediaIndex(selectedPostId);
+  int get selectedMediaIndex => getMediaIndex(selectedPostId);
 
-  get selectedPost => _posts.where((post) => post.postId == selectedPostId)?.first;
+  PostItem get selectedPost => _posts.where((post) => post.postId == selectedPostId)?.first;
 
   @override
   List<Object> get props => [thread, _posts];

@@ -34,13 +34,13 @@ class BoardDetailBloc extends Bloc<ChanEvent, ChanState> {
         if (boardDetailModel != null) {
           List<ThreadItem> titleMatchThreads = boardDetailModel.threads.where((thread) => (thread.subtitle ?? "").containsIgnoreCase(searchQuery)).toList();
           List<ThreadItem> bodyMatchThreads = boardDetailModel.threads.where((thread) => (thread.content ?? "").containsIgnoreCase(searchQuery)).toList();
-          yield BoardDetailStateContent(titleMatchThreads + bodyMatchThreads, true, isFavorite);
+          yield _buildContentState(titleMatchThreads + bodyMatchThreads, true);
         }
 
         boardDetailModel = await _repository.fetchRemoteBoardDetail(boardId);
         List<ThreadItem> titleMatchThreads = boardDetailModel.threads.where((thread) => (thread.subtitle ?? "").containsIgnoreCase(searchQuery)).toList();
         List<ThreadItem> bodyMatchThreads = boardDetailModel.threads.where((thread) => (thread.content ?? "").containsIgnoreCase(searchQuery)).toList();
-        yield BoardDetailStateContent(titleMatchThreads + bodyMatchThreads, false, isFavorite);
+        yield _buildContentState(titleMatchThreads + bodyMatchThreads, false);
       } else if (event is ChanEventSearch) {
         searchQuery = event.query;
         add(ChanEventFetchData());
@@ -58,5 +58,9 @@ class BoardDetailBloc extends Bloc<ChanEvent, ChanState> {
       ChanLogger.e("Event error!", e, stackTrace);
       yield ChanStateError(e.toString());
     }
+  }
+
+  BoardDetailStateContent _buildContentState(List<ThreadItem> threads, bool showLazyLoading) {
+    return BoardDetailStateContent(threads: threads, showLazyLoading: showLazyLoading, isFavorite: isFavorite);
   }
 }

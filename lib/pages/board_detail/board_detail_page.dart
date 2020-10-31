@@ -49,8 +49,7 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
   @override
   String getPageTitle() => "/${widget.boardId}";
 
-  @override
-  List<PageAction> getAppBarActions(BuildContext context) => [
+  List<PageAction> getPageActions(BuildContext context) => [
         PageAction("Search", Icons.search, _onSearchClick),
         PageAction("Refresh", Icons.refresh, _onRefreshClick),
         PageAction("Archive", Icons.history, _onArchiveClick),
@@ -89,6 +88,7 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
         cubit: _boardDetailBloc,
         builder: (context, state) => buildBody(context, state, ((thread) => _openThreadDetailPage(thread))),
       ),
+      pageActions: getPageActions(context),
     );
   }
 
@@ -101,7 +101,7 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
       }
 
       return Stack(
-        children: <Widget>[Scrollbar(child: _buildListView(context, state, onItemClicked)), if (state.lazyLoading) LinearProgressIndicator()],
+        children: <Widget>[Scrollbar(child: _buildListView(context, state, onItemClicked)), if (state.showLazyLoading) LinearProgressIndicator()],
       );
     } else {
       return BasePageState.buildErrorScreen(context, (state as ChanStateError)?.message);

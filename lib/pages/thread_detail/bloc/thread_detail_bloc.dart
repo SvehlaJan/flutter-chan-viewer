@@ -1,7 +1,5 @@
 import 'dart:async';
-import 'dart:math';
 
-import 'package:bloc/bloc.dart';
 import 'package:flutter_chan_viewer/bloc/chan_event.dart';
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/data/remote/app_exception.dart';
@@ -9,6 +7,7 @@ import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
 import 'package:flutter_chan_viewer/models/ui/post_item.dart';
 import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
+import 'package:flutter_chan_viewer/pages/base/base_bloc.dart';
 import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
 import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
 import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
@@ -21,7 +20,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'thread_detail_event.dart';
 import 'thread_detail_state.dart';
 
-class ThreadDetailBloc extends Bloc<ChanEvent, ChanState> {
+class ThreadDetailBloc extends BaseBloc<ChanEvent, ChanState> {
   final ChanRepository _repository = getIt<ChanRepository>();
   final ChanStorage _chanStorage = getIt<ChanStorage>();
   final String _boardId;
@@ -31,11 +30,7 @@ class ThreadDetailBloc extends Bloc<ChanEvent, ChanState> {
 
   ThreadDetailModel _threadDetailModel;
 
-  ThreadDetailBloc(
-    this._boardId,
-    this._threadId,
-    this._showDownloadsOnly
-  ) : super(ChanStateLoading());
+  ThreadDetailBloc(this._boardId, this._threadId, this._showDownloadsOnly) : super(ChanStateLoading());
 
   String get pageTitle => "/$_boardId/$_threadId";
 
@@ -124,14 +119,14 @@ class ThreadDetailBloc extends Bloc<ChanEvent, ChanState> {
           newPostId = event.postId;
         }
 
-        _threadDetailModel.thread = _threadDetailModel.thread.copyWith(selectedPostId: newPostId);
+        _threadDetailModel = _threadDetailModel.copyWith(thread: _threadDetailModel.thread.copyWith(selectedPostId: newPostId));
         await _repository.updateThread(_threadDetailModel.thread);
 
         yield _getShowListState(event: ThreadDetailSingleEvent.SCROLL_TO_SELECTED);
       } else if (event is ThreadDetailEventOnLinkClicked) {
         PostItem post = _threadDetailModel.findPostById(ChanUtil.getPostIdFromUrl(event.url));
         if (post != null) {
-          _threadDetailModel.thread = _threadDetailModel.thread.copyWith(selectedPostId: post.postId);
+          _threadDetailModel = _threadDetailModel.copyWith(thread: _threadDetailModel.thread.copyWith(selectedPostId: post.postId));
           await _repository.updateThread(_threadDetailModel.thread);
         }
 
@@ -139,7 +134,7 @@ class ThreadDetailBloc extends Bloc<ChanEvent, ChanState> {
       } else if (event is ThreadDetailEventOnReplyClicked) {
         PostItem post = _threadDetailModel.findPostById(event.postId);
         if (post != null) {
-          _threadDetailModel.thread = _threadDetailModel.thread.copyWith(selectedPostId: post.postId);
+          _threadDetailModel = _threadDetailModel.copyWith(thread: _threadDetailModel.thread.copyWith(selectedPostId: post.postId));
           await _repository.updateThread(_threadDetailModel.thread);
         }
 
@@ -160,7 +155,7 @@ class ThreadDetailBloc extends Bloc<ChanEvent, ChanState> {
             break;
           }
         }
-        _threadDetailModel.thread = _threadDetailModel.thread.copyWith(selectedPostId: newSelectedPostId);
+        _threadDetailModel = _threadDetailModel.copyWith(thread: _threadDetailModel.thread.copyWith(selectedPostId: newSelectedPostId));
         await _repository.updateThread(_threadDetailModel.thread);
 
         _threadDetailModel = await _repository.fetchCachedThreadDetail(_boardId, _threadId);
@@ -182,6 +177,14 @@ class ThreadDetailBloc extends Bloc<ChanEvent, ChanState> {
   }
 
   ThreadDetailStateContent _getShowListState({bool lazyLoading = false, ThreadDetailSingleEvent event}) {
-    return ThreadDetailStateContent(_threadDetailModel, _threadDetailModel?.selectedPostId, isFavorite, _catalogMode, lazyLoading, event);
+    return ThreadDetailStateContent(
+      model: _threadDetailModel,
+      selectedPostId: _threadDetailModel?.selectedPostId,
+      isFavorite: isFavorite,
+      catalogMode: _catalogMode,
+      event: event,
+      showLazyLoading: lazyLoading,
+      showSearchBar: showSearchBar,
+    );
   }
 }

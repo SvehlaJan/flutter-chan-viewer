@@ -22,42 +22,34 @@ class BoardListPage extends StatefulWidget {
 class _BoardListPageState extends BasePageState<BoardListPage> {
   static const String KEY_LIST = "_BoardListPageState.KEY_LIST";
 
-  BoardListBloc _boardListBloc;
-
   @override
   void initState() {
     super.initState();
-    _boardListBloc = BlocProvider.of<BoardListBloc>(context);
-    _boardListBloc.add(ChanEventFetchData());
+    bloc = BlocProvider.of<BoardListBloc>(context);
+    bloc.add(ChanEventFetchData());
   }
 
   @override
   String getPageTitle() => "Boards";
 
-  @override
-  List<PageAction> getAppBarActions(BuildContext context) => [
+  List<PageAction> getPageActions(BuildContext context) => [
         PageAction("Search", Icons.search, _onSearchClick),
         PageAction("Refresh", Icons.refresh, _onRefreshClick),
       ];
 
-  void _onSearchClick() async {
-    BoardItem board = await showSearch<BoardItem>(context: context, delegate: CustomSearchDelegate(_boardListBloc));
-    _boardListBloc.searchQuery = '';
+  void _onSearchClick() => startSearch();
 
-    if (board != null) {
-      _openBoardDetailPage(board);
-    }
-  }
-
-  void _onRefreshClick() => _boardListBloc.add(ChanEventFetchData());
+  void _onRefreshClick() => bloc.add(ChanEventFetchData());
 
   @override
   Widget build(BuildContext context) {
-    return buildScaffold(
-      context,
-      BlocBuilder<BoardListBloc, ChanState>(
-        cubit: _boardListBloc,
-        builder: (context, state) => buildBody(context, state, ((board) => _openBoardDetailPage(board))),
+    return BlocBuilder<BoardListBloc, ChanState>(
+      cubit: bloc,
+      builder: (context, state) => buildScaffold(
+        context,
+        buildBody(context, state, ((board) => _openBoardDetailPage(board))),
+        pageActions: getPageActions(context),
+        showSearchBar: state.showSearchBar,
       ),
     );
   }
@@ -66,12 +58,12 @@ class _BoardListPageState extends BasePageState<BoardListPage> {
     if (state is ChanStateLoading) {
       return Constants.centeredProgressIndicator;
     } else if (state is BoardListStateContent) {
-      if (state.items.isEmpty) {
+      if (state.boards.isEmpty) {
         return Constants.noDataPlaceholder;
       }
 
       return Stack(
-        children: <Widget>[Scrollbar(child: _buildListView(context, state, onItemClicked)), if (state.lazyLoading) LinearProgressIndicator()],
+        children: <Widget>[Scrollbar(child: _buildListView(context, state, onItemClicked)), if (state.showLazyLoading) LinearProgressIndicator()],
       );
     } else {
       return BasePageState.buildErrorScreen(context, (state as ChanStateError)?.message);
@@ -82,9 +74,9 @@ class _BoardListPageState extends BasePageState<BoardListPage> {
     return Scrollbar(
       child: ListView.builder(
         key: PageStorageKey<String>(KEY_LIST),
-        itemCount: state.items.length,
+        itemCount: state.boards.length,
         itemBuilder: (context, index) {
-          ChanBoardItemWrapper item = state.items[index];
+          ChanBoardItemWrapper item = state.boards[index];
           if (item.isHeader) {
             return Padding(padding: const EdgeInsets.all(8.0), child: Text(item.headerTitle, style: Theme.of(context).textTheme.subhead));
           } else {
@@ -103,7 +95,7 @@ class _BoardListPageState extends BasePageState<BoardListPage> {
       },
     ));
 
-    _boardListBloc.add(ChanEventFetchData());
+    bloc.add(ChanEventFetchData());
   }
 }
 

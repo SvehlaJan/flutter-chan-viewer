@@ -1,12 +1,16 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/models/helper/chan_board_item_wrapper.dart';
 
-class BoardListStateContent extends ChanState {
-  final List<ChanBoardItemWrapper> items;
-  final bool lazyLoading;
+class BoardListStateContent extends ChanStateContent {
+  final List<ChanBoardItemWrapper> boards;
 
-  BoardListStateContent(this.items, this.lazyLoading);
+  const BoardListStateContent({
+    @required showSearchBar,
+    @required showLazyLoading,
+    @required this.boards,
+  }) : super(showSearchBar: showSearchBar, showLazyLoading: showLazyLoading);
 
   @override
-  List<Object> get props => [items, lazyLoading];
+  List<Object> get props => super.props..addAll([boards]);
 }

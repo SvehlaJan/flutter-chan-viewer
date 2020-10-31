@@ -91,9 +91,9 @@ class ChanRepository {
     return archiveList;
   }
 
-  Future<List<ThreadItem>> getArchivedThreads(String boardId) async {
+  Future<Map<int, ThreadItem>> getArchivedThreadsMap(String boardId) async {
     List<ThreadItem> threads = await _localDataSource.getThreadsByBoardIdAndOnlineState(boardId, OnlineState.ARCHIVED);
-    return threads;
+    return Map.fromIterable(threads, key: (thread) => thread.threadId, value: (thread) => thread);
   }
 
   Stream<ThreadDetailModel> getThreadDetailStream(String boardId, int threadId) {

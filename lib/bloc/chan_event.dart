@@ -20,6 +20,10 @@ class ChanEventFetchData extends ChanEvent {
 
 class ChanEventNewDataReceived extends ChanEvent {}
 
+class ChanEventShowSearch extends ChanEvent {}
+
+class ChanEventCloseSearch extends ChanEvent {}
+
 class ChanEventSearch extends ChanEvent {
   final String query;
 

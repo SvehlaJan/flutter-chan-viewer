@@ -6,8 +6,8 @@ import 'package:flutter_chan_viewer/models/ui/post_item.dart';
 import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
 import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
 
-class ThreadDetailModel with EquatableMixin {
-  ThreadItem thread;
+class ThreadDetailModel extends Equatable {
+  final ThreadItem thread;
   final List<PostItem> _posts;
 
   ThreadDetailModel({

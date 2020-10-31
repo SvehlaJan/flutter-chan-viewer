@@ -57,8 +57,7 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
   @override
   String getPageTitle() => _threadDetailBloc.pageTitle;
 
-  @override
-  List<PageAction> getAppBarActions(BuildContext context) => [
+  List<PageAction> getPageActions(BuildContext context) => [
         _threadDetailBloc.isFavorite ? PageAction("Unstar", Icons.star, _onFavoriteToggleClick) : PageAction("Star", Icons.star_border, _onFavoriteToggleClick),
         PageAction("Refresh", Icons.refresh, _onRefreshClick),
         _threadDetailBloc.catalogMode ? PageAction("Show as list", Icons.list, _onCatalogModeToggleClick) : PageAction("Show catalog", Icons.apps, _onCatalogModeToggleClick),
@@ -96,6 +95,7 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
       }, builder: (context, state) {
         return BlocBuilder<ThreadDetailBloc, ChanState>(cubit: _threadDetailBloc, builder: (context, state) => buildBody(context, state));
       }),
+      pageActions: getPageActions(context),
     );
   }
 
@@ -111,7 +111,7 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
       return Stack(
         children: <Widget>[
           state.catalogMode ? buildGrid(context, state.model.visibleMediaPosts, state.selectedMediaIndex) : buildList(context, state.model.visiblePosts, state.selectedPostIndex),
-          if (state.lazyLoading) LinearProgressIndicator()
+          if (state.showLazyLoading) LinearProgressIndicator()
         ],
       );
     } else {

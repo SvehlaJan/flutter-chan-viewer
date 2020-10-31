@@ -2,8 +2,8 @@ import 'dart:math';
 
 import 'package:date_format/date_format.dart';
 import 'package:html/dom.dart';
-import 'package:html_unescape/html_unescape.dart';
 import 'package:html/parser.dart';
+import 'package:html_unescape/html_unescape.dart';
 
 class ChanUtil {
   var style = '';

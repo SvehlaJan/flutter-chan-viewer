@@ -21,31 +21,38 @@ class FavoritesPage extends StatefulWidget {
 
 class _FavoritesPageState extends BasePageState<FavoritesPage> {
   static const String KEY_LIST = "_FavoritesPageState.KEY_LIST";
-  FavoritesBloc _favoritesBloc;
 
   @override
   void initState() {
     super.initState();
-    _favoritesBloc = BlocProvider.of<FavoritesBloc>(context);
-    _favoritesBloc.add(ChanEventFetchData());
+    bloc = BlocProvider.of<FavoritesBloc>(context);
+    bloc.add(ChanEventFetchData());
   }
 
   @override
   String getPageTitle() => "Favorites";
 
-  @override
-  List<PageAction> getAppBarActions(BuildContext context) => [PageAction("Refresh", Icons.refresh, _onRefreshClick)];
+  List<PageAction> getPageActions(BuildContext context) => [
+        PageAction("Search", Icons.search, _onSearchClick),
+        PageAction("Refresh", Icons.refresh, _onRefreshClick),
+      ];
 
-  void _onRefreshClick() => _favoritesBloc.add(ChanEventFetchData(forceRefresh: true));
+  void _onSearchClick() => startSearch();
+
+  void _onRefreshClick() => bloc.add(ChanEventFetchData(forceRefresh: true));
 
   @override
   Widget build(BuildContext context) {
-    return buildScaffold(
-      context,
-      BlocBuilder<FavoritesBloc, ChanState>(
-        cubit: _favoritesBloc,
-        builder: (context, state) => buildBody(context, state),
-      ),
+    return BlocBuilder<FavoritesBloc, ChanState>(
+      cubit: bloc,
+      builder: (context, state) {
+        return buildScaffold(
+          context,
+          buildBody(context, state),
+          pageActions: getPageActions(context),
+          showSearchBar: state.showSearchBar,
+        );
+      },
     );
   }
 
@@ -53,29 +60,34 @@ class _FavoritesPageState extends BasePageState<FavoritesPage> {
     if (state is ChanStateLoading) {
       return Constants.centeredProgressIndicator;
     } else if (state is FavoritesStateContent) {
-      if (state.items.isEmpty) {
+      if (state.threads.isEmpty) {
         return Constants.noDataPlaceholder;
       }
 
-      return Scrollbar(
-        child: ListView.builder(
-          key: PageStorageKey<String>(KEY_LIST),
-          itemBuilder: (BuildContext context, int index) {
-            FavoritesItemWrapper item = state.items[index];
-            if (item.isHeader) {
-              return Padding(padding: const EdgeInsets.all(8.0), child: Text(item.headerTitle, style: Theme.of(context).textTheme.subhead));
-            } else {
-              Widget threadWidget = item.thread.isCustom
-                  ? CustomThreadListWidget(thread: item.thread.threadDetailModel.thread)
-                  : ThreadListWidget(thread: item.thread.threadDetailModel.thread, showProgress: item.thread.isLoading, newReplies: item.thread.newReplies);
-              return InkWell(
-                child: threadWidget,
-                onTap: () => _openThreadDetailPage(item.thread),
-              );
-            }
-          },
-          itemCount: state.items.length,
-        ),
+      return Stack(
+        children: [
+          Scrollbar(
+            child: ListView.builder(
+              key: PageStorageKey<String>(KEY_LIST),
+              itemBuilder: (BuildContext context, int index) {
+                FavoritesItemWrapper item = state.threads[index];
+                if (item.isHeader) {
+                  return Padding(padding: const EdgeInsets.all(8.0), child: Text(item.headerTitle, style: Theme.of(context).textTheme.subhead));
+                } else {
+                  Widget threadWidget = item.thread.isCustom
+                      ? CustomThreadListWidget(thread: item.thread.threadDetailModel.thread)
+                      : ThreadListWidget(thread: item.thread.threadDetailModel.thread, showProgress: item.thread.isLoading, newReplies: item.thread.newReplies);
+                  return InkWell(
+                    child: threadWidget,
+                    onTap: () => _openThreadDetailPage(item.thread),
+                  );
+                }
+              },
+              itemCount: state.threads.length,
+            ),
+          ),
+          if (state.showLazyLoading) LinearProgressIndicator(),
+        ],
       );
     } else {
       return BasePageState.buildErrorScreen(context, (state as ChanStateError)?.message);
@@ -83,7 +95,7 @@ class _FavoritesPageState extends BasePageState<FavoritesPage> {
   }
 
   void _openThreadDetailPage(FavoritesThreadWrapper threadWrapper) async {
-    _favoritesBloc.add(ChanEventFetchData());
+    bloc.add(ChanEventFetchData());
     ThreadItem thread = threadWrapper.threadDetailModel.thread;
     await Navigator.of(context).push(
       NavigationHelper.getRoute(
@@ -91,6 +103,6 @@ class _FavoritesPageState extends BasePageState<FavoritesPage> {
         ThreadDetailPage.createArguments(thread.boardId, thread.threadId),
       ),
     );
-    _favoritesBloc.add(ChanEventFetchData());
+    bloc.add(ChanEventFetchData());
   }
 }

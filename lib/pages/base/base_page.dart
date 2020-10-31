@@ -1,11 +1,14 @@
 import 'package:floating_action_bubble/floating_action_bubble.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_chan_viewer/bloc/chan_event.dart';
 
 abstract class BasePageState<T extends StatefulWidget> extends State<T> with SingleTickerProviderStateMixin {
   Animation<double> _fabAnimation;
   AnimationController _fabAnimationController;
 
   TextEditingController _searchQueryController = TextEditingController();
+  Bloc bloc;
 
   @override
   void initState() {
@@ -24,14 +27,11 @@ abstract class BasePageState<T extends StatefulWidget> extends State<T> with Sin
     }
   }
 
-  List<PageAction> getAppBarActions(BuildContext context) => null;
-
-  Widget getPageFab(BuildContext context) {
-    List<PageAction> actions = getAppBarActions(context);
-    if (actions != null && actions.length > 1) {
-      if (actions.length > 1) {
+  Widget getPageFab(BuildContext context, List<PageAction> pageActions) {
+    if (pageActions != null && pageActions.isNotEmpty) {
+      if (pageActions.length > 1) {
         return FloatingActionBubble(
-          items: [...actions.map((action) => _makeFabButton(action))],
+          items: [...pageActions.map((action) => _makeFabButton(action))],
           animation: _fabAnimation,
           onPress: () {
             _fabAnimationController.isCompleted ? _fabAnimationController.reverse() : _fabAnimationController.forward();
@@ -41,7 +41,7 @@ abstract class BasePageState<T extends StatefulWidget> extends State<T> with Sin
           backGroundColor: Theme.of(context).accentColor,
         );
       } else {
-        return FloatingActionButton(onPressed: actions[0].onTap, child: Icon(actions[0].icon));
+        return FloatingActionButton(onPressed: pageActions[0].onTap, child: Icon(pageActions[0].icon));
       }
     } else {
       return null;
@@ -65,60 +65,56 @@ abstract class BasePageState<T extends StatefulWidget> extends State<T> with Sin
 
   Widget buildWillPopScope(BuildContext context, Widget body) => WillPopScope(onWillPop: onBackPressed, child: body);
 
-  Widget buildScaffold(BuildContext context, Widget body, {Color backgroundColor, FloatingActionButton fab, List<PageAction> appBarActions, bool showSearchBar = false}) {
-    bool showAppBar = getPageTitle() != null || getAppBarActions(context) != null;
+  Widget buildScaffold(BuildContext context, Widget body, {Color backgroundColor, FloatingActionButton fab, List<PageAction> pageActions, bool showSearchBar}) {
     return WillPopScope(
       onWillPop: onBackPressed,
       child: Scaffold(
         backgroundColor: backgroundColor != null ? backgroundColor : Theme.of(context).scaffoldBackgroundColor,
-        appBar: showSearchBar
-            ? _buildSearchAppBar(context)
-            : showAppBar
-                ? _buildAppBar(context)
-                : null,
+        appBar: _buildAppBar(context, showSearchBar ?? false, getPageTitle()),
         body: Builder(builder: (BuildContext context) => body),
-        floatingActionButton: fab ?? getPageFab(context),
+        floatingActionButton: fab ?? getPageFab(context, pageActions),
         floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       ),
     );
   }
 
-  Widget _buildAppBar(BuildContext context) {
-    return AppBar(
-      leading: ModalRoute.of(context).canPop ? IconButton(icon: BackButtonIcon(), onPressed: finishScreen) : null,
-      title: Text(getPageTitle()),
-      // actions: _buildAppBarActions(context, appBarActions ?? getAppBarActions(context)),
-    );
-  }
-
-  Widget _buildSearchAppBar(BuildContext context) {
-    return AppBar(
-      leading: IconButton(icon: Icon(Icons.search), onPressed: finishScreen),
-      title: TextField(
-        controller: _searchQueryController,
-        autofocus: true,
-        decoration: InputDecoration(
-          hintText: "Search...",
-          border: InputBorder.none,
-          hintStyle: TextStyle(color: Colors.white30),
+  Widget _buildAppBar(BuildContext context, bool showSearchBar, String pageTitle) {
+    if (showSearchBar) {
+      return AppBar(
+        leading: IconButton(icon: Icon(Icons.search), onPressed: finishScreen),
+        title: TextField(
+          controller: _searchQueryController,
+          autofocus: true,
+          decoration: InputDecoration(
+            hintText: "Search...",
+            border: InputBorder.none,
+            hintStyle: TextStyle(color: Colors.white30),
+          ),
+          onChanged: (query) => updateSearchQuery(query),
         ),
-        onChanged: (query) => updateSearchQuery(query),
-      ),
-      // actions: _buildAppBarActions(context, appBarActions ?? getAppBarActions(context)),
-    );
+      );
+    } else if (pageTitle != null) {
+      return AppBar(
+        leading: ModalRoute.of(context).canPop ? IconButton(icon: BackButtonIcon(), onPressed: finishScreen) : null,
+        title: Text(pageTitle),
+      );
+    } else {
+      return null;
+    }
   }
 
   void updateSearchQuery(String newQuery) {
-    throw UnimplementedError();
+    bloc.add(ChanEventSearch(newQuery));
   }
 
   void startSearch() {
+    bloc.add(ChanEventShowSearch());
     ModalRoute.of(context).addLocalHistoryEntry(LocalHistoryEntry(onRemove: cancelSearching));
   }
 
   void cancelSearching() {
       _searchQueryController.clear();
-      updateSearchQuery("");
+      bloc.add(ChanEventCloseSearch());
   }
 
   static Widget buildErrorScreen(BuildContext context, String message) {

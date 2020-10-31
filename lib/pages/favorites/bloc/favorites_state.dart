@@ -1,15 +1,19 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
 
-class FavoritesStateContent extends ChanState {
-  final List<FavoritesItemWrapper> items;
-  final bool lazyLoading;
+class FavoritesStateContent extends ChanStateContent {
+  final List<FavoritesItemWrapper> threads;
 
-  FavoritesStateContent(this.items, this.lazyLoading);
+  const FavoritesStateContent({
+    @required showSearchBar,
+    @required showLazyLoading,
+    @required this.threads,
+  }) : super(showSearchBar: showSearchBar, showLazyLoading: showLazyLoading);
 
   @override
-  List<Object> get props => [items, lazyLoading];
+  List<Object> get props => super.props..addAll([threads]);
 }
 
 class FavoritesItemWrapper extends Equatable {

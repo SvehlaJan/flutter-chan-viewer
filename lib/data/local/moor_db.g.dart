@@ -623,9 +623,9 @@ class ThreadsTableData extends DataClass
       @required this.selectedPostId,
       @required this.isFavorite,
       @required this.onlineState,
-      this.replyCount,
-      this.imageCount,
-      this.unreadRepliesCount});
+      @required this.replyCount,
+      @required this.imageCount,
+      @required this.unreadRepliesCount});
   factory ThreadsTableData.fromData(
       Map<String, dynamic> data, GeneratedDatabase db,
       {String prefix}) {
@@ -942,18 +942,19 @@ class ThreadsTableCompanion extends UpdateCompanion<ThreadsTableData> {
     this.extension = const Value.absent(),
     @required String boardId,
     @required int threadId,
-    @required int selectedPostId,
+    this.selectedPostId = const Value.absent(),
     @required bool isFavorite,
     @required OnlineState onlineState,
-    this.replyCount = const Value.absent(),
-    this.imageCount = const Value.absent(),
+    @required int replyCount,
+    @required int imageCount,
     this.unreadRepliesCount = const Value.absent(),
   })  : timestamp = Value(timestamp),
         boardId = Value(boardId),
         threadId = Value(threadId),
-        selectedPostId = Value(selectedPostId),
         isFavorite = Value(isFavorite),
-        onlineState = Value(onlineState);
+        onlineState = Value(onlineState),
+        replyCount = Value(replyCount),
+        imageCount = Value(imageCount);
   static Insertable<ThreadsTableData> custom({
     Expression<int> timestamp,
     Expression<String> subtitle,
@@ -1200,11 +1201,8 @@ class $ThreadsTableTable extends ThreadsTable
   GeneratedIntColumn get selectedPostId =>
       _selectedPostId ??= _constructSelectedPostId();
   GeneratedIntColumn _constructSelectedPostId() {
-    return GeneratedIntColumn(
-      'selected_post_id',
-      $tableName,
-      false,
-    );
+    return GeneratedIntColumn('selected_post_id', $tableName, false,
+        defaultValue: const Constant(-1));
   }
 
   final VerificationMeta _isFavoriteMeta = const VerificationMeta('isFavorite');
@@ -1241,7 +1239,7 @@ class $ThreadsTableTable extends ThreadsTable
     return GeneratedIntColumn(
       'reply_count',
       $tableName,
-      true,
+      false,
     );
   }
 
@@ -1253,7 +1251,7 @@ class $ThreadsTableTable extends ThreadsTable
     return GeneratedIntColumn(
       'image_count',
       $tableName,
-      true,
+      false,
     );
   }
 
@@ -1264,11 +1262,8 @@ class $ThreadsTableTable extends ThreadsTable
   GeneratedIntColumn get unreadRepliesCount =>
       _unreadRepliesCount ??= _constructUnreadRepliesCount();
   GeneratedIntColumn _constructUnreadRepliesCount() {
-    return GeneratedIntColumn(
-      'unread_replies_count',
-      $tableName,
-      true,
-    );
+    return GeneratedIntColumn('unread_replies_count', $tableName, false,
+        defaultValue: const Constant(0));
   }
 
   @override
@@ -1342,8 +1337,6 @@ class $ThreadsTableTable extends ThreadsTable
           _selectedPostIdMeta,
           selectedPostId.isAcceptableOrUnknown(
               data['selected_post_id'], _selectedPostIdMeta));
-    } else if (isInserting) {
-      context.missing(_selectedPostIdMeta);
     }
     if (data.containsKey('is_favorite')) {
       context.handle(
@@ -1359,12 +1352,16 @@ class $ThreadsTableTable extends ThreadsTable
           _replyCountMeta,
           replyCount.isAcceptableOrUnknown(
               data['reply_count'], _replyCountMeta));
+    } else if (isInserting) {
+      context.missing(_replyCountMeta);
     }
     if (data.containsKey('image_count')) {
       context.handle(
           _imageCountMeta,
           imageCount.isAcceptableOrUnknown(
               data['image_count'], _imageCountMeta));
+    } else if (isInserting) {
+      context.missing(_imageCountMeta);
     }
     if (data.containsKey('unread_replies_count')) {
       context.handle(

@@ -131,7 +131,7 @@ class FavoritesBloc extends BaseBloc<ChanEvent, ChanState> {
     }
     if (customThreads.isNotEmpty) {
       threads.add(FavoritesItemWrapper(true, null, "Collections"));
-      threads.addAll(favoriteThreads.map((thread) => FavoritesItemWrapper(false, thread, null)));
+      threads.addAll(customThreads.map((thread) => FavoritesItemWrapper(false, thread, null)));
     }
 
     return FavoritesStateContent(threads: threads, showLazyLoading: showLazyLoading, showSearchBar: showSearchBar);

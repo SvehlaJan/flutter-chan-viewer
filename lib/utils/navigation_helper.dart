@@ -92,7 +92,7 @@ class NavigationHelper {
                 arguments[ThreadDetailPage.ARG_THREAD_ID],
                 arguments[ThreadDetailPage.ARG_SHOW_DOWNLOADS_ONLY],
               ),
-              child: ThreadDetailPage(),
+              child: ThreadDetailPage(arguments[ThreadDetailPage.ARG_BOARD_ID], arguments[ThreadDetailPage.ARG_THREAD_ID]),
             ),
           );
         }

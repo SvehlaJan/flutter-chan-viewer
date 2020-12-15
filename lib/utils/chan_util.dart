@@ -4,6 +4,7 @@ import 'package:date_format/date_format.dart';
 import 'package:html/dom.dart';
 import 'package:html/parser.dart';
 import 'package:html_unescape/html_unescape.dart';
+import 'package:flutter_chan_viewer/utils/extensions.dart';
 
 class ChanUtil {
   var style = '';
@@ -11,16 +12,25 @@ class ChanUtil {
   static const int MAX_TEXT_LENGTH = 300;
   static HtmlUnescape unescaper = HtmlUnescape();
 
-  static unescapeHtml(String raw) => unescaper.convert(raw ?? "");
+  static String unescapeHtml(String raw) => unescaper.convert(raw ?? "");
 
-  static getReadableHtml(String content, bool truncate) {
-    if (content == null) {
-      content = 'null';
-    } else if (truncate && content.length > IDEAL_TEXT_LENGTH) {
-      int idealIndex = max(content.indexOf(RegExp(r'\s'), IDEAL_TEXT_LENGTH), IDEAL_TEXT_LENGTH);
-      content = content.substring(0, min(idealIndex, MAX_TEXT_LENGTH)) + "...";
+  static String getReadableHtml(String htmlContent, bool truncate) {
+    if (htmlContent == null) {
+      htmlContent = 'null';
+    } else if (truncate && htmlContent.length > IDEAL_TEXT_LENGTH) {
+      int idealIndex = max(htmlContent.indexOf(RegExp(r'\s'), IDEAL_TEXT_LENGTH), IDEAL_TEXT_LENGTH);
+      htmlContent = htmlContent.substring(0, min(idealIndex, MAX_TEXT_LENGTH)) + "...";
     }
-    return content;
+    return htmlContent;
+  }
+
+  static String getPlainString(String htmlContent) {
+    String rawContent = "";
+    if (htmlContent.isNotNullNorEmpty) {
+      Document document = parse(htmlContent.replaceAll("<br>", " ").replaceAll("</p><p>", " "));
+      rawContent = parse(document.body.text).documentElement.text;
+    }
+    return rawContent;
   }
 
   static List<int> getPostReferences(String content) {

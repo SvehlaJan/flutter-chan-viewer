@@ -22,14 +22,16 @@ class ThreadsDao extends DatabaseAccessor<MoorDB> with _$ThreadsDaoMixin {
 
   Future<List<ThreadsTableData>> getAllThreadItems() => select(threadsTable).get();
 
-  Future<List<int>> getFavoriteThreadIds() => (select(threadsTable)..where((thread) => thread.isFavorite.equals(true))).map((thread) => thread.threadId).get();
+  Future<List<int>> getFavoriteThreadIds() =>
+      (select(threadsTable)..where((thread) => thread.isFavorite.equals(true))).map((thread) => thread.threadId).get();
 
   Future<List<ThreadsTableData>> getFavoriteThreads() => (select(threadsTable)
         ..where((thread) => thread.isFavorite.equals(true))
         ..orderBy([(thread) => OrderingTerm(expression: thread.timestamp, mode: OrderingMode.desc)]))
       .get();
 
-  Future<List<ThreadsTableData>> getThreadsByBoardId(String boardId) => (select(threadsTable)..where((thread) => thread.boardId.equals(boardId))).get();
+  Future<List<ThreadsTableData>> getThreadsByBoardId(String boardId) =>
+      (select(threadsTable)..where((thread) => thread.boardId.equals(boardId))).get();
 
   Future<List<ThreadsTableData>> getThreadsByBoardIdAndOnlineState(String boardId, OnlineState onlineState) => (select(threadsTable)
         ..where((thread) => thread.boardId.equals(boardId) & thread.onlineState.equals(onlineState.index))
@@ -40,14 +42,27 @@ class ThreadsDao extends DatabaseAccessor<MoorDB> with _$ThreadsDaoMixin {
 
   Future<List<ThreadsTableData>> getArchivedThreads() => getThreadsByOnlineState(OnlineState.ARCHIVED);
 
-  Future<List<ThreadsTableData>> getThreadsByOnlineState(OnlineState onlineState) => (select(threadsTable)..where((thread) => thread.onlineState.equals(onlineState.index))).get();
+  Future<List<ThreadsTableData>> getThreadsByOnlineState(OnlineState onlineState) =>
+      (select(threadsTable)..where((thread) => thread.onlineState.equals(onlineState.index))).get();
 
   Future<void> insertThread(ThreadsTableData entry) {
-    return into(threadsTable).insert(entry, onConflict: DoUpdate((old) => ThreadsTableCompanion.custom(isFavorite: old.isFavorite)));
+    return into(threadsTable).insert(entry, onConflict: DoUpdate((old) {
+      return ThreadsTableCompanion.custom(
+        isFavorite: old.isFavorite,
+        selectedPostId: old.selectedPostId,
+        unreadRepliesCount: old.unreadRepliesCount,
+      );
+    }));
   }
 
   Future<void> insertThreadsList(List<ThreadsTableData> entries) async {
-    return await batch((batch) => batch.insertAll(threadsTable, entries, onConflict: DoUpdate((old) => ThreadsTableCompanion.custom(isFavorite: old.isFavorite))));
+    return await batch((batch) => batch.insertAll(threadsTable, entries, onConflict: DoUpdate((old) {
+          return ThreadsTableCompanion.custom(
+            isFavorite: old.isFavorite,
+            selectedPostId: old.selectedPostId,
+            unreadRepliesCount: old.unreadRepliesCount,
+          );
+        })));
   }
 
   Future<bool> updateThread(ThreadsTableData entry) {
@@ -68,7 +83,10 @@ class ThreadsDao extends DatabaseAccessor<MoorDB> with _$ThreadsDaoMixin {
 
   Future<int> deleteThreadsWithOnlineStateOlderThan(OnlineState onlineState, int timestamp) => (delete(threadsTable)
             ..where(
-              (thread) => thread.onlineState.equals(onlineState.index) & thread.timestamp.isSmallerOrEqualValue(timestamp) & thread.isFavorite.equals(false),
+              (thread) =>
+                  thread.onlineState.equals(onlineState.index) &
+                  thread.timestamp.isSmallerOrEqualValue(timestamp) &
+                  thread.isFavorite.equals(false),
             ))
           .go()
           .then((value) {
@@ -76,12 +94,13 @@ class ThreadsDao extends DatabaseAccessor<MoorDB> with _$ThreadsDaoMixin {
         return value;
       });
 
-  Future<int> deleteThreadsByIds(List<int> threadIds) => (delete(threadsTable)..where((thread) => thread.threadId.isIn(threadIds))).go().then((value) {
+  Future<int> deleteThreadsByIds(List<int> threadIds) =>
+      (delete(threadsTable)..where((thread) => thread.threadId.isIn(threadIds))).go().then((value) {
         print("Rows affected: $value");
         return value;
       });
 
-  Future<int> deleteThreadById(int threadId, String boardId) =>
+  Future<int> deleteThreadById(String boardId, int threadId) =>
       (delete(threadsTable)..where((thread) => thread.threadId.equals(threadId) & thread.boardId.equals(boardId))).go().then((value) {
         print("Rows affected: $value");
         return value;

@@ -40,7 +40,7 @@ class RemoteDataSource {
     });
   }
 
-  Future<BoardDetailModel> fetchThreadList(String boardId, List<int> favoriteThreadIds) async {
+  Future<BoardDetailModel> fetchThreadList(String boardId) async {
     String url = "${FlavorConfig.values().baseUrl}/$boardId/catalog.json";
 
     final response = await client.get(url);

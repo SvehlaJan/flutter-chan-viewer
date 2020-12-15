@@ -54,7 +54,7 @@ class _BoardListPageState extends BasePageState<BoardListPage> {
     );
   }
 
-  static Widget buildBody(BuildContext context, ChanState state, Function(BoardItem) onItemClicked) {
+  Widget buildBody(BuildContext context, ChanState state, Function(BoardItem) onItemClicked) {
     if (state is ChanStateLoading) {
       return Constants.centeredProgressIndicator;
     } else if (state is BoardListStateContent) {
@@ -70,7 +70,7 @@ class _BoardListPageState extends BasePageState<BoardListPage> {
     }
   }
 
-  static Widget _buildListView(BuildContext context, BoardListStateContent state, Function(BoardItem) onItemClicked) {
+  Widget _buildListView(BuildContext context, BoardListStateContent state, Function(BoardItem) onItemClicked) {
     return Scrollbar(
       child: ListView.builder(
         key: PageStorageKey<String>(KEY_LIST),
@@ -96,40 +96,5 @@ class _BoardListPageState extends BasePageState<BoardListPage> {
     ));
 
     bloc.add(ChanEventFetchData());
-  }
-}
-
-class CustomSearchDelegate extends SearchDelegate<BoardItem> {
-  CustomSearchDelegate(this._boardListBloc);
-
-  final BoardListBloc _boardListBloc;
-
-  @override
-  ThemeData appBarTheme(BuildContext context) => Constants.searchBarTheme(context);
-
-  @override
-  List<Widget> buildActions(BuildContext context) => null;
-
-  @override
-  Widget buildLeading(BuildContext context) => IconButton(icon: Icon(Icons.arrow_back), onPressed: () => close(context, null));
-
-  @override
-  Widget buildResults(BuildContext context) {
-    _boardListBloc.add(ChanEventSearch(query));
-
-    return BlocBuilder<BoardListBloc, ChanState>(
-      cubit: _boardListBloc,
-      builder: (context, state) => _BoardListPageState.buildBody(context, state, ((board) => close(context, board))),
-    );
-  }
-
-  @override
-  Widget buildSuggestions(BuildContext context) {
-    _boardListBloc.add(ChanEventSearch(query));
-
-    return BlocBuilder<BoardListBloc, ChanState>(
-      cubit: _boardListBloc,
-      builder: (context, state) => _BoardListPageState.buildBody(context, state, ((board) => close(context, board))),
-    );
   }
 }

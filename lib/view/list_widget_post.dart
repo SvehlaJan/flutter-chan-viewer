@@ -15,6 +15,7 @@ class PostListWidget extends StatefulWidget {
   final bool showImage;
   final bool showHeroAnimation;
   final Function onTap;
+  final Function onLongPress;
   final Function(String url) onLinkTap;
 
   @override
@@ -22,11 +23,12 @@ class PostListWidget extends StatefulWidget {
 
   const PostListWidget({
     @required this.post,
-    this.selected = false,
-    this.showImage = true,
-    this.showHeroAnimation = true,
-    this.onTap,
-    this.onLinkTap,
+    @required this.selected,
+    @required this.showImage,
+    @required this.showHeroAnimation,
+    @required this.onTap,
+    @required this.onLongPress,
+    @required this.onLinkTap,
   });
 }
 
@@ -101,9 +103,9 @@ class _PostListWidgetState extends State<PostListWidget> with SingleTickerProvid
                     ],
                   ),
                   if (widget.post.subtitle.isNotNullNorEmpty) Text(widget.post.subtitle, style: Theme.of(context).textTheme.bodyText1),
-                  if (widget.post.content.isNotNullNorEmpty)
+                  if (widget.post.htmlContent.isNotNullNorEmpty)
                     Html(
-                      data: ChanUtil.getReadableHtml(widget.post.content, false),
+                      data: ChanUtil.getReadableHtml(widget.post.htmlContent, false),
                       style: {"*": Style(margin: EdgeInsets.zero)},
                       onLinkTap: widget.onLinkTap,
                     ),

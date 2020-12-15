@@ -9,12 +9,15 @@ class PostGridWidget extends StatefulWidget {
   final PostItem post;
   final bool selected;
   final Function onTap;
+  final Function onLongPress;
 
   const PostGridWidget({
+    key,
     @required this.post,
-    this.selected = false,
-    this.onTap,
-  });
+    @required this.selected,
+    @required this.onTap,
+    @required this.onLongPress,
+  }) : super(key: key);
 
   @override
   _PostGridWidgetState createState() => _PostGridWidgetState();
@@ -45,6 +48,7 @@ class _PostGridWidgetState extends State<PostGridWidget> with SingleTickerProvid
     return GridTile(
       child: InkWell(
         onTap: widget.onTap,
+        onLongPress: widget.onLongPress,
         child: ScaleTransition(scale: _animation, child: buildContent(context)),
       ),
     );

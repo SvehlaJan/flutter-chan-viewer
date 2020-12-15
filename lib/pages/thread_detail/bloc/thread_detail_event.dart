@@ -55,6 +55,15 @@ class ThreadDetailEventCreateNewCollection extends ChanEvent {
   List<Object> get props => [name];
 }
 
+class ThreadDetailEventDeleteCollection extends ChanEvent {
+  final int threadId;
+
+  ThreadDetailEventDeleteCollection(this.threadId);
+
+  @override
+  List<Object> get props => [threadId];
+}
+
 class ThreadDetailEventAddPostToCollection extends ChanEvent {
   final String name;
 

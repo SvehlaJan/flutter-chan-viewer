@@ -12,15 +12,15 @@ class ThreadsTable extends ChanBaseTable {
 
   IntColumn get threadId => integer()();
 
-  IntColumn get selectedPostId => integer()();
+  IntColumn get selectedPostId => integer().withDefault(const Constant(-1))();
 
   BoolColumn get isFavorite => boolean()();
 
   IntColumn get onlineState => intEnum<OnlineState>()();
 
-  IntColumn get replyCount => integer().nullable()();
+  IntColumn get replyCount => integer()();
 
-  IntColumn get imageCount => integer().nullable()();
+  IntColumn get imageCount => integer()();
 
-  IntColumn get unreadRepliesCount => integer().nullable()();
+  IntColumn get unreadRepliesCount => integer().withDefault(const Constant(0))();
 }

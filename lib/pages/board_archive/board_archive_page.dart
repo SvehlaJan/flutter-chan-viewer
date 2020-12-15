@@ -1,3 +1,4 @@
+import 'package:draggable_scrollbar/draggable_scrollbar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -26,13 +27,15 @@ class BoardArchivePage extends StatefulWidget {
 }
 
 class _BoardArchivePageState extends BasePageState<BoardArchivePage> {
-  BoardArchiveBloc _archiveListBloc;
+  ScrollController _listScrollController;
 
   @override
   void initState() {
     super.initState();
-    _archiveListBloc = BlocProvider.of<BoardArchiveBloc>(context);
-    _archiveListBloc.add(ChanEventFetchData());
+    bloc = BlocProvider.of<BoardArchiveBloc>(context);
+    bloc.add(ChanEventFetchData());
+
+    _listScrollController = ScrollController();
   }
 
   @override
@@ -45,12 +48,12 @@ class _BoardArchivePageState extends BasePageState<BoardArchivePage> {
 
   void _onSearchClick() => startSearch();
 
-  void _onRefreshClick() => _archiveListBloc.add(ChanEventFetchData());
+  void _onRefreshClick() => bloc.add(ChanEventFetchData());
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<BoardArchiveBloc, ChanState>(
-      cubit: _archiveListBloc,
+      cubit: bloc,
       builder: (context, state) {
         return buildScaffold(
           context,
@@ -72,8 +75,10 @@ class _BoardArchivePageState extends BasePageState<BoardArchivePage> {
 
       return Stack(
         children: [
-          Scrollbar(
+          DraggableScrollbar.semicircle(
+            controller: _listScrollController,
             child: ListView.builder(
+              controller: _listScrollController,
               itemCount: state.threads.length,
               itemBuilder: (context, index) {
                 ThreadItem thread = state.threads[index].threadDetailModel.thread;

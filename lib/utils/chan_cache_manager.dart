@@ -1,46 +1,51 @@
+import 'dart:io';
+
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:file/local.dart';
+import 'package:file/file.dart';
+import 'package:flutter_cache_manager/src/storage/file_system/file_system.dart' as c;
 
-class ChanCacheManager extends BaseCacheManager {
+class ChanCacheManager {
   static const key = 'libCachedImageData';
 
-  static ChanCacheManager _instance;
-
-  factory ChanCacheManager() {
-    _instance ??= ChanCacheManager._();
-    return _instance;
+  static CacheManager createCacheManager() {
+    return CacheManager(Config(
+      key,
+      stalePeriod: const Duration(days: 1000),
+      maxNrOfCacheObjects: 10000,
+      repo: CacheObjectProvider(databaseName: key),
+      fileSystem: IOFileSystem(key),
+      fileService: HttpFileService(),
+    ));
   }
-
-  ChanCacheManager._() : super(key);
 
   @override
   Future<String> getFilePath() async {
     var directory = await getTemporaryDirectory();
     return p.join(directory.path, key);
   }
+}
 
-  // @override
-  // Future<FileInfo> getFileFromCache(String url, {bool ignoreMemCache = false}) async {
-  //   if (url.endsWith(".webm")) {
-  //     FileInfo fileInfo = await super.getFileFromCache(url, ignoreMemCache: ignoreMemCache);
-  //     if (fileInfo != null) {
-  //       return fileInfo;
-  //     }
-  //
-  //     CacheDirective cacheDirective = CacheDirective.fromPath(url);
-  //     if (getIt<ChanStorage>().mediaFileExists(url, cacheDirective)) {
-  //       Uint8List thumbnailData = await VideoThumbnail.thumbnailData(
-  //         video: getIt<ChanStorage>().getFileAbsolutePath(url, cacheDirective),
-  //         imageFormat: ImageFormat.JPEG,
-  //         maxHeight: 512,
-  //         quality: 75,
-  //       );
-  //       putFile(url, thumbnailData);
-  //     } else {
-  //       return null;
-  //     }
-  //   }
-  //   return super.getFileFromCache(url, ignoreMemCache: ignoreMemCache);
-  // }
+class IOFileSystem implements c.FileSystem {
+  final Future<Directory> _fileDir;
+
+  IOFileSystem(String key) : _fileDir = createDirectory(key);
+
+  static Future<Directory> createDirectory(String key) async {
+    var baseDir = await getTemporaryDirectory();
+    var path = p.join(baseDir.path, key);
+
+    var fs = const LocalFileSystem();
+    var directory = fs.directory((path));
+    await directory.create(recursive: true);
+    return directory;
+  }
+
+  @override
+  Future<File> createFile(String name) async {
+    assert(name != null);
+    return (await _fileDir).childFile(name);
+  }
 }

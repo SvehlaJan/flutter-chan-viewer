@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
+import 'package:flutter_chan_viewer/utils/chan_util.dart';
 import 'package:flutter_chan_viewer/utils/flavor_config.dart';
 
 abstract class ChanPostBase {
@@ -7,7 +8,7 @@ abstract class ChanPostBase {
   final int threadId;
   final int timestamp;
   final String subtitle;
-  final String content;
+  final String htmlContent;
   final String filename;
   final String imageId;
   final String extension;
@@ -17,7 +18,7 @@ abstract class ChanPostBase {
     @required this.threadId,
     @required this.timestamp,
     @required this.subtitle,
-    @required this.content,
+    @required this.htmlContent,
     @required this.filename,
     @required this.imageId,
     @required this.extension,
@@ -37,6 +38,12 @@ abstract class ChanPostBase {
 
   String getThumbnailUrl() => _getMediaUrl(this.boardId, this.imageId, this.extension, true);
 
+  String get content => ChanUtil.getPlainString(htmlContent);
+
+  String getTextContent({bool truncate = false}) {
+    return ChanUtil.getReadableHtml(htmlContent, truncate);
+  }
+
   String _getMediaUrl(String boardId, String imageId, String extension, bool thumbnail) {
     if (boardId != null && imageId != null && extension != null) {
       String fileName = _getFileName(imageId, extension, thumbnail);
@@ -54,5 +61,5 @@ abstract class ChanPostBase {
 
   CacheDirective getCacheDirective() => CacheDirective(boardId, threadId);
 
-  List<Object> get props => [boardId, threadId, timestamp, subtitle, content, filename, imageId, extension];
+  List<Object> get props => [boardId, threadId, timestamp, subtitle, htmlContent, filename, imageId, extension];
 }

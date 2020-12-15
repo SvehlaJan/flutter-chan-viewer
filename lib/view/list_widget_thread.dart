@@ -69,7 +69,7 @@ class ThreadListWidget extends StatelessWidget {
                           ],
                         ),
                         Html(
-                          data: ChanUtil.getReadableHtml(thread.content ?? "", true),
+                          data: ChanUtil.getReadableHtml(thread.htmlContent ?? "", true),
                           style: {"*": Style(margin: EdgeInsets.zero)},
                           onLinkTap: ((String url) => ChanLogger.d("Html link clicked { url: $url }")),
                         )

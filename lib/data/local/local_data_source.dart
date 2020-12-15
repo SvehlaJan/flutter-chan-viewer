@@ -83,8 +83,9 @@ class LocalDataSource {
   }
 
   Future<List<ThreadItem>> getThreadsByBoardIdAndOnlineState(String boardId, OnlineState onlineState) async {
-    List<ThreadsTableData> threads = await _threadsDao.getThreadsByBoardIdAndOnlineState(boardId, onlineState);
-    return threads.map((threadData) => ThreadItem.fromTableData(threadData)).toList();
+    List<ThreadsTableData> threadsTableData = await _threadsDao.getThreadsByBoardIdAndOnlineState(boardId, onlineState);
+    List<ThreadItem> threads = threadsTableData.map((threadData) => ThreadItem.fromTableData(threadData)).toList();
+    return threads;
   }
 
   /// Sets state to UNKNOWN of local threads which are no longer online
@@ -109,16 +110,24 @@ class LocalDataSource {
 
   /// Deletes old archived threads, which are no login in archive.
   Future<void> syncWithNewArchivedThreads(String boardId, List<int> archivedThreadIds) async {
-    List<ThreadsTableData> localThreads = await _threadsDao.getThreadsByBoardIdAndOnlineState(boardId, OnlineState.ARCHIVED);
-    List<ThreadsTableData> notFoundThreads = localThreads.where((thread) => !archivedThreadIds.contains(thread.threadId) & !thread.isFavorite).toList();
+    List<ThreadsTableData> localArchivedThreads = await _threadsDao.getThreadsByBoardIdAndOnlineState(boardId, OnlineState.ARCHIVED);
+    List<ThreadsTableData> notFoundThreads = localArchivedThreads.where((thread) => !archivedThreadIds.contains(thread.threadId) & !thread.isFavorite).toList();
     List<int> notFoundThreadIds = notFoundThreads.map((thread) => thread.threadId).toList();
     await _threadsDao.deleteThreadsByIds(notFoundThreadIds);
+
+    List<ThreadsTableData> localOnlineThreads = await _threadsDao.getThreadsByBoardIdAndOnlineState(boardId, OnlineState.ONLINE);
+    List<ThreadsTableData> newArchivedThreads = localOnlineThreads.where((thread) => archivedThreadIds.contains(thread.threadId)).toList();
+    await _threadsDao.updateThreadsOnlineState(newArchivedThreads, OnlineState.ARCHIVED);
     return null;
   }
 
   Future<PostItem> addPostToThread(PostItem post, ThreadItem thread) async {
     await _postsDao.insertPost(post.toTableData());
     return PostItem.fromTableData(await _postsDao.getPostById(post.postId, thread.threadId, thread.boardId));
+  }
+
+  Future<void> deleteThread(String boardId, int threadId) async {
+    await _threadsDao.deleteThreadById(boardId, threadId);
   }
 
   Future<BoardItem> getBoardById(String boardId) async {

@@ -12,6 +12,8 @@ class ThreadsTable extends ChanBaseTable {
 
   IntColumn get threadId => integer()();
 
+  IntColumn get lastModified => integer().withDefault(const Constant(0))();
+
   IntColumn get selectedPostId => integer().withDefault(const Constant(-1))();
 
   BoolColumn get isFavorite => boolean()();

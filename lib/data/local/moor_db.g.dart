@@ -605,6 +605,7 @@ class ThreadsTableData extends DataClass
   final String extension;
   final String boardId;
   final int threadId;
+  final int lastModified;
   final int selectedPostId;
   final bool isFavorite;
   final OnlineState onlineState;
@@ -620,6 +621,7 @@ class ThreadsTableData extends DataClass
       this.extension,
       @required this.boardId,
       @required this.threadId,
+      @required this.lastModified,
       @required this.selectedPostId,
       @required this.isFavorite,
       @required this.onlineState,
@@ -650,6 +652,8 @@ class ThreadsTableData extends DataClass
           .mapFromDatabaseResponse(data['${effectivePrefix}board_id']),
       threadId:
           intType.mapFromDatabaseResponse(data['${effectivePrefix}thread_id']),
+      lastModified: intType
+          .mapFromDatabaseResponse(data['${effectivePrefix}last_modified']),
       selectedPostId: intType
           .mapFromDatabaseResponse(data['${effectivePrefix}selected_post_id']),
       isFavorite: boolType
@@ -690,6 +694,9 @@ class ThreadsTableData extends DataClass
     }
     if (!nullToAbsent || threadId != null) {
       map['thread_id'] = Variable<int>(threadId);
+    }
+    if (!nullToAbsent || lastModified != null) {
+      map['last_modified'] = Variable<int>(lastModified);
     }
     if (!nullToAbsent || selectedPostId != null) {
       map['selected_post_id'] = Variable<int>(selectedPostId);
@@ -739,6 +746,9 @@ class ThreadsTableData extends DataClass
       threadId: threadId == null && nullToAbsent
           ? const Value.absent()
           : Value(threadId),
+      lastModified: lastModified == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastModified),
       selectedPostId: selectedPostId == null && nullToAbsent
           ? const Value.absent()
           : Value(selectedPostId),
@@ -772,6 +782,7 @@ class ThreadsTableData extends DataClass
       extension: serializer.fromJson<String>(json['extension']),
       boardId: serializer.fromJson<String>(json['boardId']),
       threadId: serializer.fromJson<int>(json['threadId']),
+      lastModified: serializer.fromJson<int>(json['lastModified']),
       selectedPostId: serializer.fromJson<int>(json['selectedPostId']),
       isFavorite: serializer.fromJson<bool>(json['isFavorite']),
       onlineState: serializer.fromJson<OnlineState>(json['onlineState']),
@@ -792,6 +803,7 @@ class ThreadsTableData extends DataClass
       'extension': serializer.toJson<String>(extension),
       'boardId': serializer.toJson<String>(boardId),
       'threadId': serializer.toJson<int>(threadId),
+      'lastModified': serializer.toJson<int>(lastModified),
       'selectedPostId': serializer.toJson<int>(selectedPostId),
       'isFavorite': serializer.toJson<bool>(isFavorite),
       'onlineState': serializer.toJson<OnlineState>(onlineState),
@@ -810,6 +822,7 @@ class ThreadsTableData extends DataClass
           String extension,
           String boardId,
           int threadId,
+          int lastModified,
           int selectedPostId,
           bool isFavorite,
           OnlineState onlineState,
@@ -825,6 +838,7 @@ class ThreadsTableData extends DataClass
         extension: extension ?? this.extension,
         boardId: boardId ?? this.boardId,
         threadId: threadId ?? this.threadId,
+        lastModified: lastModified ?? this.lastModified,
         selectedPostId: selectedPostId ?? this.selectedPostId,
         isFavorite: isFavorite ?? this.isFavorite,
         onlineState: onlineState ?? this.onlineState,
@@ -843,6 +857,7 @@ class ThreadsTableData extends DataClass
           ..write('extension: $extension, ')
           ..write('boardId: $boardId, ')
           ..write('threadId: $threadId, ')
+          ..write('lastModified: $lastModified, ')
           ..write('selectedPostId: $selectedPostId, ')
           ..write('isFavorite: $isFavorite, ')
           ..write('onlineState: $onlineState, ')
@@ -871,17 +886,19 @@ class ThreadsTableData extends DataClass
                               $mrjc(
                                   threadId.hashCode,
                                   $mrjc(
-                                      selectedPostId.hashCode,
+                                      lastModified.hashCode,
                                       $mrjc(
-                                          isFavorite.hashCode,
+                                          selectedPostId.hashCode,
                                           $mrjc(
-                                              onlineState.hashCode,
+                                              isFavorite.hashCode,
                                               $mrjc(
-                                                  replyCount.hashCode,
+                                                  onlineState.hashCode,
                                                   $mrjc(
-                                                      imageCount.hashCode,
-                                                      unreadRepliesCount
-                                                          .hashCode))))))))))))));
+                                                      replyCount.hashCode,
+                                                      $mrjc(
+                                                          imageCount.hashCode,
+                                                          unreadRepliesCount
+                                                              .hashCode)))))))))))))));
   @override
   bool operator ==(dynamic other) =>
       identical(this, other) ||
@@ -894,6 +911,7 @@ class ThreadsTableData extends DataClass
           other.extension == this.extension &&
           other.boardId == this.boardId &&
           other.threadId == this.threadId &&
+          other.lastModified == this.lastModified &&
           other.selectedPostId == this.selectedPostId &&
           other.isFavorite == this.isFavorite &&
           other.onlineState == this.onlineState &&
@@ -911,6 +929,7 @@ class ThreadsTableCompanion extends UpdateCompanion<ThreadsTableData> {
   final Value<String> extension;
   final Value<String> boardId;
   final Value<int> threadId;
+  final Value<int> lastModified;
   final Value<int> selectedPostId;
   final Value<bool> isFavorite;
   final Value<OnlineState> onlineState;
@@ -926,6 +945,7 @@ class ThreadsTableCompanion extends UpdateCompanion<ThreadsTableData> {
     this.extension = const Value.absent(),
     this.boardId = const Value.absent(),
     this.threadId = const Value.absent(),
+    this.lastModified = const Value.absent(),
     this.selectedPostId = const Value.absent(),
     this.isFavorite = const Value.absent(),
     this.onlineState = const Value.absent(),
@@ -942,6 +962,7 @@ class ThreadsTableCompanion extends UpdateCompanion<ThreadsTableData> {
     this.extension = const Value.absent(),
     @required String boardId,
     @required int threadId,
+    this.lastModified = const Value.absent(),
     this.selectedPostId = const Value.absent(),
     @required bool isFavorite,
     @required OnlineState onlineState,
@@ -964,6 +985,7 @@ class ThreadsTableCompanion extends UpdateCompanion<ThreadsTableData> {
     Expression<String> extension,
     Expression<String> boardId,
     Expression<int> threadId,
+    Expression<int> lastModified,
     Expression<int> selectedPostId,
     Expression<bool> isFavorite,
     Expression<int> onlineState,
@@ -980,6 +1002,7 @@ class ThreadsTableCompanion extends UpdateCompanion<ThreadsTableData> {
       if (extension != null) 'extension': extension,
       if (boardId != null) 'board_id': boardId,
       if (threadId != null) 'thread_id': threadId,
+      if (lastModified != null) 'last_modified': lastModified,
       if (selectedPostId != null) 'selected_post_id': selectedPostId,
       if (isFavorite != null) 'is_favorite': isFavorite,
       if (onlineState != null) 'online_state': onlineState,
@@ -999,6 +1022,7 @@ class ThreadsTableCompanion extends UpdateCompanion<ThreadsTableData> {
       Value<String> extension,
       Value<String> boardId,
       Value<int> threadId,
+      Value<int> lastModified,
       Value<int> selectedPostId,
       Value<bool> isFavorite,
       Value<OnlineState> onlineState,
@@ -1014,6 +1038,7 @@ class ThreadsTableCompanion extends UpdateCompanion<ThreadsTableData> {
       extension: extension ?? this.extension,
       boardId: boardId ?? this.boardId,
       threadId: threadId ?? this.threadId,
+      lastModified: lastModified ?? this.lastModified,
       selectedPostId: selectedPostId ?? this.selectedPostId,
       isFavorite: isFavorite ?? this.isFavorite,
       onlineState: onlineState ?? this.onlineState,
@@ -1050,6 +1075,9 @@ class ThreadsTableCompanion extends UpdateCompanion<ThreadsTableData> {
     if (threadId.present) {
       map['thread_id'] = Variable<int>(threadId.value);
     }
+    if (lastModified.present) {
+      map['last_modified'] = Variable<int>(lastModified.value);
+    }
     if (selectedPostId.present) {
       map['selected_post_id'] = Variable<int>(selectedPostId.value);
     }
@@ -1084,6 +1112,7 @@ class ThreadsTableCompanion extends UpdateCompanion<ThreadsTableData> {
           ..write('extension: $extension, ')
           ..write('boardId: $boardId, ')
           ..write('threadId: $threadId, ')
+          ..write('lastModified: $lastModified, ')
           ..write('selectedPostId: $selectedPostId, ')
           ..write('isFavorite: $isFavorite, ')
           ..write('onlineState: $onlineState, ')
@@ -1194,6 +1223,17 @@ class $ThreadsTableTable extends ThreadsTable
     );
   }
 
+  final VerificationMeta _lastModifiedMeta =
+      const VerificationMeta('lastModified');
+  GeneratedIntColumn _lastModified;
+  @override
+  GeneratedIntColumn get lastModified =>
+      _lastModified ??= _constructLastModified();
+  GeneratedIntColumn _constructLastModified() {
+    return GeneratedIntColumn('last_modified', $tableName, false,
+        defaultValue: const Constant(0));
+  }
+
   final VerificationMeta _selectedPostIdMeta =
       const VerificationMeta('selectedPostId');
   GeneratedIntColumn _selectedPostId;
@@ -1276,6 +1316,7 @@ class $ThreadsTableTable extends ThreadsTable
         extension,
         boardId,
         threadId,
+        lastModified,
         selectedPostId,
         isFavorite,
         onlineState,
@@ -1331,6 +1372,12 @@ class $ThreadsTableTable extends ThreadsTable
           threadId.isAcceptableOrUnknown(data['thread_id'], _threadIdMeta));
     } else if (isInserting) {
       context.missing(_threadIdMeta);
+    }
+    if (data.containsKey('last_modified')) {
+      context.handle(
+          _lastModifiedMeta,
+          lastModified.isAcceptableOrUnknown(
+              data['last_modified'], _lastModifiedMeta));
     }
     if (data.containsKey('selected_post_id')) {
       context.handle(

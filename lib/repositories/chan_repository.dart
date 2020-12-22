@@ -76,7 +76,9 @@ class ChanRepository {
     List<int> newThreadIds = boardDetailModel.threads.map((thread) => thread.threadId).toList();
     await _localDataSource.syncWithNewOnlineThreads(boardId, newThreadIds);
     await _localDataSource.saveThreads(boardDetailModel.threads);
-    return fetchCachedBoardDetail(boardId);
+
+    BoardDetailModel newModel = await fetchCachedBoardDetail(boardId);
+    return newModel;
   }
 
   Future<BoardDetailModel> fetchCachedBoardDetail(String boardId) async {
@@ -107,7 +109,8 @@ class ChanRepository {
     await _localDataSource.saveThread(model.thread);
     await _localDataSource.savePosts(model.allPosts);
 
-    return await fetchCachedThreadDetail(boardId, threadId);
+    ThreadDetailModel updatedModel = await fetchCachedThreadDetail(boardId, threadId);
+    return updatedModel;
   }
 
   Future<ThreadDetailModel> fetchCachedThreadDetail(String boardId, int threadId) async {
@@ -131,7 +134,8 @@ class ChanRepository {
 
     await _localDataSource.saveThread(customThread);
 
-    return _localDataSource.getThreadById(customThread.boardId, customThread.threadId);
+    ThreadItem newThread = await _localDataSource.getThreadById(customThread.boardId, customThread.threadId);
+    return newThread;
   }
 
   Future<PostItem> addPostToCustomThread(PostItem originalPost, ThreadItem newThread) async {

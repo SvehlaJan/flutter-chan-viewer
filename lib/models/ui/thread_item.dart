@@ -9,6 +9,7 @@ import 'package:flutter_chan_viewer/utils/chan_util.dart';
 
 class ThreadItem extends ChanPostBase with EquatableMixin {
   final OnlineState onlineStatus;
+  final int lastModified;
   final int replies;
   final int images;
   final int selectedPostId;
@@ -28,6 +29,7 @@ class ThreadItem extends ChanPostBase with EquatableMixin {
     imageId = "",
     extension = "",
     this.onlineStatus = OnlineState.UNKNOWN,
+    this.lastModified = 0,
     this.isThreadFavorite = false,
     this.replies = 0,
     this.images = 0,
@@ -54,6 +56,7 @@ class ThreadItem extends ChanPostBase with EquatableMixin {
         boardId: json['board_id'] ?? boardId,
         threadId: json['no'] ?? threadId,
         timestamp: json['time'],
+        lastModified: json['last_modified'],
         subtitle: ChanUtil.unescapeHtml(json['sub']),
         htmlContent: ChanUtil.unescapeHtml(json['com']),
         filename: json['filename'],
@@ -68,6 +71,7 @@ class ThreadItem extends ChanPostBase with EquatableMixin {
         boardId: cacheDirective.boardId,
         threadId: cacheDirective.threadId,
         timestamp: DateTime.now().millisecondsSinceEpoch,
+        lastModified: DateTime.now().millisecondsSinceEpoch,
         onlineStatus: OnlineState.NOT_FOUND,
       );
 
@@ -85,6 +89,7 @@ class ThreadItem extends ChanPostBase with EquatableMixin {
       imageId: firstPost.imageId,
       extension: firstPost.extension,
       onlineStatus: this.onlineStatus,
+      lastModified: this.lastModified,
       isThreadFavorite: this.isThreadFavorite,
       replies: replies,
       images: images,
@@ -101,6 +106,7 @@ class ThreadItem extends ChanPostBase with EquatableMixin {
         imageId: this.imageId,
         extension: this.extension,
         onlineState: this.onlineStatus,
+        lastModified: this.lastModified,
         selectedPostId: this.selectedPostId,
         isFavorite: this.isThreadFavorite,
         replyCount: this.replies,
@@ -118,6 +124,7 @@ class ThreadItem extends ChanPostBase with EquatableMixin {
         imageId: entry.imageId,
         extension: entry.extension,
         onlineStatus: entry.onlineState,
+        lastModified: entry.lastModified,
         selectedPostId: entry.selectedPostId,
         isThreadFavorite: entry.isFavorite,
         replies: entry.replyCount,
@@ -127,6 +134,7 @@ class ThreadItem extends ChanPostBase with EquatableMixin {
 
   ThreadItem copyWith({
     OnlineState onlineStatus,
+    int lastModified,
     int selectedPostId,
     int replies,
     int images,
@@ -143,6 +151,7 @@ class ThreadItem extends ChanPostBase with EquatableMixin {
   }) {
     return new ThreadItem(
       onlineStatus: onlineStatus ?? this.onlineStatus,
+      lastModified: lastModified ?? this.lastModified,
       selectedPostId: selectedPostId ?? this.selectedPostId,
       replies: replies ?? this.replies,
       images: images ?? this.images,
@@ -160,5 +169,5 @@ class ThreadItem extends ChanPostBase with EquatableMixin {
   }
 
   @override
-  List<Object> get props => super.props + [onlineStatus, selectedPostId, isThreadFavorite, replies, images, unreadRepliesCount];
+  List<Object> get props => super.props + [onlineStatus, lastModified, selectedPostId, isThreadFavorite, replies, images, unreadRepliesCount];
 }

@@ -1,8 +1,8 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_chan_viewer/models/local/threads_table.dart';
-import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
 import 'package:flutter_chan_viewer/models/ui/post_item.dart';
+import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
 import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
 import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
 
@@ -22,18 +22,22 @@ class ThreadDetailModel extends Equatable {
     OnlineState onlineState,
     Map<String, dynamic> parsedJson,
   ) {
-    ThreadItem thread = ThreadItem.fromMappedJson(boardId, threadId, onlineState, parsedJson);
+    List<Map<String, dynamic>> allPosts = (parsedJson['posts'] as List).cast<Map<String, dynamic>>();
+
+    ThreadItem thread = ThreadItem.fromMappedJson(
+      boardId: boardId,
+      threadId: threadId,
+      onlineState: onlineState,
+      lastModified: allPosts.last["time"],
+      json: allPosts.first,
+    );
 
     List<PostItem> posts = [];
-    for (Map<String, dynamic> postData in parsedJson['posts']) {
+    for (Map<String, dynamic> postData in allPosts) {
       posts.add(PostItem.fromMappedJson(thread, postData));
     }
 
     _calculateReplies(posts);
-
-    if (posts.isNotEmpty) {
-      thread = thread.copyWithPostData(posts);
-    }
 
     return ThreadDetailModel(thread: thread, posts: posts);
   }

@@ -43,7 +43,7 @@ class _GalleryPageState extends BasePageState<GalleryPage>
     _newCollectionTextController = TextEditingController();
     _sheetController = SheetController.of(context) ?? SheetController();
     if (widget.showAsReply) {
-      Future.delayed(const Duration(milliseconds: 200), () {
+      Future.delayed(const Duration(milliseconds: 100), () {
         _sheetController.expand();
       });
     }
@@ -53,6 +53,11 @@ class _GalleryPageState extends BasePageState<GalleryPage>
   Future<bool> onBackPressed() {
     if (_sheetController?.state?.isExpanded ?? false) {
       _sheetController.collapse();
+      if (widget.showAsReply) {
+        return Future.delayed(const Duration(milliseconds: 200), () {
+          return Future.value(true);
+        });
+      }
       return Future.value(false);
     }
     return Future.value(true);
@@ -208,7 +213,7 @@ class _GalleryPageState extends BasePageState<GalleryPage>
       color: Colors.transparent,
       shadowColor: Colors.transparent,
       controller: _sheetController,
-      duration: Duration(milliseconds: 600),
+      duration: Duration(milliseconds: 400),
       snapSpec: const SnapSpec(
         snap: false,
         snappings: [20, 1000],
@@ -306,8 +311,8 @@ class _GalleryPageState extends BasePageState<GalleryPage>
   void _onReplyPostClicked(BuildContext context, PostItem replyPost) {
     Navigator.of(context).push(PageRouteBuilder(
         opaque: false,
-        pageBuilder: (BuildContext context, _, __) => BlocProvider.value(
-              value: bloc,
+        pageBuilder: (_, __, ___) => BlocProvider.value(
+              value: bloc as ThreadDetailBloc,
               child: GalleryPage(
                   showAsReply: true, selectedPostId: replyPost.postId),
             )));

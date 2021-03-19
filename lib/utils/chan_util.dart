@@ -58,4 +58,8 @@ class ChanUtil {
   static String getHumanDate(int timestamp) {
     return formatDate(DateTime.fromMillisecondsSinceEpoch(timestamp * 1000), [mm, '-', dd, ' ', HH, ':', nn, ':', ss]);
   }
+
+  static int getNowTimestamp() {
+    return DateTime.now().millisecondsSinceEpoch ~/ 1000;
+  }
 }

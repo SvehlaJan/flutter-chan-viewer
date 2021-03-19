@@ -11,6 +11,7 @@ import 'package:flutter_chan_viewer/pages/base/base_bloc.dart';
 import 'package:flutter_chan_viewer/pages/favorites/bloc/favorites_event.dart';
 import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
 import 'package:flutter_chan_viewer/utils/chan_logger.dart';
+import 'package:flutter_chan_viewer/utils/chan_util.dart';
 import 'package:flutter_chan_viewer/utils/preferences.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter_chan_viewer/utils/extensions.dart';
@@ -53,7 +54,7 @@ class FavoritesBloc extends BaseBloc<ChanEvent, ChanState> {
                 ))
             .toList();
 
-        int currentTimestamp = DateTime.now().millisecondsSinceEpoch;
+        int currentTimestamp = ChanUtil.getNowTimestamp();
         bool shouldRefreshDetails = event.forceRefresh || currentTimestamp - _lastDetailRefreshTimestamp > DETAIL_REFRESH_TIMEOUT;
         if (_favoriteThreads.isNotEmpty && shouldRefreshDetails) {
           _lastDetailRefreshTimestamp = currentTimestamp;

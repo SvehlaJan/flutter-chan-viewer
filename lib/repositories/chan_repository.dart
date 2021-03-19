@@ -17,6 +17,7 @@ import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
 import 'package:flutter_chan_viewer/repositories/chan_downloader.dart';
 import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
 import 'package:flutter_chan_viewer/utils/chan_logger.dart';
+import 'package:flutter_chan_viewer/utils/chan_util.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/utils/database_helper.dart';
 import 'package:path_provider/path_provider.dart';
@@ -127,7 +128,7 @@ class ChanRepository {
     ThreadItem customThread = ThreadItem(
       threadId: DatabaseHelper.nextThreadId(),
       boardId: Constants.customBoardId,
-      timestamp: DateTime.now().millisecondsSinceEpoch,
+      timestamp: ChanUtil.getNowTimestamp(),
       subtitle: name,
       onlineStatus: OnlineState.CUSTOM,
     );

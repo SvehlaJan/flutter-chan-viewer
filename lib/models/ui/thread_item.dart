@@ -46,17 +46,18 @@ class ThreadItem extends ChanPostBase with EquatableMixin {
           extension: extension,
         );
 
-  factory ThreadItem.fromMappedJson(
+  factory ThreadItem.fromMappedJson({
     String boardId,
     int threadId,
     OnlineState onlineState,
+    int lastModified,
     Map<String, dynamic> json,
-  ) =>
+  }) =>
       ThreadItem(
         boardId: json['board_id'] ?? boardId,
         threadId: json['no'] ?? threadId,
         timestamp: json['time'],
-        lastModified: json['last_modified'],
+        lastModified: json['last_modified'] ?? lastModified,
         subtitle: ChanUtil.unescapeHtml(json['sub']),
         htmlContent: ChanUtil.unescapeHtml(json['com']),
         filename: json['filename'],
@@ -70,31 +71,10 @@ class ThreadItem extends ChanPostBase with EquatableMixin {
   factory ThreadItem.fromCacheDirective(CacheDirective cacheDirective) => ThreadItem(
         boardId: cacheDirective.boardId,
         threadId: cacheDirective.threadId,
-        timestamp: DateTime.now().millisecondsSinceEpoch,
-        lastModified: DateTime.now().millisecondsSinceEpoch,
+        timestamp: ChanUtil.getNowTimestamp(),
+        lastModified: ChanUtil.getNowTimestamp(),
         onlineStatus: OnlineState.NOT_FOUND,
       );
-
-  ThreadItem copyWithPostData(List<PostItem> posts) {
-    PostItem firstPost = posts.first;
-    int replies = this.replies ?? posts.length;
-    int images = this.images ?? posts.where((post) => post.hasMedia()).length;
-    return ThreadItem(
-      boardId: this.boardId,
-      threadId: this.threadId,
-      timestamp: firstPost.timestamp,
-      subtitle: firstPost.subtitle,
-      htmlContent: firstPost.htmlContent,
-      filename: firstPost.filename,
-      imageId: firstPost.imageId,
-      extension: firstPost.extension,
-      onlineStatus: this.onlineStatus,
-      lastModified: this.lastModified,
-      isThreadFavorite: this.isThreadFavorite,
-      replies: replies,
-      images: images,
-    );
-  }
 
   ThreadsTableData toTableData() => ThreadsTableData(
         boardId: this.boardId,

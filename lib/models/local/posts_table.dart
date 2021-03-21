@@ -11,5 +11,5 @@ class PostsTable extends ChanBaseTable {
 
   IntColumn get postId => integer()();
 
-  BoolColumn get isHidden => boolean()();
+  BoolColumn get isHidden => boolean().nullable()();
 }

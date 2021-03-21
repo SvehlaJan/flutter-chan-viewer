@@ -48,7 +48,7 @@ class ChanViewerAppState extends State<ChanViewerApp> {
           ),
         );
       } else {
-        return BasePageState.buildErrorScreen(context, (state as ChanStateError)?.message);
+        return BasePageState.buildErrorScreen(context, (state as ChanStateError).message);
       }
     });
   }

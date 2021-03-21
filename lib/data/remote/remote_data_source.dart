@@ -17,7 +17,7 @@ class RemoteDataSource {
   Future<BoardListModel> fetchBoardList() async {
     String url = "${FlavorConfig.values().baseUrl}/boards.json";
 
-    final response = await client.get(url);
+    final response = await client.get(Uri.parse(url));
 //    ChanLogger.d("Board list fetched. { url: $url, response status: ${response.statusCode} }");
     if (response.statusCode == 200) {
       return BoardListModel.fromJson(json.decode(response.body));
@@ -30,7 +30,7 @@ class RemoteDataSource {
     String url = "${FlavorConfig.values().baseUrl}/boards.json";
 
     return Resource.asFuture(() async {
-      return await client.get(url).then((response) {
+      return await client.get(Uri.parse(url)).then((response) {
         if (response.statusCode == 200) {
           return BoardListModel.fromJson(json.decode(response.body));
         } else {
@@ -40,10 +40,10 @@ class RemoteDataSource {
     });
   }
 
-  Future<BoardDetailModel> fetchThreadList(String boardId) async {
+  Future<BoardDetailModel> fetchThreadList(String? boardId) async {
     String url = "${FlavorConfig.values().baseUrl}/$boardId/catalog.json";
 
-    final response = await client.get(url);
+    final response = await client.get(Uri.parse(url));
 //    ChanLogger.d("Thread list fetched. { url: $url, response status: ${response.statusCode} }");
     if (response.statusCode == 200) {
       return BoardDetailModel.fromJson(boardId, OnlineState.ONLINE, json.decode(response.body));
@@ -52,10 +52,10 @@ class RemoteDataSource {
     }
   }
 
-  Future<ThreadDetailModel> fetchThreadDetail(String boardId, int threadId, bool isArchived) async {
+  Future<ThreadDetailModel> fetchThreadDetail(String? boardId, int? threadId, bool isArchived) async {
     String url = "${FlavorConfig.values().baseUrl}/$boardId/thread/$threadId.json";
 
-    final response = await client.get(url);
+    final response = await client.get(Uri.parse(url));
 //    ChanLogger.d("Post list fetched. { url: $url, response status: ${response.statusCode} }");
     if (response.statusCode == 200) {
       return ThreadDetailModel.fromJson(boardId, threadId, isArchived ? OnlineState.ARCHIVED : OnlineState.ONLINE, json.decode(response.body));
@@ -64,10 +64,10 @@ class RemoteDataSource {
     }
   }
 
-  Future<ArchiveListModel> fetchArchiveList(String boardId) async {
+  Future<ArchiveListModel> fetchArchiveList(String? boardId) async {
     String url = "${FlavorConfig.values().baseUrl}/$boardId/archive.json";
 
-    final response = await client.get(url);
+    final response = await client.get(Uri.parse(url));
 //    ChanLogger.d("Archive list fetched. { url: $url, response status: ${response.statusCode} }");
     if (response.statusCode == 200) {
       return ArchiveListModel.fromJson(boardId, json.decode(response.body));

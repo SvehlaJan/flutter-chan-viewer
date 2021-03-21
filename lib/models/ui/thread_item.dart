@@ -1,28 +1,26 @@
 import 'package:equatable/equatable.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_chan_viewer/data/local/moor_db.dart';
 import 'package:flutter_chan_viewer/models/helper/chan_post_base.dart';
 import 'package:flutter_chan_viewer/models/local/threads_table.dart';
-import 'package:flutter_chan_viewer/models/ui/post_item.dart';
 import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
 import 'package:flutter_chan_viewer/utils/chan_util.dart';
 
 class ThreadItem extends ChanPostBase with EquatableMixin {
-  final OnlineState onlineStatus;
-  final int lastModified;
-  final int replies;
-  final int images;
-  final int selectedPostId;
-  final int unreadRepliesCount;
-  final bool isThreadFavorite;
+  final OnlineState? onlineStatus;
+  final int? lastModified;
+  final int? replies;
+  final int? images;
+  final int? selectedPostId;
+  final int? unreadRepliesCount;
+  final bool? isThreadFavorite;
 
   @override
-  bool isFavorite() => isThreadFavorite;
+  bool? isFavorite() => isThreadFavorite;
 
   ThreadItem({
-    @required boardId,
-    @required threadId,
-    @required timestamp,
+    required boardId,
+    required threadId,
+    timestamp,
     subtitle = "",
     htmlContent = "",
     filename = "",
@@ -47,11 +45,11 @@ class ThreadItem extends ChanPostBase with EquatableMixin {
         );
 
   factory ThreadItem.fromMappedJson({
-    String boardId,
-    int threadId,
-    OnlineState onlineState,
-    int lastModified,
-    Map<String, dynamic> json,
+    String? boardId,
+    int? threadId,
+    OnlineState? onlineState,
+    int? lastModified,
+    required Map<String, dynamic> json,
   }) =>
       ThreadItem(
         boardId: json['board_id'] ?? boardId,
@@ -113,21 +111,21 @@ class ThreadItem extends ChanPostBase with EquatableMixin {
       );
 
   ThreadItem copyWith({
-    OnlineState onlineStatus,
-    int lastModified,
-    int selectedPostId,
-    int replies,
-    int images,
-    int unreadRepliesCount,
-    bool isThreadFavorite,
-    String boardId,
-    int threadId,
-    int timestamp,
-    String subtitle,
-    String htmlContent,
-    String filename,
-    String imageId,
-    String extension,
+    OnlineState? onlineStatus,
+    int? lastModified,
+    int? selectedPostId,
+    int? replies,
+    int? images,
+    int? unreadRepliesCount,
+    bool? isThreadFavorite,
+    String? boardId,
+    int? threadId,
+    int? timestamp,
+    String? subtitle,
+    String? htmlContent,
+    String? filename,
+    String? imageId,
+    String? extension,
   }) {
     return new ThreadItem(
       onlineStatus: onlineStatus ?? this.onlineStatus,
@@ -149,5 +147,5 @@ class ThreadItem extends ChanPostBase with EquatableMixin {
   }
 
   @override
-  List<Object> get props => super.props + [onlineStatus, lastModified, selectedPostId, isThreadFavorite, replies, images, unreadRepliesCount];
+  List<Object?> get props => super.props + [onlineStatus, lastModified, selectedPostId, isThreadFavorite, replies, images, unreadRepliesCount];
 }

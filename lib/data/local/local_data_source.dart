@@ -5,8 +5,8 @@ import 'package:flutter_chan_viewer/data/local/moor_db.dart';
 import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/models/local/threads_table.dart';
 import 'package:flutter_chan_viewer/models/ui/board_item.dart';
-import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
 import 'package:flutter_chan_viewer/models/ui/post_item.dart';
+import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
 
 class LocalDataSource {
   PostsDao _postsDao = getIt<PostsDao>();
@@ -17,11 +17,12 @@ class LocalDataSource {
     return _postsDao.insertPostsList(posts.map((post) => post.toTableData()).toList());
   }
 
-  Future<PostItem> getPostById(int postId, int threadId, String boardId) async {
-    return PostItem.fromTableData(await _postsDao.getPostById(postId, threadId, boardId));
+  Future<PostItem?> getPostById(int postId, int threadId, String boardId) async {
+    PostsTableData? postsData = await _postsDao.getPostById(postId, threadId, boardId);
+    return postsData != null ? PostItem.fromTableData(postsData) : null;
   }
 
-  Future<void> updatePost(PostItem post) async {
+  Future<bool> updatePost(PostItem post) async {
     return _postsDao.updatePost(post.toTableData());
   }
 
@@ -42,12 +43,12 @@ class LocalDataSource {
     return _threadsDao.insertThreadsList(threads.map((thread) => thread.toTableData()).toList());
   }
 
-  Future<void> updateThread(ThreadItem thread) async {
+  Future<bool> updateThread(ThreadItem thread) async {
     return _threadsDao.updateThread(thread.toTableData());
   }
 
-  Future<ThreadItem> getThreadById(String boardId, int threadId) async {
-    ThreadsTableData threadTableData = await _threadsDao.getThreadById(boardId, threadId);
+  Future<ThreadItem?> getThreadById(String boardId, int threadId) async {
+    ThreadsTableData? threadTableData = await _threadsDao.getThreadById(boardId, threadId);
     return threadTableData != null ? ThreadItem.fromTableData(threadTableData) : null;
   }
 
@@ -56,7 +57,7 @@ class LocalDataSource {
     return threads.map((threadData) => ThreadItem.fromTableData(threadData)).toList();
   }
 
-  Future<List<ThreadItem>> getThreadsByBoardId(String boardId) async {
+  Future<List<ThreadItem>> getThreadsByBoardId(String? boardId) async {
     List<ThreadsTableData> threads = await _threadsDao.getThreadsByBoardId(boardId);
     return threads.map((threadData) => ThreadItem.fromTableData(threadData)).toList();
   }
@@ -65,7 +66,7 @@ class LocalDataSource {
     return _threadsDao.getThreadByStream(boardId, threadId).map((threadData) => ThreadItem.fromTableData(threadData));
   }
 
-  Future<List<int>> getFavoriteThreadIds() async => await _threadsDao.getFavoriteThreadIds();
+  Future<List<int?>> getFavoriteThreadIds() async => await _threadsDao.getFavoriteThreadIds();
 
   Future<List<ThreadItem>> getFavoriteThreads() async {
     List<ThreadsTableData> threads = await _threadsDao.getFavoriteThreads();
@@ -82,14 +83,14 @@ class LocalDataSource {
     return threads.map((threadData) => ThreadItem.fromTableData(threadData)).toList();
   }
 
-  Future<List<ThreadItem>> getThreadsByBoardIdAndOnlineState(String boardId, OnlineState onlineState) async {
+  Future<List<ThreadItem>> getThreadsByBoardIdAndOnlineState(String? boardId, OnlineState onlineState) async {
     List<ThreadsTableData> threadsTableData = await _threadsDao.getThreadsByBoardIdAndOnlineState(boardId, onlineState);
     List<ThreadItem> threads = threadsTableData.map((threadData) => ThreadItem.fromTableData(threadData)).toList();
     return threads;
   }
 
   /// Sets state to UNKNOWN of local threads which are no longer online
-  Future<void> syncWithNewOnlineThreads(String boardId, List<int> onlineThreadIds) async {
+  Future<void> syncWithNewOnlineThreads(String? boardId, List<int?> onlineThreadIds) async {
     List<ThreadsTableData> localThreads = await _threadsDao.getThreadsByBoardIdAndOnlineState(boardId, OnlineState.ONLINE);
     List<ThreadsTableData> notFoundThreads = localThreads.where((thread) => !onlineThreadIds.contains(thread.threadId)).toList();
     await _threadsDao.updateThreadsOnlineState(notFoundThreads, OnlineState.UNKNOWN);
@@ -101,7 +102,7 @@ class LocalDataSource {
 
   Future<void> deleteRedundantUnknownThreads(String boardId) async {
     List<ThreadsTableData> unknownThreads = await _threadsDao.getThreadsByBoardIdAndOnlineState(boardId, OnlineState.UNKNOWN);
-    unknownThreads.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+    unknownThreads.sort((a, b) => a.timestamp!.compareTo(b.timestamp!));
     ThreadsTableData pivotingUnknownThread = unknownThreads.elementAt(200);
     if (pivotingUnknownThread != null) {
       _threadsDao.deleteThreadsWithOnlineStateOlderThan(OnlineState.UNKNOWN, pivotingUnknownThread.timestamp);
@@ -109,10 +110,11 @@ class LocalDataSource {
   }
 
   /// Deletes old archived threads, which are no login in archive.
-  Future<void> syncWithNewArchivedThreads(String boardId, List<int> archivedThreadIds) async {
+  Future<void> syncWithNewArchivedThreads(String? boardId, List<int> archivedThreadIds) async {
     List<ThreadsTableData> localArchivedThreads = await _threadsDao.getThreadsByBoardIdAndOnlineState(boardId, OnlineState.ARCHIVED);
-    List<ThreadsTableData> notFoundThreads = localArchivedThreads.where((thread) => !archivedThreadIds.contains(thread.threadId) & !thread.isFavorite).toList();
-    List<int> notFoundThreadIds = notFoundThreads.map((thread) => thread.threadId).toList();
+    List<ThreadsTableData> notFoundThreads =
+        localArchivedThreads.where((thread) => !archivedThreadIds.contains(thread.threadId) & !thread.isFavorite!).toList();
+    List<int?> notFoundThreadIds = notFoundThreads.map((thread) => thread.threadId).toList();
     await _threadsDao.deleteThreadsByIds(notFoundThreadIds);
 
     List<ThreadsTableData> localOnlineThreads = await _threadsDao.getThreadsByBoardIdAndOnlineState(boardId, OnlineState.ONLINE);
@@ -121,17 +123,18 @@ class LocalDataSource {
     return null;
   }
 
-  Future<PostItem> addPostToThread(PostItem post, ThreadItem thread) async {
+  Future<PostItem?> addPostToThread(PostItem post, ThreadItem thread) async {
     await _postsDao.insertPost(post.toTableData());
-    return PostItem.fromTableData(await _postsDao.getPostById(post.postId, thread.threadId, thread.boardId));
+    PostsTableData? postsData = await _postsDao.getPostById(post.postId, thread.threadId, thread.boardId);
+    return postsData != null ? PostItem.fromTableData(postsData) : null;
   }
 
-  Future<void> deleteThread(String boardId, int threadId) async {
+  Future<void> deleteThread(String? boardId, int? threadId) async {
     await _threadsDao.deleteThreadById(boardId, threadId);
   }
 
-  Future<BoardItem> getBoardById(String boardId) async {
-    BoardsTableData boardTableData = await _boardsDao.getBoardById(boardId);
+  Future<BoardItem?> getBoardById(String boardId) async {
+    BoardsTableData? boardTableData = await _boardsDao.getBoardById(boardId);
     return boardTableData != null ? BoardItem.fromTableData(boardTableData) : null;
   }
 

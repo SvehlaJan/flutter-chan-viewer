@@ -3,12 +3,12 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
 
 class ArchiveThreadListWidget extends StatelessWidget {
-  final ThreadItem thread;
+  final ThreadItem? thread;
   final bool isLoading;
 
   const ArchiveThreadListWidget({
-    @required this.thread,
-    @required this.isLoading,
+    required this.thread,
+    required this.isLoading,
   });
 
   @override
@@ -19,7 +19,7 @@ class ArchiveThreadListWidget extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
-            Text(thread.threadId.toString(), style: Theme.of(context).textTheme.title),
+            Text(thread!.threadId.toString(), style: Theme.of(context).textTheme.title),
             if (isLoading) CircularProgressIndicator(),
           ],
         ),

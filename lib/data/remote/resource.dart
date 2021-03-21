@@ -8,17 +8,17 @@ import 'package:meta/meta.dart';
 @immutable
 class Resource<T> {
   final Status status;
-  final T data;
-  final String message;
-  final AppException error;
+  final T? data;
+  final String? message;
+  final AppException? error;
 
-  const Resource({this.data, @required this.status, this.message, this.error});
+  const Resource({this.data, required this.status, this.message, this.error});
 
-  static Resource<T> loading<T>({T data}) => Resource<T>(data: data, status: Status.loading);
+  static Resource<T> loading<T>({T? data}) => Resource<T>(data: data, status: Status.loading);
 
-  static Resource<T> failed<T>({Exception error, T data}) => Resource<T>(error: ErrorMapper.from(error), data: data, status: Status.failed);
+  static Resource<T> failed<T>({Exception? error, T? data}) => Resource<T>(error: ErrorMapper.from(error), data: data, status: Status.failed);
 
-  static Resource<T> success<T>({T data}) => Resource<T>(data: data, status: Status.success);
+  static Resource<T> success<T>({T? data}) => Resource<T>(data: data, status: Status.success);
 
   static FutureOr<Resource<T>> asFuture<T>(FutureOr<T> Function() req) async {
     try {

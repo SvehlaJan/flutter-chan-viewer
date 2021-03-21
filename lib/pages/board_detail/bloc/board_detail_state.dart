@@ -7,12 +7,12 @@ class BoardDetailStateContent extends ChanStateContent {
   final bool isFavorite;
 
   const BoardDetailStateContent({
-    @required showSearchBar,
-    @required showLazyLoading,
-    @required this.threads,
-    @required this.isFavorite,
+    required showSearchBar,
+    required showLazyLoading,
+    required this.threads,
+    required this.isFavorite,
   }) : super(showSearchBar: showSearchBar, showLazyLoading: showLazyLoading);
 
   @override
-  List<Object> get props => super.props..addAll([threads, isFavorite]);
+  List<Object?> get props => super.props..addAll([threads, isFavorite]);
 }

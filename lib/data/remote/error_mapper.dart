@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_chan_viewer/data/remote/app_exception.dart';
 
 class ErrorMapper {
-  static from(Exception e) {
+  static from(Exception? e) {
     if (e is DioError) {
       return AppException(exception: e, message: _dioError(e));
     } else if (e is HttpException) {
@@ -23,21 +23,20 @@ class ErrorMapper {
 
   static String _dioError(DioError error) {
     switch (error.type) {
-      case DioErrorType.SEND_TIMEOUT:
-      case DioErrorType.CONNECT_TIMEOUT:
-      case DioErrorType.RECEIVE_TIMEOUT:
+      case DioErrorType.sendTimeout:
+      case DioErrorType.connectTimeout:
+      case DioErrorType.receiveTimeout:
         return "Falha de conexão, verifique sua internet";
         break;
-      case DioErrorType.CANCEL:
+      case DioErrorType.cancel:
         return "Requisição cancelada";
         break;
-      case DioErrorType.RESPONSE:
-      case DioErrorType.DEFAULT:
+      case DioErrorType.response:
       default:
         break;
     }
     if (error.response?.statusCode != null) {
-      switch (error.response.statusCode) {
+      switch (error.response!.statusCode) {
         case 401:
           return "Autorização negada, verifique seu login";
           break;

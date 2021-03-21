@@ -3,10 +3,10 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_chan_viewer/models/ui/board_item.dart';
 
 class BoardListWidget extends StatelessWidget {
-  final BoardItem board;
+  final BoardItem? board;
 
   const BoardListWidget({
-    @required this.board,
+    required this.board,
   });
 
   @override
@@ -17,8 +17,8 @@ class BoardListWidget extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text(board.title, style: Theme.of(context).textTheme.title),
-            if (!board.workSafe) Text(" !!!", style: Theme.of(context).textTheme.title.copyWith(color: Theme.of(context).errorColor)),
+            Text(board!.title!, style: Theme.of(context).textTheme.title),
+            if (!board!.workSafe) Text(" !!!", style: Theme.of(context).textTheme.title!.copyWith(color: Theme.of(context).errorColor)),
           ],
         ),
       ),

@@ -1,4 +1,3 @@
-import 'package:filesize/filesize.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/app_bloc/app_bloc.dart';
@@ -6,9 +5,8 @@ import 'package:flutter_chan_viewer/bloc/app_bloc/app_event.dart';
 import 'package:flutter_chan_viewer/bloc/chan_event.dart';
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/models/helper/moor_db_overview.dart';
-import 'package:flutter_chan_viewer/pages/board_detail/board_detail_page.dart';
-import 'package:flutter_chan_viewer/utils/navigation_helper.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
+import 'package:flutter_chan_viewer/pages/board_detail/board_detail_page.dart';
 import 'package:flutter_chan_viewer/pages/settings/bloc/settings_bloc.dart';
 import 'package:flutter_chan_viewer/pages/settings/bloc/settings_event.dart';
 import 'package:flutter_chan_viewer/pages/settings/bloc/settings_state.dart';
@@ -16,6 +14,7 @@ import 'package:flutter_chan_viewer/pages/thread_detail/thread_detail_page.dart'
 import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
 import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
+import 'package:flutter_chan_viewer/utils/navigation_helper.dart';
 import 'package:flutter_chan_viewer/view/view_common_switch.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -24,13 +23,13 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends BasePageState<SettingsPage> {
-  SettingsBloc _settingsBloc;
+  SettingsBloc? _settingsBloc;
 
   @override
   void initState() {
     super.initState();
     _settingsBloc = BlocProvider.of<SettingsBloc>(context);
-    _settingsBloc.add(ChanEventFetchData());
+    _settingsBloc!.add(ChanEventFetchData());
   }
 
   @override
@@ -39,7 +38,7 @@ class _SettingsPageState extends BasePageState<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<SettingsBloc, ChanState>(
-      cubit: _settingsBloc,
+      bloc: _settingsBloc,
       builder: (context, state) => buildScaffold(context, buildBody(context, state)),
     );
   }
@@ -107,7 +106,7 @@ class _SettingsPageState extends BasePageState<SettingsPage> {
                   return Card(
                     elevation: 2.0,
                     child: ListTile(
-                      title: Text(boardOverview.boardId),
+                      title: Text(boardOverview.boardId!),
                       subtitle: Text(
                           "Online: ${boardOverview.onlineCount}\nArchived: ${boardOverview.archivedCount}\nNot found: ${boardOverview.notFoundCount}\nUnknown: ${boardOverview.unknownCount}"),
                       onTap: () => _onMoorBoardOverviewClicked(boardOverview),
@@ -120,16 +119,16 @@ class _SettingsPageState extends BasePageState<SettingsPage> {
               child: Text("Downloads", style: Theme.of(context).textTheme.subhead),
             ),
             ListView.builder(
-              itemCount: state.downloads.length,
+              itemCount: state.downloads!.length,
               shrinkWrap: true,
               physics: NeverScrollableScrollPhysics(),
               itemBuilder: (context, index) {
-                DownloadFolderInfo folderInfo = state.downloads[index];
+                DownloadFolderInfo folderInfo = state.downloads![index];
                 return Card(
                   elevation: 2.0,
                   child: ListTile(
                     title: Text(folderInfo.cacheDirective.toPath()),
-                    subtitle: Text("Size: ${filesize(folderInfo.filesSize)} Files ${folderInfo.filesCount}"),
+                    subtitle: Text("Size: ${folderInfo.filesSize} Files ${folderInfo.filesCount}"),
                     trailing: IconButton(icon: Icon(Icons.delete), onPressed: () => _onDeleteFolderClicked(folderInfo.cacheDirective)),
                     onTap: () => _onFolderTileClicked(folderInfo),
                   ),
@@ -140,7 +139,7 @@ class _SettingsPageState extends BasePageState<SettingsPage> {
         ),
       );
     } else {
-      return BasePageState.buildErrorScreen(context, (state as ChanStateError)?.message);
+      return BasePageState.buildErrorScreen(context, (state as ChanStateError).message);
     }
   }
 
@@ -149,7 +148,7 @@ class _SettingsPageState extends BasePageState<SettingsPage> {
       NavigationHelper.getRoute(
         Constants.threadDetailRoute,
         ThreadDetailPage.createArguments(folderInfo.cacheDirective.boardId, folderInfo.cacheDirective.threadId, showDownloadsOnly: true),
-      ),
+      )!,
     );
   }
 
@@ -158,21 +157,21 @@ class _SettingsPageState extends BasePageState<SettingsPage> {
       NavigationHelper.getRoute(
         Constants.boardDetailRoute,
         BoardDetailPage.createArguments(boardOverview.boardId),
-      ),
+      )!,
     );
   }
 
   void _onThemeSwitchClicked(bool enabled) {
     AppTheme newTheme = enabled ? AppTheme.dark : AppTheme.light;
-    _settingsBloc.add(SettingsEventSetTheme(newTheme));
+    _settingsBloc!.add(SettingsEventSetTheme(newTheme));
     BlocProvider.of<AppBloc>(context).add(AppEventSetTheme(newTheme));
   }
 
-  void _onExperimentClicked() => _settingsBloc.add(SettingsEventExperiment());
+  void _onExperimentClicked() => _settingsBloc!.add(SettingsEventExperiment());
 
-  void _onToggleShowSfwOnlyClicked(bool enabled) => _settingsBloc.add(SettingsEventToggleShowNsfw(enabled));
+  void _onToggleShowSfwOnlyClicked(bool enabled) => _settingsBloc!.add(SettingsEventToggleShowNsfw(enabled));
 
-  void _onCancelDownloadsClicked() => _settingsBloc.add(SettingsEventCancelDownloads());
+  void _onCancelDownloadsClicked() => _settingsBloc!.add(SettingsEventCancelDownloads());
 
-  void _onDeleteFolderClicked(CacheDirective cacheDirective) => _settingsBloc.add(SettingsEventDeleteFolder(cacheDirective));
+  void _onDeleteFolderClicked(CacheDirective cacheDirective) => _settingsBloc!.add(SettingsEventDeleteFolder(cacheDirective));
 }

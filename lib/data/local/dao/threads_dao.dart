@@ -11,8 +11,8 @@ class ThreadsDao extends DatabaseAccessor<MoorDB> with _$ThreadsDaoMixin {
 
 //  Stream<List<PostsTableData>> get allActiveThreadItemsStream => select(threadsTable).watch();
 
-  Future<ThreadsTableData> getThreadById(String boardId, int threadId) =>
-      (select(threadsTable)..where((thread) => thread.boardId.equals(boardId) & thread.threadId.equals(threadId))).getSingle();
+  Future<ThreadsTableData?> getThreadById(String boardId, int threadId) =>
+      (select(threadsTable)..where((thread) => thread.boardId.equals(boardId) & thread.threadId.equals(threadId))).getSingleOrNull();
 
   Future<List<ThreadsTableData>> getThreadsByIds(String boardId, List<int> threadIds) =>
       (select(threadsTable)..where((thread) => thread.boardId.equals(boardId) & thread.threadId.isIn(threadIds))).get();
@@ -29,9 +29,9 @@ class ThreadsDao extends DatabaseAccessor<MoorDB> with _$ThreadsDaoMixin {
         ..orderBy([(thread) => OrderingTerm(expression: thread.timestamp, mode: OrderingMode.desc)]))
       .get();
 
-  Future<List<ThreadsTableData>> getThreadsByBoardId(String boardId) => (select(threadsTable)..where((thread) => thread.boardId.equals(boardId))).get();
+  Future<List<ThreadsTableData>> getThreadsByBoardId(String? boardId) => (select(threadsTable)..where((thread) => thread.boardId.equals(boardId))).get();
 
-  Future<List<ThreadsTableData>> getThreadsByBoardIdAndOnlineState(String boardId, OnlineState onlineState) => (select(threadsTable)
+  Future<List<ThreadsTableData>> getThreadsByBoardIdAndOnlineState(String? boardId, OnlineState onlineState) => (select(threadsTable)
         ..where((thread) => thread.boardId.equals(boardId) & thread.onlineState.equals(onlineState.index))
         ..orderBy([(thread) => OrderingTerm(expression: thread.lastModified, mode: OrderingMode.desc)]))
       .get();
@@ -89,7 +89,7 @@ class ThreadsDao extends DatabaseAccessor<MoorDB> with _$ThreadsDaoMixin {
           entries,
           mode: InsertMode.insertOrReplace,
           onConflict: DoUpdate(
-            (old) {
+            (dynamic old) {
               return ThreadsTableCompanion.custom(
                 isFavorite: old.isFavorite,
                 selectedPostId: old.selectedPostId,
@@ -111,7 +111,7 @@ class ThreadsDao extends DatabaseAccessor<MoorDB> with _$ThreadsDaoMixin {
   }
 
   Future<int> updateThreadsOnlineState(List<ThreadsTableData> threads, OnlineState onlineState) {
-    List<int> threadIds = threads.map((e) => e.threadId).toList();
+    List<int?> threadIds = threads.map((e) => e.threadId).toList();
     return (update(threadsTable)..where((t) => t.threadId.isIn(threadIds))).write(
       ThreadsTableCompanion(
         onlineState: Value(onlineState),
@@ -119,7 +119,7 @@ class ThreadsDao extends DatabaseAccessor<MoorDB> with _$ThreadsDaoMixin {
     );
   }
 
-  Future<int> deleteThreadsWithOnlineStateOlderThan(OnlineState onlineState, int timestamp) => (delete(threadsTable)
+  Future<int> deleteThreadsWithOnlineStateOlderThan(OnlineState onlineState, int? timestamp) => (delete(threadsTable)
             ..where(
               (thread) => thread.onlineState.equals(onlineState.index) & thread.timestamp.isSmallerOrEqualValue(timestamp) & thread.isFavorite.equals(false),
             ))
@@ -129,12 +129,12 @@ class ThreadsDao extends DatabaseAccessor<MoorDB> with _$ThreadsDaoMixin {
         return value;
       });
 
-  Future<int> deleteThreadsByIds(List<int> threadIds) => (delete(threadsTable)..where((thread) => thread.threadId.isIn(threadIds))).go().then((value) {
+  Future<int> deleteThreadsByIds(List<int?> threadIds) => (delete(threadsTable)..where((thread) => thread.threadId.isIn(threadIds))).go().then((value) {
         print("Rows affected: $value");
         return value;
       });
 
-  Future<int> deleteThreadById(String boardId, int threadId) =>
+  Future<int> deleteThreadById(String? boardId, int? threadId) =>
       (delete(threadsTable)..where((thread) => thread.threadId.equals(threadId) & thread.boardId.equals(boardId))).go().then((value) {
         print("Rows affected: $value");
         return value;

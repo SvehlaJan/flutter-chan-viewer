@@ -14,9 +14,9 @@ import 'package:flutter_chan_viewer/utils/extensions.dart';
 import 'package:flutter_chan_viewer/utils/preferences.dart';
 
 class BoardListBloc extends BaseBloc<ChanEvent, ChanState> {
-  final ChanRepository _repository = getIt<ChanRepository>();
-  List<BoardItem> favoriteBoards;
-  List<BoardItem> otherBoards;
+  final ChanRepository? _repository = getIt<ChanRepository>();
+  late List<BoardItem> favoriteBoards;
+  late List<BoardItem> otherBoards;
 
   BoardListBloc() : super(ChanStateLoading());
 
@@ -27,17 +27,17 @@ class BoardListBloc extends BaseBloc<ChanEvent, ChanState> {
         yield ChanStateLoading();
 
         bool showNsfw = Preferences.getBool(Preferences.KEY_SETTINGS_SHOW_NSFW, def: false);
-        List<String> favoriteBoardIds = Preferences.getStringList(Preferences.KEY_FAVORITE_BOARDS);
+        List<String?> favoriteBoardIds = Preferences.getStringList(Preferences.KEY_FAVORITE_BOARDS);
 
-        BoardListModel boardListModel = await _repository.fetchCachedBoardList(showNsfw);
+        BoardListModel? boardListModel = await _repository!.fetchCachedBoardList(showNsfw);
         if (boardListModel != null) {
           favoriteBoards = boardListModel.boards.where((board) => favoriteBoardIds.contains(board.boardId)).toList();
           otherBoards = boardListModel.boards.where((board) => !favoriteBoardIds.contains(board.boardId)).toList();
           yield _buildContentState(true);
         }
 
-        boardListModel = await _repository.fetchRemoteBoardList(showNsfw);
-        favoriteBoards = boardListModel.boards.where((board) => favoriteBoardIds.contains(board.boardId)).toList();
+        boardListModel = await _repository!.fetchRemoteBoardList(showNsfw);
+        favoriteBoards = boardListModel!.boards.where((board) => favoriteBoardIds.contains(board.boardId)).toList();
         otherBoards = boardListModel.boards.where((board) => !favoriteBoardIds.contains(board.boardId)).toList();
         yield _buildContentState(false);
       } else if (event is ChanEventSearch || event is ChanEventShowSearch || event is ChanEventCloseSearch) {
@@ -69,6 +69,6 @@ class BoardListBloc extends BaseBloc<ChanEvent, ChanState> {
   }
 
   bool _matchesQuery(BoardItem board, String query) {
-    return board.boardId.containsIgnoreCase(query) || board.title.containsIgnoreCase(query);
+    return board.boardId!.containsIgnoreCase(query) || board.title!.containsIgnoreCase(query);
   }
 }

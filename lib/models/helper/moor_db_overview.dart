@@ -1,9 +1,9 @@
 class MoorDbOverview {
-  List<MoorBoardOverview> boards = List();
+  List<MoorBoardOverview> boards = [];
 }
 
 class MoorBoardOverview {
-  final String boardId;
+  final String? boardId;
   final int onlineCount;
   final int archivedCount;
   final int notFoundCount;

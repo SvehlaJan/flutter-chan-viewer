@@ -2,17 +2,17 @@ import 'package:flutter/material.dart';
 import 'dart:math' as math;
 
 class GlareDecoration extends StatefulWidget {
-  GlareDecoration({Key key}) : super(key: key);
+  GlareDecoration({Key? key}) : super(key: key);
 
   @override
   _GlareDecorationState createState() => _GlareDecorationState();
 }
 
 class _GlareDecorationState extends State<GlareDecoration> with SingleTickerProviderStateMixin {
-  AnimationController _glareController;
-  Animation<double> _glareAnimation;
-  List<Color> _glareColors;
-  List<double> _glareStops;
+  AnimationController? _glareController;
+  late Animation<double> _glareAnimation;
+  late List<Color> _glareColors;
+  late List<double> _glareStops;
 
   @override
   void initState() {
@@ -30,19 +30,19 @@ class _GlareDecorationState extends State<GlareDecoration> with SingleTickerProv
     _glareStops = List<double>.generate(_glareColors.length, (index) => index * (1 / _glareColors.length.toDouble()));
 
     _glareController = AnimationController(duration: Duration(milliseconds: 2000), vsync: this);
-    _glareAnimation = Tween<double>(begin: .0, end: 1.0).animate(_glareController)
+    _glareAnimation = Tween<double>(begin: .0, end: 1.0).animate(_glareController!)
       ..addListener(() {
         setState(() {});
       })
       ..addStatusListener((status) {
         if (status == AnimationStatus.completed) {
-          _glareController.reset();
-          _glareController.forward();
+          _glareController!.reset();
+          _glareController!.forward();
         } else if (status == AnimationStatus.dismissed) {
-          _glareController.forward();
+          _glareController!.forward();
         }
       });
-    _glareController.forward();
+    _glareController!.forward();
   }
 
   @override

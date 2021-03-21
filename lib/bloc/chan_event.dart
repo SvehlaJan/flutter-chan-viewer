@@ -4,7 +4,7 @@ abstract class ChanEvent extends Equatable {
   ChanEvent();
 
   @override
-  List<Object> get props => [];
+  List<Object?> get props => [];
 }
 
 class ChanEventInitBloc extends ChanEvent {}

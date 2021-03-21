@@ -4,6 +4,7 @@ import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
 import 'package:flutter_chan_viewer/utils/chan_logger.dart';
 import 'package:flutter_chan_viewer/utils/chan_util.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
+import 'package:flutter_chan_viewer/utils/extensions.dart';
 import 'package:flutter_chan_viewer/view/view_cached_image.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_html/style.dart';
@@ -14,7 +15,7 @@ class ThreadListWidget extends StatelessWidget {
   final int newReplies;
 
   const ThreadListWidget({
-    @required this.thread,
+    required this.thread,
     this.showProgress = false,
     this.newReplies = 0,
   });
@@ -49,29 +50,30 @@ class ThreadListWidget extends StatelessWidget {
                       children: <Widget>[
                         Row(
                           children: <Widget>[
-                            if (thread?.isFavorite() ?? false)
+                            if (thread.isFavorite() ?? false)
                               Padding(padding: const EdgeInsets.all(1.0), child: Icon(Icons.star, color: Colors.yellow, size: Constants.favoriteIconSize)),
                             Text(thread.threadId.toString(), style: Theme.of(context).textTheme.caption),
                             Spacer(),
                             Text("${thread.replies ?? "?"}p/${thread.images ?? "?"}m", style: Theme.of(context).textTheme.caption),
                             Spacer(),
-                            Text(ChanUtil.getHumanDate(thread.timestamp), style: Theme.of(context).textTheme.caption),
+                            Text(ChanUtil.getHumanDate(thread.timestamp!), style: Theme.of(context).textTheme.caption),
                           ],
                         ),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            if (thread.subtitle?.isNotEmpty)
+                            if (thread.subtitle.isNotNullNorEmpty)
                               Flexible(
                                   child: Padding(
-                                      padding: const EdgeInsets.only(bottom: 8.0), child: Text(thread.subtitle, style: Theme.of(context).textTheme.headline6, maxLines: 2))),
-                            if (newReplies > 0) Text("$newReplies NEW", style: Theme.of(context).textTheme.caption.copyWith(backgroundColor: Colors.red)),
+                                      padding: const EdgeInsets.only(bottom: 8.0),
+                                      child: Text(thread.subtitle!, style: Theme.of(context).textTheme.headline6, maxLines: 2))),
+                            if (newReplies > 0) Text("$newReplies NEW", style: Theme.of(context).textTheme.caption!.copyWith(backgroundColor: Colors.red)),
                           ],
                         ),
                         Html(
-                          data: ChanUtil.getReadableHtml(thread.htmlContent ?? "", true),
+                          data: ChanUtil.getReadableHtml(thread!.htmlContent ?? "", true)!,
                           style: {"*": Style(margin: EdgeInsets.zero)},
-                          onLinkTap: ((String url) => ChanLogger.d("Html link clicked { url: $url }")),
+                          onLinkTap: (url, context, attributes, element) => ChanLogger.d("Html link clicked { url: $url }"),
                         )
                       ],
                     ),

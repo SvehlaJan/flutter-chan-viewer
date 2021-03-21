@@ -48,7 +48,7 @@ class Constants {
     return theme.copyWith(
       textTheme: theme.primaryTextTheme,
       inputDecorationTheme: InputDecorationTheme(
-        hintStyle: Theme.of(context).textTheme.title.copyWith(color: Theme.of(context).primaryTextTheme.title.color.withOpacity(0.8)),
+        hintStyle: Theme.of(context).textTheme.title!.copyWith(color: Theme.of(context).primaryTextTheme.title!.color!.withOpacity(0.8)),
       ),
     );
   }

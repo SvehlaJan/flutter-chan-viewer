@@ -17,11 +17,11 @@ import 'package:flutter_chan_viewer/utils/chan_logger.dart';
 import 'package:flutter_chan_viewer/utils/extensions.dart';
 
 class BoardArchiveBloc extends BaseBloc<ChanEvent, ChanState> {
-  final ChanRepository _repository = getIt<ChanRepository>();
+  final ChanRepository? _repository = getIt<ChanRepository>();
   final String boardId;
   List<int> archiveThreadIds = [];
-  List<ArchiveThreadWrapper> archiveThreads = List<ArchiveThreadWrapper>();
-  Map<int, ThreadItem> cachedThreadsMap = HashMap<int, ThreadItem>();
+  List<ArchiveThreadWrapper> archiveThreads = <ArchiveThreadWrapper>[];
+  Map<int?, ThreadItem?> cachedThreadsMap = HashMap<int, ThreadItem>();
 
   BoardArchiveBloc(this.boardId) : super(ChanStateLoading());
 
@@ -30,20 +30,20 @@ class BoardArchiveBloc extends BaseBloc<ChanEvent, ChanState> {
     try {
       if (event is ChanEventFetchData) {
         yield ChanStateLoading();
-        ArchiveListModel boardDetailModel = await _repository.fetchRemoteArchiveList(boardId);
+        ArchiveListModel boardDetailModel = await _repository!.fetchRemoteArchiveList(boardId);
         archiveThreads.clear();
         archiveThreadIds = boardDetailModel.threads.reversed.toList();
-        cachedThreadsMap = await _repository.getArchivedThreadsMap(boardId);
+        cachedThreadsMap = await _repository!.getArchivedThreadsMap(boardId);
 
         add(BoardArchiveEventFetchDetail(archiveThreads.length));
       } else if (event is BoardArchiveEventFetchDetail) {
-        int threadId = archiveThreadIds[event.index];
+        int? threadId = archiveThreadIds[event.index];
 
         if (cachedThreadsMap.containsKey(threadId)) {
           int batchInsertIndex = event.index;
           while (cachedThreadsMap.containsKey(threadId)) {
             archiveThreads.add(ArchiveThreadWrapper(ThreadDetailModel.fromThreadAndPosts(cachedThreadsMap[threadId], []), false));
-            batchInsertIndex ++;
+            batchInsertIndex++;
             threadId = batchInsertIndex < archiveThreadIds.length ? archiveThreadIds[batchInsertIndex] : null;
           }
         } else {
@@ -51,13 +51,13 @@ class BoardArchiveBloc extends BaseBloc<ChanEvent, ChanState> {
           yield _buildContentState(true);
 
           try {
-            ThreadDetailModel threadDetailModel = await _repository.fetchCachedThreadDetail(boardId, threadId);
+            ThreadDetailModel? threadDetailModel = await _repository!.fetchCachedThreadDetail(boardId, threadId);
             if (threadDetailModel == null) {
-              threadDetailModel = await _repository.fetchRemoteThreadDetail(boardId, threadId, true);
-            } else if (threadDetailModel.thread.onlineStatus != OnlineState.ARCHIVED) {
-              await _repository.updateThread(threadDetailModel.thread.copyWith(onlineStatus: OnlineState.ARCHIVED));
+              threadDetailModel = await _repository!.fetchRemoteThreadDetail(boardId, threadId, true);
+            } else if (threadDetailModel.thread!.onlineStatus != OnlineState.ARCHIVED) {
+              await _repository!.updateThread(threadDetailModel.thread!.copyWith(onlineStatus: OnlineState.ARCHIVED));
             }
-            archiveThreads[archiveThreads.length - 1] = ArchiveThreadWrapper(threadDetailModel, false);
+            archiveThreads[archiveThreads.length - 1] = ArchiveThreadWrapper(threadDetailModel!, false);
           } catch (e) {
             ChanLogger.e("Failed to load archived thread", e);
           }
@@ -82,8 +82,10 @@ class BoardArchiveBloc extends BaseBloc<ChanEvent, ChanState> {
   BoardArchiveStateContent _buildContentState(bool showLazyLoading) {
     List<ArchiveThreadWrapper> threads;
     if (searchQuery.isNotNullNorEmpty) {
-      List<ArchiveThreadWrapper> titleMatchThreads = archiveThreads.where((thread) => (thread.threadDetailModel.thread.subtitle ?? "").containsIgnoreCase(searchQuery)).toList();
-      List<ArchiveThreadWrapper> bodyMatchThreads = archiveThreads.where((thread) => (thread.threadDetailModel.thread.content ?? "").containsIgnoreCase(searchQuery)).toList();
+      List<ArchiveThreadWrapper> titleMatchThreads =
+          archiveThreads.where((thread) => (thread.threadDetailModel.thread!.subtitle ?? "").containsIgnoreCase(searchQuery)).toList();
+      List<ArchiveThreadWrapper> bodyMatchThreads =
+          archiveThreads.where((thread) => (thread.threadDetailModel.thread!.content ?? "").containsIgnoreCase(searchQuery)).toList();
       threads = LinkedHashSet<ArchiveThreadWrapper>.from(titleMatchThreads + bodyMatchThreads).toList();
     } else {
       threads = archiveThreads;

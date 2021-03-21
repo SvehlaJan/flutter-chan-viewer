@@ -1,6 +1,5 @@
 import 'package:flutter_chan_viewer/data/local/moor_db.dart';
 import 'package:flutter_chan_viewer/models/local/posts_table.dart';
-import 'package:flutter_chan_viewer/utils/chan_logger.dart';
 import 'package:moor/moor.dart';
 
 part 'posts_dao.g.dart';
@@ -9,8 +8,8 @@ part 'posts_dao.g.dart';
 class PostsDao extends DatabaseAccessor<MoorDB> with _$PostsDaoMixin {
   PostsDao(MoorDB db) : super(db);
 
-  Future<PostsTableData> getPostById(int postId, int threadId, String boardId) =>
-      (select(postsTable)..where((post) => post.postId.equals(postId) & post.threadId.equals(threadId) & post.boardId.equals(boardId))).getSingle();
+  Future<PostsTableData?> getPostById(int postId, int threadId, String boardId) =>
+      (select(postsTable)..where((post) => post.postId.equals(postId) & post.threadId.equals(threadId) & post.boardId.equals(boardId))).getSingleOrNull();
 
   Future<List<PostsTableData>> getAllPostsItems() => select(postsTable).get();
 
@@ -23,7 +22,7 @@ class PostsDao extends DatabaseAccessor<MoorDB> with _$PostsDaoMixin {
   Future<int> insertPost(PostsTableData entry) => into(postsTable).insertOnConflictUpdate(entry);
 
   Future<void> insertPostsList(List<PostsTableData> entries) async => await batch(
-        (batch) => batch.insertAll(postsTable, entries, onConflict: DoUpdate((old) => PostsTableCompanion.custom(isHidden: old.isHidden))),
+        (batch) => batch.insertAll(postsTable, entries, onConflict: DoUpdate((dynamic old) => PostsTableCompanion.custom(isHidden: old.isHidden))),
       );
 
   Future<bool> updatePost(PostsTableData entry) {
@@ -33,7 +32,8 @@ class PostsDao extends DatabaseAccessor<MoorDB> with _$PostsDaoMixin {
     });
   }
 
-  Future<int> deletePostById(int postId, String boardId) => (delete(postsTable)..where((post) => post.postId.equals(postId) & post.boardId.equals(boardId))).go().then((value) {
+  Future<int> deletePostById(int postId, String boardId) =>
+      (delete(postsTable)..where((post) => post.postId.equals(postId) & post.boardId.equals(boardId))).go().then((value) {
         print("Row affecteds: $value");
         return value;
       });

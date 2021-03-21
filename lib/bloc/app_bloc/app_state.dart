@@ -7,5 +7,5 @@ class AppStateContent extends ChanState {
   AppStateContent(this.appTheme);
 
   @override
-  List<Object> get props => [appTheme];
+  List<Object?> get props => [appTheme];
 }

@@ -18,7 +18,7 @@ import 'bloc/board_archive_state.dart';
 class BoardArchivePage extends StatefulWidget {
   static const String ARG_BOARD_ID = "ArchiveListPage.ARG_BOARD_ID";
 
-  final String boardId;
+  final String? boardId;
 
   BoardArchivePage(this.boardId);
 
@@ -27,13 +27,13 @@ class BoardArchivePage extends StatefulWidget {
 }
 
 class _BoardArchivePageState extends BasePageState<BoardArchivePage> {
-  ScrollController _listScrollController;
+  ScrollController? _listScrollController;
 
   @override
   void initState() {
     super.initState();
     bloc = BlocProvider.of<BoardArchiveBloc>(context);
-    bloc.add(ChanEventFetchData());
+    bloc!.add(ChanEventFetchData());
 
     _listScrollController = ScrollController();
   }
@@ -48,16 +48,16 @@ class _BoardArchivePageState extends BasePageState<BoardArchivePage> {
 
   void _onSearchClick() => startSearch();
 
-  void _onRefreshClick() => bloc.add(ChanEventFetchData());
+  void _onRefreshClick() => bloc!.add(ChanEventFetchData());
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<BoardArchiveBloc, ChanState>(
-      cubit: bloc,
+      bloc: bloc as BoardArchiveBloc?,
       builder: (context, state) {
         return buildScaffold(
           context,
-          buildBody(context, state, ((thread) => _openThreadDetailPage(thread))),
+          buildBody(context, state, ((thread) => _openThreadDetailPage(thread!))),
           pageActions: getPageActions(context),
           showSearchBar: state.showSearchBar,
         );
@@ -65,7 +65,7 @@ class _BoardArchivePageState extends BasePageState<BoardArchivePage> {
     );
   }
 
-  Widget buildBody(BuildContext context, ChanState state, Function(ThreadItem) onItemClicked) {
+  Widget buildBody(BuildContext context, ChanState state, Function(ThreadItem?) onItemClicked) {
     if (state is ChanStateLoading) {
       return Constants.centeredProgressIndicator;
     } else if (state is BoardArchiveStateContent) {
@@ -76,12 +76,12 @@ class _BoardArchivePageState extends BasePageState<BoardArchivePage> {
       return Stack(
         children: [
           DraggableScrollbar.semicircle(
-            controller: _listScrollController,
+            controller: _listScrollController!,
             child: ListView.builder(
               controller: _listScrollController,
               itemCount: state.threads.length,
               itemBuilder: (context, index) {
-                ThreadItem thread = state.threads[index].threadDetailModel.thread;
+                ThreadItem? thread = state.threads[index].threadDetailModel.thread;
                 if (state.threads[index].isLoading) {
                   return ArchiveThreadListWidget(
                     thread: thread,
@@ -89,7 +89,7 @@ class _BoardArchivePageState extends BasePageState<BoardArchivePage> {
                   );
                 } else {
                   return InkWell(
-                    child: ThreadListWidget(thread: thread),
+                    child: ThreadListWidget(thread: thread!),
                     onTap: () => onItemClicked(thread),
                   );
                 }
@@ -100,7 +100,7 @@ class _BoardArchivePageState extends BasePageState<BoardArchivePage> {
         ],
       );
     } else {
-      return BasePageState.buildErrorScreen(context, (state as ChanStateError)?.message);
+      return BasePageState.buildErrorScreen(context, (state as ChanStateError).message);
     }
   }
 
@@ -109,7 +109,7 @@ class _BoardArchivePageState extends BasePageState<BoardArchivePage> {
       NavigationHelper.getRoute(
         Constants.threadDetailRoute,
         ThreadDetailPage.createArguments(thread.boardId, thread.threadId),
-      ),
+      )!,
     );
   }
 }

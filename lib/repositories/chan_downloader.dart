@@ -12,7 +12,7 @@ class ChanDownloader {
   static bool _initialized = false;
   static const int CACHE_MAX_SIZE = 10;
 
-  ChanStorage _chanStorage;
+  late ChanStorage _chanStorage;
 
   static Future<ChanDownloader> initAndGet() async {
     if (_initialized) return _instance;
@@ -35,7 +35,7 @@ class ChanDownloader {
   Future<void> downloadAllMedia(ThreadDetailModel model) async {
     _chanStorage.createDirectory(model.cacheDirective);
     for (PostItem post in model.allMediaPosts) {
-      if (!_chanStorage.mediaFileExists(post.getMediaUrl(), model.cacheDirective)) {
+      if (!_chanStorage.mediaFileExists(post.getMediaUrl()!, model.cacheDirective)) {
         _TaskInfo task = _TaskInfo(post);
         _requestDownload(task);
       }
@@ -44,7 +44,7 @@ class ChanDownloader {
 
   void _requestDownload(_TaskInfo task) async {
     task.taskId = await FlutterDownloader.enqueue(
-        url: task.url,
+        url: task.url!,
         savedDir: task.getCacheDir(_chanStorage),
 //        fileName: task.fileName,
         showNotification: true);
@@ -80,13 +80,13 @@ class ChanDownloader {
 
 class _TaskInfo {
   final PostItem post;
-  String taskId;
+  String? taskId;
   int progress = 0;
   DownloadTaskStatus status = DownloadTaskStatus.undefined;
 
-  String get url => post.getMediaUrl();
+  String? get url => post.getMediaUrl();
 
-  String get fileName => post.filename;
+  String? get fileName => post.filename;
 
   String getCacheDir(ChanStorage cache) => cache.getFolderAbsolutePath(post.getCacheDirective());
 
@@ -94,8 +94,8 @@ class _TaskInfo {
 }
 
 class _ItemHolder {
-  final String name;
-  final _TaskInfo task;
+  final String? name;
+  final _TaskInfo? task;
 
   _ItemHolder({this.name, this.task});
 }

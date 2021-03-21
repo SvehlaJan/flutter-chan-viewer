@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 /// Original - https://pub.dev/packages/flutter_snow_base
 abstract class Features {
-  static ValueNotifier<Map<String, bool>> _features;
+  static late ValueNotifier<Map<String, bool>> _features;
 
   static const dev = <String, bool>{
     'feature_1': true,

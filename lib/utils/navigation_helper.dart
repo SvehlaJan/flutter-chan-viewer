@@ -59,11 +59,11 @@ class NavigationHelper {
     return Icons.error;
   }
 
-  static Route<dynamic> getRoute(String name, Map<String, dynamic> arguments) {
+  static Route<dynamic>? getRoute(String name, Map<String, dynamic>? arguments) {
     switch (name) {
       case Constants.boardDetailRoute:
         if (arguments != null && arguments.containsKey(BoardDetailPage.ARG_BOARD_ID)) {
-          String boardId = arguments[BoardDetailPage.ARG_BOARD_ID];
+          String? boardId = arguments[BoardDetailPage.ARG_BOARD_ID];
           return MaterialPageRoute<void>(
             builder: (BuildContext context) => BlocProvider(
               create: (context) => BoardDetailBloc(boardId),

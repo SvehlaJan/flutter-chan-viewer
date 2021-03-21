@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
 import 'package:flutter_chan_viewer/utils/chan_util.dart';
 import 'package:flutter_chan_viewer/utils/flavor_config.dart';
@@ -7,24 +6,24 @@ abstract class ChanPostBase {
   final String boardId;
   final int threadId;
   final int timestamp;
-  final String subtitle;
-  final String htmlContent;
-  final String filename;
-  final String imageId;
-  final String extension;
+  final String? subtitle;
+  final String? htmlContent;
+  final String? filename;
+  final String? imageId;
+  final String? extension;
 
   const ChanPostBase({
-    @required this.boardId,
-    @required this.threadId,
-    @required this.timestamp,
-    @required this.subtitle,
-    @required this.htmlContent,
-    @required this.filename,
-    @required this.imageId,
-    @required this.extension,
+    required this.boardId,
+    required this.threadId,
+    required this.timestamp,
+    required this.subtitle,
+    required this.htmlContent,
+    required this.filename,
+    required this.imageId,
+    required this.extension,
   });
 
-  bool isFavorite();
+  bool? isFavorite();
 
   bool hasImage() => [".jpg", ".png", ".webp", ".gif"].contains(extension);
 
@@ -34,17 +33,17 @@ abstract class ChanPostBase {
 
   bool hasMedia() => filename?.isNotEmpty ?? false;
 
-  String getMediaUrl() => _getMediaUrl(this.boardId, this.imageId, this.extension, false);
+  String? getMediaUrl() => _getMediaUrl(this.boardId, this.imageId, this.extension, false);
 
-  String getThumbnailUrl() => _getMediaUrl(this.boardId, this.imageId, this.extension, true);
+  String? getThumbnailUrl() => _getMediaUrl(this.boardId, this.imageId, this.extension, true);
 
   String get content => ChanUtil.getPlainString(htmlContent);
 
-  String getTextContent({bool truncate = false}) {
+  String? getTextContent({bool truncate = false}) {
     return ChanUtil.getReadableHtml(htmlContent, truncate);
   }
 
-  String _getMediaUrl(String boardId, String imageId, String extension, bool thumbnail) {
+  String? _getMediaUrl(String? boardId, String? imageId, String? extension, bool thumbnail) {
     if (boardId != null && imageId != null && extension != null) {
       String fileName = _getFileName(imageId, extension, thumbnail);
       return "${FlavorConfig.values().baseImgUrl}/$boardId/$fileName";
@@ -61,5 +60,5 @@ abstract class ChanPostBase {
 
   CacheDirective getCacheDirective() => CacheDirective(boardId, threadId);
 
-  List<Object> get props => [boardId, threadId, timestamp, subtitle, htmlContent, filename, imageId, extension];
+  List<Object?> get props => [boardId, threadId, timestamp, subtitle, htmlContent, filename, imageId, extension];
 }

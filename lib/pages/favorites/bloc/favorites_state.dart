@@ -7,24 +7,24 @@ class FavoritesStateContent extends ChanStateContent {
   final List<FavoritesItemWrapper> threads;
 
   const FavoritesStateContent({
-    @required showSearchBar,
-    @required showLazyLoading,
-    @required this.threads,
+    required showSearchBar,
+    required showLazyLoading,
+    required this.threads,
   }) : super(showSearchBar: showSearchBar, showLazyLoading: showLazyLoading);
 
   @override
-  List<Object> get props => super.props..addAll([threads]);
+  List<Object?> get props => super.props..addAll([threads]);
 }
 
 class FavoritesItemWrapper extends Equatable {
   final bool isHeader;
-  final FavoritesThreadWrapper thread;
-  final String headerTitle;
+  final FavoritesThreadWrapper? thread;
+  final String? headerTitle;
 
   FavoritesItemWrapper(this.isHeader, this.thread, this.headerTitle);
 
   @override
-  List<Object> get props => [isHeader, thread, headerTitle];
+  List<Object?> get props => [isHeader, thread, headerTitle];
 }
 
 class FavoritesThreadWrapper extends Equatable {

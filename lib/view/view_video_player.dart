@@ -13,7 +13,7 @@ class ChanVideoPlayer extends StatefulWidget {
   final PostItem post;
 
   const ChanVideoPlayer({
-    @required this.post,
+    required this.post,
   });
 
   @override
@@ -21,48 +21,48 @@ class ChanVideoPlayer extends StatefulWidget {
 }
 
 class _ChanVideoPlayerState extends State<ChanVideoPlayer> {
-  VideoPlayerController _videoController;
-  ChewieController _chewieController;
+  VideoPlayerController? _videoController;
+  ChewieController? _chewieController;
 
   @override
   void initState() {
     super.initState();
 
-    if (getIt<ChanStorage>().mediaFileExists(widget.post.getMediaUrl(), widget.post.getCacheDirective())) {
-      File file = getIt<ChanStorage>().getMediaFile(widget.post.getMediaUrl(), widget.post.getCacheDirective());
+    if (getIt<ChanStorage>().mediaFileExists(widget.post.getMediaUrl()!, widget.post.getCacheDirective())) {
+      File file = getIt<ChanStorage>().getMediaFile(widget.post.getMediaUrl()!, widget.post.getCacheDirective())!;
       _videoController = VideoPlayerController.file(file);
     } else {
-      _videoController = VideoPlayerController.network(widget.post.getMediaUrl());
+      _videoController = VideoPlayerController.network(widget.post.getMediaUrl()!);
     }
 
-    _videoController.initialize().then((_) {
+    _videoController!.initialize().then((_) {
       // Ensure the first frame is shown after the video is initialized, even before the play button has been pressed.
       _chewieController = ChewieController(
-        videoPlayerController: _videoController,
+        videoPlayerController: _videoController!,
         autoPlay: true,
         looping: true,
         showControlsOnInitialize: false,
-        aspectRatio: _videoController.value.aspectRatio,
+        aspectRatio: _videoController!.value.aspectRatio,
       );
       setState(() {
-        _chewieController.play();
+        _chewieController!.play();
       });
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return _videoController.value.initialized ? _buildVideoView(context) : _buildLoadingView(context);
+    return _videoController!.value.isInitialized ? _buildVideoView(context) : _buildLoadingView(context);
   }
 
   Widget _buildVideoView(BuildContext context) {
     return GestureDetector(
         onTap: (() {
           setState(() {
-            _videoController.value.isPlaying ? _videoController.pause() : _videoController.play();
+            _videoController!.value.isPlaying ? _videoController!.pause() : _videoController!.play();
           });
         }),
-        child: Chewie(controller: _chewieController));
+        child: Chewie(controller: _chewieController!));
   }
 
   Widget _buildLoadingView(BuildContext context) {
@@ -74,8 +74,8 @@ class _ChanVideoPlayerState extends State<ChanVideoPlayer> {
 
   @override
   void dispose() {
-    if (_videoController != null) _videoController.dispose();
-    if (_chewieController != null) _chewieController.dispose();
+    if (_videoController != null) _videoController!.dispose();
+    if (_chewieController != null) _chewieController!.dispose();
 
     super.dispose();
   }

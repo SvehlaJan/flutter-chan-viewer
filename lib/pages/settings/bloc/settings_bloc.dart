@@ -19,17 +19,18 @@ import 'settings_event.dart';
 import 'settings_state.dart';
 
 class SettingsBloc extends Bloc<ChanEvent, ChanState> {
-  final ChanDownloader _downloader = getIt<ChanDownloader>();
-  final ChanStorage _chanStorage = getIt<ChanStorage>();
-  final LocalDataSource _localDataSource = getIt<LocalDataSource>();
+  final ChanDownloader? _downloader = getIt<ChanDownloader>();
+  final ChanStorage? _chanStorage = getIt<ChanStorage>();
+  final LocalDataSource? _localDataSource = getIt<LocalDataSource>();
 
-  AppTheme _appTheme;
-  List<DownloadFolderInfo> _downloads = List();
+  AppTheme? _appTheme;
+  List<DownloadFolderInfo>? _downloads = <DownloadFolderInfo>[];
   MoorDbOverview _dbOverview = MoorDbOverview();
 
   SettingsBloc() : super(ChanStateLoading());
 
-  get _contentState => SettingsStateContent(_appTheme, _downloads, Preferences.getBool(Preferences.KEY_SETTINGS_SHOW_NSFW, def: false), _dbOverview);
+  SettingsStateContent get _contentState =>
+      SettingsStateContent(_appTheme, _downloads, Preferences.getBool(Preferences.KEY_SETTINGS_SHOW_NSFW, def: false), _dbOverview);
 
   @override
   Stream<ChanState> mapEventToState(ChanEvent event) async* {
@@ -41,15 +42,15 @@ class SettingsBloc extends Bloc<ChanEvent, ChanState> {
       } else if (event is ChanEventFetchData) {
         int appThemeIndex = Preferences.getInt(Preferences.KEY_SETTINGS_THEME) ?? 0;
         _appTheme = AppTheme.values[appThemeIndex];
-        _downloads = _chanStorage.getAllDownloadFoldersInfo();
+        _downloads = _chanStorage!.getAllDownloadFoldersInfo();
 
         yield _contentState;
       } else if (event is SettingsEventExperiment) {
         yield ChanStateLoading();
         _dbOverview.boards.clear();
-        List<BoardItem> boards = await _localDataSource.getBoards(true);
+        List<BoardItem> boards = await _localDataSource!.getBoards(true);
         for (BoardItem board in boards) {
-          List<ThreadItem> threads = await _localDataSource.getThreadsByBoardId(board.boardId);
+          List<ThreadItem> threads = await _localDataSource!.getThreadsByBoardId(board.boardId);
           if (threads.isEmpty) {
             continue;
           }
@@ -71,12 +72,12 @@ class SettingsBloc extends Bloc<ChanEvent, ChanState> {
         yield _contentState;
       } else if (event is SettingsEventCancelDownloads) {
         yield ChanStateLoading();
-        _downloader.cancelAllDownloads();
+        _downloader!.cancelAllDownloads();
         yield _contentState;
       } else if (event is SettingsEventDeleteFolder) {
         yield ChanStateLoading();
-        _chanStorage.deleteMediaDirectory(event.cacheDirective);
-        _downloads = _chanStorage.getAllDownloadFoldersInfo();
+        _chanStorage!.deleteMediaDirectory(event.cacheDirective);
+        _downloads = _chanStorage!.getAllDownloadFoldersInfo();
         yield _contentState;
       }
     } catch (e, stackTrace) {

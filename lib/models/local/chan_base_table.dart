@@ -1,7 +1,7 @@
 import 'package:moor/moor.dart';
 
 abstract class ChanBaseTable extends Table {
-  IntColumn get timestamp => integer()();
+  IntColumn get timestamp => integer().nullable()();
   TextColumn get subtitle => text().nullable()();
   TextColumn get content => text().nullable()();
   TextColumn get filename => text().nullable()();

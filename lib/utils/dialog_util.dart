@@ -6,13 +6,13 @@ class DialogUtil {
   static void showCustomCollectionPickerDialog(
     BuildContext context,
     List<ThreadItem> threads,
-    TextEditingController textController,
+    TextEditingController? textController,
     Function onCreateNewCollectionClicked,
     Function onAddPostToCollectionClicked,
   ) {
     List<Widget> items = threads
         .map((thread) => ListTile(
-              title: Text(thread.subtitle),
+              title: Text(thread.subtitle!),
               onTap: () {
                 onAddPostToCollectionClicked(context, thread.subtitle);
                 Navigator.of(context).pop();
@@ -28,7 +28,7 @@ class DialogUtil {
       trailing: IconButton(
         icon: Icon(Icons.add),
         onPressed: () {
-          String name = textController.text;
+          String name = textController!.text;
           if (name.isNotEmpty) {
             textController.clear();
             onCreateNewCollectionClicked(context, name);

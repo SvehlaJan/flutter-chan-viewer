@@ -5,10 +5,10 @@ import 'package:flutter_chan_viewer/bloc/chan_event.dart';
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/models/helper/chan_board_item_wrapper.dart';
 import 'package:flutter_chan_viewer/models/ui/board_item.dart';
-import 'package:flutter_chan_viewer/utils/navigation_helper.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
 import 'package:flutter_chan_viewer/pages/board_detail/board_detail_page.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
+import 'package:flutter_chan_viewer/utils/navigation_helper.dart';
 import 'package:flutter_chan_viewer/view/list_widget_board.dart';
 
 import 'bloc/board_list_bloc.dart';
@@ -26,7 +26,7 @@ class _BoardListPageState extends BasePageState<BoardListPage> {
   void initState() {
     super.initState();
     bloc = BlocProvider.of<BoardListBloc>(context);
-    bloc.add(ChanEventFetchData());
+    bloc!.add(ChanEventFetchData());
   }
 
   @override
@@ -39,22 +39,22 @@ class _BoardListPageState extends BasePageState<BoardListPage> {
 
   void _onSearchClick() => startSearch();
 
-  void _onRefreshClick() => bloc.add(ChanEventFetchData());
+  void _onRefreshClick() => bloc!.add(ChanEventFetchData());
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<BoardListBloc, ChanState>(
-      cubit: bloc,
+      bloc: bloc as BoardListBloc?,
       builder: (context, state) => buildScaffold(
         context,
-        buildBody(context, state, ((board) => _openBoardDetailPage(board))),
+        buildBody(context, state, ((board) => _openBoardDetailPage(board!))),
         pageActions: getPageActions(context),
         showSearchBar: state.showSearchBar,
       ),
     );
   }
 
-  Widget buildBody(BuildContext context, ChanState state, Function(BoardItem) onItemClicked) {
+  Widget buildBody(BuildContext context, ChanState state, Function(BoardItem?) onItemClicked) {
     if (state is ChanStateLoading) {
       return Constants.centeredProgressIndicator;
     } else if (state is BoardListStateContent) {
@@ -66,11 +66,11 @@ class _BoardListPageState extends BasePageState<BoardListPage> {
         children: <Widget>[Scrollbar(child: _buildListView(context, state, onItemClicked)), if (state.showLazyLoading) LinearProgressIndicator()],
       );
     } else {
-      return BasePageState.buildErrorScreen(context, (state as ChanStateError)?.message);
+      return BasePageState.buildErrorScreen(context, (state as ChanStateError).message);
     }
   }
 
-  Widget _buildListView(BuildContext context, BoardListStateContent state, Function(BoardItem) onItemClicked) {
+  Widget _buildListView(BuildContext context, BoardListStateContent state, Function(BoardItem?) onItemClicked) {
     return Scrollbar(
       child: ListView.builder(
         key: PageStorageKey<String>(KEY_LIST),
@@ -78,7 +78,7 @@ class _BoardListPageState extends BasePageState<BoardListPage> {
         itemBuilder: (context, index) {
           ChanBoardItemWrapper item = state.boards[index];
           if (item.isHeader) {
-            return Padding(padding: const EdgeInsets.all(8.0), child: Text(item.headerTitle, style: Theme.of(context).textTheme.subhead));
+            return Padding(padding: const EdgeInsets.all(8.0), child: Text(item.headerTitle!, style: Theme.of(context).textTheme.subhead));
           } else {
             return InkWell(child: BoardListWidget(board: item.chanBoard), onTap: (() => onItemClicked(item.chanBoard)));
           }
@@ -93,8 +93,8 @@ class _BoardListPageState extends BasePageState<BoardListPage> {
       {
         BoardDetailPage.ARG_BOARD_ID: board.boardId,
       },
-    ));
+    )!);
 
-    bloc.add(ChanEventFetchData());
+    bloc!.add(ChanEventFetchData());
   }
 }

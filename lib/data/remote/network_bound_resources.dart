@@ -4,32 +4,32 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_chan_viewer/data/remote/resource.dart';
 
 class NetworkBoundResources<ResultType, RequestType> {
-  StreamController<Resource<ResultType>> _result;
+  late StreamController<Resource<ResultType>> _result;
 
-  Future<Resource<ResultType>> asFuture({
-    @required FutureOr<ResultType> Function() loadFromDb,
-    @required bool shouldFetch(ResultType data),
-    @required FutureOr<RequestType> Function() createCall,
-    ResultType processResponse(RequestType result),
-    @required FutureOr saveCallResult(RequestType item),
+  Future<Resource<ResultType?>> asFuture({
+    required FutureOr<ResultType> Function() loadFromDb,
+    required bool shouldFetch(ResultType data),
+    required FutureOr<RequestType> Function() createCall,
+    ResultType processResponse(RequestType result)?,
+    required FutureOr saveCallResult(RequestType item),
   }) {
     assert(
       RequestType == ResultType || (!(RequestType == ResultType) && processResponse != null),
       "You need to specify the `processResponse` when the types are different",
     );
     processResponse ??= (value) => value as ResultType;
-    return Resource.asFuture<ResultType>(() async {
+    return Resource.asFuture<ResultType?>(() async {
       final value = await loadFromDb();
-      return shouldFetch(value) ? await _fetchFromNetwork(createCall, saveCallResult, value) : value;
-    });
+      return shouldFetch(value) ? await (_fetchFromNetwork(createCall as Future<RequestType> Function(), saveCallResult as Future<dynamic> Function(RequestType), value) as FutureOr<ResultType?>) : value;
+    }) as Future<Resource<ResultType?>>;
   }
 
   Stream<Resource<ResultType>> asStream({
-    @required Stream<ResultType> Function() loadFromDb,
-    @required bool shouldFetch(ResultType data),
-    @required FutureOr<RequestType> Function() createCall,
-    ResultType processResponse(RequestType result),
-    @required FutureOr saveCallResult(RequestType item),
+    required Stream<ResultType> Function() loadFromDb,
+    required bool shouldFetch(ResultType data),
+    required FutureOr<RequestType> Function() createCall,
+    ResultType processResponse(RequestType result)?,
+    required FutureOr saveCallResult(RequestType item),
   }) {
     assert(
       RequestType == ResultType || (!(RequestType == ResultType) && processResponse != null),
@@ -37,7 +37,7 @@ class NetworkBoundResources<ResultType, RequestType> {
     );
     processResponse ??= (value) => value as ResultType;
 
-    StreamSubscription localListener;
+    late StreamSubscription localListener;
 
     _result = StreamController<Resource<ResultType>>(
       onCancel: () {
@@ -55,9 +55,9 @@ class NetworkBoundResources<ResultType, RequestType> {
             print("Fetch data and call loading");
             sink.add(Resource.loading(data: event));
             try {
-              var result = await _fetchFromNetwork(createCall, saveCallResult, event);
+              var result = await _fetchFromNetwork(createCall as Future<RequestType> Function(), saveCallResult as Future<dynamic> Function(RequestType), event);
               print("Fetching success");
-              sink.add(Resource.success(data: processResponse(result)));
+              sink.add(Resource.success(data: processResponse!(result)));
             } on Exception catch (e) {
               print("Fetching failed");
               sink.addError(Resource.failed(data: null, error: e));

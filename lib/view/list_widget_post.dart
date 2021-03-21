@@ -15,35 +15,35 @@ class PostListWidget extends StatefulWidget {
   final bool showImage;
   final bool showHeroAnimation;
   final Function onTap;
-  final Function onLongPress;
+  final Function? onLongPress;
   final Function(String url) onLinkTap;
 
   @override
   _PostListWidgetState createState() => _PostListWidgetState();
 
   const PostListWidget({
-    @required this.post,
-    @required this.selected,
-    @required this.showImage,
-    @required this.showHeroAnimation,
-    @required this.onTap,
-    @required this.onLongPress,
-    @required this.onLinkTap,
+    required this.post,
+    required this.selected,
+    required this.showImage,
+    required this.showHeroAnimation,
+    required this.onTap,
+    required this.onLongPress,
+    required this.onLinkTap,
   });
 }
 
 class _PostListWidgetState extends State<PostListWidget> with SingleTickerProviderStateMixin {
-  AnimationController _bounceController;
-  Animation<double> _bounceAnimation;
+  AnimationController? _bounceController;
+  late Animation<double> _bounceAnimation;
 
   initState() {
     super.initState();
 
     _bounceController = AnimationController(duration: const Duration(milliseconds: 5000), vsync: this, value: 1.0);
-    _bounceAnimation = CurvedAnimation(parent: _bounceController, curve: Curves.bounceInOut);
+    _bounceAnimation = CurvedAnimation(parent: _bounceController!, curve: Curves.bounceInOut);
 
     if (widget.selected) {
-      _bounceController.forward(from: 0.5);
+      _bounceController!.forward(from: 0.5);
     }
   }
 
@@ -58,7 +58,7 @@ class _PostListWidgetState extends State<PostListWidget> with SingleTickerProvid
     Widget card = ScaleTransition(scale: _bounceAnimation, child: buildContent(context));
 
     return InkWell(
-      onTap: widget.onTap,
+      onTap: widget.onTap as void Function()?,
       child: widget.selected
           ? Stack(
               children: <Widget>[
@@ -86,7 +86,7 @@ class _PostListWidgetState extends State<PostListWidget> with SingleTickerProvid
                   minHeight: Constants.avatarImageSize,
                 ),
                 child: widget.showHeroAnimation
-                    ? Hero(tag: widget.post.getMediaUrl(), child: ChanCachedImage(post: widget.post, boxFit: BoxFit.fitWidth))
+                    ? Hero(tag: widget.post.getMediaUrl()!, child: ChanCachedImage(post: widget.post, boxFit: BoxFit.fitWidth))
                     : ChanCachedImage(post: widget.post, boxFit: BoxFit.fitWidth)),
           Flexible(
             child: Padding(
@@ -99,15 +99,16 @@ class _PostListWidgetState extends State<PostListWidget> with SingleTickerProvid
                     children: <Widget>[
                       Text(widget.post.postId.toString(), style: Theme.of(context).textTheme.caption),
                       Text("${widget.post.repliesFrom.length}r", style: Theme.of(context).textTheme.caption),
-                      Text(ChanUtil.getHumanDate(widget.post.timestamp), style: Theme.of(context).textTheme.caption),
+                      Text(ChanUtil.getHumanDate(widget.post.timestamp!), style: Theme.of(context).textTheme.caption),
                     ],
                   ),
-                  if (widget.post.subtitle.isNotNullNorEmpty) Text(widget.post.subtitle, style: Theme.of(context).textTheme.bodyText1),
+                  if (widget.post.subtitle.isNotNullNorEmpty) Text(widget.post.subtitle!, style: Theme.of(context).textTheme.bodyText1),
                   if (widget.post.htmlContent.isNotNullNorEmpty)
                     Html(
-                      data: ChanUtil.getReadableHtml(widget.post.htmlContent, false),
+                      data: ChanUtil.getReadableHtml(widget.post.htmlContent, false)!,
                       style: {"*": Style(margin: EdgeInsets.zero)},
-                      onLinkTap: widget.onLinkTap,
+                      onLinkTap: (url, context, attributes, element) => widget.onLinkTap(url!),
+                      // onLinkTap: widget.onLinkTap,
                     ),
                 ],
               ),

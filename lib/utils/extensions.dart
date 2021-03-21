@@ -20,11 +20,11 @@ extension StringExtension on String {
 }
 
 extension MyIterable<T> on Iterable<T> {
-  T get firstOrNull => this.isEmpty ? null : this.first;
+  T? get firstOrNull => this.isEmpty ? null : this.first;
 }
 
-/// - [isNullOrEmpty], [isNullEmptyOrFalse], [isNullEmptyZeroOrFalse] are from [this StackOverflow answer](https://stackoverflow.com/a/59826129/10830091)
-extension GeneralUtilsObjectExtension on Object {
+/// - [isNullOrEmpty], [isNullEmptyOrFalse] are from [this StackOverflow answer](https://stackoverflow.com/a/59826129/10830091)
+extension GeneralUtilsObjectExtension on Object? {
   /// Returns true if object is:
   /// - null `Object`
   bool get isNull => this == null;
@@ -80,12 +80,12 @@ extension GeneralUtilsObjectExtension on Object {
   /// If `bool` object, return `isFalse` expression
   ///
   /// Otherwise return `false` to not affect logical-OR expression. As `false` denotes undefined or N/A since object is not `bool`
-  bool get _isBoolObjectFalse => (this is bool) ? (this as bool) == false : false;
+  bool get _isBoolObjectFalse => (this is bool) ? (this as bool?) == false : false;
 
   /// **Private helper**
   ///
   /// If `num` object, return `isZero` expression
   ///
   /// Otherwise return `false` to not affect logical-OR expression. As `false` denotes undefined or N/A since object is not `num`
-  bool get _isNumObjectZero => (this is num) ? (this as num) == 0 : false;
+  bool get _isNumObjectZero => (this is num) ? (this as num?) == 0 : false;
 }

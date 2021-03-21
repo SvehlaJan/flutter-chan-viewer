@@ -8,7 +8,7 @@ class BoardDetailModel extends Equatable {
 
   BoardDetailModel(this._threads);
 
-  factory BoardDetailModel.fromJson(String boardId, OnlineState onlineState, List<dynamic> parsedJson) {
+  factory BoardDetailModel.fromJson(String? boardId, OnlineState onlineState, List<dynamic> parsedJson) {
     List<ThreadItem> threads = [];
     for (Map<String, dynamic> page in parsedJson) {
       for (Map<String, dynamic> threadJson in page['threads'] ?? []) {

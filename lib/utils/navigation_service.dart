@@ -7,11 +7,11 @@ class NavigationService {
   GlobalKey<NavigatorState> get navigationKey => _navigationKey;
 
   void pop() {
-    return _navigationKey.currentState.pop();
+    return _navigationKey.currentState!.pop();
   }
 
-  Future<dynamic> navigateTo(String routeName, {Map<String, dynamic> arguments, clearStack = false}) {
-    Route route = NavigationHelper.getRoute(routeName, arguments);
-    return clearStack ? _navigationKey.currentState.pushReplacement(route) : _navigationKey.currentState.push(route);
+  Future<dynamic> navigateTo(String routeName, {Map<String, dynamic>? arguments, clearStack = false}) {
+    Route? route = NavigationHelper.getRoute(routeName, arguments);
+    return clearStack ? _navigationKey.currentState!.pushReplacement(route!) : _navigationKey.currentState!.push(route!);
   }
 }

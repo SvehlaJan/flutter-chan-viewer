@@ -7,7 +7,7 @@ class Preferences {
   static final Preferences _instance = Preferences._internal();
   static bool _initialized = false;
 
-  static SharedPreferences _prefs;
+  static late SharedPreferences _prefs;
   static Map<String, dynamic> _memoryPrefs = Map<String, dynamic>();
 
   static const String KEY_USER_UID = "user_uid";
@@ -34,8 +34,8 @@ class Preferences {
     return _instance;
   }
 
-  static void setStringList(String key, List<String> value) {
-    _prefs.setStringList(key, value);
+  static void setStringList(String key, List<String?> value) {
+    _prefs.setStringList(key, value as List<String>);
     _memoryPrefs[key] = value;
   }
 
@@ -59,8 +59,8 @@ class Preferences {
     _memoryPrefs[key] = value;
   }
 
-  static List<String> getStringList(String key) {
-    List<String> val;
+  static List<String?> getStringList(String key) {
+    List<String>? val;
     if (_memoryPrefs.containsKey(key)) {
       val = _memoryPrefs[key];
     }
@@ -68,14 +68,14 @@ class Preferences {
       val = _prefs.getStringList(key);
     }
     if (val == null) {
-      val = List<String>();
+      val = <String?>[] as List<String>?;
     }
     _memoryPrefs[key] = val;
-    return val;
+    return val!;
   }
 
-  static String getString(String key, {String def}) {
-    String val;
+  static String getString(String key, {String? def}) {
+    String? val;
     if (_memoryPrefs.containsKey(key)) {
       val = _memoryPrefs[key];
     }
@@ -86,11 +86,11 @@ class Preferences {
       val = def;
     }
     _memoryPrefs[key] = val;
-    return val;
+    return val!;
   }
 
-  static int getInt(String key, {int def}) {
-    int val;
+  static int getInt(String key, {int? def}) {
+    int? val;
     if (_memoryPrefs.containsKey(key)) {
       val = _memoryPrefs[key];
     }
@@ -101,11 +101,11 @@ class Preferences {
       val = def;
     }
     _memoryPrefs[key] = val;
-    return val;
+    return val!;
   }
 
-  static double getDouble(String key, {double def}) {
-    double val;
+  static double getDouble(String key, {double? def}) {
+    double? val;
     if (_memoryPrefs.containsKey(key)) {
       val = _memoryPrefs[key];
     }
@@ -116,11 +116,11 @@ class Preferences {
       val = def;
     }
     _memoryPrefs[key] = val;
-    return val;
+    return val!;
   }
 
   static bool getBool(String key, {bool def = false}) {
-    bool val;
+    bool? val;
     if (_memoryPrefs.containsKey(key)) {
       val = _memoryPrefs[key];
     }

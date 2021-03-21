@@ -14,7 +14,7 @@ class ChanStorage {
   static const String PERMANENT_DIR = "saved";
   static const String SEPARATOR = "/";
 
-  Directory _permanentDirectory;
+  late Directory _permanentDirectory;
 
   ChanStorage._internal() {
     // initialization code
@@ -23,16 +23,18 @@ class ChanStorage {
   static Future<ChanStorage> initAndGet() async {
     if (_initialized) return _instance;
 
-    _instance._permanentDirectory = Directory(join((await getExternalStorageDirectory()).path, PERMANENT_DIR));
+    _instance._permanentDirectory = Directory(join((await getExternalStorageDirectory())!.path, PERMANENT_DIR));
     if (!_instance._permanentDirectory.existsSync()) await _instance._permanentDirectory.create();
 
     _initialized = true;
     return _instance;
   }
 
-  bool mediaFileExists(String url, CacheDirective cacheDirective) => File(join(_permanentDirectory.path, _getFileRelativePath(url, cacheDirective))).existsSync();
+  bool mediaFileExists(String url, CacheDirective cacheDirective) =>
+      File(join(_permanentDirectory.path, _getFileRelativePath(url, cacheDirective))).existsSync();
 
-  List<String> listDirectory(CacheDirective cacheDirective) => Directory(getFolderAbsolutePath(cacheDirective)).listSync(recursive: true).map((file) => file.path);
+  List<String> listDirectory(CacheDirective cacheDirective) =>
+      Directory(getFolderAbsolutePath(cacheDirective)).listSync(recursive: true).map((file) => file.path) as List<String>;
 
   String getFolderAbsolutePath(CacheDirective cacheDirective) => join(_permanentDirectory.path, _getFolderRelativePath(cacheDirective));
 
@@ -40,9 +42,10 @@ class ChanStorage {
 
   String _getFolderRelativePath(CacheDirective cacheDirective) => "${cacheDirective.boardId}$SEPARATOR${cacheDirective.threadId}";
 
-  String _getFileRelativePath(String url, CacheDirective cacheDirective) => "${cacheDirective.boardId}$SEPARATOR${cacheDirective.threadId}$SEPARATOR${basename(url)}";
+  String _getFileRelativePath(String url, CacheDirective cacheDirective) =>
+      "${cacheDirective.boardId}$SEPARATOR${cacheDirective.threadId}$SEPARATOR${basename(url)}";
 
-  File getMediaFile(String url, CacheDirective cacheDirective) {
+  File? getMediaFile(String url, CacheDirective cacheDirective) {
     try {
       return File(getFileAbsolutePath(url, cacheDirective));
     } catch (e, stackTrace) {
@@ -51,7 +54,7 @@ class ChanStorage {
     return null;
   }
 
-  Future<Uint8List> readMediaData(String name, CacheDirective cacheDirective) async {
+  Future<Uint8List?> readMediaData(String name, CacheDirective cacheDirective) async {
     try {
       File mediaFile = File(getFileAbsolutePath(name, cacheDirective));
       Uint8List data = await mediaFile.readAsBytes();
@@ -62,7 +65,7 @@ class ChanStorage {
     }
   }
 
-  Future<File> writeMediaFile(String name, CacheDirective cacheDirective, Uint8List data) async {
+  Future<File?> writeMediaFile(String name, CacheDirective cacheDirective, Uint8List data) async {
     try {
       Directory directory = Directory(getFolderAbsolutePath(cacheDirective));
       if (!directory.existsSync()) await directory.create(recursive: true);
@@ -90,7 +93,7 @@ class ChanStorage {
     }
   }
 
-  Future<File> copyMediaFile(String name, CacheDirective sourceCacheDirective, CacheDirective targetCacheDirective) async {
+  Future<File?> copyMediaFile(String name, CacheDirective sourceCacheDirective, CacheDirective targetCacheDirective) async {
     try {
       File sourceMediaFile = File(getFileAbsolutePath(name, sourceCacheDirective));
       Uint8List data = await sourceMediaFile.readAsBytes();
@@ -120,7 +123,7 @@ class ChanStorage {
     }
   }
 
-  Future<HashMap<String, List<String>>> listDirectories() async {
+  Future<HashMap<String, List<String>>?> listDirectories() async {
     try {
       Directory boardsDirectory = Directory(_permanentDirectory.path);
       if (!boardsDirectory.existsSync()) await boardsDirectory.create(recursive: true);
@@ -146,9 +149,9 @@ class ChanStorage {
     return folderInfo;
   }
 
-  List<DownloadFolderInfo> getAllDownloadFoldersInfo() {
+  List<DownloadFolderInfo>? getAllDownloadFoldersInfo() {
     try {
-      List<DownloadFolderInfo> downloadedFolders = List<DownloadFolderInfo>();
+      List<DownloadFolderInfo> downloadedFolders = <DownloadFolderInfo>[];
       Directory boardsDirectory = Directory(_permanentDirectory.path);
       if (!boardsDirectory.existsSync()) boardsDirectory.createSync(recursive: true);
 
@@ -167,7 +170,7 @@ class ChanStorage {
 
   List<DownloadFolderInfo> _getBoardFolderInfo(Directory boardDirectory) {
     String boardName = basename(boardDirectory.path);
-    List<DownloadFolderInfo> boardFolders = List();
+    List<DownloadFolderInfo> boardFolders = [];
     for (FileSystemEntity threadFile in boardDirectory.listSync()) {
       if (threadFile is Directory) {
         boardFolders.add(_getThreadFolderInfo(threadFile, boardName));
@@ -176,10 +179,10 @@ class ChanStorage {
     return boardFolders;
   }
 
-  DownloadFolderInfo _getThreadFolderInfo(Directory threadDirectory, String boardId) {
+  DownloadFolderInfo _getThreadFolderInfo(Directory threadDirectory, String? boardId) {
     int filesSize = 0;
     int filesCount = 0;
-    List<String> fileNames = List();
+    List<String> fileNames = [];
     threadDirectory.listSync().forEach((file) {
       fileNames.add(basename(file.path));
       filesSize += (file is File) ? file.lengthSync() : 0;

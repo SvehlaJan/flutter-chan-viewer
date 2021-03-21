@@ -7,16 +7,16 @@ class BoardArchiveStateContent extends ChanStateContent {
   final List<ArchiveThreadWrapper> threads;
 
   const BoardArchiveStateContent({
-    @required showSearchBar,
-    @required showLazyLoading,
-    @required this.threads,
+    required showSearchBar,
+    required showLazyLoading,
+    required this.threads,
   }) : super(
           showSearchBar: showSearchBar,
           showLazyLoading: showLazyLoading,
         );
 
   @override
-  List<Object> get props => super.props..addAll([threads]);
+  List<Object?> get props => super.props..addAll([threads]);
 }
 
 class ArchiveThreadWrapper extends Equatable {

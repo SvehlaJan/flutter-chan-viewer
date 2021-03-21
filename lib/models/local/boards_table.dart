@@ -6,7 +6,7 @@ class BoardsTable extends Table {
 
   TextColumn get boardId => text()();
 
-  TextColumn get title => text()();
+  TextColumn? get title => text()();
 
-  BoolColumn get workSafe => boolean()();
+  BoolColumn? get workSafe => boolean()();
 }

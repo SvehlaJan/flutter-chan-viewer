@@ -4,11 +4,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/chan_event.dart';
 
 abstract class BasePageState<T extends StatefulWidget> extends State<T> with SingleTickerProviderStateMixin {
-  Animation<double> _fabAnimation;
-  AnimationController _fabAnimationController;
+  late Animation<double> _fabAnimation;
+  late AnimationController _fabAnimationController;
 
   TextEditingController _searchQueryController = TextEditingController();
-  Bloc bloc;
+  late Bloc bloc;
 
   @override
   void initState() {
@@ -19,7 +19,7 @@ abstract class BasePageState<T extends StatefulWidget> extends State<T> with Sin
     super.initState();
   }
 
-  String getPageTitle() => null;
+  String? getPageTitle() => null;
 
   void finishScreen() async {
     if (await onBackPressed() == true) {
@@ -27,7 +27,7 @@ abstract class BasePageState<T extends StatefulWidget> extends State<T> with Sin
     }
   }
 
-  Widget getPageFab(BuildContext context, List<PageAction> pageActions) {
+  Widget? getPageFab(BuildContext context, List<PageAction>? pageActions) {
     if (pageActions != null && pageActions.isNotEmpty) {
       if (pageActions.length > 1) {
         return FloatingActionBubble(
@@ -41,7 +41,7 @@ abstract class BasePageState<T extends StatefulWidget> extends State<T> with Sin
           backGroundColor: Theme.of(context).accentColor,
         );
       } else {
-        return FloatingActionButton(onPressed: pageActions[0].onTap, child: Icon(pageActions[0].icon));
+        return FloatingActionButton(onPressed: pageActions[0].onTap as void Function()?, child: Icon(pageActions[0].icon));
       }
     } else {
       return null;
@@ -65,12 +65,13 @@ abstract class BasePageState<T extends StatefulWidget> extends State<T> with Sin
 
   Widget buildWillPopScope(BuildContext context, Widget body) => WillPopScope(onWillPop: onBackPressed, child: body);
 
-  Widget buildScaffold(BuildContext context, Widget body, {Color backgroundColor, FloatingActionButton fab, List<PageAction> pageActions, bool showSearchBar}) {
+  Widget buildScaffold(BuildContext context, Widget body,
+      {Color? backgroundColor, FloatingActionButton? fab, List<PageAction>? pageActions, bool? showSearchBar}) {
     return WillPopScope(
       onWillPop: onBackPressed,
       child: Scaffold(
         backgroundColor: backgroundColor != null ? backgroundColor : Theme.of(context).scaffoldBackgroundColor,
-        appBar: _buildAppBar(context, showSearchBar ?? false, getPageTitle()),
+        appBar: _buildAppBar(context, showSearchBar ?? false, getPageTitle()) as PreferredSizeWidget?,
         body: Builder(builder: (BuildContext context) => body),
         floatingActionButton: fab ?? getPageFab(context, pageActions),
         floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
@@ -78,7 +79,7 @@ abstract class BasePageState<T extends StatefulWidget> extends State<T> with Sin
     );
   }
 
-  Widget _buildAppBar(BuildContext context, bool showSearchBar, String pageTitle) {
+  Widget? _buildAppBar(BuildContext context, bool showSearchBar, String? pageTitle) {
     if (showSearchBar) {
       return AppBar(
         leading: IconButton(icon: Icon(Icons.search), onPressed: finishScreen),
@@ -95,7 +96,7 @@ abstract class BasePageState<T extends StatefulWidget> extends State<T> with Sin
       );
     } else if (pageTitle != null) {
       return AppBar(
-        leading: ModalRoute.of(context).canPop ? IconButton(icon: BackButtonIcon(), onPressed: finishScreen) : null,
+        leading: ModalRoute.of(context)!.canPop ? IconButton(icon: BackButtonIcon(), onPressed: finishScreen) : null,
         title: Text(pageTitle),
       );
     } else {
@@ -104,17 +105,17 @@ abstract class BasePageState<T extends StatefulWidget> extends State<T> with Sin
   }
 
   void updateSearchQuery(String newQuery) {
-    bloc.add(ChanEventSearch(newQuery));
+    bloc!.add(ChanEventSearch(newQuery));
   }
 
   void startSearch() {
-    bloc.add(ChanEventShowSearch());
-    ModalRoute.of(context).addLocalHistoryEntry(LocalHistoryEntry(onRemove: cancelSearching));
+    bloc!.add(ChanEventShowSearch());
+    ModalRoute.of(context)!.addLocalHistoryEntry(LocalHistoryEntry(onRemove: cancelSearching));
   }
 
   void cancelSearching() {
-      _searchQueryController.clear();
-      bloc.add(ChanEventCloseSearch());
+    _searchQueryController.clear();
+    bloc!.add(ChanEventCloseSearch());
   }
 
   static Widget buildErrorScreen(BuildContext context, String message) {

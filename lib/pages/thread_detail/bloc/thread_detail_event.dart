@@ -1,5 +1,4 @@
 import 'package:flutter_chan_viewer/bloc/chan_event.dart';
-import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
 
 class ThreadDetailEventToggleFavorite extends ChanEvent {}
 
@@ -26,13 +25,13 @@ class ThreadDetailEventOnLinkClicked extends ChanEvent {
 }
 
 class ThreadDetailEventOnPostSelected extends ChanEvent {
-  final int mediaIndex;
+  final int? mediaIndex;
   final int postId;
 
-  ThreadDetailEventOnPostSelected(this.mediaIndex, this.postId);
+  ThreadDetailEventOnPostSelected({this.mediaIndex = -1, this.postId = -1});
 
   @override
-  List<Object> get props => [mediaIndex, postId];
+  List<Object?> get props => [mediaIndex, postId];
 }
 
 class ThreadDetailEventOnReplyClicked extends ChanEvent {
@@ -41,7 +40,7 @@ class ThreadDetailEventOnReplyClicked extends ChanEvent {
   ThreadDetailEventOnReplyClicked(this.postId);
 
   @override
-  List<Object> get props => [postId];
+  List<Object?> get props => [postId];
 }
 
 class ThreadDetailEventHidePost extends ChanEvent {}
@@ -61,7 +60,7 @@ class ThreadDetailEventDeleteCollection extends ChanEvent {
   ThreadDetailEventDeleteCollection(this.threadId);
 
   @override
-  List<Object> get props => [threadId];
+  List<Object?> get props => [threadId];
 }
 
 class ThreadDetailEventAddPostToCollection extends ChanEvent {

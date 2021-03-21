@@ -18,12 +18,12 @@ import 'bloc/board_detail_state.dart';
 class BoardDetailPage extends StatefulWidget {
   static const String ARG_BOARD_ID = "ChanBoardsPage.ARG_BOARD_ID";
 
-  static Map<String, dynamic> createArguments(final String boardId) {
+  static Map<String, dynamic> createArguments(final String? boardId) {
     Map<String, dynamic> arguments = {ARG_BOARD_ID: boardId};
     return arguments;
   }
 
-  final String boardId;
+  final String? boardId;
 
   BoardDetailPage(this.boardId);
 
@@ -34,13 +34,13 @@ class BoardDetailPage extends StatefulWidget {
 class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
   static const String KEY_LIST = "_BoardDetailPageState.KEY_LIST";
 
-  ScrollController _scrollController;
+  ScrollController? _scrollController;
 
   @override
   void initState() {
     super.initState();
     bloc = BlocProvider.of<BoardDetailBloc>(context);
-    bloc.add(ChanEventFetchData());
+    bloc!.add(ChanEventFetchData());
 
     _scrollController = ScrollController();
   }
@@ -60,7 +60,7 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
 
   void _onSearchClick() => startSearch();
 
-  void _onRefreshClick() => bloc.add(ChanEventFetchData());
+  void _onRefreshClick() => bloc!.add(ChanEventFetchData());
 
   void _onArchiveClick() async {
     await Navigator.of(context).push(NavigationHelper.getRoute(
@@ -68,17 +68,17 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
       {
         BoardArchivePage.ARG_BOARD_ID: widget.boardId,
       },
-    ));
+    )!);
 
-    bloc.add(ChanEventFetchData());
+    bloc!.add(ChanEventFetchData());
   }
 
-  void _onFavoriteToggleClick() => bloc.add(BoardDetailEventToggleFavorite());
+  void _onFavoriteToggleClick() => bloc!.add(BoardDetailEventToggleFavorite());
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<BoardDetailBloc, ChanState>(
-      cubit: bloc,
+      bloc: bloc as BoardDetailBloc?,
       builder: (context, state) {
         return buildScaffold(
           context,
@@ -105,13 +105,13 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
         ],
       );
     } else {
-      return BasePageState.buildErrorScreen(context, (state as ChanStateError)?.message);
+      return BasePageState.buildErrorScreen(context, (state as ChanStateError).message);
     }
   }
 
   Widget _buildListView(BuildContext context, BoardDetailStateContent state, Function(ThreadItem) onItemClicked) {
     return DraggableScrollbar.semicircle(
-      controller: _scrollController,
+      controller: _scrollController!,
       child: ListView.builder(
         key: PageStorageKey<String>(KEY_LIST),
         controller: _scrollController,
@@ -131,7 +131,7 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
       NavigationHelper.getRoute(
         Constants.threadDetailRoute,
         ThreadDetailPage.createArguments(thread.boardId, thread.threadId),
-      ),
+      )!,
     );
   }
 }

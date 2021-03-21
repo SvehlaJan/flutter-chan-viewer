@@ -4,10 +4,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/chan_event.dart';
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
-import 'package:flutter_chan_viewer/utils/navigation_helper.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
 import 'package:flutter_chan_viewer/pages/thread_detail/thread_detail_page.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
+import 'package:flutter_chan_viewer/utils/navigation_helper.dart';
 import 'package:flutter_chan_viewer/view/list_widget_thread.dart';
 import 'package:flutter_chan_viewer/view/list_widget_thread_custom.dart';
 
@@ -26,7 +26,7 @@ class _FavoritesPageState extends BasePageState<FavoritesPage> {
   void initState() {
     super.initState();
     bloc = BlocProvider.of<FavoritesBloc>(context);
-    bloc.add(ChanEventFetchData());
+    bloc!.add(ChanEventFetchData());
   }
 
   @override
@@ -39,12 +39,12 @@ class _FavoritesPageState extends BasePageState<FavoritesPage> {
 
   void _onSearchClick() => startSearch();
 
-  void _onRefreshClick() => bloc.add(ChanEventFetchData(forceRefresh: true));
+  void _onRefreshClick() => bloc!.add(ChanEventFetchData(forceRefresh: true));
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<FavoritesBloc, ChanState>(
-      cubit: bloc,
+      bloc: bloc as FavoritesBloc?,
       builder: (context, state) {
         return buildScaffold(
           context,
@@ -71,15 +71,16 @@ class _FavoritesPageState extends BasePageState<FavoritesPage> {
               key: PageStorageKey<String>(KEY_LIST),
               itemBuilder: (BuildContext context, int index) {
                 FavoritesItemWrapper item = state.threads[index];
-                if (item.isHeader) {
-                  return Padding(padding: const EdgeInsets.all(8.0), child: Text(item.headerTitle, style: Theme.of(context).textTheme.subhead));
+                ThreadItem? thread = item.thread?.threadDetailModel.thread;
+                if (item.isHeader || thread == null) {
+                  return Padding(padding: const EdgeInsets.all(8.0), child: Text(item.headerTitle!, style: Theme.of(context).textTheme.subhead));
                 } else {
-                  Widget threadWidget = item.thread.isCustom
-                      ? CustomThreadListWidget(thread: item.thread.threadDetailModel.thread)
-                      : ThreadListWidget(thread: item.thread.threadDetailModel.thread, showProgress: item.thread.isLoading, newReplies: item.thread.newReplies);
+                  Widget threadWidget = item.thread?.isCustom ?? false
+                      ? CustomThreadListWidget(thread: thread)
+                      : ThreadListWidget(thread: thread, showProgress: item.thread?.isLoading ?? false, newReplies: item.thread?.newReplies ?? 0);
                   return InkWell(
                     child: threadWidget,
-                    onTap: () => _openThreadDetailPage(item.thread),
+                    onTap: () => _openThreadDetailPage(item.thread!),
                   );
                 }
               },
@@ -90,19 +91,19 @@ class _FavoritesPageState extends BasePageState<FavoritesPage> {
         ],
       );
     } else {
-      return BasePageState.buildErrorScreen(context, (state as ChanStateError)?.message);
+      return BasePageState.buildErrorScreen(context, (state as ChanStateError).message);
     }
   }
 
   void _openThreadDetailPage(FavoritesThreadWrapper threadWrapper) async {
-    bloc.add(ChanEventFetchData());
-    ThreadItem thread = threadWrapper.threadDetailModel.thread;
+    bloc!.add(ChanEventFetchData());
+    ThreadItem thread = threadWrapper.threadDetailModel.thread!;
     await Navigator.of(context).push(
       NavigationHelper.getRoute(
         Constants.threadDetailRoute,
         ThreadDetailPage.createArguments(thread.boardId, thread.threadId),
-      ),
+      )!,
     );
-    bloc.add(ChanEventFetchData());
+    bloc!.add(ChanEventFetchData());
   }
 }

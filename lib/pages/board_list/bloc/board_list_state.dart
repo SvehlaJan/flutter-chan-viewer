@@ -6,11 +6,11 @@ class BoardListStateContent extends ChanStateContent {
   final List<ChanBoardItemWrapper> boards;
 
   const BoardListStateContent({
-    @required showSearchBar,
-    @required showLazyLoading,
-    @required this.boards,
+    required showSearchBar,
+    required showLazyLoading,
+    required this.boards,
   }) : super(showSearchBar: showSearchBar, showLazyLoading: showLazyLoading);
 
   @override
-  List<Object> get props => super.props..addAll([boards]);
+  List<Object?> get props => super.props..addAll([boards]);
 }

@@ -13,10 +13,10 @@ class PostGridWidget extends StatefulWidget {
 
   const PostGridWidget({
     key,
-    @required this.post,
-    @required this.selected,
-    @required this.onTap,
-    @required this.onLongPress,
+    required this.post,
+    required this.selected,
+    required this.onTap,
+    required this.onLongPress,
   }) : super(key: key);
 
   @override
@@ -24,16 +24,16 @@ class PostGridWidget extends StatefulWidget {
 }
 
 class _PostGridWidgetState extends State<PostGridWidget> with SingleTickerProviderStateMixin {
-  AnimationController _controller;
-  Animation<double> _animation;
+  AnimationController? _controller;
+  late Animation<double> _animation;
 
   initState() {
     super.initState();
 
     _controller = AnimationController(duration: const Duration(milliseconds: 2000), vsync: this, value: 1.0);
-    _animation = CurvedAnimation(parent: _controller, curve: Curves.bounceInOut);
+    _animation = CurvedAnimation(parent: _controller!, curve: Curves.bounceInOut);
     if (widget.selected) {
-      _controller.forward(from: 0.5);
+      _controller!.forward(from: 0.5);
     }
   }
 
@@ -47,8 +47,8 @@ class _PostGridWidgetState extends State<PostGridWidget> with SingleTickerProvid
   Widget build(BuildContext context) {
     return GridTile(
       child: InkWell(
-        onTap: widget.onTap,
-        onLongPress: widget.onLongPress,
+        onTap: widget.onTap as void Function()?,
+        onLongPress: widget.onLongPress as void Function()?,
         child: ScaleTransition(scale: _animation, child: buildContent(context)),
       ),
     );
@@ -62,7 +62,7 @@ class _PostGridWidgetState extends State<PostGridWidget> with SingleTickerProvid
       child: Stack(
         fit: StackFit.passthrough,
         children: <Widget>[
-          Hero(tag: widget.post.getMediaUrl(), child: ChanCachedImage(post: widget.post, boxFit: BoxFit.cover)),
+          Hero(tag: widget.post.getMediaUrl()!, child: ChanCachedImage(post: widget.post, boxFit: BoxFit.cover)),
           if (_isDownloaded) Align(alignment: Alignment.bottomRight, child: Icon(Icons.sd_storage)),
           if (widget.post.hasGif()) Align(alignment: Alignment.bottomLeft, child: Icon(Icons.gif)),
           if (widget.post.hasWebm()) Align(alignment: Alignment.bottomRight, child: Icon(Icons.play_arrow)),

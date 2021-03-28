@@ -1,13 +1,12 @@
 import 'dart:io';
 
-import 'package:chewie/chewie.dart';
+import 'package:better_player/better_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/models/ui/post_item.dart';
 import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/view/view_cached_image.dart';
-import 'package:video_player/video_player.dart';
 
 class ChanVideoPlayer extends StatefulWidget {
   final PostItem post;
@@ -21,48 +20,53 @@ class ChanVideoPlayer extends StatefulWidget {
 }
 
 class _ChanVideoPlayerState extends State<ChanVideoPlayer> {
-  late VideoPlayerController _videoController;
-  late ChewieController _bottomChewieController;
+  late BetterPlayerController _betterPlayerController;
 
   @override
   void initState() {
     super.initState();
 
-    if (getIt<ChanStorage>().mediaFileExists(widget.post.getMediaUrl()!, widget.post.getCacheDirective())) {
-      File file = getIt<ChanStorage>().getMediaFile(widget.post.getMediaUrl()!, widget.post.getCacheDirective())!;
-      _videoController = VideoPlayerController.file(file);
-    } else {
-      _videoController = VideoPlayerController.network(widget.post.getMediaUrl()!);
-    }
-
-    _videoController.initialize().then((_) {
-      // Ensure the first frame is shown after the video is initialized, even before the play button has been pressed.
-      _bottomChewieController = ChewieController(
-        videoPlayerController: _videoController,
+    var betterPlayerConfiguration = BetterPlayerConfiguration(
         autoPlay: true,
         looping: true,
-        showControlsOnInitialize: false,
-        aspectRatio: _videoController.value.aspectRatio,
-      );
-      setState(() {
-        _bottomChewieController.play();
-      });
-    });
+        controlsConfiguration: BetterPlayerControlsConfiguration(
+          showControlsOnInitialize: false,
+          backgroundColor: Colors.transparent,
+          forwardSkipTimeInMilliseconds: 5000,
+          backwardSkipTimeInMilliseconds: 5000,
+          enableMute: false,
+          enableSubtitles: false,
+          enableQualities: false,
+          enableAudioTracks: false,
+        ),
+        aspectRatio: 0.1,
+        placeholder: _buildLoadingView(context),
+        showPlaceholderUntilPlay: true,
+        fullScreenByDefault: false,
+        fit: BoxFit.contain);
+
+    if (getIt<ChanStorage>().mediaFileExists(widget.post.getMediaUrl()!, widget.post.getCacheDirective())) {
+      File file = getIt<ChanStorage>().getMediaFile(widget.post.getMediaUrl()!, widget.post.getCacheDirective())!;
+      BetterPlayerDataSource betterPlayerDataSource = BetterPlayerDataSource(BetterPlayerDataSourceType.file, file.absolute.path);
+      _betterPlayerController = BetterPlayerController(betterPlayerConfiguration, betterPlayerDataSource: betterPlayerDataSource);
+    } else {
+      BetterPlayerDataSource betterPlayerDataSource = BetterPlayerDataSource(BetterPlayerDataSourceType.network, widget.post.getMediaUrl()!);
+      _betterPlayerController = BetterPlayerController(betterPlayerConfiguration, betterPlayerDataSource: betterPlayerDataSource);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return _videoController.value.isInitialized ? _buildVideoView(context) : _buildLoadingView(context);
+    return _buildVideoView(context);
   }
 
   Widget _buildVideoView(BuildContext context) {
-    return GestureDetector(
-        onTap: (() {
-          setState(() {
-            _videoController.value.isPlaying ? _videoController.pause() : _videoController.play();
-          });
-        }),
-        child: Chewie(controller: _bottomChewieController));
+    return Container(
+      constraints: BoxConstraints.expand(),
+      child: BetterPlayer(
+        controller: _betterPlayerController,
+      ),
+    );
   }
 
   Widget _buildLoadingView(BuildContext context) {
@@ -74,8 +78,8 @@ class _ChanVideoPlayerState extends State<ChanVideoPlayer> {
 
   @override
   void dispose() {
-    _videoController.dispose();
-    _bottomChewieController.dispose();
+    // _videoController.dispose();
+    // _bottomChewieController.dispose();
 
     super.dispose();
   }

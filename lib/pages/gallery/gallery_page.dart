@@ -185,8 +185,9 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
       child: post.hasImage() ? ChanCachedImage(post: post, boxFit: BoxFit.contain) : ChanVideoPlayer(post: post),
       heroAttributes: PhotoViewHeroAttributes(tag: post.getMediaUrl()!),
       initialScale: PhotoViewComputedScale.contained,
-      minScale: PhotoViewComputedScale.contained * 0.8,
+      minScale: PhotoViewComputedScale.contained,
       maxScale: PhotoViewComputedScale.covered * 32,
+      tightMode: false,
       disableGestures: false,
     );
   }

@@ -23,13 +23,13 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends BasePageState<SettingsPage> {
-  SettingsBloc? _settingsBloc;
+  late SettingsBloc _settingsBloc;
 
   @override
   void initState() {
     super.initState();
     _settingsBloc = BlocProvider.of<SettingsBloc>(context);
-    _settingsBloc!.add(ChanEventFetchData());
+    _settingsBloc.add(ChanEventFetchData());
   }
 
   @override
@@ -163,15 +163,15 @@ class _SettingsPageState extends BasePageState<SettingsPage> {
 
   void _onThemeSwitchClicked(bool enabled) {
     AppTheme newTheme = enabled ? AppTheme.dark : AppTheme.light;
-    _settingsBloc!.add(SettingsEventSetTheme(newTheme));
+    _settingsBloc.add(SettingsEventSetTheme(newTheme));
     BlocProvider.of<AppBloc>(context).add(AppEventSetTheme(newTheme));
   }
 
-  void _onExperimentClicked() => _settingsBloc!.add(SettingsEventExperiment());
+  void _onExperimentClicked() => _settingsBloc.add(SettingsEventExperiment());
 
-  void _onToggleShowSfwOnlyClicked(bool enabled) => _settingsBloc!.add(SettingsEventToggleShowNsfw(enabled));
+  void _onToggleShowSfwOnlyClicked(bool enabled) => _settingsBloc.add(SettingsEventToggleShowNsfw(enabled));
 
-  void _onCancelDownloadsClicked() => _settingsBloc!.add(SettingsEventCancelDownloads());
+  void _onCancelDownloadsClicked() => _settingsBloc.add(SettingsEventCancelDownloads());
 
-  void _onDeleteFolderClicked(CacheDirective cacheDirective) => _settingsBloc!.add(SettingsEventDeleteFolder(cacheDirective));
+  void _onDeleteFolderClicked(CacheDirective cacheDirective) => _settingsBloc.add(SettingsEventDeleteFolder(cacheDirective));
 }

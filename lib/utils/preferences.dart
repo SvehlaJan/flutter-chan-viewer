@@ -34,8 +34,8 @@ class Preferences {
     return _instance;
   }
 
-  static void setStringList(String key, List<String?> value) {
-    _prefs.setStringList(key, value as List<String>);
+  static void setStringList(String key, List<String> value) {
+    _prefs.setStringList(key, value);
     _memoryPrefs[key] = value;
   }
 
@@ -59,7 +59,7 @@ class Preferences {
     _memoryPrefs[key] = value;
   }
 
-  static List<String?> getStringList(String key) {
+  static List<String> getStringList(String key) {
     List<String>? val;
     if (_memoryPrefs.containsKey(key)) {
       val = _memoryPrefs[key];
@@ -68,10 +68,10 @@ class Preferences {
       val = _prefs.getStringList(key);
     }
     if (val == null) {
-      val = <String?>[] as List<String>?;
+      val = [];
     }
     _memoryPrefs[key] = val;
-    return val!;
+    return val;
   }
 
   static String getString(String key, {String? def}) {
@@ -89,7 +89,16 @@ class Preferences {
     return val!;
   }
 
-  static int getInt(String key, {int? def}) {
+  static int getIntDef(String key, int def) {
+    int? val = getInt(key);
+    if (val == null) {
+      val = def;
+    }
+    _memoryPrefs[key] = val;
+    return val;
+  }
+
+  static int? getInt(String key) {
     int? val;
     if (_memoryPrefs.containsKey(key)) {
       val = _memoryPrefs[key];
@@ -97,11 +106,8 @@ class Preferences {
     if (val == null) {
       val = _prefs.getInt(key);
     }
-    if (val == null) {
-      val = def;
-    }
     _memoryPrefs[key] = val;
-    return val!;
+    return val;
   }
 
   static double getDouble(String key, {double? def}) {

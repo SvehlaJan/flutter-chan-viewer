@@ -56,7 +56,7 @@ class ThreadListWidget extends StatelessWidget {
                             Spacer(),
                             Text("${thread.replies ?? "?"}p/${thread.images ?? "?"}m", style: Theme.of(context).textTheme.caption),
                             Spacer(),
-                            Text(ChanUtil.getHumanDate(thread.timestamp!), style: Theme.of(context).textTheme.caption),
+                            Text(ChanUtil.getHumanDate(thread.timestamp), style: Theme.of(context).textTheme.caption),
                           ],
                         ),
                         Row(
@@ -71,7 +71,7 @@ class ThreadListWidget extends StatelessWidget {
                           ],
                         ),
                         Html(
-                          data: ChanUtil.getReadableHtml(thread!.htmlContent ?? "", true)!,
+                          data: ChanUtil.getReadableHtml(thread.htmlContent ?? "", true)!,
                           style: {"*": Style(margin: EdgeInsets.zero)},
                           onLinkTap: (url, context, attributes, element) => ChanLogger.d("Html link clicked { url: $url }"),
                         )

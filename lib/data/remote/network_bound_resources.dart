@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter_chan_viewer/data/remote/resource.dart';
 
 class NetworkBoundResources<ResultType, RequestType> {
@@ -20,7 +19,10 @@ class NetworkBoundResources<ResultType, RequestType> {
     processResponse ??= (value) => value as ResultType;
     return Resource.asFuture<ResultType?>(() async {
       final value = await loadFromDb();
-      return shouldFetch(value) ? await (_fetchFromNetwork(createCall as Future<RequestType> Function(), saveCallResult as Future<dynamic> Function(RequestType), value) as FutureOr<ResultType?>) : value;
+      return shouldFetch(value)
+          ? await (_fetchFromNetwork(createCall as Future<RequestType> Function(), saveCallResult as Future<dynamic> Function(RequestType), value)
+              as FutureOr<ResultType?>)
+          : value;
     }) as Future<Resource<ResultType?>>;
   }
 
@@ -55,7 +57,8 @@ class NetworkBoundResources<ResultType, RequestType> {
             print("Fetch data and call loading");
             sink.add(Resource.loading(data: event));
             try {
-              var result = await _fetchFromNetwork(createCall as Future<RequestType> Function(), saveCallResult as Future<dynamic> Function(RequestType), event);
+              var result =
+                  await _fetchFromNetwork(createCall as Future<RequestType> Function(), saveCallResult as Future<dynamic> Function(RequestType), event);
               print("Fetching success");
               sink.add(Resource.success(data: processResponse!(result)));
             } on Exception catch (e) {
@@ -79,7 +82,8 @@ class NetworkBoundResources<ResultType, RequestType> {
     return _result.stream;
   }
 
-  Future<RequestType> _fetchFromNetwork(Future<RequestType> Function() createCall, Future Function(RequestType item) saveCallResult, ResultType unconfirmedResult) async {
+  Future<RequestType> _fetchFromNetwork(
+      Future<RequestType> Function() createCall, Future Function(RequestType item) saveCallResult, ResultType unconfirmedResult) async {
     saveCallResult(unconfirmedResult as RequestType);
     return await createCall().then((value) async {
       if (value != unconfirmedResult) {

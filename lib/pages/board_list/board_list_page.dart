@@ -26,7 +26,7 @@ class _BoardListPageState extends BasePageState<BoardListPage> {
   void initState() {
     super.initState();
     bloc = BlocProvider.of<BoardListBloc>(context);
-    bloc!.add(ChanEventFetchData());
+    bloc.add(ChanEventFetchData());
   }
 
   @override
@@ -39,7 +39,7 @@ class _BoardListPageState extends BasePageState<BoardListPage> {
 
   void _onSearchClick() => startSearch();
 
-  void _onRefreshClick() => bloc!.add(ChanEventFetchData());
+  void _onRefreshClick() => bloc.add(ChanEventFetchData());
 
   @override
   Widget build(BuildContext context) {
@@ -80,7 +80,7 @@ class _BoardListPageState extends BasePageState<BoardListPage> {
           if (item.isHeader) {
             return Padding(padding: const EdgeInsets.all(8.0), child: Text(item.headerTitle!, style: Theme.of(context).textTheme.subhead));
           } else {
-            return InkWell(child: BoardListWidget(board: item.chanBoard), onTap: (() => onItemClicked(item.chanBoard)));
+            return InkWell(child: BoardListWidget(board: item.chanBoard!), onTap: (() => onItemClicked(item.chanBoard)));
           }
         },
       ),
@@ -95,6 +95,6 @@ class _BoardListPageState extends BasePageState<BoardListPage> {
       },
     )!);
 
-    bloc!.add(ChanEventFetchData());
+    bloc.add(ChanEventFetchData());
   }
 }

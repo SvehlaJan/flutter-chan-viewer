@@ -26,9 +26,9 @@ class ThreadDetailEventOnLinkClicked extends ChanEvent {
 
 class ThreadDetailEventOnPostSelected extends ChanEvent {
   final int? mediaIndex;
-  final int postId;
+  final int? postId;
 
-  ThreadDetailEventOnPostSelected({this.mediaIndex = -1, this.postId = -1});
+  ThreadDetailEventOnPostSelected({this.mediaIndex, this.postId});
 
   @override
   List<Object?> get props => [mediaIndex, postId];

@@ -105,17 +105,17 @@ abstract class BasePageState<T extends StatefulWidget> extends State<T> with Sin
   }
 
   void updateSearchQuery(String newQuery) {
-    bloc!.add(ChanEventSearch(newQuery));
+    bloc.add(ChanEventSearch(newQuery));
   }
 
   void startSearch() {
-    bloc!.add(ChanEventShowSearch());
+    bloc.add(ChanEventShowSearch());
     ModalRoute.of(context)!.addLocalHistoryEntry(LocalHistoryEntry(onRemove: cancelSearching));
   }
 
   void cancelSearching() {
     _searchQueryController.clear();
-    bloc!.add(ChanEventCloseSearch());
+    bloc.add(ChanEventCloseSearch());
   }
 
   static Widget buildErrorScreen(BuildContext context, String message) {

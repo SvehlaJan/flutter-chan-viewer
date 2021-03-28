@@ -1,10 +1,10 @@
 class CacheDirective {
-  final String? boardId;
-  final int? threadId;
+  final String boardId;
+  final int threadId;
   static const String DIVIDER = "_";
 
   CacheDirective(this.boardId, this.threadId);
-  
+
   String getCacheKey() => "$boardId$threadId";
 
   static CacheDirective fromPath(String path) {

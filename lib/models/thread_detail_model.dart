@@ -6,11 +6,11 @@ import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
 import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
 
 class ThreadDetailModel extends Equatable {
-  final ThreadItem? thread;
+  final ThreadItem thread;
   final List<PostItem> _posts;
 
   ThreadDetailModel({
-    required ThreadItem? thread,
+    required ThreadItem thread,
     required List<PostItem> posts,
   })   : thread = thread,
         _posts = posts;
@@ -51,7 +51,7 @@ class ThreadDetailModel extends Equatable {
     return ThreadDetailModel(thread: ThreadItem.fromCacheDirective(cacheDirective), posts: []);
   }
 
-  factory ThreadDetailModel.fromThreadAndPosts(ThreadItem? thread, List<PostItem> posts) {
+  factory ThreadDetailModel.fromThreadAndPosts(ThreadItem thread, List<PostItem> posts) {
     posts.forEach((post) => post.thread = thread);
     _calculateReplies(posts);
     return ThreadDetailModel(thread: thread, posts: posts);
@@ -80,15 +80,15 @@ class ThreadDetailModel extends Equatable {
     }
   }
 
-  CacheDirective get cacheDirective => thread!.getCacheDirective();
+  CacheDirective get cacheDirective => thread.getCacheDirective();
 
-  List<PostItem> get visiblePosts => _posts.where((post) => !post.isHidden!).toList() ?? [];
+  List<PostItem> get visiblePosts => _posts.where((post) => !post.isHidden).toList();
 
-  List<PostItem> get hiddenPosts => _posts.where((post) => post.isHidden!).toList() ?? [];
+  List<PostItem> get hiddenPosts => _posts.where((post) => post.isHidden).toList();
 
-  List<PostItem> get allPosts => _posts ?? [];
+  List<PostItem> get allPosts => _posts;
 
-  List<PostItem> get visibleMediaPosts => _posts.where((post) => post.hasMedia() && !post.isHidden!).toList();
+  List<PostItem> get visibleMediaPosts => _posts.where((post) => post.hasMedia() && !post.isHidden).toList();
 
   List<PostItem> get allMediaPosts => _posts.where((post) => post.hasMedia()).toList();
 
@@ -98,7 +98,7 @@ class ThreadDetailModel extends Equatable {
 
   PostItem? findPostById(int? postId) => _posts.where((post) => post.postId == postId).first;
 
-  int get selectedPostId => thread!.selectedPostId ?? -1;
+  int get selectedPostId => thread.selectedPostId ?? -1;
 
   int get selectedPostIndex => getPostIndex(selectedPostId);
 

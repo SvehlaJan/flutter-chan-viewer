@@ -40,7 +40,7 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
   void initState() {
     super.initState();
     bloc = BlocProvider.of<BoardDetailBloc>(context);
-    bloc!.add(ChanEventFetchData());
+    bloc.add(ChanEventFetchData());
 
     _scrollController = ScrollController();
   }
@@ -60,7 +60,7 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
 
   void _onSearchClick() => startSearch();
 
-  void _onRefreshClick() => bloc!.add(ChanEventFetchData());
+  void _onRefreshClick() => bloc.add(ChanEventFetchData());
 
   void _onArchiveClick() async {
     await Navigator.of(context).push(NavigationHelper.getRoute(
@@ -70,10 +70,10 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
       },
     )!);
 
-    bloc!.add(ChanEventFetchData());
+    bloc.add(ChanEventFetchData());
   }
 
-  void _onFavoriteToggleClick() => bloc!.add(BoardDetailEventToggleFavorite());
+  void _onFavoriteToggleClick() => bloc.add(BoardDetailEventToggleFavorite());
 
   @override
   Widget build(BuildContext context) {

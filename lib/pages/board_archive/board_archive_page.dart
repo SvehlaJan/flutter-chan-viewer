@@ -33,7 +33,7 @@ class _BoardArchivePageState extends BasePageState<BoardArchivePage> {
   void initState() {
     super.initState();
     bloc = BlocProvider.of<BoardArchiveBloc>(context);
-    bloc!.add(ChanEventFetchData());
+    bloc.add(ChanEventFetchData());
 
     _listScrollController = ScrollController();
   }
@@ -48,7 +48,7 @@ class _BoardArchivePageState extends BasePageState<BoardArchivePage> {
 
   void _onSearchClick() => startSearch();
 
-  void _onRefreshClick() => bloc!.add(ChanEventFetchData());
+  void _onRefreshClick() => bloc.add(ChanEventFetchData());
 
   @override
   Widget build(BuildContext context) {
@@ -89,7 +89,7 @@ class _BoardArchivePageState extends BasePageState<BoardArchivePage> {
                   );
                 } else {
                   return InkWell(
-                    child: ThreadListWidget(thread: thread!),
+                    child: ThreadListWidget(thread: thread),
                     onTap: () => onItemClicked(thread),
                   );
                 }

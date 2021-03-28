@@ -102,9 +102,9 @@ class LocalDataSource {
 
   Future<void> deleteRedundantUnknownThreads(String boardId) async {
     List<ThreadsTableData> unknownThreads = await _threadsDao.getThreadsByBoardIdAndOnlineState(boardId, OnlineState.UNKNOWN);
-    unknownThreads.sort((a, b) => a.timestamp!.compareTo(b.timestamp!));
-    ThreadsTableData pivotingUnknownThread = unknownThreads.elementAt(200);
-    if (pivotingUnknownThread != null) {
+    if (unknownThreads.length > 200) {
+      unknownThreads.sort((a, b) => a.timestamp!.compareTo(b.timestamp!));
+      ThreadsTableData pivotingUnknownThread = unknownThreads.elementAt(200);
       _threadsDao.deleteThreadsWithOnlineStateOlderThan(OnlineState.UNKNOWN, pivotingUnknownThread.timestamp);
     }
   }

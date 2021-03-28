@@ -152,7 +152,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
               pageController: PageController(initialPage: state.selectedMediaIndex),
               onPageChanged: ((newMediaIndex) {
                 if (newMediaIndex != state.selectedMediaIndex) {
-                  bloc!.add(ThreadDetailEventOnPostSelected(mediaIndex: newMediaIndex));
+                  bloc.add(ThreadDetailEventOnPostSelected(mediaIndex: newMediaIndex));
                   _sheetController!.collapse();
                 }
               }),
@@ -295,13 +295,13 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
             )));
   }
 
-  void _onLinkClicked(BuildContext context, String url) => bloc!.add(ThreadDetailEventOnReplyClicked(ChanUtil.getPostIdFromUrl(url)));
+  void _onLinkClicked(BuildContext context, String url) => bloc.add(ThreadDetailEventOnReplyClicked(ChanUtil.getPostIdFromUrl(url)));
 
-  void _onHidePostClicked(BuildContext context) => bloc!.add(ThreadDetailEventHidePost());
+  void _onHidePostClicked(BuildContext context) => bloc.add(ThreadDetailEventHidePost());
 
   void _onCollectionsClicked(BuildContext context) {
-    if (bloc!.state is ThreadDetailStateContent) {
-      List<ThreadItem> threads = bloc!.state.customThreads;
+    if (bloc.state is ThreadDetailStateContent) {
+      List<ThreadItem> threads = bloc.state.customThreads;
       DialogUtil.showCustomCollectionPickerDialog(
         context,
         threads,
@@ -312,9 +312,9 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
     }
   }
 
-  void _onAddPostToCollectionClicked(BuildContext context, String name) => bloc!.add(ThreadDetailEventAddPostToCollection(name));
+  void _onAddPostToCollectionClicked(BuildContext context, String name) => bloc.add(ThreadDetailEventAddPostToCollection(name));
 
-  void _onCreateNewCollectionClicked(BuildContext context, String name) => bloc!.add(ThreadDetailEventCreateNewCollection(name));
+  void _onCreateNewCollectionClicked(BuildContext context, String name) => bloc.add(ThreadDetailEventCreateNewCollection(name));
 
   void showPostAddedToCollectionSuccessSnackbar(BuildContext context) {
     final snackBar = SnackBar(content: Text("Post added to collection."));

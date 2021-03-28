@@ -99,7 +99,7 @@ class _PostListWidgetState extends State<PostListWidget> with SingleTickerProvid
                     children: <Widget>[
                       Text(widget.post.postId.toString(), style: Theme.of(context).textTheme.caption),
                       Text("${widget.post.repliesFrom.length}r", style: Theme.of(context).textTheme.caption),
-                      Text(ChanUtil.getHumanDate(widget.post.timestamp!), style: Theme.of(context).textTheme.caption),
+                      Text(ChanUtil.getHumanDate(widget.post.timestamp), style: Theme.of(context).textTheme.caption),
                     ],
                   ),
                   if (widget.post.subtitle.isNotNullNorEmpty) Text(widget.post.subtitle!, style: Theme.of(context).textTheme.bodyText1),

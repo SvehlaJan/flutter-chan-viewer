@@ -37,7 +37,7 @@ abstract class ChanPostBase {
 
   String? getThumbnailUrl() => _getMediaUrl(this.boardId, this.imageId, this.extension, true);
 
-  String get content => ChanUtil.getPlainString(htmlContent);
+  String? get content => ChanUtil.getPlainString(htmlContent);
 
   String? getTextContent({bool truncate = false}) {
     return ChanUtil.getReadableHtml(htmlContent, truncate);

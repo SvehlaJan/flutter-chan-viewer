@@ -26,7 +26,7 @@ class _FavoritesPageState extends BasePageState<FavoritesPage> {
   void initState() {
     super.initState();
     bloc = BlocProvider.of<FavoritesBloc>(context);
-    bloc!.add(ChanEventFetchData());
+    bloc.add(ChanEventFetchData());
   }
 
   @override
@@ -39,7 +39,7 @@ class _FavoritesPageState extends BasePageState<FavoritesPage> {
 
   void _onSearchClick() => startSearch();
 
-  void _onRefreshClick() => bloc!.add(ChanEventFetchData(forceRefresh: true));
+  void _onRefreshClick() => bloc.add(ChanEventFetchData(forceRefresh: true));
 
   @override
   Widget build(BuildContext context) {
@@ -96,14 +96,14 @@ class _FavoritesPageState extends BasePageState<FavoritesPage> {
   }
 
   void _openThreadDetailPage(FavoritesThreadWrapper threadWrapper) async {
-    bloc!.add(ChanEventFetchData());
-    ThreadItem thread = threadWrapper.threadDetailModel.thread!;
+    bloc.add(ChanEventFetchData());
+    ThreadItem thread = threadWrapper.threadDetailModel.thread;
     await Navigator.of(context).push(
       NavigationHelper.getRoute(
         Constants.threadDetailRoute,
         ThreadDetailPage.createArguments(thread.boardId, thread.threadId),
       )!,
     );
-    bloc!.add(ChanEventFetchData());
+    bloc.add(ChanEventFetchData());
   }
 }

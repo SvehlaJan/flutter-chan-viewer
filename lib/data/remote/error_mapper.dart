@@ -27,10 +27,8 @@ class ErrorMapper {
       case DioErrorType.connectTimeout:
       case DioErrorType.receiveTimeout:
         return "Falha de conexão, verifique sua internet";
-        break;
       case DioErrorType.cancel:
         return "Requisição cancelada";
-        break;
       case DioErrorType.response:
       default:
         break;
@@ -39,19 +37,14 @@ class ErrorMapper {
       switch (error.response!.statusCode) {
         case 401:
           return "Autorização negada, verifique seu login";
-          break;
         case 403:
           return "Ocorreu um erro na sua requisição, verifique os dados e tente novamente";
-          break;
         case 404:
           return "Não encontrado";
-          break;
         case 500:
           return "Erro interno do servidor";
-          break;
         case 503:
           return "O servidor está indisponível no momento, tente novamente";
-          break;
         default:
       }
     }

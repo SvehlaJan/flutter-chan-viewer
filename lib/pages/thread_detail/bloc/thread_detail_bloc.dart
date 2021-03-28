@@ -49,7 +49,7 @@ class ThreadDetailBloc extends BaseBloc<ChanEvent, ChanState> {
         if (_catalogMode == null) {
           _catalogMode = Preferences.getBool(Preferences.KEY_THREAD_CATALOG_MODE, def: false);
         }
-        customThreads = await _repository!.getCustomThreads();
+        customThreads = await _repository.getCustomThreads();
 
         add(ChanEventFetchData());
       }
@@ -57,18 +57,18 @@ class ThreadDetailBloc extends BaseBloc<ChanEvent, ChanState> {
         yield ChanStateLoading();
 
         if (_showDownloadsOnly ?? false) {
-          DownloadFolderInfo folderInfo = _chanStorage!.getThreadDownloadFolderInfo(cacheDirective);
+          DownloadFolderInfo folderInfo = _chanStorage.getThreadDownloadFolderInfo(cacheDirective);
           _threadDetailModel = ThreadDetailModel.fromFolderInfo(folderInfo);
           yield _buildContentState(lazyLoading: false);
           return;
         }
 
-        _threadDetailModel = await _repository!.fetchCachedThreadDetail(_boardId, _threadId);
+        _threadDetailModel = await _repository.fetchCachedThreadDetail(_boardId, _threadId);
         if (_threadDetailModel != null && _threadDetailModel!.visiblePosts.isNotNullNorEmpty) {
           yield _buildContentState(lazyLoading: true, event: ThreadDetailSingleEvent.SCROLL_TO_SELECTED);
         }
         try {
-          _threadDetailModel = await _repository!.fetchRemoteThreadDetail(_boardId, _threadId, false);
+          _threadDetailModel = await _repository.fetchRemoteThreadDetail(_boardId, _threadId, false);
         } on HttpException catch (e, stackTrace) {
           yield _buildContentState(event: ThreadDetailSingleEvent.SHOW_OFFLINE);
         }
@@ -85,7 +85,7 @@ class ThreadDetailBloc extends BaseBloc<ChanEvent, ChanState> {
         } else {
           yield ChanStateLoading();
 
-          await _repository!.addThreadToFavorites(_threadDetailModel!);
+          await _repository.addThreadToFavorites(_threadDetailModel!);
 
           add(ChanEventFetchData());
         }
@@ -97,7 +97,7 @@ class ThreadDetailBloc extends BaseBloc<ChanEvent, ChanState> {
         }
 
         if (event.confirmed) {
-          await _repository!.removeThreadFromFavorites(_threadDetailModel!);
+          await _repository.removeThreadFromFavorites(_threadDetailModel!);
           yield _buildContentState(event: ThreadDetailSingleEvent.CLOSE_PAGE);
         } else {
           yield _buildContentState();
@@ -117,29 +117,29 @@ class ThreadDetailBloc extends BaseBloc<ChanEvent, ChanState> {
           newPostId = event.postId;
         }
 
-        _threadDetailModel = _threadDetailModel!.copyWith(thread: _threadDetailModel!.thread!.copyWith(selectedPostId: newPostId));
-        await _repository!.updateThread(_threadDetailModel!.thread!);
+        _threadDetailModel = _threadDetailModel!.copyWith(thread: _threadDetailModel!.thread.copyWith(selectedPostId: newPostId));
+        await _repository.updateThread(_threadDetailModel!.thread);
 
         yield _buildContentState(event: ThreadDetailSingleEvent.SCROLL_TO_SELECTED);
       } else if (event is ThreadDetailEventOnLinkClicked) {
         PostItem? post = _threadDetailModel!.findPostById(ChanUtil.getPostIdFromUrl(event.url));
         if (post != null) {
-          _threadDetailModel = _threadDetailModel!.copyWith(thread: _threadDetailModel!.thread!.copyWith(selectedPostId: post.postId));
-          await _repository!.updateThread(_threadDetailModel!.thread!);
+          _threadDetailModel = _threadDetailModel!.copyWith(thread: _threadDetailModel!.thread.copyWith(selectedPostId: post.postId));
+          await _repository.updateThread(_threadDetailModel!.thread);
         }
 
         yield _buildContentState(event: ThreadDetailSingleEvent.SCROLL_TO_SELECTED);
       } else if (event is ThreadDetailEventOnReplyClicked) {
         PostItem? post = _threadDetailModel!.findPostById(event.postId);
         if (post != null) {
-          _threadDetailModel = _threadDetailModel!.copyWith(thread: _threadDetailModel!.thread!.copyWith(selectedPostId: post.postId));
-          await _repository!.updateThread(_threadDetailModel!.thread!);
+          _threadDetailModel = _threadDetailModel!.copyWith(thread: _threadDetailModel!.thread.copyWith(selectedPostId: post.postId));
+          await _repository.updateThread(_threadDetailModel!.thread);
         }
 
         yield _buildContentState(event: ThreadDetailSingleEvent.SCROLL_TO_SELECTED);
       } else if (event is ThreadDetailEventHidePost) {
         PostItem post = _threadDetailModel!.selectedPost!.copyWith(isHidden: true);
-        await _repository!.updatePost(post);
+        await _repository.updatePost(post);
 
         int? newSelectedPostId = -1;
         for (int i = 0; i < _threadDetailModel!.allPosts.length; i++) {
@@ -148,27 +148,27 @@ class ThreadDetailBloc extends BaseBloc<ChanEvent, ChanState> {
           int diff = orientation == 0 ? -dilatation : dilatation;
           int newSelectedPostIndex = (_threadDetailModel!.selectedPostIndex + diff) % _threadDetailModel!.allPosts.length;
           PostItem newSelectedPost = _threadDetailModel!.allPosts[newSelectedPostIndex];
-          if (!newSelectedPost.isHidden!) {
+          if (!newSelectedPost.isHidden) {
             newSelectedPostId = newSelectedPost.postId;
             break;
           }
         }
-        _threadDetailModel = _threadDetailModel!.copyWith(thread: _threadDetailModel!.thread!.copyWith(selectedPostId: newSelectedPostId));
-        await _repository!.updateThread(_threadDetailModel!.thread!);
+        _threadDetailModel = _threadDetailModel!.copyWith(thread: _threadDetailModel!.thread.copyWith(selectedPostId: newSelectedPostId));
+        await _repository.updateThread(_threadDetailModel!.thread);
 
-        _threadDetailModel = await _repository!.fetchCachedThreadDetail(_boardId, _threadId);
+        _threadDetailModel = await _repository.fetchCachedThreadDetail(_boardId, _threadId);
         yield _buildContentState(lazyLoading: false, event: ThreadDetailSingleEvent.SCROLL_TO_SELECTED);
       } else if (event is ThreadDetailEventCreateNewCollection) {
-        await _repository!.createCustomThread(event.name);
-        customThreads = await _repository!.getCustomThreads();
+        await _repository.createCustomThread(event.name);
+        customThreads = await _repository.getCustomThreads();
         yield _buildContentState(event: ThreadDetailSingleEvent.SHOW_COLLECTIONS_DIALOG);
       } else if (event is ThreadDetailEventAddPostToCollection) {
         ThreadItem thread = customThreads.where((element) => element.subtitle == event.name).firstOrNull!;
         PostItem post = _threadDetailModel!.selectedPost!;
-        await _repository!.addPostToCustomThread(post, thread);
+        await _repository.addPostToCustomThread(post, thread);
         yield _buildContentState(event: ThreadDetailSingleEvent.SHOW_POST_ADDED_TO_COLLECTION_SUCCESS);
       } else if (event is ThreadDetailEventDeleteCollection) {
-        await _repository!.deleteCustomThread(_threadDetailModel!);
+        await _repository.deleteCustomThread(_threadDetailModel!);
         yield _buildContentState(event: ThreadDetailSingleEvent.CLOSE_PAGE);
       } else if (event is ChanEventSearch || event is ChanEventShowSearch || event is ChanEventCloseSearch) {
         super.mapEventToState(event);
@@ -196,7 +196,7 @@ class ThreadDetailBloc extends BaseBloc<ChanEvent, ChanState> {
       model: threadDetailModel,
       selectedPostId: threadDetailModel?.selectedPostId,
       isFavorite: _isFavorite,
-      catalogMode: _catalogMode,
+      catalogMode: _catalogMode ?? false,
       event: event,
       showLazyLoading: lazyLoading,
       showSearchBar: showSearchBar,

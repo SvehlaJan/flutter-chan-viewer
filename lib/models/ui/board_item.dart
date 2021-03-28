@@ -31,7 +31,7 @@ class BoardItem extends Equatable {
   factory BoardItem.fromTableData(BoardsTableData entry) => BoardItem(
         entry.boardId,
         entry.title,
-        entry.workSafe! ? 1 : 0,
+        entry.workSafe ? 1 : 0,
       );
 
   @override

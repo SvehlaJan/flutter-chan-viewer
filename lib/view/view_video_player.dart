@@ -21,8 +21,8 @@ class ChanVideoPlayer extends StatefulWidget {
 }
 
 class _ChanVideoPlayerState extends State<ChanVideoPlayer> {
-  VideoPlayerController? _videoController;
-  ChewieController? _chewieController;
+  late VideoPlayerController _videoController;
+  late ChewieController _bottomChewieController;
 
   @override
   void initState() {
@@ -35,34 +35,34 @@ class _ChanVideoPlayerState extends State<ChanVideoPlayer> {
       _videoController = VideoPlayerController.network(widget.post.getMediaUrl()!);
     }
 
-    _videoController!.initialize().then((_) {
+    _videoController.initialize().then((_) {
       // Ensure the first frame is shown after the video is initialized, even before the play button has been pressed.
-      _chewieController = ChewieController(
-        videoPlayerController: _videoController!,
+      _bottomChewieController = ChewieController(
+        videoPlayerController: _videoController,
         autoPlay: true,
         looping: true,
         showControlsOnInitialize: false,
-        aspectRatio: _videoController!.value.aspectRatio,
+        aspectRatio: _videoController.value.aspectRatio,
       );
       setState(() {
-        _chewieController!.play();
+        _bottomChewieController.play();
       });
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return _videoController!.value.isInitialized ? _buildVideoView(context) : _buildLoadingView(context);
+    return _videoController.value.isInitialized ? _buildVideoView(context) : _buildLoadingView(context);
   }
 
   Widget _buildVideoView(BuildContext context) {
     return GestureDetector(
         onTap: (() {
           setState(() {
-            _videoController!.value.isPlaying ? _videoController!.pause() : _videoController!.play();
+            _videoController.value.isPlaying ? _videoController.pause() : _videoController.play();
           });
         }),
-        child: Chewie(controller: _chewieController!));
+        child: Chewie(controller: _bottomChewieController));
   }
 
   Widget _buildLoadingView(BuildContext context) {
@@ -74,8 +74,8 @@ class _ChanVideoPlayerState extends State<ChanVideoPlayer> {
 
   @override
   void dispose() {
-    if (_videoController != null) _videoController!.dispose();
-    if (_chewieController != null) _chewieController!.dispose();
+    _videoController.dispose();
+    _bottomChewieController.dispose();
 
     super.dispose();
   }

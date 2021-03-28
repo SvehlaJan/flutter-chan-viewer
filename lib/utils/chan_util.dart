@@ -24,13 +24,12 @@ class ChanUtil {
     return htmlContent;
   }
 
-  static String getPlainString(String? htmlContent) {
-    String rawContent = "";
+  static String? getPlainString(String? htmlContent) {
     if (htmlContent.isNotNullNorEmpty) {
       Document document = parse(htmlContent!.replaceAll("<br>", " ").replaceAll("</p><p>", " "));
-      rawContent = parse(document.body!.text).documentElement!.text;
+      return parse(document.body!.text).documentElement!.text;
     }
-    return rawContent;
+    return null;
   }
 
   static List<int> getPostReferences(String? content) {

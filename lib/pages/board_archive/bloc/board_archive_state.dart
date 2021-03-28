@@ -1,7 +1,6 @@
 import 'package:equatable/equatable.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
+import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
 
 class BoardArchiveStateContent extends ChanStateContent {
   final List<ArchiveThreadWrapper> threads;

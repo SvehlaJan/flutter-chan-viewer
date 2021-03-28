@@ -1,5 +1,3 @@
-import 'package:flutter/foundation.dart';
-
 class AppException implements Exception {
   final Exception? exception;
   final String message;

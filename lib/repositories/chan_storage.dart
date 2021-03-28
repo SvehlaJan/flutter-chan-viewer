@@ -179,7 +179,7 @@ class ChanStorage {
     return boardFolders;
   }
 
-  DownloadFolderInfo _getThreadFolderInfo(Directory threadDirectory, String? boardId) {
+  DownloadFolderInfo _getThreadFolderInfo(Directory threadDirectory, String boardId) {
     int filesSize = 0;
     int filesCount = 0;
     List<String> fileNames = [];

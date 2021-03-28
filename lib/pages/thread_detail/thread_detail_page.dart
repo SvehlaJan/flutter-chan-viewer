@@ -28,8 +28,8 @@ class ThreadDetailPage extends StatefulWidget {
   ThreadDetailPage(this.boardId, this.threadId);
 
   static Map<String, dynamic> createArguments(
-    final String? boardId,
-    final int? threadId, {
+    final String boardId,
+    final int threadId, {
     final bool showDownloadsOnly = false,
   }) {
     Map<String, dynamic> arguments = {ARG_BOARD_ID: boardId, ARG_THREAD_ID: threadId, ARG_SHOW_DOWNLOADS_ONLY: showDownloadsOnly};
@@ -46,14 +46,14 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
   static const String KEY_LIST_ITEM = "_ThreadDetailPageState.KEY_LIST_ITEM_";
   static const String KEY_GRID_ITEM = "_ThreadDetailPageState.KEY_GRID_ITEM_";
 
-  ScrollController? _gridScrollController;
-  ItemScrollController? _listScrollController;
+  late ScrollController _gridScrollController;
+  late ItemScrollController _listScrollController;
 
   @override
   void initState() {
     super.initState();
     bloc = BlocProvider.of<ThreadDetailBloc>(context);
-    bloc!.add(ChanEventInitBloc());
+    bloc.add(ChanEventInitBloc());
 
     _gridScrollController = ScrollController();
     _listScrollController = ItemScrollController();
@@ -65,12 +65,11 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
   List<PageAction> getPageActions(BuildContext context, ChanState state) {
     bool showSearch = state is ThreadDetailStateContent && !state.showLazyLoading;
     bool isFavorite = state is ThreadDetailStateContent && state.isFavorite;
-    bool isCatalogMode = state is ThreadDetailStateContent && state.catalogMode!;
-    bool isCollection = state is ThreadDetailStateContent && state.model?.thread?.onlineStatus == OnlineState.CUSTOM ?? false;
+    bool isCatalogMode = state is ThreadDetailStateContent && state.catalogMode;
+    bool isCollection = state is ThreadDetailStateContent && state.model?.thread.onlineStatus == OnlineState.CUSTOM;
     List<PageAction> actions = [if (showSearch) PageAction("Search", Icons.search, _onSearchClick)];
-    if (isCollection) {
-      int threadId = state is ThreadDetailStateContent ? state.model!.thread!.threadId : -1;
-      actions.add(PageAction("Delete collection", Icons.delete_forever, () => _onDeleteCollectionClicked(context, threadId)));
+    if (isCollection && state.model?.thread.threadId != null) {
+      actions.add(PageAction("Delete collection", Icons.delete_forever, () => _onDeleteCollectionClicked(context, state.model!.thread.threadId)));
     } else {
       actions.add(isFavorite ? PageAction("Unstar", Icons.star, _onFavoriteToggleClick) : PageAction("Star", Icons.star_border, _onFavoriteToggleClick));
     }
@@ -82,11 +81,11 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
 
   void _onSearchClick() => startSearch();
 
-  void _onRefreshClick() => bloc!.add(ChanEventFetchData());
+  void _onRefreshClick() => bloc.add(ChanEventFetchData());
 
-  void _onCatalogModeToggleClick() => bloc!.add(ThreadDetailEventToggleCatalogMode());
+  void _onCatalogModeToggleClick() => bloc.add(ThreadDetailEventToggleCatalogMode());
 
-  void _onFavoriteToggleClick() => bloc!.add(ThreadDetailEventToggleFavorite());
+  void _onFavoriteToggleClick() => bloc.add(ThreadDetailEventToggleFavorite());
 
   void _onDeleteCollectionClicked(BuildContext context, int threadId) => showConfirmCollectionDeleteDialog(threadId);
 
@@ -130,13 +129,13 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
       return Constants.centeredProgressIndicator;
     }
     if (state is ThreadDetailStateContent) {
-      if (state.model?.visiblePosts?.isEmpty ?? true) {
+      if (state.model?.visiblePosts.isEmpty ?? true) {
         return Constants.noDataPlaceholder;
       }
 
       return Stack(
         children: <Widget>[
-          state.catalogMode!
+          state.catalogMode
               ? buildGrid(
                   context,
                   state.model!.visibleMediaPosts,
@@ -179,7 +178,7 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
 
   Widget buildGrid(BuildContext context, List<PostItem> mediaPosts, int selectedMediaIndex) {
     return DraggableScrollbar.semicircle(
-      controller: _gridScrollController!,
+      controller: _gridScrollController,
       child: GridView.builder(
         key: PageStorageKey<String>(KEY_GRID),
         controller: _gridScrollController,
@@ -216,13 +215,13 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
               FlatButton(
                   child: Text("Cancel".toUpperCase()),
                   onPressed: () {
-                    bloc!.add(ThreadDetailEventDialogAnswered(false));
+                    bloc.add(ThreadDetailEventDialogAnswered(false));
                     Navigator.of(context).pop();
                   }),
               FlatButton(
                   child: Text("OK, delete".toUpperCase()),
                   onPressed: () {
-                    bloc!.add(ThreadDetailEventDialogAnswered(true));
+                    bloc.add(ThreadDetailEventDialogAnswered(true));
                     Navigator.of(context).pop();
                   }),
             ],
@@ -242,7 +241,7 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
               FlatButton(
                   child: Text("OK, delete".toUpperCase()),
                   onPressed: () {
-                    bloc!.add(ThreadDetailEventDeleteCollection(threadId));
+                    bloc.add(ThreadDetailEventDeleteCollection(threadId));
                     Navigator.of(context).pop();
                   }),
             ],
@@ -255,14 +254,14 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
       return;
     }
 
-    bool isCatalogMode = state is ThreadDetailStateContent && state.catalogMode!;
+    bool isCatalogMode = state is ThreadDetailStateContent && state.catalogMode;
 
     // TODO - dirty! Find a way how to scroll when list/grid is already shown
     Future.delayed(const Duration(milliseconds: 500), () {
       if (isCatalogMode) {
-        _gridScrollController!.animateTo(_getGridScrollOffset(selectedMediaIndex), duration: Duration(milliseconds: 500), curve: Curves.easeInOut);
+        _gridScrollController.animateTo(_getGridScrollOffset(selectedMediaIndex), duration: Duration(milliseconds: 500), curve: Curves.easeInOut);
       } else {
-        _listScrollController!.scrollTo(index: selectedPostIndex, duration: Duration(milliseconds: 500), alignment: 0.5);
+        _listScrollController.scrollTo(index: selectedPostIndex, duration: Duration(milliseconds: 500), alignment: 0.5);
       }
     });
   }
@@ -279,7 +278,7 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
   }
 
   void _onItemTap(BuildContext context, PostItem post) {
-    bloc!.add(ThreadDetailEventOnPostSelected(mediaIndex: null, postId: post.postId));
+    bloc.add(ThreadDetailEventOnPostSelected(mediaIndex: null, postId: post.postId));
 
     Navigator.of(context).push(
       PageRouteBuilder(
@@ -315,5 +314,5 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
     // menu.show(widgetKey: itemKey);
   }
 
-  void _onLinkClicked(String url, BuildContext context) => bloc!.add(ThreadDetailEventOnLinkClicked(url));
+  void _onLinkClicked(String url, BuildContext context) => bloc.add(ThreadDetailEventOnLinkClicked(url));
 }

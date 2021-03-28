@@ -42,7 +42,7 @@ class FavoritesBloc extends BaseBloc<ChanEvent, ChanState> {
         bool showNsfw = Preferences.getBool(Preferences.KEY_SETTINGS_SHOW_NSFW, def: false);
         if (!showNsfw) {
           List<String?> sfwBoardIds = (await _repository!.fetchCachedBoardList(false))!.boards.map((board) => board.boardId).toList();
-          threads.removeWhere((model) => !sfwBoardIds.contains(model.thread!.boardId));
+          threads.removeWhere((model) => !sfwBoardIds.contains(model.thread.boardId));
         }
         _favoriteThreads = threads.map((e) => FavoritesThreadWrapper(e)).toList();
         _currentFavoritesRefreshIndex = 0;
@@ -70,11 +70,13 @@ class FavoritesBloc extends BaseBloc<ChanEvent, ChanState> {
 
         int newReplies = _favoriteThreads[_currentFavoritesRefreshIndex].newReplies;
         try {
-          refreshedThread = await _repository!.fetchRemoteThreadDetail(cachedThread.thread!.boardId, cachedThread.thread!.threadId, false);
-          int newMedia = refreshedThread!.thread!.images! - cachedThread.thread!.images!;
-          newReplies += refreshedThread.thread!.replies! - cachedThread.thread!.replies!;
-          if (newMedia > 0) {
-            _repository!.downloadAllMedia(refreshedThread);
+          refreshedThread = await _repository!.fetchRemoteThreadDetail(cachedThread.thread.boardId, cachedThread.thread.threadId, false);
+          if (refreshedThread != null) {
+            int newMedia = refreshedThread.thread.images! - cachedThread.thread.images!;
+            newReplies += refreshedThread.thread.replies! - cachedThread.thread.replies!;
+            if (newMedia > 0) {
+              _repository!.downloadAllMedia(refreshedThread);
+            }
           }
         } on HttpException catch (e, stackTrace) {
           // ChanLogger.v("Thread not found. Probably offline. Ignoring");
@@ -103,10 +105,10 @@ class FavoritesBloc extends BaseBloc<ChanEvent, ChanState> {
     List<FavoritesThreadWrapper> favoriteThreads;
     if (searchQuery.isNotNullNorEmpty) {
       List<FavoritesThreadWrapper> titleMatchThreads = _favoriteThreads.where((thread) {
-        return (thread.threadDetailModel.thread!.subtitle ?? "").containsIgnoreCase(searchQuery);
+        return (thread.threadDetailModel.thread.subtitle ?? "").containsIgnoreCase(searchQuery);
       }).toList();
       List<FavoritesThreadWrapper> bodyMatchThreads = _favoriteThreads.where((thread) {
-        return (thread.threadDetailModel.thread!.content ?? "").containsIgnoreCase(searchQuery);
+        return (thread.threadDetailModel.thread.content ?? "").containsIgnoreCase(searchQuery);
       }).toList();
       favoriteThreads = LinkedHashSet<FavoritesThreadWrapper>.from(titleMatchThreads + bodyMatchThreads).toList();
     } else {
@@ -120,10 +122,10 @@ class FavoritesBloc extends BaseBloc<ChanEvent, ChanState> {
     List<FavoritesThreadWrapper> customThreads;
     if (searchQuery.isNotNullNorEmpty) {
       List<FavoritesThreadWrapper> titleMatchThreads = _customThreads.where((thread) {
-        return (thread.threadDetailModel.thread!.subtitle ?? "").containsIgnoreCase(searchQuery);
+        return (thread.threadDetailModel.thread.subtitle ?? "").containsIgnoreCase(searchQuery);
       }).toList();
       List<FavoritesThreadWrapper> bodyMatchThreads = _customThreads.where((thread) {
-        return (thread.threadDetailModel.thread!.content ?? "").containsIgnoreCase(searchQuery);
+        return (thread.threadDetailModel.thread.content ?? "").containsIgnoreCase(searchQuery);
       }).toList();
       customThreads = LinkedHashSet<FavoritesThreadWrapper>.from(titleMatchThreads + bodyMatchThreads).toList();
     } else {

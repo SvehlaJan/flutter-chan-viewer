@@ -71,7 +71,7 @@ class ChanRepository {
     return null;
   }
 
-  Future<BoardDetailModel?> fetchRemoteBoardDetail(String? boardId) async {
+  Future<BoardDetailModel?> fetchRemoteBoardDetail(String boardId) async {
     BoardDetailModel boardDetailModel = await _chanApiProvider.fetchThreadList(boardId);
 
     List<int?> newThreadIds = boardDetailModel.threads.map((thread) => thread.threadId).toList();
@@ -82,18 +82,18 @@ class ChanRepository {
     return newModel;
   }
 
-  Future<BoardDetailModel?> fetchCachedBoardDetail(String? boardId) async {
+  Future<BoardDetailModel?> fetchCachedBoardDetail(String boardId) async {
     List<ThreadItem> threads = await _localDataSource.getThreadsByBoardIdAndOnlineState(boardId, OnlineState.ONLINE);
     return threads.isNotEmpty ? BoardDetailModel.withThreads(threads) : null;
   }
 
-  Future<ArchiveListModel> fetchRemoteArchiveList(String? boardId) async {
+  Future<ArchiveListModel> fetchRemoteArchiveList(String boardId) async {
     ArchiveListModel archiveList = await _chanApiProvider.fetchArchiveList(boardId);
     await _localDataSource.syncWithNewArchivedThreads(boardId, archiveList.threads);
     return archiveList;
   }
 
-  Future<Map<int?, ThreadItem?>> getArchivedThreadsMap(String? boardId) async {
+  Future<Map<int?, ThreadItem?>> getArchivedThreadsMap(String boardId) async {
     List<ThreadItem> threads = await _localDataSource.getThreadsByBoardIdAndOnlineState(boardId, OnlineState.ARCHIVED);
     return Map.fromIterable(threads, key: (thread) => thread.threadId, value: (thread) => thread);
   }
@@ -129,7 +129,7 @@ class ChanRepository {
       boardId: Constants.customBoardId,
       timestamp: ChanUtil.getNowTimestamp(),
       subtitle: name,
-      onlineStatus: OnlineState.CUSTOM,
+      onlineStatus: OnlineState.CUSTOM.index,
     );
 
     await _localDataSource.saveThread(customThread);

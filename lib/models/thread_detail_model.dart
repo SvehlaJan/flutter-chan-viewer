@@ -16,8 +16,8 @@ class ThreadDetailModel extends Equatable {
         _posts = posts;
 
   factory ThreadDetailModel.fromJson(
-    String? boardId,
-    int? threadId,
+    String boardId,
+    int threadId,
     OnlineState onlineState,
     Map<String, dynamic> parsedJson,
   ) {

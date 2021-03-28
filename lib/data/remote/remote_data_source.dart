@@ -40,7 +40,7 @@ class RemoteDataSource {
     });
   }
 
-  Future<BoardDetailModel> fetchThreadList(String? boardId) async {
+  Future<BoardDetailModel> fetchThreadList(String boardId) async {
     String url = "${FlavorConfig.values().baseUrl}/$boardId/catalog.json";
 
     final response = await client.get(Uri.parse(url));
@@ -52,7 +52,7 @@ class RemoteDataSource {
     }
   }
 
-  Future<ThreadDetailModel> fetchThreadDetail(String? boardId, int? threadId, bool isArchived) async {
+  Future<ThreadDetailModel> fetchThreadDetail(String boardId, int threadId, bool isArchived) async {
     String url = "${FlavorConfig.values().baseUrl}/$boardId/thread/$threadId.json";
 
     final response = await client.get(Uri.parse(url));
@@ -64,7 +64,7 @@ class RemoteDataSource {
     }
   }
 
-  Future<ArchiveListModel> fetchArchiveList(String? boardId) async {
+  Future<ArchiveListModel> fetchArchiveList(String boardId) async {
     String url = "${FlavorConfig.values().baseUrl}/$boardId/archive.json";
 
     final response = await client.get(Uri.parse(url));

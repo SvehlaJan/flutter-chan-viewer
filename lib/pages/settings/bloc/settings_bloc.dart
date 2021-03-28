@@ -57,10 +57,10 @@ class SettingsBloc extends Bloc<ChanEvent, ChanState> {
 
           MoorBoardOverview boardsOverview = new MoorBoardOverview(
             board.boardId,
-            threads.where((thread) => thread.onlineStatus == OnlineState.ONLINE).length,
-            threads.where((thread) => thread.onlineStatus == OnlineState.ARCHIVED).length,
-            threads.where((thread) => thread.onlineStatus == OnlineState.NOT_FOUND).length,
-            threads.where((thread) => thread.onlineStatus == OnlineState.UNKNOWN).length,
+            threads.where((thread) => thread.onlineStatus == OnlineState.ONLINE.index).length,
+            threads.where((thread) => thread.onlineStatus == OnlineState.ARCHIVED.index).length,
+            threads.where((thread) => thread.onlineStatus == OnlineState.NOT_FOUND.index).length,
+            threads.where((thread) => thread.onlineStatus == OnlineState.UNKNOWN.index).length,
           );
           _dbOverview.boards.add(boardsOverview);
         }

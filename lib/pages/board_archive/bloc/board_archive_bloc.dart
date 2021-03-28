@@ -54,8 +54,8 @@ class BoardArchiveBloc extends BaseBloc<ChanEvent, ChanState> {
             ThreadDetailModel? threadDetailModel = await _repository.fetchCachedThreadDetail(boardId, threadId);
             if (threadDetailModel == null) {
               threadDetailModel = await _repository.fetchRemoteThreadDetail(boardId, threadId, true);
-            } else if (threadDetailModel.thread.onlineStatus != OnlineState.ARCHIVED) {
-              await _repository.updateThread(threadDetailModel.thread.copyWith(onlineStatus: OnlineState.ARCHIVED));
+            } else if (threadDetailModel.thread.onlineStatus != OnlineState.ARCHIVED.index) {
+              await _repository.updateThread(threadDetailModel.thread.copyWith(onlineStatus: OnlineState.ARCHIVED.index));
             }
             archiveThreads[archiveThreads.length - 1] = ArchiveThreadWrapper(threadDetailModel!, false);
           } catch (e) {

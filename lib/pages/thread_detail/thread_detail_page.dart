@@ -66,7 +66,7 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
     bool showSearch = state is ThreadDetailStateContent && !state.showLazyLoading;
     bool isFavorite = state is ThreadDetailStateContent && state.isFavorite;
     bool isCatalogMode = state is ThreadDetailStateContent && state.catalogMode;
-    bool isCollection = state is ThreadDetailStateContent && state.model?.thread.onlineStatus == OnlineState.CUSTOM;
+    bool isCollection = state is ThreadDetailStateContent && state.model?.thread.onlineStatus == OnlineState.CUSTOM.index;
     List<PageAction> actions = [if (showSearch) PageAction("Search", Icons.search, _onSearchClick)];
     if (isCollection && state.model?.thread.threadId != null) {
       actions.add(PageAction("Delete collection", Icons.delete_forever, () => _onDeleteCollectionClicked(context, state.model!.thread.threadId)));

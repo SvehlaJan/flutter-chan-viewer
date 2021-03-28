@@ -44,39 +44,29 @@ class ThreadsDao extends DatabaseAccessor<MoorDB> with _$ThreadsDaoMixin {
       (select(threadsTable)..where((thread) => thread.onlineState.equals(onlineState.index))).get();
 
   Future<void> insertThread(ThreadsTableData entry) {
-    // return customInsert(
-    //   "INSERT OR REPLACE INTO threads_table (timestamp, subtitle, content, filename, image_id, extension, board_id, thread_id, last_modified, selected_post_id, is_favorite, online_state, reply_count, image_count, unread_replies_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(board_id, thread_id) DO UPDATE SET selected_post_id = excluded.selected_post_id, is_favorite = excluded.is_favorite, unread_replies_count = excluded.unread_replies_count",
-    //   updates: {threadsTable},
-    //   variables: [
-    //     Variable<int>(entry.timestamp),
-    //     Variable<String>(entry.subtitle),
-    //     Variable<String>(entry.content),
-    //     Variable<String>(entry.filename),
-    //     Variable<String>(entry.imageId),
-    //     Variable<String>(entry.extension),
-    //     Variable<String>(entry.boardId),
-    //     Variable<int>(entry.threadId),
-    //     Variable<int>(entry.lastModified),
-    //     Variable<int>(entry.selectedPostId),
-    //     Variable<bool>(entry.isFavorite),
-    //     Variable<int>(entry.onlineState.index),
-    //     Variable<int>(entry.replyCount),
-    //     Variable<int>(entry.imageCount),
-    //     Variable<int>(entry.unreadRepliesCount),
-    //   ],
-    // );
     return into(threadsTable).insert(
       entry,
       mode: InsertMode.insertOrReplace,
       onConflict: DoUpdate(
         (old) {
-          return ThreadsTableCompanion.custom(
-            isFavorite: old.isFavorite,
+          var data = ThreadsTableCompanion.custom(
+            boardId: Variable<String>(entry.boardId),
+            threadId: Variable<int>(entry.threadId),
+            timestamp: Variable<int?>(entry.timestamp),
+            subtitle: Variable<String?>(entry.subtitle),
+            content: Variable<String?>(entry.content),
+            filename: Variable<String?>(entry.filename),
+            imageId: Variable<String?>(entry.imageId),
+            extension: Variable<String?>(entry.extension),
+            lastModified: Variable<int?>(entry.lastModified),
+            onlineState: Variable<int?>(entry.onlineState),
             selectedPostId: old.selectedPostId,
+            isFavorite: old.isFavorite,
+            replyCount: Variable<int?>(entry.replyCount),
+            imageCount: Variable<int?>(entry.imageCount),
             unreadRepliesCount: old.unreadRepliesCount,
-            replyCount: old.replyCount,
-            imageCount: old.imageCount,
           );
+          return data;
         },
         target: [threadsTable.boardId, threadsTable.threadId],
       ),
@@ -84,23 +74,26 @@ class ThreadsDao extends DatabaseAccessor<MoorDB> with _$ThreadsDaoMixin {
   }
 
   Future<void> insertThreadsList(List<ThreadsTableData> entries) async {
-    return await batch((batch) => batch.insertAll(
-          threadsTable,
-          entries,
-          mode: InsertMode.insertOrReplace,
-          onConflict: DoUpdate(
-            (dynamic old) {
-              return ThreadsTableCompanion.custom(
-                isFavorite: old.isFavorite,
-                selectedPostId: old.selectedPostId,
-                unreadRepliesCount: old.unreadRepliesCount,
-                replyCount: old.replyCount,
-                imageCount: old.imageCount,
-              );
-            },
-            target: [threadsTable.boardId, threadsTable.threadId],
-          ),
-        ));
+    for (ThreadsTableData entry in entries) {
+      await insertThread(entry);
+    }
+    // return await batch((batch) => batch.insertAll(
+    //       threadsTable,
+    //       entries,
+    //       mode: InsertMode.insertOrReplace,
+    //       onConflict: DoUpdate(
+    //         (dynamic old) {
+    //           return ThreadsTableCompanion.custom(
+    //             isFavorite: old.isFavorite,
+    //             selectedPostId: old.selectedPostId,
+    //             unreadRepliesCount: old.unreadRepliesCount,
+    //             replyCount: old.replyCount,
+    //             imageCount: old.imageCount,
+    //           );
+    //         },
+    //         target: [threadsTable.boardId, threadsTable.threadId],
+    //       ),
+    //     ));
   }
 
   Future<bool> updateThread(ThreadsTableData entry) {
@@ -110,7 +103,7 @@ class ThreadsDao extends DatabaseAccessor<MoorDB> with _$ThreadsDaoMixin {
     });
   }
 
-  Future<int> updateThreadsOnlineState(List<ThreadsTableData> threads, OnlineState onlineState) {
+  Future<int> updateThreadsOnlineState(List<ThreadsTableData> threads, int onlineState) {
     List<int?> threadIds = threads.map((e) => e.threadId).toList();
     return (update(threadsTable)..where((t) => t.threadId.isIn(threadIds))).write(
       ThreadsTableCompanion(

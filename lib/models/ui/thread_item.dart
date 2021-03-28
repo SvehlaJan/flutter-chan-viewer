@@ -6,7 +6,7 @@ import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
 import 'package:flutter_chan_viewer/utils/chan_util.dart';
 
 class ThreadItem extends ChanPostBase with EquatableMixin {
-  final OnlineState? onlineStatus;
+  final int? onlineStatus;
   final int? lastModified;
   final int? replies;
   final int? images;
@@ -26,7 +26,7 @@ class ThreadItem extends ChanPostBase with EquatableMixin {
     filename = "",
     imageId = "",
     extension = "",
-    this.onlineStatus = OnlineState.UNKNOWN,
+    this.onlineStatus = 0, // OnlineState.ONLINE
     this.lastModified = 0,
     this.isThreadFavorite = false,
     this.replies = 0,
@@ -45,10 +45,10 @@ class ThreadItem extends ChanPostBase with EquatableMixin {
         );
 
   factory ThreadItem.fromMappedJson({
-    String? boardId,
-    int? threadId,
-    OnlineState? onlineState,
-    int? lastModified,
+    required String? boardId,
+    required int? threadId,
+    required OnlineState onlineState,
+    required int lastModified,
     required Map<String, dynamic> json,
   }) =>
       ThreadItem(
@@ -61,7 +61,7 @@ class ThreadItem extends ChanPostBase with EquatableMixin {
         filename: json['filename'],
         imageId: json['tim'].toString(),
         extension: json['ext'],
-        onlineStatus: onlineState,
+        onlineStatus: onlineState.index,
         replies: json['replies'],
         images: json['images'],
       );
@@ -71,7 +71,7 @@ class ThreadItem extends ChanPostBase with EquatableMixin {
         threadId: cacheDirective.threadId,
         timestamp: ChanUtil.getNowTimestamp(),
         lastModified: ChanUtil.getNowTimestamp(),
-        onlineStatus: OnlineState.NOT_FOUND,
+        onlineStatus: OnlineState.NOT_FOUND.index,
       );
 
   ThreadsTableData toTableData() => ThreadsTableData(
@@ -111,7 +111,7 @@ class ThreadItem extends ChanPostBase with EquatableMixin {
       );
 
   ThreadItem copyWith({
-    OnlineState? onlineStatus,
+    int? onlineStatus,
     int? lastModified,
     int? selectedPostId,
     int? replies,

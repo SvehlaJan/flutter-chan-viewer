@@ -12,16 +12,12 @@ import 'package:flutter_html/style.dart';
 class ThreadListWidget extends StatelessWidget {
   final ThreadItem thread;
   final bool showProgress;
-  final int newReplies;
 
-  const ThreadListWidget({
-    required this.thread,
-    this.showProgress = false,
-    this.newReplies = 0,
-  });
+  const ThreadListWidget({required this.thread, this.showProgress = false});
 
   @override
   Widget build(BuildContext context) {
+    int newReplies = thread.lastSeenPostIndex > 0 ? thread.replies! - thread.lastSeenPostIndex : 0;
     return Card(
       clipBehavior: Clip.antiAlias,
       margin: EdgeInsets.all(2.0),
@@ -50,7 +46,7 @@ class ThreadListWidget extends StatelessWidget {
                       children: <Widget>[
                         Row(
                           children: <Widget>[
-                            if (thread.isFavorite() ?? false)
+                            if (thread.isFavorite())
                               Padding(padding: const EdgeInsets.all(1.0), child: Icon(Icons.star, color: Colors.yellow, size: Constants.favoriteIconSize)),
                             Text(thread.threadId.toString(), style: Theme.of(context).textTheme.caption),
                             Spacer(),
@@ -71,7 +67,7 @@ class ThreadListWidget extends StatelessWidget {
                           ],
                         ),
                         Html(
-                          data: ChanUtil.getReadableHtml(thread.htmlContent ?? "", true)!,
+                          data: ChanUtil.getReadableHtml(thread.htmlContent ?? "", true),
                           style: {"*": Style(margin: EdgeInsets.zero)},
                           onLinkTap: (url, context, attributes, element) => ChanLogger.d("Html link clicked { url: $url }"),
                         )

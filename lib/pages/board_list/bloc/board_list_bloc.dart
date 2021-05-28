@@ -41,7 +41,7 @@ class BoardListBloc extends BaseBloc<ChanEvent, ChanState> {
         otherBoards = boardListModel.boards.where((board) => !favoriteBoardIds.contains(board.boardId)).toList();
         yield _buildContentState(false);
       } else if (event is ChanEventSearch || event is ChanEventShowSearch || event is ChanEventCloseSearch) {
-        super.mapEventToState(event);
+        mapEventDefaults(event);
         yield _buildContentState(false);
       }
     } catch (e, stackTrace) {

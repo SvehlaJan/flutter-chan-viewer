@@ -105,9 +105,11 @@ class _PostListWidgetState extends State<PostListWidget> with SingleTickerProvid
                   if (widget.post.subtitle.isNotNullNorEmpty) Text(widget.post.subtitle!, style: Theme.of(context).textTheme.bodyText1),
                   if (widget.post.htmlContent.isNotNullNorEmpty)
                     Html(
-                      data: ChanUtil.getReadableHtml(widget.post.htmlContent, false)!,
+                      data: ChanUtil.getReadableHtml(widget.post.htmlContent, false),
                       style: {"*": Style(margin: EdgeInsets.zero)},
-                      onLinkTap: (url, context, attributes, element) => widget.onLinkTap(url!),
+                      onLinkTap: (url, context, attributes, element) {
+                        widget.onLinkTap(url!);
+                      },
                       // onLinkTap: widget.onLinkTap,
                     ),
                 ],

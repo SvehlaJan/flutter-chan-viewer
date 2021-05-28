@@ -77,7 +77,7 @@ class _FavoritesPageState extends BasePageState<FavoritesPage> {
                 } else {
                   Widget threadWidget = item.thread?.isCustom ?? false
                       ? CustomThreadListWidget(thread: thread)
-                      : ThreadListWidget(thread: thread, showProgress: item.thread?.isLoading ?? false, newReplies: item.thread?.newReplies ?? 0);
+                      : ThreadListWidget(thread: thread, showProgress: item.thread?.isLoading ?? false);
                   return InkWell(
                     child: threadWidget,
                     onTap: () => _openThreadDetailPage(item.thread!),

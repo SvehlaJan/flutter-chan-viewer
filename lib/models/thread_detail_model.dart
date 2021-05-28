@@ -98,7 +98,7 @@ class ThreadDetailModel extends Equatable {
 
   PostItem? findPostById(int? postId) => _posts.where((post) => post.postId == postId).first;
 
-  int get selectedPostId => thread.selectedPostId ?? -1;
+  int get selectedPostId => thread.selectedPostId;
 
   int get selectedPostIndex => getPostIndex(selectedPostId);
 

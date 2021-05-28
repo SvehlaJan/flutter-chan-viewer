@@ -2,6 +2,8 @@ import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
 import 'package:flutter_chan_viewer/utils/chan_util.dart';
 import 'package:flutter_chan_viewer/utils/flavor_config.dart';
 
+enum ChanPostMediaType { MAIN, THUMBNAIL, VIDEO_THUMBNAIL }
+
 abstract class ChanPostBase {
   final String boardId;
   final int threadId;
@@ -23,13 +25,13 @@ abstract class ChanPostBase {
     required this.extension,
   });
 
-  bool? isFavorite();
+  bool isFavorite();
 
-  bool hasImage() => [".jpg", ".png", ".webp", ".gif"].contains(extension);
+  bool isImage() => [".jpg", ".png", ".webp", ".gif"].contains(extension);
 
-  bool hasGif() => [".gif"].contains(extension);
+  bool isGif() => [".gif"].contains(extension);
 
-  bool hasWebm() => [".webm"].contains(extension);
+  bool isWebm() => [".webm"].contains(extension);
 
   bool hasMedia() => filename?.isNotEmpty ?? false;
 
@@ -45,17 +47,38 @@ abstract class ChanPostBase {
 
   String? _getMediaUrl(String? boardId, String? imageId, String? extension, bool thumbnail) {
     if (boardId != null && imageId != null && extension != null) {
-      String fileName = _getFileName(imageId, extension, thumbnail);
+      String targetImageId = thumbnail ? "${imageId}s" : imageId;
+      String targetExtension = thumbnail ? ".jpg" : extension;
+      String fileName = "$targetImageId$targetExtension";
       return "${FlavorConfig.values().baseImgUrl}/$boardId/$fileName";
     } else {
       return null;
     }
   }
 
-  String _getFileName(String imageId, String extension, bool thumbnail) {
-    String targetImageId = thumbnail ? "${imageId}s" : imageId;
-    String targetExtension = thumbnail ? ".jpg" : extension;
-    return "$targetImageId$targetExtension";
+  String getMediaUrl2({ChanPostMediaType type = ChanPostMediaType.MAIN}) {
+    if (this.imageId != null && this.extension != null) {
+      String targetImageId = "";
+      String targetExtension = "";
+      switch (type) {
+        case ChanPostMediaType.MAIN:
+          targetImageId = this.imageId!;
+          targetExtension = this.extension!;
+          break;
+        case ChanPostMediaType.THUMBNAIL:
+          targetImageId = "${imageId}s";
+          targetExtension = ".jpg";
+          break;
+        case ChanPostMediaType.VIDEO_THUMBNAIL:
+          targetImageId = "${imageId}t";
+          targetExtension = ".jpg";
+          break;
+      }
+      String fileName = "$targetImageId$targetExtension";
+      return "${FlavorConfig.values().baseImgUrl}/$boardId/$fileName";
+    } else {
+      throw NullThrownError();
+    }
   }
 
   CacheDirective getCacheDirective() => CacheDirective(boardId, threadId);

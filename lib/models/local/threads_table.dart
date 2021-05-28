@@ -24,5 +24,5 @@ class ThreadsTable extends ChanBaseTable {
 
   IntColumn get imageCount => integer().nullable().withDefault(const Constant(-1))();
 
-  IntColumn get unreadRepliesCount => integer().nullable().withDefault(const Constant(-1))();
+  IntColumn get lastSeenPostIndex => integer().nullable().withDefault(const Constant(-1))();
 }

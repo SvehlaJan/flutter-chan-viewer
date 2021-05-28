@@ -14,7 +14,7 @@ class ChanUtil {
 
   static String unescapeHtml(String? raw) => unescaper.convert(raw ?? "");
 
-  static String? getReadableHtml(String? htmlContent, bool truncate) {
+  static String getReadableHtml(String? htmlContent, bool truncate) {
     if (htmlContent == null) {
       htmlContent = 'null';
     } else if (truncate && htmlContent.length > IDEAL_TEXT_LENGTH) {

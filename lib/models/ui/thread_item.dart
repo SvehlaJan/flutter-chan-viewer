@@ -10,12 +10,12 @@ class ThreadItem extends ChanPostBase with EquatableMixin {
   final int? lastModified;
   final int? replies;
   final int? images;
-  final int? selectedPostId;
-  final int? unreadRepliesCount;
-  final bool? isThreadFavorite;
+  final int selectedPostId;
+  final int lastSeenPostIndex;
+  final bool isThreadFavorite;
 
   @override
-  bool? isFavorite() => isThreadFavorite;
+  bool isFavorite() => isThreadFavorite;
 
   ThreadItem({
     required boardId,
@@ -32,7 +32,7 @@ class ThreadItem extends ChanPostBase with EquatableMixin {
     this.replies = 0,
     this.images = 0,
     this.selectedPostId = -1,
-    this.unreadRepliesCount = 0,
+    this.lastSeenPostIndex = 0,
   }) : super(
           boardId: boardId,
           threadId: threadId,
@@ -89,7 +89,7 @@ class ThreadItem extends ChanPostBase with EquatableMixin {
         isFavorite: this.isThreadFavorite,
         replyCount: this.replies,
         imageCount: this.images,
-        unreadRepliesCount: this.unreadRepliesCount,
+        lastSeenPostIndex: this.lastSeenPostIndex,
       );
 
   factory ThreadItem.fromTableData(ThreadsTableData entry) => ThreadItem(
@@ -103,11 +103,11 @@ class ThreadItem extends ChanPostBase with EquatableMixin {
         extension: entry.extension,
         onlineStatus: entry.onlineState,
         lastModified: entry.lastModified,
-        selectedPostId: entry.selectedPostId,
-        isThreadFavorite: entry.isFavorite,
+        selectedPostId: entry.selectedPostId ?? -1,
+        isThreadFavorite: entry.isFavorite ?? false,
         replies: entry.replyCount,
         images: entry.imageCount,
-        unreadRepliesCount: entry.unreadRepliesCount,
+        lastSeenPostIndex: entry.lastSeenPostIndex ?? 0,
       );
 
   ThreadItem copyWith({
@@ -116,7 +116,7 @@ class ThreadItem extends ChanPostBase with EquatableMixin {
     int? selectedPostId,
     int? replies,
     int? images,
-    int? unreadRepliesCount,
+    int? lastSeenPostIndex,
     bool? isThreadFavorite,
     String? boardId,
     int? threadId,
@@ -133,7 +133,7 @@ class ThreadItem extends ChanPostBase with EquatableMixin {
       selectedPostId: selectedPostId ?? this.selectedPostId,
       replies: replies ?? this.replies,
       images: images ?? this.images,
-      unreadRepliesCount: unreadRepliesCount ?? this.unreadRepliesCount,
+      lastSeenPostIndex: lastSeenPostIndex ?? this.lastSeenPostIndex,
       isThreadFavorite: isThreadFavorite ?? this.isThreadFavorite,
       boardId: boardId ?? this.boardId,
       threadId: threadId ?? this.threadId,
@@ -147,5 +147,5 @@ class ThreadItem extends ChanPostBase with EquatableMixin {
   }
 
   @override
-  List<Object?> get props => super.props + [onlineStatus, lastModified, selectedPostId, isThreadFavorite, replies, images, unreadRepliesCount];
+  List<Object?> get props => super.props + [onlineStatus, lastModified, selectedPostId, isThreadFavorite, replies, images, lastSeenPostIndex];
 }

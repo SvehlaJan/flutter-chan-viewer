@@ -11,7 +11,7 @@ import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 
 class ChanCachedImage extends StatelessWidget {
-  final ChanPostBase? post;
+  final ChanPostBase post;
   final BoxFit boxFit;
   final bool forceThumbnail;
   final Duration animationDuration = const Duration(milliseconds: 400);
@@ -24,34 +24,40 @@ class ChanCachedImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String? mainUrl;
+    String mainUrl;
     String? thumbnailUrl;
-    bool isDownloaded = getIt<ChanRepository>().isMediaDownloaded(post!);
+    bool isDownloaded = getIt<ChanRepository>().isMediaDownloaded(post);
 
-    if (forceThumbnail || post!.hasWebm()) {
-      mainUrl = post!.getThumbnailUrl();
+    if (forceThumbnail || post.isWebm()) {
+      mainUrl = post.getThumbnailUrl()!;
     } else {
-      mainUrl = post!.getMediaUrl();
-      thumbnailUrl = post!.getThumbnailUrl();
+      mainUrl = post.getMediaUrl()!;
+      thumbnailUrl = post.getThumbnailUrl();
     }
 
-    if (isDownloaded && post!.hasImage()) {
-      File imageFile = getIt<ChanStorage>().getMediaFile(post!.getMediaUrl()!, post!.getCacheDirective())!;
+    if (isDownloaded && post.isImage()) {
+      File imageFile = getIt<ChanStorage>().getMediaFile(post.getMediaUrl()!, post.getCacheDirective())!;
       return Image.file(
         imageFile,
         fit: boxFit,
       );
-    } else if (post!.isFavorite()!) {
-      getIt<CacheManager>().downloadFile(post!.getMediaUrl()!).then((fileInfo) {
-        return fileInfo.file.readAsBytes().then((imageData) {
-          return getIt<ChanStorage>().writeMediaFile(post!.getMediaUrl()!, post!.getCacheDirective(), imageData);
-        });
-      });
+    }
+
+    if (post.isFavorite() && post.isWebm() && isDownloaded) {
+      File? thumbnailFile = ChanRepository.getVideoThumbnail(post);
+      if (thumbnailFile != null) {
+        return Image.file(
+          thumbnailFile,
+          fit: boxFit,
+        );
+      } else {
+        ChanRepository.createVideoThumbnail(post);
+      }
     }
 
     return CachedNetworkImage(
       cacheManager: getIt<CacheManager>(),
-      imageUrl: mainUrl!,
+      imageUrl: mainUrl,
       placeholder: (context, url) => _buildPlaceholderWidget(thumbnailUrl),
       errorWidget: (context, url, error) => Icon(Icons.error),
       fadeInDuration: animationDuration,

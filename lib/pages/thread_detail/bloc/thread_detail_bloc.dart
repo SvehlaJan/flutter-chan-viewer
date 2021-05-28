@@ -34,7 +34,7 @@ class ThreadDetailBloc extends BaseBloc<ChanEvent, ChanState> {
 
   ThreadDetailBloc(this._boardId, this._threadId, this._showDownloadsOnly) : super(ChanStateLoading());
 
-  bool get _isFavorite => _threadDetailModel?.thread?.isFavorite() ?? false;
+  bool get _isFavorite => _threadDetailModel?.thread.isFavorite() ?? false;
 
   CacheDirective get cacheDirective => CacheDirective(_boardId, _threadId);
 
@@ -69,6 +69,14 @@ class ThreadDetailBloc extends BaseBloc<ChanEvent, ChanState> {
         }
         try {
           _threadDetailModel = await _repository.fetchRemoteThreadDetail(_boardId, _threadId, false);
+
+          if (_threadDetailModel != null && _isFavorite) {
+            _repository.downloadAllMedia(_threadDetailModel!);
+          }
+
+          ThreadItem updatedThread = _threadDetailModel!.thread.copyWith(lastSeenPostIndex: _threadDetailModel!.thread.replies);
+          _threadDetailModel = _threadDetailModel!.copyWith(thread: updatedThread);
+          await _repository.updateThread(_threadDetailModel!.thread);
         } on HttpException catch (e, stackTrace) {
           yield _buildContentState(event: ThreadDetailSingleEvent.SHOW_OFFLINE);
         }
@@ -87,7 +95,9 @@ class ThreadDetailBloc extends BaseBloc<ChanEvent, ChanState> {
 
           await _repository.addThreadToFavorites(_threadDetailModel!);
 
-          add(ChanEventFetchData());
+          ThreadItem updatedThread = _threadDetailModel!.thread.copyWith(isThreadFavorite: _isFavorite);
+          _threadDetailModel = _threadDetailModel!.copyWith(thread: updatedThread);
+          yield _buildContentState(lazyLoading: false);
         }
       } else if (event is ThreadDetailEventDialogAnswered) {
         if (!_isFavorite) {
@@ -171,7 +181,7 @@ class ThreadDetailBloc extends BaseBloc<ChanEvent, ChanState> {
         await _repository.deleteCustomThread(_threadDetailModel!);
         yield _buildContentState(event: ThreadDetailSingleEvent.CLOSE_PAGE);
       } else if (event is ChanEventSearch || event is ChanEventShowSearch || event is ChanEventCloseSearch) {
-        super.mapEventToState(event);
+        mapEventDefaults(event);
         yield _buildContentState(lazyLoading: false);
       }
     } catch (e, stackTrace) {

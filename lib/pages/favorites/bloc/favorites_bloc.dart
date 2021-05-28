@@ -68,21 +68,19 @@ class FavoritesBloc extends BaseBloc<ChanEvent, ChanState> {
         _favoriteThreads[_currentFavoritesRefreshIndex] = FavoritesThreadWrapper(cachedThread, isLoading: true);
         yield _buildContentState(showLazyLoading: true);
 
-        int newReplies = _favoriteThreads[_currentFavoritesRefreshIndex].newReplies;
         try {
           refreshedThread = await _repository!.fetchRemoteThreadDetail(cachedThread.thread.boardId, cachedThread.thread.threadId, false);
           if (refreshedThread != null) {
-            int newMedia = refreshedThread.thread.images! - cachedThread.thread.images!;
-            newReplies += refreshedThread.thread.replies! - cachedThread.thread.replies!;
-            if (newMedia > 0) {
-              _repository!.downloadAllMedia(refreshedThread);
-            }
+            // int newMedia = refreshedThread.thread.images! - cachedThread.thread.images!;
+            // if (newMedia > 0) {
+            _repository!.downloadAllMedia(refreshedThread);
+            // }
           }
         } on HttpException catch (e, stackTrace) {
           // ChanLogger.v("Thread not found. Probably offline. Ignoring");
         }
 
-        _favoriteThreads[_currentFavoritesRefreshIndex] = FavoritesThreadWrapper(refreshedThread ?? cachedThread, newReplies: newReplies);
+        _favoriteThreads[_currentFavoritesRefreshIndex] = FavoritesThreadWrapper(refreshedThread ?? cachedThread);
         _currentFavoritesRefreshIndex++;
         if (_currentFavoritesRefreshIndex < _favoriteThreads.length) {
           yield _buildContentState(showLazyLoading: true);
@@ -91,7 +89,7 @@ class FavoritesBloc extends BaseBloc<ChanEvent, ChanState> {
           yield _buildContentState();
         }
       } else if (event is ChanEventSearch || event is ChanEventShowSearch || event is ChanEventCloseSearch) {
-        super.mapEventToState(event);
+        mapEventDefaults(event);
         yield _buildContentState();
       }
     } catch (e, stackTrace) {

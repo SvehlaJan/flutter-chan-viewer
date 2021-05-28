@@ -118,9 +118,9 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
   }
 
   Widget _buildSinglePostItem(BuildContext context, PostItem post) {
-    if (post.hasImage()) {
+    if (post.isImage()) {
       return Center(child: ChanCachedImage(post: post, boxFit: BoxFit.fitWidth));
-    } else if (post.hasWebm()) {
+    } else if (post.isWebm()) {
       return ChanVideoPlayer(post: post);
     } else {
       return Container();
@@ -182,7 +182,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
     }
 
     return PhotoViewGalleryPageOptions.customChild(
-      child: post.hasImage() ? ChanCachedImage(post: post, boxFit: BoxFit.contain) : ChanVideoPlayer(post: post),
+      child: post.isImage() ? ChanCachedImage(post: post, boxFit: BoxFit.contain) : ChanVideoPlayer(post: post),
       heroAttributes: PhotoViewHeroAttributes(tag: post.getMediaUrl()!),
       initialScale: PhotoViewComputedScale.contained,
       minScale: PhotoViewComputedScale.contained,

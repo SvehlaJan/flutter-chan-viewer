@@ -7,9 +7,10 @@ class ArchiveListModel extends Equatable {
 
   factory ArchiveListModel.fromJson(String? boardId, List<dynamic> parsedJson) {
     List<int> threads = [];
-    for (int threadId in parsedJson as Iterable<int>) {
-      threads.add(threadId);
-    }
+    parsedJson.forEach((element) {
+      threads.add(element);
+    });
+
     return ArchiveListModel(threads);
   }
 

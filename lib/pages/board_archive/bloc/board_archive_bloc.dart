@@ -70,7 +70,7 @@ class BoardArchiveBloc extends BaseBloc<ChanEvent, ChanState> {
           yield _buildContentState(false);
         }
       } else if (event is ChanEventSearch || event is ChanEventShowSearch || event is ChanEventCloseSearch) {
-        super.mapEventToState(event);
+        mapEventDefaults(event);
         yield _buildContentState(false);
       }
     } catch (e, stackTrace) {

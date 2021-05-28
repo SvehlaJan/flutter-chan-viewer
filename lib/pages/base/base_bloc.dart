@@ -10,8 +10,7 @@ abstract class BaseBloc<E extends ChanEvent, S extends ChanState> extends Bloc<E
 
   get showSearchBar => _showSearchBar;
 
-  @override
-  Stream<S> mapEventToState(E event) async* {
+  void mapEventDefaults(E event) {
     if (event is ChanEventSearch) {
       searchQuery = event.query;
     } else if (event is ChanEventShowSearch) {

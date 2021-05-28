@@ -33,7 +33,7 @@ class ThreadsDao extends DatabaseAccessor<MoorDB> with _$ThreadsDaoMixin {
 
   Future<List<ThreadsTableData>> getThreadsByBoardIdAndOnlineState(String? boardId, OnlineState onlineState) => (select(threadsTable)
         ..where((thread) => thread.boardId.equals(boardId) & thread.onlineState.equals(onlineState.index))
-        ..orderBy([(thread) => OrderingTerm(expression: thread.lastModified, mode: OrderingMode.desc)]))
+        ..orderBy([(thread) => OrderingTerm(expression: thread.threadId, mode: OrderingMode.desc)]))
       .get();
 
   Future<List<ThreadsTableData>> getCustomThreads() => getThreadsByOnlineState(OnlineState.CUSTOM);
@@ -64,7 +64,7 @@ class ThreadsDao extends DatabaseAccessor<MoorDB> with _$ThreadsDaoMixin {
             isFavorite: old.isFavorite,
             replyCount: Variable<int?>(entry.replyCount),
             imageCount: Variable<int?>(entry.imageCount),
-            unreadRepliesCount: old.unreadRepliesCount,
+            lastSeenPostIndex: old.lastSeenPostIndex,
           );
           return data;
         },

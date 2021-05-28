@@ -33,14 +33,14 @@ class BoardDetailBloc extends BaseBloc<ChanEvent, ChanState> {
 
         _boardDetailModel = await _repository.fetchCachedBoardDetail(boardId);
         if (_boardDetailModel != null) {
-          yield _buildContentState(true);
+          yield _buildContentState(showLazyLoading: true);
         }
 
         _boardDetailModel = await _repository.fetchRemoteBoardDetail(boardId);
-        yield _buildContentState(false);
+        yield _buildContentState();
       } else if (event is ChanEventSearch) {
         searchQuery = event.query;
-        add(ChanEventFetchData());
+        yield _buildContentState();
       } else if (event is BoardDetailEventToggleFavorite) {
         _isFavorite = !_isFavorite;
         List<String> favoriteBoards = Preferences.getStringList(Preferences.KEY_FAVORITE_BOARDS);
@@ -49,10 +49,10 @@ class BoardDetailBloc extends BaseBloc<ChanEvent, ChanState> {
           favoriteBoards.add(boardId);
         }
         Preferences.setStringList(Preferences.KEY_FAVORITE_BOARDS, favoriteBoards);
-        add(ChanEventFetchData());
+        yield _buildContentState();
       } else if (event is ChanEventSearch || event is ChanEventShowSearch || event is ChanEventCloseSearch) {
-        super.mapEventToState(event);
-        yield _buildContentState(false);
+        mapEventDefaults(event);
+        yield _buildContentState();
       }
     } catch (e, stackTrace) {
       ChanLogger.e("Event error!", e, stackTrace);
@@ -60,7 +60,7 @@ class BoardDetailBloc extends BaseBloc<ChanEvent, ChanState> {
     }
   }
 
-  BoardDetailStateContent _buildContentState(bool showLazyLoading) {
+  BoardDetailStateContent _buildContentState({bool showLazyLoading = false}) {
     List<ThreadItem> threads;
     if (searchQuery.isNotNullNorEmpty) {
       List<ThreadItem> titleMatchThreads = _boardDetailModel!.threads.where((thread) => (thread.subtitle ?? "").containsIgnoreCase(searchQuery)).toList();

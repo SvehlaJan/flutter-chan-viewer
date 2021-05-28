@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
@@ -22,6 +23,7 @@ import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/utils/database_helper.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:stream_transform/stream_transform.dart';
+import 'package:video_thumbnail/video_thumbnail.dart';
 
 class ChanRepository {
   static final ChanRepository _instance = ChanRepository._internal();
@@ -74,9 +76,10 @@ class ChanRepository {
   Future<BoardDetailModel?> fetchRemoteBoardDetail(String boardId) async {
     BoardDetailModel boardDetailModel = await _chanApiProvider.fetchThreadList(boardId);
 
-    List<int?> newThreadIds = boardDetailModel.threads.map((thread) => thread.threadId).toList();
+    List<ThreadItem> newThreads = boardDetailModel.threads;
+    List<int?> newThreadIds = newThreads.map((thread) => thread.threadId).toList();
     await _localDataSource.syncWithNewOnlineThreads(boardId, newThreadIds);
-    await _localDataSource.saveThreads(boardDetailModel.threads);
+    await _localDataSource.saveThreads(newThreads);
 
     BoardDetailModel? newModel = await fetchCachedBoardDetail(boardId);
     return newModel;
@@ -207,5 +210,27 @@ class ChanRepository {
         getIt<CacheManager>().putFile(post.getMediaUrl()!, data);
       }
     });
+  }
+
+  static File? getVideoThumbnail(ChanPostBase post) {
+    String thumbnailUrl = post.getMediaUrl2(type: ChanPostMediaType.VIDEO_THUMBNAIL);
+    File? imageFile = getIt<ChanStorage>().getMediaFile(thumbnailUrl, post.getCacheDirective());
+    if (imageFile != null && imageFile.existsSync()) {
+      return imageFile;
+    }
+    return null;
+  }
+
+  static Future<File?> createVideoThumbnail(ChanPostBase post) async {
+    String videoUrl = post.getMediaUrl2();
+    String thumbnailUrl = post.getMediaUrl2(type: ChanPostMediaType.VIDEO_THUMBNAIL);
+    String videoPath = getIt<ChanStorage>().getFileAbsolutePath(videoUrl, post.getCacheDirective());
+    String thumbnailPath = getIt<ChanStorage>().getFileAbsolutePath(thumbnailUrl, post.getCacheDirective());
+    String? newFilePath =
+        await VideoThumbnail.thumbnailFile(video: videoPath, thumbnailPath: thumbnailPath, imageFormat: ImageFormat.JPEG, maxHeight: 512, quality: 80);
+    if (newFilePath != null && File(newFilePath).existsSync()) {
+      return File(newFilePath);
+    }
+    return null;
   }
 }

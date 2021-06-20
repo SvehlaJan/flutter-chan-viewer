@@ -1,11 +1,9 @@
 import 'package:flutter_chan_viewer/bloc/chan_event.dart';
 
-class ThreadDetailEventToggleFavorite extends ChanEvent {}
-
-class ThreadDetailEventDialogAnswered extends ChanEvent {
+class ThreadDetailEventToggleFavorite extends ChanEvent {
   final bool confirmed;
 
-  ThreadDetailEventDialogAnswered(this.confirmed);
+  ThreadDetailEventToggleFavorite({required this.confirmed});
 
   @override
   List<Object> get props => [confirmed];
@@ -43,7 +41,14 @@ class ThreadDetailEventOnReplyClicked extends ChanEvent {
   List<Object?> get props => [postId];
 }
 
-class ThreadDetailEventHidePost extends ChanEvent {}
+class ThreadDetailEventHidePost extends ChanEvent {
+  final int postId;
+
+  ThreadDetailEventHidePost(this.postId);
+
+  @override
+  List<Object?> get props => [postId];
+}
 
 class ThreadDetailEventCreateNewCollection extends ChanEvent {
   final String name;
@@ -65,9 +70,10 @@ class ThreadDetailEventDeleteCollection extends ChanEvent {
 
 class ThreadDetailEventAddPostToCollection extends ChanEvent {
   final String name;
+  final int postId;
 
-  ThreadDetailEventAddPostToCollection(this.name);
+  ThreadDetailEventAddPostToCollection(this.name, this.postId);
 
   @override
-  List<Object> get props => [name];
+  List<Object> get props => [name, postId];
 }

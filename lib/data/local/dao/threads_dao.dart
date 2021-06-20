@@ -25,7 +25,7 @@ class ThreadsDao extends DatabaseAccessor<MoorDB> with _$ThreadsDaoMixin {
   Future<List<int>> getFavoriteThreadIds() => (select(threadsTable)..where((thread) => thread.isFavorite.equals(true))).map((thread) => thread.threadId).get();
 
   Future<List<ThreadsTableData>> getFavoriteThreads() => (select(threadsTable)
-        ..where((thread) => thread.isFavorite.equals(true))
+        ..where((thread) => thread.isFavorite.equals(true) & thread.onlineState.equals(OnlineState.CUSTOM.index).not())
         ..orderBy([(thread) => OrderingTerm(expression: thread.timestamp, mode: OrderingMode.desc)]))
       .get();
 
@@ -103,11 +103,19 @@ class ThreadsDao extends DatabaseAccessor<MoorDB> with _$ThreadsDaoMixin {
     });
   }
 
-  Future<int> updateThreadsOnlineState(List<ThreadsTableData> threads, int onlineState) {
-    List<int?> threadIds = threads.map((e) => e.threadId).toList();
+  Future<void> updateThreadsOnlineState(List<ThreadsTableData> threads, OnlineState onlineState) {
+    List<int> threadIds = threads.map((e) => e.threadId).toList();
     return (update(threadsTable)..where((t) => t.threadId.isIn(threadIds))).write(
       ThreadsTableCompanion(
-        onlineState: Value(onlineState),
+        onlineState: Value(onlineState.index),
+      ),
+    );
+  }
+
+  Future<void> updateThreadOnlineState(int threadId, OnlineState onlineState) {
+    return (update(threadsTable)..where((t) => t.threadId.equals(threadId))).write(
+      ThreadsTableCompanion(
+        onlineState: Value(onlineState.index),
       ),
     );
   }

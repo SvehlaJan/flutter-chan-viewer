@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'dart:collection';
+import 'dart:io';
 
 import 'package:flutter_chan_viewer/bloc/chan_event.dart';
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/data/remote/app_exception.dart';
 import 'package:flutter_chan_viewer/locator.dart';
+import 'package:flutter_chan_viewer/models/local/threads_table.dart';
 import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
 import 'package:flutter_chan_viewer/pages/base/base_bloc.dart';
 import 'package:flutter_chan_viewer/pages/favorites/bloc/favorites_event.dart';
@@ -22,7 +24,6 @@ class FavoritesBloc extends BaseBloc<ChanEvent, ChanState> {
   static const int DETAIL_REFRESH_TIMEOUT = 60 * 1000; // 60 seconds
   List<FavoritesThreadWrapper> _favoriteThreads = <FavoritesThreadWrapper>[];
   List<FavoritesThreadWrapper> _customThreads = <FavoritesThreadWrapper>[];
-  int _currentFavoritesRefreshIndex = 0;
   int _lastDetailRefreshTimestamp = 0;
 
   FavoritesBloc() : super(ChanStateLoading());
@@ -45,7 +46,6 @@ class FavoritesBloc extends BaseBloc<ChanEvent, ChanState> {
           threads.removeWhere((model) => !sfwBoardIds.contains(model.thread.boardId));
         }
         _favoriteThreads = threads.map((e) => FavoritesThreadWrapper(e)).toList();
-        _currentFavoritesRefreshIndex = 0;
         _customThreads = (await _repository!.getCustomThreads())
             .map((thread) => FavoritesThreadWrapper(
                   ThreadDetailModel.fromThreadAndPosts(thread, []),
@@ -57,34 +57,35 @@ class FavoritesBloc extends BaseBloc<ChanEvent, ChanState> {
         bool shouldRefreshDetails = event.forceRefresh || currentTimestamp - _lastDetailRefreshTimestamp > DETAIL_REFRESH_TIMEOUT;
         if (_favoriteThreads.isNotEmpty && shouldRefreshDetails) {
           _lastDetailRefreshTimestamp = currentTimestamp;
-          add(FavoritesEventFetchDetail(_currentFavoritesRefreshIndex));
+          add(FavoritesEventFetchDetail(0));
         } else {
           yield _buildContentState();
         }
       } else if (event is FavoritesEventFetchDetail) {
-        ThreadDetailModel cachedThread = _favoriteThreads[_currentFavoritesRefreshIndex].threadDetailModel;
+        int refreshIndex = event.index;
+        ThreadDetailModel cachedThread = _favoriteThreads[refreshIndex].threadDetailModel;
         ThreadDetailModel? refreshedThread;
 
-        _favoriteThreads[_currentFavoritesRefreshIndex] = FavoritesThreadWrapper(cachedThread, isLoading: true);
-        yield _buildContentState(showLazyLoading: true);
+        if ([OnlineState.ONLINE.index, OnlineState.UNKNOWN.index].contains(cachedThread.thread.onlineStatus)) {
+          _favoriteThreads[refreshIndex] = FavoritesThreadWrapper(cachedThread, isLoading: true);
+          yield _buildContentState(lazyLoading: true);
 
-        try {
-          refreshedThread = await _repository!.fetchRemoteThreadDetail(cachedThread.thread.boardId, cachedThread.thread.threadId, false);
-          if (refreshedThread != null) {
-            // int newMedia = refreshedThread.thread.images! - cachedThread.thread.images!;
-            // if (newMedia > 0) {
+          try {
+            refreshedThread = await _repository!.fetchRemoteThreadDetail(cachedThread.thread.boardId, cachedThread.thread.threadId, false);
             _repository!.downloadAllMedia(refreshedThread);
-            // }
+          } on HttpException catch (e, stackTrace) {
+            ChanLogger.v("Thread not found. Probably offline. Ignoring");
+          } on SocketException catch (e) {
+            yield _buildContentState(event: ChanSingleEvent.SHOW_OFFLINE);
           }
-        } on HttpException catch (e, stackTrace) {
-          // ChanLogger.v("Thread not found. Probably offline. Ignoring");
+        } else {
+          print("Favorite thread is already archived or dead. Not refreshing.");
         }
 
-        _favoriteThreads[_currentFavoritesRefreshIndex] = FavoritesThreadWrapper(refreshedThread ?? cachedThread);
-        _currentFavoritesRefreshIndex++;
-        if (_currentFavoritesRefreshIndex < _favoriteThreads.length) {
-          yield _buildContentState(showLazyLoading: true);
-          add(FavoritesEventFetchDetail(_currentFavoritesRefreshIndex));
+        _favoriteThreads[refreshIndex] = FavoritesThreadWrapper(refreshedThread ?? cachedThread);
+        if (refreshIndex + 1 < _favoriteThreads.length) {
+          yield _buildContentState(lazyLoading: true);
+          add(FavoritesEventFetchDetail(refreshIndex + 1));
         } else {
           yield _buildContentState();
         }
@@ -94,11 +95,14 @@ class FavoritesBloc extends BaseBloc<ChanEvent, ChanState> {
       }
     } catch (e, stackTrace) {
       ChanLogger.e("Event error!", e, stackTrace);
+      if (e is SocketException) {
+        yield _buildContentState();
+      }
       yield ChanStateError(e.toString());
     }
   }
 
-  FavoritesStateContent _buildContentState({bool showLazyLoading = false}) {
+  FavoritesStateContent _buildContentState({bool lazyLoading = false, ChanSingleEvent? event}) {
     List<FavoritesItemWrapper> threads = [];
     List<FavoritesThreadWrapper> favoriteThreads;
     if (searchQuery.isNotNullNorEmpty) {
@@ -134,6 +138,11 @@ class FavoritesBloc extends BaseBloc<ChanEvent, ChanState> {
       threads.addAll(customThreads.map((thread) => FavoritesItemWrapper(false, thread, null)));
     }
 
-    return FavoritesStateContent(threads: threads, showLazyLoading: showLazyLoading, showSearchBar: showSearchBar);
+    return FavoritesStateContent(
+      threads: threads,
+      showLazyLoading: lazyLoading,
+      event: event,
+      showSearchBar: showSearchBar,
+    );
   }
 }

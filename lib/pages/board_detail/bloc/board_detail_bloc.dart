@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:collection';
+import 'dart:io';
 
 import 'package:flutter_chan_viewer/bloc/chan_event.dart';
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
+import 'package:flutter_chan_viewer/data/remote/app_exception.dart';
 import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/models/board_detail_model.dart';
 import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
@@ -33,11 +35,19 @@ class BoardDetailBloc extends BaseBloc<ChanEvent, ChanState> {
 
         _boardDetailModel = await _repository.fetchCachedBoardDetail(boardId);
         if (_boardDetailModel != null) {
-          yield _buildContentState(showLazyLoading: true);
+          yield _buildContentState(lazyLoading: true);
         }
 
-        _boardDetailModel = await _repository.fetchRemoteBoardDetail(boardId);
-        yield _buildContentState();
+        try {
+          _boardDetailModel = await _repository.fetchRemoteBoardDetail(boardId);
+          yield _buildContentState();
+        } catch (e, stackTrace) {
+          if (e is HttpException || e is SocketException) {
+            yield _buildContentState(event: ChanSingleEvent.SHOW_OFFLINE);
+          } else {
+            rethrow;
+          }
+        }
       } else if (event is ChanEventSearch) {
         searchQuery = event.query;
         yield _buildContentState();
@@ -60,7 +70,7 @@ class BoardDetailBloc extends BaseBloc<ChanEvent, ChanState> {
     }
   }
 
-  BoardDetailStateContent _buildContentState({bool showLazyLoading = false}) {
+  BoardDetailStateContent _buildContentState({bool lazyLoading = false, ChanSingleEvent? event}) {
     List<ThreadItem> threads;
     if (searchQuery.isNotNullNorEmpty) {
       List<ThreadItem> titleMatchThreads = _boardDetailModel!.threads.where((thread) => (thread.subtitle ?? "").containsIgnoreCase(searchQuery)).toList();
@@ -72,7 +82,8 @@ class BoardDetailBloc extends BaseBloc<ChanEvent, ChanState> {
 
     return BoardDetailStateContent(
       threads: threads,
-      showLazyLoading: showLazyLoading,
+      showLazyLoading: lazyLoading,
+      event: event,
       isFavorite: _isFavorite,
       showSearchBar: showSearchBar,
     );

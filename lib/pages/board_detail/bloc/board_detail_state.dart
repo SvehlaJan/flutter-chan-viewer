@@ -8,9 +8,10 @@ class BoardDetailStateContent extends ChanStateContent {
   const BoardDetailStateContent({
     required showSearchBar,
     required showLazyLoading,
+    required event,
     required this.threads,
     required this.isFavorite,
-  }) : super(showSearchBar: showSearchBar, showLazyLoading: showLazyLoading);
+  }) : super(showSearchBar: showSearchBar, showLazyLoading: showLazyLoading, event: event);
 
   @override
   List<Object?> get props => super.props..addAll([threads, isFavorite]);

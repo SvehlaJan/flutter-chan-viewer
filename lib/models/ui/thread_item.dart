@@ -8,8 +8,8 @@ import 'package:flutter_chan_viewer/utils/chan_util.dart';
 class ThreadItem extends ChanPostBase with EquatableMixin {
   final int? onlineStatus;
   final int? lastModified;
-  final int? replies;
-  final int? images;
+  final int replies;
+  final int images;
   final int selectedPostId;
   final int lastSeenPostIndex;
   final bool isThreadFavorite;
@@ -105,8 +105,8 @@ class ThreadItem extends ChanPostBase with EquatableMixin {
         lastModified: entry.lastModified,
         selectedPostId: entry.selectedPostId ?? -1,
         isThreadFavorite: entry.isFavorite ?? false,
-        replies: entry.replyCount,
-        images: entry.imageCount,
+        replies: entry.replyCount ?? -1,
+        images: entry.imageCount ?? -1,
         lastSeenPostIndex: entry.lastSeenPostIndex ?? 0,
       );
 

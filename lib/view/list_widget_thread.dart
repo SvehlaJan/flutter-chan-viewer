@@ -17,7 +17,7 @@ class ThreadListWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    int newReplies = thread.lastSeenPostIndex > 0 ? thread.replies! - thread.lastSeenPostIndex : 0;
+    int newReplies = thread.lastSeenPostIndex > 0 ? thread.replies - thread.lastSeenPostIndex : 0;
     return Card(
       clipBehavior: Clip.antiAlias,
       margin: EdgeInsets.all(2.0),
@@ -50,7 +50,7 @@ class ThreadListWidget extends StatelessWidget {
                               Padding(padding: const EdgeInsets.all(1.0), child: Icon(Icons.star, color: Colors.yellow, size: Constants.favoriteIconSize)),
                             Text(thread.threadId.toString(), style: Theme.of(context).textTheme.caption),
                             Spacer(),
-                            Text("${thread.replies ?? "?"}p/${thread.images ?? "?"}m", style: Theme.of(context).textTheme.caption),
+                            Text("${thread.replies}p/${thread.images}m", style: Theme.of(context).textTheme.caption),
                             Spacer(),
                             Text(ChanUtil.getHumanDate(thread.timestamp), style: Theme.of(context).textTheme.caption),
                           ],

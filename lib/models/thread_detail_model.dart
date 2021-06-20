@@ -12,7 +12,7 @@ class ThreadDetailModel extends Equatable {
   ThreadDetailModel({
     required ThreadItem thread,
     required List<PostItem> posts,
-  })   : thread = thread,
+  })  : thread = thread,
         _posts = posts;
 
   factory ThreadDetailModel.fromJson(
@@ -105,6 +105,8 @@ class ThreadDetailModel extends Equatable {
   int get selectedMediaIndex => getMediaIndex(selectedPostId);
 
   PostItem? get selectedPost => _posts.where((post) => post.postId == selectedPostId).first;
+
+  bool get isFavorite => thread.isFavorite();
 
   @override
   List<Object?> get props => [thread, _posts];

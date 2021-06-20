@@ -8,10 +8,12 @@ class BoardArchiveStateContent extends ChanStateContent {
   const BoardArchiveStateContent({
     required showSearchBar,
     required showLazyLoading,
+    required event,
     required this.threads,
   }) : super(
           showSearchBar: showSearchBar,
           showLazyLoading: showLazyLoading,
+          event: event,
         );
 
   @override

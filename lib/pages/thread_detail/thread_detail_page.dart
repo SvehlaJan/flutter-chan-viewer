@@ -85,7 +85,7 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
 
   void _onCatalogModeToggleClick() => bloc.add(ThreadDetailEventToggleCatalogMode());
 
-  void _onFavoriteToggleClick() => bloc.add(ThreadDetailEventToggleFavorite());
+  void _onFavoriteToggleClick() => bloc.add(ThreadDetailEventToggleFavorite(confirmed: false));
 
   void _onDeleteCollectionClicked(BuildContext context, int threadId) => showConfirmCollectionDeleteDialog(threadId);
 
@@ -100,10 +100,10 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
           case ThreadDetailSingleEvent.SCROLL_TO_SELECTED:
             scrollToSelectedPost(state.selectedPostIndex, state.selectedMediaIndex, state);
             break;
-          case ThreadDetailSingleEvent.CLOSE_PAGE:
+          case ChanSingleEvent.CLOSE_PAGE:
             Navigator.of(context).pop();
             break;
-          case ThreadDetailSingleEvent.SHOW_OFFLINE:
+          case ChanSingleEvent.SHOW_OFFLINE:
             showOfflineSnackbar(context);
             break;
           default:
@@ -215,13 +215,12 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
               FlatButton(
                   child: Text("Cancel".toUpperCase()),
                   onPressed: () {
-                    bloc.add(ThreadDetailEventDialogAnswered(false));
                     Navigator.of(context).pop();
                   }),
               FlatButton(
                   child: Text("OK, delete".toUpperCase()),
                   onPressed: () {
-                    bloc.add(ThreadDetailEventDialogAnswered(true));
+                    bloc.add(ThreadDetailEventToggleFavorite(confirmed: true));
                     Navigator.of(context).pop();
                   }),
             ],
@@ -286,7 +285,10 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
           pageBuilder: (_, __, ___) {
             return BlocProvider.value(
               value: BlocProvider.of<ThreadDetailBloc>(context),
-              child: GalleryPage(showAsReply: false),
+              child: GalleryPage(
+                showAsReply: false,
+                selectedPostId: post.postId,
+              ),
             );
           }),
     );

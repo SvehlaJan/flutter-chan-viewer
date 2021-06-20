@@ -20,13 +20,16 @@ class Constants {
 
   static const String customBoardId = "--CUSTOM--";
 
+  static const String downloaderPortName = "downloader_send_port";
+
   static const double favoriteIconSize = 16.0;
   static const double avatarImageSize = 100.0;
   static const double avatarImageMaxHeight = 600.0;
   static const double progressPlaceholderSize = 40.0;
   static const double errorPlaceholderSize = 100.0;
   static const double minFlingDistance = 100.0;
-  static const Widget progressIndicator = const SizedBox(width: Constants.progressPlaceholderSize, height: Constants.progressPlaceholderSize, child: CircularProgressIndicator());
+  static const Widget progressIndicator =
+      const SizedBox(width: Constants.progressPlaceholderSize, height: Constants.progressPlaceholderSize, child: CircularProgressIndicator());
   static const Widget centeredProgressIndicator = const Center(child: progressIndicator);
   static const Widget noDataPlaceholder = const Center(child: Text("No data :-("));
 

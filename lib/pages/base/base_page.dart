@@ -19,6 +19,12 @@ abstract class BasePageState<T extends StatefulWidget> extends State<T> with Sin
     super.initState();
   }
 
+  @override
+  void dispose() {
+    bloc.add(ChanEventOnDispose());
+    super.dispose();
+  }
+
   String? getPageTitle() => null;
 
   void finishScreen() async {
@@ -123,8 +129,8 @@ abstract class BasePageState<T extends StatefulWidget> extends State<T> with Sin
   }
 
   void showOfflineSnackbar(BuildContext context) {
-    final snackBar = SnackBar(content: Text("Thread seems to be no longer available."));
-    Scaffold.of(context).showSnackBar(snackBar);
+    final snackBar = SnackBar(content: Text("Failed to fetch content online."));
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 }
 

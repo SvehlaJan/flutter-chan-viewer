@@ -8,8 +8,9 @@ class FavoritesStateContent extends ChanStateContent {
   const FavoritesStateContent({
     required showSearchBar,
     required showLazyLoading,
+    required event,
     required this.threads,
-  }) : super(showSearchBar: showSearchBar, showLazyLoading: showLazyLoading);
+  }) : super(showSearchBar: showSearchBar, showLazyLoading: showLazyLoading, event: event);
 
   @override
   List<Object?> get props => super.props..addAll([threads]);

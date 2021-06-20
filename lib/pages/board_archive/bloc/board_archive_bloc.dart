@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:collection';
+import 'dart:io';
 
 import 'package:flutter_chan_viewer/bloc/chan_event.dart';
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
+import 'package:flutter_chan_viewer/data/remote/app_exception.dart';
 import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/models/archive_list_model.dart';
 import 'package:flutter_chan_viewer/models/local/threads_table.dart';
@@ -30,12 +32,20 @@ class BoardArchiveBloc extends BaseBloc<ChanEvent, ChanState> {
     try {
       if (event is ChanEventFetchData) {
         yield ChanStateLoading();
-        ArchiveListModel boardDetailModel = await _repository.fetchRemoteArchiveList(boardId);
-        archiveThreads.clear();
-        archiveThreadIds = boardDetailModel.threads.reversed.toList();
-        cachedThreadsMap = await _repository.getArchivedThreadsMap(boardId);
+        try {
+          ArchiveListModel boardDetailModel = await _repository.fetchRemoteArchiveList(boardId);
+          archiveThreads.clear();
+          archiveThreadIds = boardDetailModel.threads.reversed.toList();
+          cachedThreadsMap = await _repository.getArchivedThreadsMap(boardId);
 
-        add(BoardArchiveEventFetchDetail(archiveThreads.length));
+          add(BoardArchiveEventFetchDetail(archiveThreads.length));
+        } catch (e, stackTrace) {
+          if (e is HttpException || e is SocketException) {
+            yield _buildContentState(event: ChanSingleEvent.SHOW_OFFLINE);
+          } else {
+            rethrow;
+          }
+        }
       } else if (event is BoardArchiveEventFetchDetail) {
         int? threadId = archiveThreadIds[event.index];
 
@@ -48,7 +58,7 @@ class BoardArchiveBloc extends BaseBloc<ChanEvent, ChanState> {
           }
         } else {
           archiveThreads.add(ArchiveThreadWrapper(ThreadDetailModel.fromCacheDirective(CacheDirective(boardId, threadId)), true));
-          yield _buildContentState(true);
+          yield _buildContentState(lazyLoading: true);
 
           try {
             ThreadDetailModel? threadDetailModel = await _repository.fetchCachedThreadDetail(boardId, threadId);
@@ -57,21 +67,21 @@ class BoardArchiveBloc extends BaseBloc<ChanEvent, ChanState> {
             } else if (threadDetailModel.thread.onlineStatus != OnlineState.ARCHIVED.index) {
               await _repository.updateThread(threadDetailModel.thread.copyWith(onlineStatus: OnlineState.ARCHIVED.index));
             }
-            archiveThreads[archiveThreads.length - 1] = ArchiveThreadWrapper(threadDetailModel!, false);
+            archiveThreads[archiveThreads.length - 1] = ArchiveThreadWrapper(threadDetailModel, false);
           } catch (e) {
             ChanLogger.e("Failed to load archived thread", e);
           }
         }
 
         if (archiveThreads.length < archiveThreadIds.length) {
-          yield _buildContentState(archiveThreads.length % 2 == 0);
+          yield _buildContentState(lazyLoading: archiveThreads.length % 2 == 0);
           add(BoardArchiveEventFetchDetail(archiveThreads.length));
         } else {
-          yield _buildContentState(false);
+          yield _buildContentState(lazyLoading: false);
         }
       } else if (event is ChanEventSearch || event is ChanEventShowSearch || event is ChanEventCloseSearch) {
         mapEventDefaults(event);
-        yield _buildContentState(false);
+        yield _buildContentState(lazyLoading: false);
       }
     } catch (e, stackTrace) {
       ChanLogger.e("Event error!", e, stackTrace);
@@ -79,7 +89,7 @@ class BoardArchiveBloc extends BaseBloc<ChanEvent, ChanState> {
     }
   }
 
-  BoardArchiveStateContent _buildContentState(bool showLazyLoading) {
+  BoardArchiveStateContent _buildContentState({bool lazyLoading = false, ChanSingleEvent? event}) {
     List<ArchiveThreadWrapper> threads;
     if (searchQuery.isNotNullNorEmpty) {
       List<ArchiveThreadWrapper> titleMatchThreads =
@@ -90,6 +100,11 @@ class BoardArchiveBloc extends BaseBloc<ChanEvent, ChanState> {
     } else {
       threads = archiveThreads;
     }
-    return BoardArchiveStateContent(threads: threads, showSearchBar: showSearchBar, showLazyLoading: showLazyLoading);
+    return BoardArchiveStateContent(
+      threads: threads,
+      showLazyLoading: lazyLoading,
+      showSearchBar: showSearchBar,
+      event: event,
+    );
   }
 }

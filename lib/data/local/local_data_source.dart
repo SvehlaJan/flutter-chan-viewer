@@ -49,6 +49,10 @@ class LocalDataSource {
     return _threadsDao.updateThread(thread.toTableData());
   }
 
+  Future<void> updateThreadOnlineState(int threadId, OnlineState onlineState) async {
+    return _threadsDao.updateThreadOnlineState(threadId, onlineState);
+  }
+
   Future<ThreadItem?> getThreadById(String boardId, int threadId) async {
     ThreadsTableData? threadTableData = await _threadsDao.getThreadById(boardId, threadId);
     return threadTableData != null ? ThreadItem.fromTableData(threadTableData) : null;
@@ -95,7 +99,7 @@ class LocalDataSource {
   Future<void> syncWithNewOnlineThreads(String? boardId, List<int?> onlineThreadIds) async {
     List<ThreadsTableData> localThreads = await _threadsDao.getThreadsByBoardIdAndOnlineState(boardId, OnlineState.ONLINE);
     List<ThreadsTableData> notFoundThreads = localThreads.where((thread) => !onlineThreadIds.contains(thread.threadId)).toList();
-    await _threadsDao.updateThreadsOnlineState(notFoundThreads, OnlineState.UNKNOWN.index);
+    await _threadsDao.updateThreadsOnlineState(notFoundThreads, OnlineState.UNKNOWN);
 
 //    deleteRedundantUnknownThreads();
 
@@ -121,7 +125,7 @@ class LocalDataSource {
 
     List<ThreadsTableData> localOnlineThreads = await _threadsDao.getThreadsByBoardIdAndOnlineState(boardId, OnlineState.ONLINE);
     List<ThreadsTableData> newArchivedThreads = localOnlineThreads.where((thread) => archivedThreadIds.contains(thread.threadId)).toList();
-    await _threadsDao.updateThreadsOnlineState(newArchivedThreads, OnlineState.ARCHIVED.index);
+    await _threadsDao.updateThreadsOnlineState(newArchivedThreads, OnlineState.ARCHIVED);
     return null;
   }
 

@@ -24,7 +24,7 @@ class GalleryPage extends StatefulWidget {
 
   const GalleryPage({
     required this.showAsReply,
-    this.selectedPostId = -1,
+    required this.selectedPostId,
   });
 
   @override
@@ -75,14 +75,14 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
                   context,
                   threads,
                   _newCollectionTextController,
-                  _onCreateNewCollectionClicked,
-                  _onAddPostToCollectionClicked,
+                  (context, name) => {bloc.add(ThreadDetailEventCreateNewCollection(name))},
+                  (context, name) => {bloc.add(ThreadDetailEventAddPostToCollection(name, widget.selectedPostId))},
                 );
                 break;
               case ThreadDetailSingleEvent.SHOW_POST_ADDED_TO_COLLECTION_SUCCESS:
                 showPostAddedToCollectionSuccessSnackbar(context);
                 break;
-              case ThreadDetailSingleEvent.SHOW_OFFLINE:
+              case ChanSingleEvent.SHOW_OFFLINE:
                 showOfflineSnackbar(context);
                 break;
               default:
@@ -277,8 +277,8 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                IconButton(icon: Icon(Icons.visibility_off), onPressed: () => _onHidePostClicked(context)),
-                IconButton(icon: Icon(Icons.add), onPressed: () => _onCollectionsClicked(context)),
+                IconButton(icon: Icon(Icons.visibility_off), onPressed: () => _onHidePostClicked(context, post)),
+                IconButton(icon: Icon(Icons.add), onPressed: () => _onCollectionsClicked(context, post)),
               ],
             ),
           ),
@@ -298,27 +298,23 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
 
   void _onLinkClicked(BuildContext context, String url) => bloc.add(ThreadDetailEventOnReplyClicked(ChanUtil.getPostIdFromUrl(url)));
 
-  void _onHidePostClicked(BuildContext context) => bloc.add(ThreadDetailEventHidePost());
+  void _onHidePostClicked(BuildContext context, PostItem post) => bloc.add(ThreadDetailEventHidePost(post.postId));
 
-  void _onCollectionsClicked(BuildContext context) {
+  void _onCollectionsClicked(BuildContext context, PostItem post) {
     if (bloc.state is ThreadDetailStateContent) {
       List<ThreadItem> threads = bloc.state.customThreads;
       DialogUtil.showCustomCollectionPickerDialog(
         context,
         threads,
         _newCollectionTextController,
-        _onCreateNewCollectionClicked,
-        _onAddPostToCollectionClicked,
+        (context, name) => {bloc.add(ThreadDetailEventCreateNewCollection(name))},
+        (context, name) => {bloc.add(ThreadDetailEventAddPostToCollection(name, post.postId))},
       );
     }
   }
 
-  void _onAddPostToCollectionClicked(BuildContext context, String name) => bloc.add(ThreadDetailEventAddPostToCollection(name));
-
-  void _onCreateNewCollectionClicked(BuildContext context, String name) => bloc.add(ThreadDetailEventCreateNewCollection(name));
-
   void showPostAddedToCollectionSuccessSnackbar(BuildContext context) {
     final snackBar = SnackBar(content: Text("Post added to collection."));
-    Scaffold.of(context).showSnackBar(snackBar);
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 }

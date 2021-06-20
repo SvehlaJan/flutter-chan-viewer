@@ -77,17 +77,29 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<BoardDetailBloc, ChanState>(
-      bloc: bloc as BoardDetailBloc?,
-      builder: (context, state) {
-        return buildScaffold(
-          context,
-          buildBody(context, state, ((thread) => _openThreadDetailPage(thread))),
-          pageActions: getPageActions(context, state),
-          showSearchBar: state.showSearchBar,
-        );
-      },
-    );
+    return BlocConsumer<BoardDetailBloc, ChanState>(listener: (context, state) {
+      switch (state.event) {
+        case ChanSingleEvent.CLOSE_PAGE:
+          Navigator.of(context).pop();
+          break;
+        case ChanSingleEvent.SHOW_OFFLINE:
+          showOfflineSnackbar(context);
+          break;
+        default:
+          break;
+      }
+    }, builder: (context, state) {
+      return BlocBuilder<BoardDetailBloc, ChanState>(
+          bloc: bloc as BoardDetailBloc?,
+          builder: (context, state) {
+            return buildScaffold(
+              context,
+              buildBody(context, state, ((thread) => _openThreadDetailPage(thread))),
+              pageActions: getPageActions(context, state),
+              showSearchBar: state.showSearchBar,
+            );
+          });
+    });
   }
 
   Widget buildBody(BuildContext context, ChanState state, Function(ThreadItem) onItemClicked) {

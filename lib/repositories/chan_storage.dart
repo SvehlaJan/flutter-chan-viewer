@@ -105,7 +105,7 @@ class ChanStorage {
       File result = await targetMediaFile.writeAsBytes(data, flush: false);
       return result;
     } catch (e, stackTrace) {
-      ChanLogger.e("File write error!", e, stackTrace);
+      ChanLogger.e("File copy error!", e, stackTrace);
       return null;
     }
   }

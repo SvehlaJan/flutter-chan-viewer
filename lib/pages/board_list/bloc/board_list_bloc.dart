@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter_chan_viewer/bloc/chan_event.dart';
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
+import 'package:flutter_chan_viewer/data/remote/app_exception.dart';
 import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/models/board_list_model.dart';
 import 'package:flutter_chan_viewer/models/helper/chan_board_item_wrapper.dart';
@@ -33,16 +35,24 @@ class BoardListBloc extends BaseBloc<ChanEvent, ChanState> {
         if (boardListModel != null) {
           favoriteBoards = boardListModel.boards.where((board) => favoriteBoardIds.contains(board.boardId)).toList();
           otherBoards = boardListModel.boards.where((board) => !favoriteBoardIds.contains(board.boardId)).toList();
-          yield _buildContentState(true);
+          yield _buildContentState(lazyLoading: true);
         }
 
-        boardListModel = await _repository.fetchRemoteBoardList(showNsfw);
-        favoriteBoards = boardListModel!.boards.where((board) => favoriteBoardIds.contains(board.boardId)).toList();
-        otherBoards = boardListModel.boards.where((board) => !favoriteBoardIds.contains(board.boardId)).toList();
-        yield _buildContentState(false);
+        try {
+          boardListModel = await _repository.fetchRemoteBoardList(showNsfw);
+          favoriteBoards = boardListModel!.boards.where((board) => favoriteBoardIds.contains(board.boardId)).toList();
+          otherBoards = boardListModel.boards.where((board) => !favoriteBoardIds.contains(board.boardId)).toList();
+          yield _buildContentState(lazyLoading: false);
+        } catch (e) {
+          if (e is HttpException || e is SocketException) {
+            yield _buildContentState(event: ChanSingleEvent.SHOW_OFFLINE);
+          } else {
+            rethrow;
+          }
+        }
       } else if (event is ChanEventSearch || event is ChanEventShowSearch || event is ChanEventCloseSearch) {
         mapEventDefaults(event);
-        yield _buildContentState(false);
+        yield _buildContentState(lazyLoading: false);
       }
     } catch (e, stackTrace) {
       ChanLogger.e("Event error!", e, stackTrace);
@@ -50,7 +60,7 @@ class BoardListBloc extends BaseBloc<ChanEvent, ChanState> {
     }
   }
 
-  BoardListStateContent _buildContentState(bool showLazyLoading) {
+  BoardListStateContent _buildContentState({bool lazyLoading = false, ChanSingleEvent? event}) {
     List<ChanBoardItemWrapper> boards = [];
     List<ChanBoardItemWrapper> filteredFavoriteBoards =
         favoriteBoards.where((board) => _matchesQuery(board, searchQuery)).map((board) => ChanBoardItemWrapper(chanBoard: board)).toList();
@@ -65,7 +75,7 @@ class BoardListBloc extends BaseBloc<ChanEvent, ChanState> {
     }
     boards.addAll(filteredOtherBoards);
 
-    return BoardListStateContent(boards: boards, showLazyLoading: showLazyLoading, showSearchBar: showSearchBar);
+    return BoardListStateContent(boards: boards, showLazyLoading: lazyLoading, showSearchBar: showSearchBar, event: event);
   }
 
   bool _matchesQuery(BoardItem board, String query) {

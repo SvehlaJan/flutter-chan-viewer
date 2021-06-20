@@ -9,6 +9,8 @@ abstract class ChanEvent extends Equatable {
 
 class ChanEventInitBloc extends ChanEvent {}
 
+class ChanEventOnDispose extends ChanEvent {}
+
 class ChanEventFetchData extends ChanEvent {
   final bool forceRefresh;
 

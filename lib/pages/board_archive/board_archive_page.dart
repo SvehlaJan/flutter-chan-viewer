@@ -41,10 +41,12 @@ class _BoardArchivePageState extends BasePageState<BoardArchivePage> {
   @override
   String getPageTitle() => "/${widget.boardId} Archive";
 
-  List<PageAction> getPageActions(BuildContext context) => [
-        PageAction("Search", Icons.search, _onSearchClick),
-        PageAction("Refresh", Icons.refresh, _onRefreshClick),
-      ];
+  List<PageAction> getPageActions(BuildContext context, ChanState state) {
+    return [
+      PageAction("Search", Icons.search, _onSearchClick),
+      PageAction("Refresh", Icons.refresh, _onRefreshClick),
+    ];
+  }
 
   void _onSearchClick() => startSearch();
 
@@ -52,20 +54,32 @@ class _BoardArchivePageState extends BasePageState<BoardArchivePage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<BoardArchiveBloc, ChanState>(
-      bloc: bloc as BoardArchiveBloc?,
-      builder: (context, state) {
-        return buildScaffold(
-          context,
-          buildBody(context, state, ((thread) => _openThreadDetailPage(thread!))),
-          pageActions: getPageActions(context),
-          showSearchBar: state.showSearchBar,
-        );
-      },
-    );
+    return BlocConsumer<BoardArchiveBloc, ChanState>(listener: (context, state) {
+      switch (state.event) {
+        case ChanSingleEvent.CLOSE_PAGE:
+          Navigator.of(context).pop();
+          break;
+        case ChanSingleEvent.SHOW_OFFLINE:
+          showOfflineSnackbar(context);
+          break;
+        default:
+          break;
+      }
+    }, builder: (context, state) {
+      return BlocBuilder<BoardArchiveBloc, ChanState>(
+          bloc: bloc as BoardArchiveBloc?,
+          builder: (context, state) {
+            return buildScaffold(
+              context,
+              buildBody(context, state, ((thread) => _openThreadDetailPage(thread))),
+              pageActions: getPageActions(context, state),
+              showSearchBar: state.showSearchBar,
+            );
+          });
+    });
   }
 
-  Widget buildBody(BuildContext context, ChanState state, Function(ThreadItem?) onItemClicked) {
+  Widget buildBody(BuildContext context, ChanState state, Function(ThreadItem) onItemClicked) {
     if (state is ChanStateLoading) {
       return Constants.centeredProgressIndicator;
     } else if (state is BoardArchiveStateContent) {

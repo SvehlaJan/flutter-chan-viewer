@@ -2,13 +2,12 @@ import 'package:equatable/equatable.dart';
 
 abstract class ChanState extends Equatable {
   final bool showSearchBar;
+  final ChanSingleEvent? event;
 
-  const ChanState({
-    this.showSearchBar = false,
-  });
+  const ChanState({this.showSearchBar = false, this.event});
 
   @override
-  List<Object?> get props => [showSearchBar];
+  List<Object?> get props => [showSearchBar, event];
 }
 
 abstract class ChanStateContent extends ChanState {
@@ -16,8 +15,9 @@ abstract class ChanStateContent extends ChanState {
 
   const ChanStateContent({
     required showSearchBar,
+    required event,
     required this.showLazyLoading,
-  }) : super(showSearchBar: showSearchBar);
+  }) : super(showSearchBar: showSearchBar, event: event);
 
   @override
   List<Object?> get props => super.props..addAll([showLazyLoading]);
@@ -35,3 +35,12 @@ class ChanStateError extends ChanState {
 }
 
 class ChanStateNotAuthorized extends ChanState {}
+
+class ChanSingleEvent {
+  final int val;
+
+  const ChanSingleEvent(this.val);
+
+  static const ChanSingleEvent CLOSE_PAGE = const ChanSingleEvent(0);
+  static const ChanSingleEvent SHOW_OFFLINE = const ChanSingleEvent(1);
+}

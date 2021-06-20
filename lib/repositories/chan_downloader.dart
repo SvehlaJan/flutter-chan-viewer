@@ -1,13 +1,14 @@
 import 'dart:async';
-import 'dart:collection';
 import 'dart:isolate';
 import 'dart:ui';
 
-import 'package:flutter/services.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
 import 'package:flutter_chan_viewer/models/ui/post_item.dart';
 import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
+import 'package:flutter_chan_viewer/utils/chan_logger.dart';
+import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -20,7 +21,8 @@ class ChanDownloader {
 
   late ChanStorage _chanStorage;
   ReceivePort _port = ReceivePort();
-  final HashMap<String, _TaskInfo> taskMap = HashMap<String, _TaskInfo>();
+  static List<_TaskInfo> taskList = [];
+  List<DownloadTask> currentTasks = [];
 
   static Future<ChanDownloader> initAndGet() async {
     if (_initialized) return _instance;
@@ -38,97 +40,106 @@ class ChanDownloader {
   Future<void> initializeAsync() async {
     _instance._chanStorage = await getIt.getAsync<ChanStorage>();
 
-    IsolateNameServer.registerPortWithName(_port.sendPort, 'downloader_send_port');
-    _port.listen((dynamic data) {
-      String id = data[0];
-      DownloadTaskStatus status = data[1];
-      int progress = data[2];
-
-      if (status == DownloadTaskStatus.complete && progress == 100) {
-        if (taskMap[id] != null && taskMap[id]!.post.isWebm()) {
-          ChanRepository.createVideoThumbnail(taskMap[id]!.post);
-        }
-      }
-    });
-
     await FlutterDownloader.initialize();
-    FlutterDownloader.registerCallback(downloadCallback);
+    FlutterDownloader.registerCallback(ChanDownloader.downloadCallback);
 
     var dir = await getApplicationDocumentsDirectory();
     await dir.create(recursive: true);
   }
 
-  Future<void> downloadAllMedia(ThreadDetailModel model) async {
+  Future<void> downloadThreadMedia(ThreadDetailModel model) async {
     _chanStorage.createDirectory(model.cacheDirective);
 
-    const _channel = const MethodChannel('vn.hunghd/downloader');
-    List<dynamic> result = await _channel.invokeMethod('loadTasks');
-    List<DownloadTask> currentTasks = result
-        .map((item) => new DownloadTask(
-            taskId: item['task_id'] ?? 0,
-            status: DownloadTaskStatus(item['status'] ?? 0),
-            progress: item['progress'] ?? 0,
-            url: item['url'] ?? "",
-            filename: item['file_name'] ?? "",
-            savedDir: item['saved_dir'] ?? "",
-            timeCreated: item['time_created'] ?? 0))
-        .toList();
-    // List<DownloadTask> currentTasks = await FlutterDownloader.loadTasks() ?? [];
+    // const _channel = const MethodChannel('vn.hunghd/downloader');
+    // List<dynamic> result = await _channel.invokeMethod('loadTasks');
+    // currentTasks = result
+    //     .map((item) => new DownloadTask(
+    //         taskId: item['task_id'] ?? 0,
+    //         status: DownloadTaskStatus(item['status'] ?? 0),
+    //         progress: item['progress'] ?? 0,
+    //         url: item['url'] ?? "",
+    //         filename: item['file_name'] ?? "",
+    //         savedDir: item['saved_dir'] ?? "",
+    //         timeCreated: item['time_created'] ?? 0))
+    //     .toList();
+    try {
+      currentTasks = await FlutterDownloader.loadTasks() ?? [];
+    } catch (e) {
+      ChanLogger.e("Failed to load tasks: ", e);
+    }
 
     for (PostItem post in model.allMediaPosts) {
-      bool fileExists = _chanStorage.mediaFileExists(post.getMediaUrl()!, model.cacheDirective);
-      DownloadTask? existingTask;
-      try {
-        existingTask = currentTasks.firstWhere((element) => element.url == post.getMediaUrl2());
-      } catch (e) {
-        existingTask = null;
-      }
+      await downloadPostMedia(post);
+    }
+  }
 
-      if (existingTask == null) {
+  Future<void> downloadPostMedia(PostItem post) async {
+    bool fileExists = _chanStorage.mediaFileExists(post.getMediaUrl()!, post.getCacheDirective());
+    DownloadTask? existingTask = currentTasks.firstWhereOrNull((element) => element.url == post.getMediaUrl2());
+
+    if (existingTask == null) {
+      await _requestDownload(_TaskInfo(post));
+      return;
+    }
+    if ([DownloadTaskStatus.enqueued, DownloadTaskStatus.running].contains(existingTask.status)) {
+      print("Url is already enqueued to download. Skipping.");
+      return;
+    }
+    if ([DownloadTaskStatus.complete, DownloadTaskStatus.failed, DownloadTaskStatus.canceled].contains(existingTask.status)) {
+      if (fileExists) {
+        return;
+      } else {
         await _requestDownload(_TaskInfo(post));
-        continue;
         // await Future.delayed(Duration(microseconds: 200));
-      }
-      if ([DownloadTaskStatus.enqueued, DownloadTaskStatus.running].contains(existingTask.status)) {
-        print("Url is already enqueued to download. Skipping.");
-        continue;
-      }
-      if (existingTask.status == DownloadTaskStatus.complete) {
-        if (fileExists) {
-          continue;
-        } else {
-          await _requestDownload(_TaskInfo(post));
-          // await Future.delayed(Duration(microseconds: 200));
-        }
       }
     }
   }
 
   Future<void> _requestDownload(_TaskInfo task) async {
-    task.taskId = await FlutterDownloader.enqueue(
+    String? taskId = await FlutterDownloader.enqueue(
       url: task.url!,
       savedDir: task.getCacheDir(_chanStorage),
       showNotification: false,
       openFileFromNotification: false,
     );
-    if (task.taskId != null) {
-      taskMap[task.taskId!] = task;
+
+    if (taskId != null) {
+      task.taskId = taskId;
+      taskList.add(task);
     }
   }
 
   static void downloadCallback(String id, DownloadTaskStatus status, int progress) {
     print('Background Isolate Callback: task ($id) is in status ($status) and process ($progress)');
-
-    final SendPort send = IsolateNameServer.lookupPortByName('downloader_send_port')!;
-    send.send([id, status, progress]);
+    final SendPort port = IsolateNameServer.lookupPortByName(Constants.downloaderPortName)!;
+    port.send([id, status, progress]);
+    print('Message sent.');
   }
 
-  Future<Null> cancelAllDownloads() async => FlutterDownloader.cancelAll();
+  static Future<void> onDownloadFinished(String taskId) async {
+    _TaskInfo? task = taskList.firstWhereOrNull((element) => element.taskId == taskId);
+    if (task != null && task.post.isWebm()) {
+      await ChanRepository.createVideoThumbnail(task.post);
+    }
+  }
+
+  Future<void> cancelAllDownloads() async {
+    return FlutterDownloader.cancelAll();
+  }
+
+  Future<void> cancelThreadDownload(ThreadDetailModel model) async {
+    for (PostItem post in model.allMediaPosts) {
+      _TaskInfo? task = taskList.firstWhereOrNull((element) => element.post.postId == post.postId);
+      if (task != null) {
+        await FlutterDownloader.cancel(taskId: task.taskId);
+      }
+    }
+  }
 }
 
 class _TaskInfo {
   final PostItem post;
-  String? taskId;
+  String taskId = "";
   int progress = 0;
   DownloadTaskStatus status = DownloadTaskStatus.undefined;
 

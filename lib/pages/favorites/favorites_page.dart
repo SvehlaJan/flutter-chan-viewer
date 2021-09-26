@@ -73,7 +73,7 @@ class _FavoritesPageState extends BasePageState<FavoritesPage> {
                 FavoritesItemWrapper item = state.threads[index];
                 ThreadItem? thread = item.thread?.threadDetailModel.thread;
                 if (item.isHeader || thread == null) {
-                  return Padding(padding: const EdgeInsets.all(8.0), child: Text(item.headerTitle!, style: Theme.of(context).textTheme.subhead));
+                  return Padding(padding: const EdgeInsets.all(8.0), child: Text(item.headerTitle!, style: Theme.of(context).textTheme.subtitle1));
                 } else {
                   Widget threadWidget = item.thread?.isCustom ?? false
                       ? CustomThreadListWidget(thread: thread)

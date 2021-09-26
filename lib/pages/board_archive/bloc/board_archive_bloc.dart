@@ -39,7 +39,7 @@ class BoardArchiveBloc extends BaseBloc<ChanEvent, ChanState> {
           cachedThreadsMap = await _repository.getArchivedThreadsMap(boardId);
 
           add(BoardArchiveEventFetchDetail(archiveThreads.length));
-        } catch (e, stackTrace) {
+        } catch (e) {
           if (e is HttpException || e is SocketException) {
             yield _buildContentState(event: ChanSingleEvent.SHOW_OFFLINE);
           } else {

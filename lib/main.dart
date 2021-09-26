@@ -7,8 +7,11 @@ import 'package:flutter_chan_viewer/bloc/app_bloc/app_state.dart';
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/bloc/chan_viewer_bloc/chan_viewer_bloc.dart';
 import 'package:flutter_chan_viewer/locator.dart';
+import 'package:flutter_chan_viewer/pages/base/auth_required_page.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
+import 'package:flutter_chan_viewer/pages/base/notfound_page.dart';
 import 'package:flutter_chan_viewer/utils/flavor_config.dart';
+import 'package:flutter_chan_viewer/utils/navigation_helper.dart';
 import 'package:flutter_chan_viewer/utils/theme_helper.dart';
 
 import 'app.dart';
@@ -31,7 +34,7 @@ void main() async {
   });
 }
 
-class MainApp extends StatelessWidget {
+class MainApp extends StatelessWidget with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     FlavorConfig(
@@ -51,12 +54,21 @@ class MainApp extends StatelessWidget {
           themeData = ThemeHelper.getThemeDark(context);
         }
 
-        return BlocProvider(
-          create: (context) => ChanViewerBloc(),
-          child: MaterialApp(
-            title: Constants.appName,
-            theme: themeData,
-            home: ChanViewerApp(),
+        return Directionality(
+          textDirection: TextDirection.ltr,
+          child: Stack(
+            children: [
+              BlocProvider(
+                create: (context) => ChanViewerBloc(),
+                child: MaterialApp(
+                  title: Constants.appName,
+                  theme: themeData,
+                  home: ChanViewerApp(),
+                ),
+              ),
+              if (state.authState == AuthState.auth_required) AuthRequiredPage(),
+              if (state.authState == AuthState.forbidden) NotFoundPage(),
+            ],
           ),
         );
       } else {

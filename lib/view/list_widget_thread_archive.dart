@@ -19,7 +19,7 @@ class ArchiveThreadListWidget extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
-            Text(thread.threadId.toString(), style: Theme.of(context).textTheme.title),
+            Text(thread.threadId.toString(), style: Theme.of(context).textTheme.headline6),
             if (isLoading) CircularProgressIndicator(),
           ],
         ),

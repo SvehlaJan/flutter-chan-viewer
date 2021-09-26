@@ -47,11 +47,22 @@ class _ChanVideoPlayerState extends State<ChanVideoPlayer> {
 
     if (getIt<ChanStorage>().mediaFileExists(widget.post.getMediaUrl()!, widget.post.getCacheDirective())) {
       File file = getIt<ChanStorage>().getMediaFile(widget.post.getMediaUrl()!, widget.post.getCacheDirective())!;
-      BetterPlayerDataSource betterPlayerDataSource = BetterPlayerDataSource(BetterPlayerDataSourceType.file, file.absolute.path);
-      _betterPlayerController = BetterPlayerController(betterPlayerConfiguration, betterPlayerDataSource: betterPlayerDataSource);
+      BetterPlayerDataSource betterPlayerDataSource =
+          BetterPlayerDataSource(BetterPlayerDataSourceType.file, file.absolute.path);
+      _betterPlayerController =
+          BetterPlayerController(betterPlayerConfiguration, betterPlayerDataSource: betterPlayerDataSource);
     } else {
-      BetterPlayerDataSource betterPlayerDataSource = BetterPlayerDataSource(BetterPlayerDataSourceType.network, widget.post.getMediaUrl()!);
-      _betterPlayerController = BetterPlayerController(betterPlayerConfiguration, betterPlayerDataSource: betterPlayerDataSource);
+      BetterPlayerDataSource betterPlayerDataSource = BetterPlayerDataSource(
+        BetterPlayerDataSourceType.network,
+        widget.post.getMediaUrl()!,
+        cacheConfiguration: BetterPlayerCacheConfiguration(
+          useCache: true,
+          maxCacheSize: 256 * 1024 * 1024,
+          maxCacheFileSize: 10 * 1024 * 1024,
+        ),
+      );
+      _betterPlayerController =
+          BetterPlayerController(betterPlayerConfiguration, betterPlayerDataSource: betterPlayerDataSource);
     }
   }
 
@@ -72,7 +83,10 @@ class _ChanVideoPlayerState extends State<ChanVideoPlayer> {
   Widget _buildLoadingView(BuildContext context) {
     return Stack(
       fit: StackFit.expand,
-      children: <Widget>[ChanCachedImage(post: widget.post, boxFit: BoxFit.contain), Constants.centeredProgressIndicator],
+      children: <Widget>[
+        ChanCachedImage(post: widget.post, boxFit: BoxFit.contain),
+        Constants.centeredProgressIndicator
+      ],
     );
   }
 

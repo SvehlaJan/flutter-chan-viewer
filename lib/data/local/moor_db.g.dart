@@ -371,113 +371,50 @@ class $PostsTableTable extends PostsTable
   final String? _alias;
   $PostsTableTable(this._db, [this._alias]);
   final VerificationMeta _timestampMeta = const VerificationMeta('timestamp');
-  @override
-  late final GeneratedIntColumn timestamp = _constructTimestamp();
-  GeneratedIntColumn _constructTimestamp() {
-    return GeneratedIntColumn(
-      'timestamp',
-      $tableName,
-      true,
-    );
-  }
-
+  late final GeneratedColumn<int?> timestamp = GeneratedColumn<int?>(
+      'timestamp', aliasedName, true,
+      typeName: 'INTEGER', requiredDuringInsert: false);
   final VerificationMeta _subtitleMeta = const VerificationMeta('subtitle');
-  @override
-  late final GeneratedTextColumn subtitle = _constructSubtitle();
-  GeneratedTextColumn _constructSubtitle() {
-    return GeneratedTextColumn(
-      'subtitle',
-      $tableName,
-      true,
-    );
-  }
-
+  late final GeneratedColumn<String?> subtitle = GeneratedColumn<String?>(
+      'subtitle', aliasedName, true,
+      typeName: 'TEXT', requiredDuringInsert: false);
   final VerificationMeta _contentMeta = const VerificationMeta('content');
-  @override
-  late final GeneratedTextColumn content = _constructContent();
-  GeneratedTextColumn _constructContent() {
-    return GeneratedTextColumn(
-      'content',
-      $tableName,
-      true,
-    );
-  }
-
+  late final GeneratedColumn<String?> content = GeneratedColumn<String?>(
+      'content', aliasedName, true,
+      typeName: 'TEXT', requiredDuringInsert: false);
   final VerificationMeta _filenameMeta = const VerificationMeta('filename');
-  @override
-  late final GeneratedTextColumn filename = _constructFilename();
-  GeneratedTextColumn _constructFilename() {
-    return GeneratedTextColumn(
-      'filename',
-      $tableName,
-      true,
-    );
-  }
-
+  late final GeneratedColumn<String?> filename = GeneratedColumn<String?>(
+      'filename', aliasedName, true,
+      typeName: 'TEXT', requiredDuringInsert: false);
   final VerificationMeta _imageIdMeta = const VerificationMeta('imageId');
-  @override
-  late final GeneratedTextColumn imageId = _constructImageId();
-  GeneratedTextColumn _constructImageId() {
-    return GeneratedTextColumn(
-      'image_id',
-      $tableName,
-      true,
-    );
-  }
-
+  late final GeneratedColumn<String?> imageId = GeneratedColumn<String?>(
+      'image_id', aliasedName, true,
+      typeName: 'TEXT', requiredDuringInsert: false);
   final VerificationMeta _extensionMeta = const VerificationMeta('extension');
-  @override
-  late final GeneratedTextColumn extension = _constructExtension();
-  GeneratedTextColumn _constructExtension() {
-    return GeneratedTextColumn(
-      'extension',
-      $tableName,
-      true,
-    );
-  }
-
+  late final GeneratedColumn<String?> extension = GeneratedColumn<String?>(
+      'extension', aliasedName, true,
+      typeName: 'TEXT', requiredDuringInsert: false);
   final VerificationMeta _boardIdMeta = const VerificationMeta('boardId');
-  @override
-  late final GeneratedTextColumn boardId = _constructBoardId();
-  GeneratedTextColumn _constructBoardId() {
-    return GeneratedTextColumn(
-      'board_id',
-      $tableName,
-      false,
-    );
-  }
-
+  late final GeneratedColumn<String?> boardId = GeneratedColumn<String?>(
+      'board_id', aliasedName, false,
+      typeName: 'TEXT', requiredDuringInsert: true);
   final VerificationMeta _threadIdMeta = const VerificationMeta('threadId');
-  @override
-  late final GeneratedIntColumn threadId = _constructThreadId();
-  GeneratedIntColumn _constructThreadId() {
-    return GeneratedIntColumn('thread_id', $tableName, false,
-        $customConstraints:
-            'REFERENCES threads_table(threadId) ON DELETE CASCADE');
-  }
-
+  late final GeneratedColumn<int?> threadId = GeneratedColumn<int?>(
+      'thread_id', aliasedName, false,
+      typeName: 'INTEGER',
+      requiredDuringInsert: true,
+      $customConstraints:
+          'REFERENCES threads_table(threadId) ON DELETE CASCADE');
   final VerificationMeta _postIdMeta = const VerificationMeta('postId');
-  @override
-  late final GeneratedIntColumn postId = _constructPostId();
-  GeneratedIntColumn _constructPostId() {
-    return GeneratedIntColumn(
-      'post_id',
-      $tableName,
-      false,
-    );
-  }
-
+  late final GeneratedColumn<int?> postId = GeneratedColumn<int?>(
+      'post_id', aliasedName, false,
+      typeName: 'INTEGER', requiredDuringInsert: true);
   final VerificationMeta _isHiddenMeta = const VerificationMeta('isHidden');
-  @override
-  late final GeneratedBoolColumn isHidden = _constructIsHidden();
-  GeneratedBoolColumn _constructIsHidden() {
-    return GeneratedBoolColumn(
-      'is_hidden',
-      $tableName,
-      true,
-    );
-  }
-
+  late final GeneratedColumn<bool?> isHidden = GeneratedColumn<bool?>(
+      'is_hidden', aliasedName, true,
+      typeName: 'INTEGER',
+      requiredDuringInsert: false,
+      defaultConstraints: 'CHECK (is_hidden IN (0, 1))');
   @override
   List<GeneratedColumn> get $columns => [
         timestamp,
@@ -492,11 +429,9 @@ class $PostsTableTable extends PostsTable
         isHidden
       ];
   @override
-  $PostsTableTable get asDslTable => this;
+  String get aliasedName => _alias ?? 'posts_table';
   @override
-  String get $tableName => _alias ?? 'posts_table';
-  @override
-  final String actualTableName = 'posts_table';
+  String get actualTableName => 'posts_table';
   @override
   VerificationContext validateIntegrity(Insertable<PostsTableData> instance,
       {bool isInserting = false}) {
@@ -555,8 +490,8 @@ class $PostsTableTable extends PostsTable
   Set<GeneratedColumn> get $primaryKey => {postId, threadId, boardId};
   @override
   PostsTableData map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return PostsTableData.fromData(data, _db, prefix: effectivePrefix);
+    return PostsTableData.fromData(data, _db,
+        prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override
@@ -1080,152 +1015,86 @@ class $ThreadsTableTable extends ThreadsTable
   final String? _alias;
   $ThreadsTableTable(this._db, [this._alias]);
   final VerificationMeta _timestampMeta = const VerificationMeta('timestamp');
-  @override
-  late final GeneratedIntColumn timestamp = _constructTimestamp();
-  GeneratedIntColumn _constructTimestamp() {
-    return GeneratedIntColumn(
-      'timestamp',
-      $tableName,
-      true,
-    );
-  }
-
+  late final GeneratedColumn<int?> timestamp = GeneratedColumn<int?>(
+      'timestamp', aliasedName, true,
+      typeName: 'INTEGER', requiredDuringInsert: false);
   final VerificationMeta _subtitleMeta = const VerificationMeta('subtitle');
-  @override
-  late final GeneratedTextColumn subtitle = _constructSubtitle();
-  GeneratedTextColumn _constructSubtitle() {
-    return GeneratedTextColumn(
-      'subtitle',
-      $tableName,
-      true,
-    );
-  }
-
+  late final GeneratedColumn<String?> subtitle = GeneratedColumn<String?>(
+      'subtitle', aliasedName, true,
+      typeName: 'TEXT', requiredDuringInsert: false);
   final VerificationMeta _contentMeta = const VerificationMeta('content');
-  @override
-  late final GeneratedTextColumn content = _constructContent();
-  GeneratedTextColumn _constructContent() {
-    return GeneratedTextColumn(
-      'content',
-      $tableName,
-      true,
-    );
-  }
-
+  late final GeneratedColumn<String?> content = GeneratedColumn<String?>(
+      'content', aliasedName, true,
+      typeName: 'TEXT', requiredDuringInsert: false);
   final VerificationMeta _filenameMeta = const VerificationMeta('filename');
-  @override
-  late final GeneratedTextColumn filename = _constructFilename();
-  GeneratedTextColumn _constructFilename() {
-    return GeneratedTextColumn(
-      'filename',
-      $tableName,
-      true,
-    );
-  }
-
+  late final GeneratedColumn<String?> filename = GeneratedColumn<String?>(
+      'filename', aliasedName, true,
+      typeName: 'TEXT', requiredDuringInsert: false);
   final VerificationMeta _imageIdMeta = const VerificationMeta('imageId');
-  @override
-  late final GeneratedTextColumn imageId = _constructImageId();
-  GeneratedTextColumn _constructImageId() {
-    return GeneratedTextColumn(
-      'image_id',
-      $tableName,
-      true,
-    );
-  }
-
+  late final GeneratedColumn<String?> imageId = GeneratedColumn<String?>(
+      'image_id', aliasedName, true,
+      typeName: 'TEXT', requiredDuringInsert: false);
   final VerificationMeta _extensionMeta = const VerificationMeta('extension');
-  @override
-  late final GeneratedTextColumn extension = _constructExtension();
-  GeneratedTextColumn _constructExtension() {
-    return GeneratedTextColumn(
-      'extension',
-      $tableName,
-      true,
-    );
-  }
-
+  late final GeneratedColumn<String?> extension = GeneratedColumn<String?>(
+      'extension', aliasedName, true,
+      typeName: 'TEXT', requiredDuringInsert: false);
   final VerificationMeta _boardIdMeta = const VerificationMeta('boardId');
-  @override
-  late final GeneratedTextColumn boardId = _constructBoardId();
-  GeneratedTextColumn _constructBoardId() {
-    return GeneratedTextColumn('board_id', $tableName, false,
-        $customConstraints:
-            'REFERENCES boards_table(boardId) ON DELETE CASCADE');
-  }
-
+  late final GeneratedColumn<String?> boardId = GeneratedColumn<String?>(
+      'board_id', aliasedName, false,
+      typeName: 'TEXT',
+      requiredDuringInsert: true,
+      $customConstraints: 'REFERENCES boards_table(boardId) ON DELETE CASCADE');
   final VerificationMeta _threadIdMeta = const VerificationMeta('threadId');
-  @override
-  late final GeneratedIntColumn threadId = _constructThreadId();
-  GeneratedIntColumn _constructThreadId() {
-    return GeneratedIntColumn(
-      'thread_id',
-      $tableName,
-      false,
-    );
-  }
-
+  late final GeneratedColumn<int?> threadId = GeneratedColumn<int?>(
+      'thread_id', aliasedName, false,
+      typeName: 'INTEGER', requiredDuringInsert: true);
   final VerificationMeta _lastModifiedMeta =
       const VerificationMeta('lastModified');
-  @override
-  late final GeneratedIntColumn lastModified = _constructLastModified();
-  GeneratedIntColumn _constructLastModified() {
-    return GeneratedIntColumn('last_modified', $tableName, true,
-        defaultValue: const Constant(0));
-  }
-
+  late final GeneratedColumn<int?> lastModified = GeneratedColumn<int?>(
+      'last_modified', aliasedName, true,
+      typeName: 'INTEGER',
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
   final VerificationMeta _selectedPostIdMeta =
       const VerificationMeta('selectedPostId');
-  @override
-  late final GeneratedIntColumn selectedPostId = _constructSelectedPostId();
-  GeneratedIntColumn _constructSelectedPostId() {
-    return GeneratedIntColumn('selected_post_id', $tableName, true,
-        defaultValue: const Constant(-1));
-  }
-
+  late final GeneratedColumn<int?> selectedPostId = GeneratedColumn<int?>(
+      'selected_post_id', aliasedName, true,
+      typeName: 'INTEGER',
+      requiredDuringInsert: false,
+      defaultValue: const Constant(-1));
   final VerificationMeta _isFavoriteMeta = const VerificationMeta('isFavorite');
-  @override
-  late final GeneratedBoolColumn isFavorite = _constructIsFavorite();
-  GeneratedBoolColumn _constructIsFavorite() {
-    return GeneratedBoolColumn('is_favorite', $tableName, true,
-        defaultValue: const Constant(false));
-  }
-
+  late final GeneratedColumn<bool?> isFavorite = GeneratedColumn<bool?>(
+      'is_favorite', aliasedName, true,
+      typeName: 'INTEGER',
+      requiredDuringInsert: false,
+      defaultConstraints: 'CHECK (is_favorite IN (0, 1))',
+      defaultValue: const Constant(false));
   final VerificationMeta _onlineStateMeta =
       const VerificationMeta('onlineState');
-  @override
-  late final GeneratedIntColumn onlineState = _constructOnlineState();
-  GeneratedIntColumn _constructOnlineState() {
-    return GeneratedIntColumn('online_state', $tableName, true,
-        defaultValue: const Constant(0));
-  }
-
+  late final GeneratedColumn<int?> onlineState = GeneratedColumn<int?>(
+      'online_state', aliasedName, true,
+      typeName: 'INTEGER',
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
   final VerificationMeta _replyCountMeta = const VerificationMeta('replyCount');
-  @override
-  late final GeneratedIntColumn replyCount = _constructReplyCount();
-  GeneratedIntColumn _constructReplyCount() {
-    return GeneratedIntColumn('reply_count', $tableName, true,
-        defaultValue: const Constant(-1));
-  }
-
+  late final GeneratedColumn<int?> replyCount = GeneratedColumn<int?>(
+      'reply_count', aliasedName, true,
+      typeName: 'INTEGER',
+      requiredDuringInsert: false,
+      defaultValue: const Constant(-1));
   final VerificationMeta _imageCountMeta = const VerificationMeta('imageCount');
-  @override
-  late final GeneratedIntColumn imageCount = _constructImageCount();
-  GeneratedIntColumn _constructImageCount() {
-    return GeneratedIntColumn('image_count', $tableName, true,
-        defaultValue: const Constant(-1));
-  }
-
+  late final GeneratedColumn<int?> imageCount = GeneratedColumn<int?>(
+      'image_count', aliasedName, true,
+      typeName: 'INTEGER',
+      requiredDuringInsert: false,
+      defaultValue: const Constant(-1));
   final VerificationMeta _lastSeenPostIndexMeta =
       const VerificationMeta('lastSeenPostIndex');
-  @override
-  late final GeneratedIntColumn lastSeenPostIndex =
-      _constructLastSeenPostIndex();
-  GeneratedIntColumn _constructLastSeenPostIndex() {
-    return GeneratedIntColumn('last_seen_post_index', $tableName, true,
-        defaultValue: const Constant(-1));
-  }
-
+  late final GeneratedColumn<int?> lastSeenPostIndex = GeneratedColumn<int?>(
+      'last_seen_post_index', aliasedName, true,
+      typeName: 'INTEGER',
+      requiredDuringInsert: false,
+      defaultValue: const Constant(-1));
   @override
   List<GeneratedColumn> get $columns => [
         timestamp,
@@ -1245,11 +1114,9 @@ class $ThreadsTableTable extends ThreadsTable
         lastSeenPostIndex
       ];
   @override
-  $ThreadsTableTable get asDslTable => this;
+  String get aliasedName => _alias ?? 'threads_table';
   @override
-  String get $tableName => _alias ?? 'threads_table';
-  @override
-  final String actualTableName = 'threads_table';
+  String get actualTableName => 'threads_table';
   @override
   VerificationContext validateIntegrity(Insertable<ThreadsTableData> instance,
       {bool isInserting = false}) {
@@ -1340,8 +1207,8 @@ class $ThreadsTableTable extends ThreadsTable
   Set<GeneratedColumn> get $primaryKey => {threadId, boardId};
   @override
   ThreadsTableData map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return ThreadsTableData.fromData(data, _db, prefix: effectivePrefix);
+    return ThreadsTableData.fromData(data, _db,
+        prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override
@@ -1446,7 +1313,7 @@ class BoardsTableCompanion extends UpdateCompanion<BoardsTableData> {
     required String boardId,
     required String title,
     required bool workSafe,
-  })   : boardId = Value(boardId),
+  })  : boardId = Value(boardId),
         title = Value(title),
         workSafe = Value(workSafe);
   static Insertable<BoardsTableData> custom({
@@ -1502,46 +1369,25 @@ class $BoardsTableTable extends BoardsTable
   final String? _alias;
   $BoardsTableTable(this._db, [this._alias]);
   final VerificationMeta _boardIdMeta = const VerificationMeta('boardId');
-  @override
-  late final GeneratedTextColumn boardId = _constructBoardId();
-  GeneratedTextColumn _constructBoardId() {
-    return GeneratedTextColumn(
-      'board_id',
-      $tableName,
-      false,
-    );
-  }
-
+  late final GeneratedColumn<String?> boardId = GeneratedColumn<String?>(
+      'board_id', aliasedName, false,
+      typeName: 'TEXT', requiredDuringInsert: true);
   final VerificationMeta _titleMeta = const VerificationMeta('title');
-  @override
-  late final GeneratedTextColumn title = _constructTitle();
-  GeneratedTextColumn _constructTitle() {
-    return GeneratedTextColumn(
-      'title',
-      $tableName,
-      false,
-    );
-  }
-
+  late final GeneratedColumn<String?> title = GeneratedColumn<String?>(
+      'title', aliasedName, false,
+      typeName: 'TEXT', requiredDuringInsert: true);
   final VerificationMeta _workSafeMeta = const VerificationMeta('workSafe');
-  @override
-  late final GeneratedBoolColumn workSafe = _constructWorkSafe();
-  GeneratedBoolColumn _constructWorkSafe() {
-    return GeneratedBoolColumn(
-      'work_safe',
-      $tableName,
-      false,
-    );
-  }
-
+  late final GeneratedColumn<bool?> workSafe = GeneratedColumn<bool?>(
+      'work_safe', aliasedName, false,
+      typeName: 'INTEGER',
+      requiredDuringInsert: true,
+      defaultConstraints: 'CHECK (work_safe IN (0, 1))');
   @override
   List<GeneratedColumn> get $columns => [boardId, title, workSafe];
   @override
-  $BoardsTableTable get asDslTable => this;
+  String get aliasedName => _alias ?? 'boards_table';
   @override
-  String get $tableName => _alias ?? 'boards_table';
-  @override
-  final String actualTableName = 'boards_table';
+  String get actualTableName => 'boards_table';
   @override
   VerificationContext validateIntegrity(Insertable<BoardsTableData> instance,
       {bool isInserting = false}) {
@@ -1572,8 +1418,8 @@ class $BoardsTableTable extends BoardsTable
   Set<GeneratedColumn> get $primaryKey => {boardId};
   @override
   BoardsTableData map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return BoardsTableData.fromData(data, _db, prefix: effectivePrefix);
+    return BoardsTableData.fromData(data, _db,
+        prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override

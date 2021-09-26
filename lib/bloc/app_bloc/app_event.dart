@@ -1,17 +1,16 @@
+import 'dart:ui';
+
 import 'package:equatable/equatable.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 
 abstract class AppEvent extends Equatable {
-  AppEvent();
-}
-
-class AppEventAppStarted extends AppEvent {
-  @override
-  String toString() => 'AppEventAppStarted { }';
+  const AppEvent();
 
   @override
-  List<Object> get props => [];
+  List<Object?> get props => [];
 }
+
+class AppEventAppStarted extends AppEvent {}
 
 class AppEventSetTheme extends AppEvent {
   final AppTheme appTheme;
@@ -19,8 +18,14 @@ class AppEventSetTheme extends AppEvent {
   AppEventSetTheme(this.appTheme);
 
   @override
-  String toString() => 'AppEventSetTheme { appTheme: $appTheme }';
+  List<Object?> get props => super.props..addAll([appTheme]);
+}
+
+class AppEventLifecycleChange extends AppEvent {
+  final AppLifecycleState lastLifecycleState;
+
+  const AppEventLifecycleChange({required this.lastLifecycleState});
 
   @override
-  List<Object> get props => [appTheme];
+  List<Object?> get props => super.props..addAll([lastLifecycleState]);
 }

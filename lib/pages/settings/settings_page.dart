@@ -54,7 +54,7 @@ class _SettingsPageState extends BasePageState<SettingsPage> {
           children: <Widget>[
             Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Text("Visual", style: Theme.of(context).textTheme.subhead),
+              child: Text("Visual", style: Theme.of(context).textTheme.subtitle1),
             ),
             Card(
               elevation: 2.0,
@@ -75,7 +75,7 @@ class _SettingsPageState extends BasePageState<SettingsPage> {
             ),
             Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Text("Others", style: Theme.of(context).textTheme.subhead),
+              child: Text("Others", style: Theme.of(context).textTheme.subtitle1),
             ),
             Card(
               elevation: 2.0,
@@ -94,7 +94,7 @@ class _SettingsPageState extends BasePageState<SettingsPage> {
             if (state.moorDbOverview.boards.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.all(16.0),
-                child: Text("Db overview", style: Theme.of(context).textTheme.subhead),
+                child: Text("Db overview", style: Theme.of(context).textTheme.subtitle1),
               ),
             if (state.moorDbOverview.boards.isNotEmpty)
               ListView.builder(
@@ -116,7 +116,7 @@ class _SettingsPageState extends BasePageState<SettingsPage> {
               ),
             Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Text("Downloads", style: Theme.of(context).textTheme.subhead),
+              child: Text("Downloads", style: Theme.of(context).textTheme.subtitle1),
             ),
             ListView.builder(
               itemCount: state.downloads!.length,

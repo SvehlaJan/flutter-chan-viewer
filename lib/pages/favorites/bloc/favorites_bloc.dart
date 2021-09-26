@@ -73,9 +73,9 @@ class FavoritesBloc extends BaseBloc<ChanEvent, ChanState> {
           try {
             refreshedThread = await _repository!.fetchRemoteThreadDetail(cachedThread.thread.boardId, cachedThread.thread.threadId, false);
             _repository!.downloadAllMedia(refreshedThread);
-          } on HttpException catch (e, stackTrace) {
+          } on HttpException {
             ChanLogger.v("Thread not found. Probably offline. Ignoring");
-          } on SocketException catch (e) {
+          } on SocketException {
             yield _buildContentState(event: ChanSingleEvent.SHOW_OFFLINE);
           }
         } else {

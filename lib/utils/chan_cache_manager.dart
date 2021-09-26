@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -13,18 +11,12 @@ class ChanCacheManager {
   static CacheManager createCacheManager() {
     return CacheManager(Config(
       key,
-      stalePeriod: const Duration(days: 1000),
+      stalePeriod: const Duration(days: 30),
       maxNrOfCacheObjects: 10000,
       repo: CacheObjectProvider(databaseName: key),
       fileSystem: IOFileSystem(key),
       fileService: HttpFileService(),
     ));
-  }
-
-  @override
-  Future<String> getFilePath() async {
-    var directory = await getTemporaryDirectory();
-    return p.join(directory.path, key);
   }
 }
 
@@ -45,7 +37,6 @@ class IOFileSystem implements c.FileSystem {
 
   @override
   Future<File> createFile(String name) async {
-    assert(name != null);
     return (await _fileDir).childFile(name);
   }
 }

@@ -59,7 +59,7 @@ class ChanStorage {
       File mediaFile = File(getFileAbsolutePath(name, cacheDirective));
       Uint8List data = await mediaFile.readAsBytes();
       return data;
-    } catch (e, stackTrace) {
+    } catch (e) {
 //      ChanLogger.e("File read error!", e, stackTrace);
       return null;
     }

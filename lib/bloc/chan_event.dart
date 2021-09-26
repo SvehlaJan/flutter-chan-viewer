@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 abstract class ChanEvent extends Equatable {
-  ChanEvent();
+  const ChanEvent();
 
   @override
   List<Object?> get props => [];
@@ -17,7 +17,7 @@ class ChanEventFetchData extends ChanEvent {
   ChanEventFetchData({this.forceRefresh = false});
 
   @override
-  List<Object> get props => [forceRefresh];
+  List<Object?> get props => super.props..addAll([forceRefresh]);
 }
 
 class ChanEventNewDataReceived extends ChanEvent {}
@@ -32,5 +32,5 @@ class ChanEventSearch extends ChanEvent {
   ChanEventSearch(this.query);
 
   @override
-  List<Object> get props => [query];
+  List<Object?> get props => super.props..addAll([query]);
 }

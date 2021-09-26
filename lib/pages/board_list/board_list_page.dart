@@ -78,7 +78,7 @@ class _BoardListPageState extends BasePageState<BoardListPage> {
         itemBuilder: (context, index) {
           ChanBoardItemWrapper item = state.boards[index];
           if (item.isHeader) {
-            return Padding(padding: const EdgeInsets.all(8.0), child: Text(item.headerTitle!, style: Theme.of(context).textTheme.subhead));
+            return Padding(padding: const EdgeInsets.all(8.0), child: Text(item.headerTitle!, style: Theme.of(context).textTheme.subtitle1));
           } else {
             return InkWell(child: BoardListWidget(board: item.chanBoard!), onTap: (() => onItemClicked(item.chanBoard)));
           }

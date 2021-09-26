@@ -5,12 +5,12 @@ extension TextUtilsStringExtension on String {
   /// - whitespace string.
   ///
   /// Characters considered "whitespace" are listed [here](https://stackoverflow.com/a/59826129/10830091).
-  bool get isNullEmptyOrWhitespace => this == null || this.isEmpty || this.trim().isEmpty;
+  bool get isNullEmptyOrWhitespace => this.isEmpty || this.trim().isEmpty;
 }
 
 extension StringExtension on String {
   String getNameFromEnum() {
-    if (this == null || !contains(".")) return this;
+    if (!contains(".")) return this;
     return replaceRange(0, indexOf(".") + 1, "");
   }
 

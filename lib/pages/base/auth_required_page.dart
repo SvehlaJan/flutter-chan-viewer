@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 
-class NotFoundPage extends StatelessWidget {
-  NotFoundPage();
+class AuthRequiredPage extends StatelessWidget {
+  AuthRequiredPage();
 
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Theme.of(context).accentColor,
+      color: Theme.of(context).backgroundColor,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          Text("Page not found :-(", style: Theme.of(context).textTheme.headline6, textAlign: TextAlign.center),
+          Text("Please, authenticate", style: Theme.of(context).textTheme.headline6, textAlign: TextAlign.center),
           IconButton(icon: Icon(Icons.arrow_back), iconSize: 70.0, onPressed: () => Navigator.of(context).pop(false))
         ],
       ),

@@ -1,11 +1,16 @@
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
+import 'package:flutter_chan_viewer/utils/navigation_helper.dart';
 
 class AppStateContent extends ChanState {
   final AppTheme appTheme;
+  final AuthState authState;
 
-  AppStateContent(this.appTheme);
+  AppStateContent({
+    required this.appTheme,
+    required this.authState,
+  }) : super();
 
   @override
-  List<Object?> get props => [appTheme];
+  List<Object?> get props => super.props..addAll([appTheme, authState]);
 }

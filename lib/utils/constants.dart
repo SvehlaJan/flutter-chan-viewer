@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_chan_viewer/utils/features.dart';
 import 'package:flutter_chan_viewer/utils/flavor_config.dart';
 
-enum AppTheme { light, dark }
+enum AppTheme { light, dark, undefined }
 
 class Constants {
   //routes
@@ -51,7 +51,7 @@ class Constants {
     return theme.copyWith(
       textTheme: theme.primaryTextTheme,
       inputDecorationTheme: InputDecorationTheme(
-        hintStyle: Theme.of(context).textTheme.title!.copyWith(color: Theme.of(context).primaryTextTheme.title!.color!.withOpacity(0.8)),
+        hintStyle: Theme.of(context).textTheme.headline6!.copyWith(color: Theme.of(context).primaryTextTheme.headline6!.color!.withOpacity(0.8)),
       ),
     );
   }

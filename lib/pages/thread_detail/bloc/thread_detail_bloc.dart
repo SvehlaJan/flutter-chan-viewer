@@ -101,7 +101,7 @@ class ThreadDetailBloc extends BaseBloc<ChanEvent, ChanState> {
             _threadDetailModel = remoteThread;
           }
           yield _buildContentState(lazyLoading: false);
-        } catch (e, stackTrace) {
+        } catch (e) {
           if (e is HttpException || e is SocketException) {
             yield _buildContentState(event: ChanSingleEvent.SHOW_OFFLINE);
           } else {

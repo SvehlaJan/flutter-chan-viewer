@@ -41,7 +41,7 @@ class BoardDetailBloc extends BaseBloc<ChanEvent, ChanState> {
         try {
           _boardDetailModel = await _repository.fetchRemoteBoardDetail(boardId);
           yield _buildContentState();
-        } catch (e, stackTrace) {
+        } catch (e) {
           if (e is HttpException || e is SocketException) {
             yield _buildContentState(event: ChanSingleEvent.SHOW_OFFLINE);
           } else {

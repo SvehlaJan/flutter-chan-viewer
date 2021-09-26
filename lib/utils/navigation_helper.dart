@@ -11,13 +11,15 @@ import 'package:flutter_chan_viewer/utils/constants.dart';
 
 enum TabItem { favorites, boards, settings }
 
+enum AuthState { authenticated, auth_required, forbidden, not_required }
+
 class NavigationHelper {
   static List<BottomNavigationBarItem> getItems(BuildContext context) {
     List<BottomNavigationBarItem> items = <BottomNavigationBarItem>[];
     for (TabItem tabItem in TabItem.values) {
       items.add(BottomNavigationBarItem(
         icon: Icon(getIcon(tabItem)),
-        title: Text(getDescription(tabItem), style: Theme.of(context).textTheme.body1),
+        label: getDescription(tabItem),
       ));
     }
     return items;

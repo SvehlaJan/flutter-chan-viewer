@@ -92,29 +92,42 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
         }, builder: (context, state) {
           return BlocBuilder<ThreadDetailBloc, ChanState>(
             bloc: bloc as ThreadDetailBloc?,
-            builder: (context, state) => widget.showAsReply ? _buildSinglePostBody(context, state, widget.selectedPostId) : _buildCarouselBody(context, state),
+            builder: (context, state) {
+              if (state is ChanStateLoading) {
+                return Constants.centeredProgressIndicator;
+              } else if (state is ThreadDetailStateContent) {
+                if (widget.showAsReply) {
+                  return _buildSinglePostBody(context, state, widget.selectedPostId);
+                } else {
+                  PostItem? post = state.model?.selectedPost;
+                  if (post == null) {
+                    return Constants.noDataPlaceholder;
+                  } else if (post.hasMedia()) {
+                    return _buildCarouselBody(context, state, post);
+                  } else {
+                    return _buildSinglePostBody(context, state, post.postId);
+                  }
+                }
+              } else {
+                return BasePageState.buildErrorScreen(context, (state as ChanStateError).message);
+              }
+            },
           );
         }),
         backgroundColor: Theme.of(context).scaffoldBackgroundColor.withOpacity(0.5));
   }
 
-  Widget _buildSinglePostBody(BuildContext context, ChanState state, int postId) {
-    if (state is ChanStateLoading) {
-      return Constants.centeredProgressIndicator;
-    } else if (state is ThreadDetailStateContent) {
-      PostItem post = state.model!.findPostById(postId)!;
+  Widget _buildSinglePostBody(BuildContext context, ThreadDetailStateContent state, int postId) {
+    PostItem post = state.model!.findPostById(postId)!;
 
-      return SafeArea(
-        child: Stack(
-          children: <Widget>[
-            _buildSinglePostItem(context, post),
-            _buildBottomView(post),
-          ],
-        ),
-      );
-    } else {
-      return BasePageState.buildErrorScreen(context, (state as ChanStateError).message);
-    }
+    return SafeArea(
+      child: Stack(
+        children: <Widget>[
+          _buildSinglePostItem(context, post),
+          _buildBottomView(post),
+        ],
+      ),
+    );
   }
 
   Widget _buildSinglePostItem(BuildContext context, PostItem post) {
@@ -127,53 +140,40 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
     }
   }
 
-  Widget _buildCarouselBody(BuildContext context, ChanState state) {
-    if (state is ChanStateLoading) {
-      return Constants.centeredProgressIndicator;
-    } else if (state is ThreadDetailStateContent) {
-      int mediaIndex = state.selectedMediaIndex;
-      if (mediaIndex < 0) {
-        // for case when non-media post is selected
-        return Constants.noDataPlaceholder;
-      }
-
-      PostItem post = state.model!.visibleMediaPosts[mediaIndex];
-      return SafeArea(
-        child: Stack(
-          children: <Widget>[
-            PhotoViewGallery.builder(
-              itemCount: state.model!.visibleMediaPosts.length,
-              builder: (context, index) {
-                return _buildCarouselItem(context, state.model!.visibleMediaPosts[index])!;
-              },
-              scrollPhysics: BouncingScrollPhysics(),
-              backgroundDecoration: BoxDecoration(color: Colors.transparent),
-              loadingBuilder: (context, index) => Constants.progressIndicator,
-              pageController: PageController(initialPage: state.selectedMediaIndex),
-              onPageChanged: ((newMediaIndex) {
-                if (newMediaIndex != state.selectedMediaIndex) {
-                  bloc.add(ThreadDetailEventOnPostSelected(mediaIndex: newMediaIndex));
-                  _sheetController!.collapse();
-                }
-              }),
-            ),
-            _buildBottomView(post),
-            Align(
-              alignment: Alignment.topLeft,
-              child: Padding(
-                padding: const EdgeInsets.all(4.0),
-                child: Text(
-                  "${state.selectedMediaIndex + 1}/${state.model!.visibleMediaPosts.length} ${post.filename}${post.extension}",
-                  style: Theme.of(context).textTheme.caption,
-                ),
+  Widget _buildCarouselBody(BuildContext context, ThreadDetailStateContent state, PostItem post) {
+    return SafeArea(
+      child: Stack(
+        children: <Widget>[
+          PhotoViewGallery.builder(
+            itemCount: state.model!.visibleMediaPosts.length,
+            builder: (context, index) {
+              return _buildCarouselItem(context, state.model!.visibleMediaPosts[index])!;
+            },
+            scrollPhysics: BouncingScrollPhysics(),
+            backgroundDecoration: BoxDecoration(color: Colors.transparent),
+            loadingBuilder: (context, index) => Constants.progressIndicator,
+            pageController: PageController(initialPage: state.selectedMediaIndex),
+            onPageChanged: ((newMediaIndex) {
+              if (newMediaIndex != state.selectedMediaIndex) {
+                bloc.add(ThreadDetailEventOnPostSelected(mediaIndex: newMediaIndex));
+                _sheetController!.collapse();
+              }
+            }),
+          ),
+          _buildBottomView(post),
+          Align(
+            alignment: Alignment.topLeft,
+            child: Padding(
+              padding: const EdgeInsets.all(4.0),
+              child: Text(
+                "${state.selectedMediaIndex + 1}/${state.model!.visibleMediaPosts.length} ${post.filename}${post.extension}",
+                style: Theme.of(context).textTheme.caption,
               ),
             ),
-          ],
-        ),
-      );
-    } else {
-      return BasePageState.buildErrorScreen(context, (state as ChanStateError).message);
-    }
+          ),
+        ],
+      ),
+    );
   }
 
   PhotoViewGalleryPageOptions? _buildCarouselItem(BuildContext context, PostItem post) {
@@ -193,7 +193,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
   }
 
   Widget _buildBottomView(PostItem post) {
-    List<PostItem> repliesPosts = [post, ...post.repliesFrom];
+    List<PostItem> repliesPosts = [post, ...post.visibleReplies];
 
     return SlidingSheet(
       color: Colors.transparent,
@@ -226,7 +226,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
                         showHeroAnimation: false,
                         showImage: index != 0,
                         onTap: () => index != 0 ? _onReplyPostClicked(context, replyPost) : null,
-                        onLongPress: null,
+                        onLongPress: () => _showReplyDetailDialog(context, replyPost),
                         onLinkTap: (url) => _onLinkClicked(context, url),
                         selected: false,
                       ),
@@ -260,7 +260,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
               margin: EdgeInsets.zero,
               child: Padding(
                 padding: const EdgeInsets.all(4.0),
-                child: Text("${post.repliesFrom.length} replies", style: Theme.of(context).textTheme.caption),
+                child: Text("${post.visibleReplies.length} replies", style: Theme.of(context).textTheme.caption),
               ),
             ),
           ),
@@ -296,7 +296,8 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
             )));
   }
 
-  void _onLinkClicked(BuildContext context, String url) => bloc.add(ThreadDetailEventOnReplyClicked(ChanUtil.getPostIdFromUrl(url)));
+  void _onLinkClicked(BuildContext context, String url) =>
+      bloc.add(ThreadDetailEventOnReplyClicked(ChanUtil.getPostIdFromUrl(url)));
 
   void _onHidePostClicked(BuildContext context, PostItem post) => bloc.add(ThreadDetailEventHidePost(post.postId));
 
@@ -316,5 +317,26 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
   void showPostAddedToCollectionSuccessSnackbar(BuildContext context) {
     final snackBar = SnackBar(content: Text("Post added to collection."));
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
+  void _showReplyDetailDialog(BuildContext context, PostItem replyPost) async {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext context) {
+        return SimpleDialog(
+          title: const Text('Choose action'),
+          children: <Widget>[
+            SimpleDialogOption(
+              onPressed: () {
+                bloc.add(ThreadDetailEventHidePost(replyPost.postId));
+                Navigator.of(context).pop();
+              },
+              child: const Text('Hide reply'),
+            ),
+          ],
+        );
+      },
+    );
   }
 }

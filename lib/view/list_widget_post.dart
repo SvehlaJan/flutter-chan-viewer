@@ -59,6 +59,7 @@ class _PostListWidgetState extends State<PostListWidget> with SingleTickerProvid
 
     return InkWell(
       onTap: widget.onTap as void Function()?,
+      onLongPress: widget.onLongPress as void Function()?,
       child: widget.selected
           ? Stack(
               children: <Widget>[
@@ -98,7 +99,7 @@ class _PostListWidgetState extends State<PostListWidget> with SingleTickerProvid
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
                       Text(widget.post.postId.toString(), style: Theme.of(context).textTheme.caption),
-                      Text("${widget.post.repliesFrom.length}r", style: Theme.of(context).textTheme.caption),
+                      Text("${widget.post.visibleReplies.length}r", style: Theme.of(context).textTheme.caption),
                       Text(ChanUtil.getHumanDate(widget.post.timestamp), style: Theme.of(context).textTheme.caption),
                     ],
                   ),

@@ -167,20 +167,23 @@ class ThreadDetailBloc extends BaseBloc<ChanEvent, ChanState> {
         PostItem post = _threadDetailModel!.findPostById(event.postId)!.copyWith(isHidden: true);
         await _repository.updatePost(post);
 
-        int? newSelectedPostId = -1;
-        for (int i = 0; i < _threadDetailModel!.allPosts.length; i++) {
-          int dilatation = (i ~/ 2) + 1;
-          int orientation = i % 2;
-          int diff = orientation == 0 ? -dilatation : dilatation;
-          int newSelectedPostIndex = (_threadDetailModel!.selectedPostIndex + diff) % _threadDetailModel!.allPosts.length;
-          PostItem newSelectedPost = _threadDetailModel!.allPosts[newSelectedPostIndex];
-          if (!newSelectedPost.isHidden) {
-            newSelectedPostId = newSelectedPost.postId;
-            break;
+        if (_threadDetailModel!.selectedPostIndex == event.postId) {
+          int? newSelectedPostId = -1;
+          for (int i = 0; i < _threadDetailModel!.allPosts.length; i++) {
+            int dilatation = (i ~/ 2) + 1;
+            int orientation = i % 2;
+            int diff = orientation == 0 ? -dilatation : dilatation;
+            int newSelectedPostIndex = (_threadDetailModel!.selectedPostIndex + diff) %
+                _threadDetailModel!.allPosts.length;
+            PostItem newSelectedPost = _threadDetailModel!.allPosts[newSelectedPostIndex];
+            if (!newSelectedPost.isHidden) {
+              newSelectedPostId = newSelectedPost.postId;
+              break;
+            }
           }
+          _threadDetailModel = _threadDetailModel!.copyWith(thread: _threadDetailModel!.thread.copyWith(selectedPostId: newSelectedPostId));
+          await _repository.updateThread(_threadDetailModel!.thread);
         }
-        _threadDetailModel = _threadDetailModel!.copyWith(thread: _threadDetailModel!.thread.copyWith(selectedPostId: newSelectedPostId));
-        await _repository.updateThread(_threadDetailModel!.thread);
 
         _threadDetailModel = await _repository.fetchCachedThreadDetail(_boardId, _threadId);
         yield _buildContentState(lazyLoading: false, event: ThreadDetailSingleEvent.SCROLL_TO_SELECTED);

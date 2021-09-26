@@ -14,6 +14,7 @@ class PostItem extends ChanPostBase with EquatableMixin {
   ThreadItem? thread;
 
   bool get hasReplies => repliesFrom.isNotEmpty;
+  List<PostItem> get visibleReplies => repliesFrom.where((element) => element.isHidden == false).toList();
 
   PostItem({
     required boardId,

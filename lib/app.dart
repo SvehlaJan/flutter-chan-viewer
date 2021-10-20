@@ -46,6 +46,7 @@ class ChanViewerAppState extends State<ChanViewerApp> with WidgetsBindingObserve
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    print("didChangeAppLifecycleState: $state");
     AppBloc appBloc = BlocProvider.of<AppBloc>(context);
     appBloc.add(AppEventLifecycleChange(lastLifecycleState: state));
   }

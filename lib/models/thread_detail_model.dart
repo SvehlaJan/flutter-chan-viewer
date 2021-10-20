@@ -43,7 +43,8 @@ class ThreadDetailModel extends Equatable {
 
   factory ThreadDetailModel.fromFolderInfo(DownloadFolderInfo folderInfo) {
     List<PostItem> posts = [];
-    folderInfo.fileNames.asMap().forEach((index, fileName) => posts.add(PostItem.fromDownloadedFile(fileName, folderInfo.cacheDirective, index)));
+    folderInfo.fileNames.asMap().forEach(
+        (index, fileName) => posts.add(PostItem.fromDownloadedFile(fileName, folderInfo.cacheDirective, index)));
     return ThreadDetailModel(thread: ThreadItem.fromCacheDirective(folderInfo.cacheDirective), posts: posts);
   }
 
@@ -92,17 +93,13 @@ class ThreadDetailModel extends Equatable {
 
   List<PostItem> get allMediaPosts => _posts.where((post) => post.hasMedia()).toList();
 
-  int getPostIndex(int? postId) => ((postId ?? -1) >= 0) ? _posts.indexWhere((post) => post.postId == postId) : -1;
-
-  int getMediaIndex(int? postId) => ((postId ?? -1) >= 0) ? allMediaPosts.indexWhere((post) => post.postId == postId) : -1;
-
   PostItem? findPostById(int? postId) => _posts.where((post) => post.postId == postId).first;
 
   int get selectedPostId => thread.selectedPostId;
 
-  int get selectedPostIndex => getPostIndex(selectedPostId);
+  int get selectedPostIndex => _posts.indexWhere((post) => post.postId == selectedPostId);
 
-  int get selectedMediaIndex => getMediaIndex(selectedPostId);
+  int get selectedMediaIndex => allMediaPosts.indexWhere((post) => post.postId == selectedPostId);
 
   PostItem? get selectedPost => _posts.where((post) => post.postId == selectedPostId).first;
 

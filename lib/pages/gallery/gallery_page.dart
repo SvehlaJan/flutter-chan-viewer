@@ -20,11 +20,11 @@ import 'package:sliding_sheet/sliding_sheet.dart';
 
 class GalleryPage extends StatefulWidget {
   final bool showAsReply;
-  final int selectedPostId;
+  final int explicitPostId;
 
   const GalleryPage({
     required this.showAsReply,
-    required this.selectedPostId,
+    required this.explicitPostId,
   });
 
   @override
@@ -32,7 +32,7 @@ class GalleryPage extends StatefulWidget {
 }
 
 class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderStateMixin {
-  SheetController? _sheetController;
+  late SheetController _sheetController;
   TextEditingController? _newCollectionTextController;
 
   @override
@@ -41,17 +41,19 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
     bloc = BlocProvider.of<ThreadDetailBloc>(context);
     _newCollectionTextController = TextEditingController();
     _sheetController = SheetController.of(context) ?? SheetController();
-    if (widget.showAsReply) {
-      Future.delayed(const Duration(milliseconds: 100), () {
-        _sheetController!.expand();
-      });
-    }
+    Future.delayed(const Duration(milliseconds: 100), () {
+      ThreadDetailStateContent? contentState = bloc.state is ThreadDetailStateContent ? bloc.state : null;
+      bool hasMedia = contentState?.model?.selectedPost?.hasMedia() ?? false;
+      if (widget.showAsReply || !hasMedia) {
+        _sheetController.expand();
+      }
+    });
   }
 
   @override
   Future<bool> onBackPressed() {
-    if (_sheetController?.state?.isExpanded ?? false) {
-      _sheetController!.collapse();
+    if (_sheetController.state?.isExpanded ?? false) {
+      _sheetController.collapse();
       if (widget.showAsReply) {
         return Future.delayed(const Duration(milliseconds: 200), () {
           return Future.value(true);
@@ -76,7 +78,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
                   threads,
                   _newCollectionTextController,
                   (context, name) => {bloc.add(ThreadDetailEventCreateNewCollection(name))},
-                  (context, name) => {bloc.add(ThreadDetailEventAddPostToCollection(name, widget.selectedPostId))},
+                  (context, name) => {bloc.add(ThreadDetailEventAddPostToCollection(name, widget.explicitPostId))},
                 );
                 break;
               case ThreadDetailSingleEvent.SHOW_POST_ADDED_TO_COLLECTION_SUCCESS:
@@ -97,7 +99,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
                 return Constants.centeredProgressIndicator;
               } else if (state is ThreadDetailStateContent) {
                 if (widget.showAsReply) {
-                  return _buildSinglePostBody(context, state, widget.selectedPostId);
+                  return _buildSinglePostBody(context, state, widget.explicitPostId);
                 } else {
                   PostItem? post = state.model?.selectedPost;
                   if (post == null) {
@@ -156,7 +158,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
             onPageChanged: ((newMediaIndex) {
               if (newMediaIndex != state.selectedMediaIndex) {
                 bloc.add(ThreadDetailEventOnPostSelected(mediaIndex: newMediaIndex));
-                _sheetController!.collapse();
+                _sheetController.collapse();
               }
             }),
           ),
@@ -249,7 +251,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           InkWell(
-            onTap: () => _sheetController!.expand(),
+            onTap: () => _sheetController.expand(),
             child: Card(
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.only(
@@ -292,7 +294,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
         opaque: false,
         pageBuilder: (_, __, ___) => BlocProvider.value(
               value: bloc as ThreadDetailBloc,
-              child: GalleryPage(showAsReply: true, selectedPostId: replyPost.postId),
+              child: GalleryPage(showAsReply: true, explicitPostId: replyPost.postId),
             )));
   }
 

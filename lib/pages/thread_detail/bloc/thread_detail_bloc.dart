@@ -109,8 +109,11 @@ class ThreadDetailBloc extends BaseBloc<ChanEvent, ChanState> {
           }
         }
       } else if (event is ThreadDetailEventToggleFavorite) {
-        if (!await Permission.storage.request().isGranted) {
-          yield ChanStateError("This feature requires permission to access external storage");
+        Map<Permission, PermissionStatus> statuses = await [
+          Permission.storage,
+        ].request();
+        if (statuses.values.any((status) => status.isGranted == false)) {
+          yield ChanStateError("This feature requires permission to access storage");
           return;
         }
 
@@ -223,7 +226,6 @@ class ThreadDetailBloc extends BaseBloc<ChanEvent, ChanState> {
 
     return ThreadDetailStateContent(
       model: threadDetailModel,
-      selectedPostId: threadDetailModel?.selectedPostId,
       isFavorite: threadDetailModel?.isFavorite ?? false,
       catalogMode: _catalogMode ?? false,
       event: event,

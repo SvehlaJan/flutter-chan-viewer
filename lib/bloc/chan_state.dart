@@ -43,4 +43,5 @@ class ChanSingleEvent {
 
   static const ChanSingleEvent CLOSE_PAGE = const ChanSingleEvent(0);
   static const ChanSingleEvent SHOW_OFFLINE = const ChanSingleEvent(1);
+  static const ChanSingleEvent SHOW_STORAGE_PERM = const ChanSingleEvent(2);
 }

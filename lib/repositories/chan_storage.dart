@@ -23,7 +23,7 @@ class ChanStorage {
   static Future<ChanStorage> initAndGet() async {
     if (_initialized) return _instance;
 
-    _instance._permanentDirectory = Directory(join((await getExternalStorageDirectory())!.path, PERMANENT_DIR));
+    _instance._permanentDirectory = Directory(join((await getApplicationSupportDirectory()).path, PERMANENT_DIR));
     if (!_instance._permanentDirectory.existsSync()) await _instance._permanentDirectory.create();
 
     _initialized = true;

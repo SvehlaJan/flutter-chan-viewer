@@ -30,6 +30,7 @@ class _ChanVideoPlayerState extends State<ChanVideoPlayer> {
         autoPlay: true,
         looping: true,
         controlsConfiguration: BetterPlayerControlsConfiguration(
+          controlBarHeight: 120,
           showControlsOnInitialize: false,
           backgroundColor: Colors.transparent,
           forwardSkipTimeInMilliseconds: 5000,
@@ -47,10 +48,14 @@ class _ChanVideoPlayerState extends State<ChanVideoPlayer> {
 
     if (getIt<ChanStorage>().mediaFileExists(widget.post.getMediaUrl()!, widget.post.getCacheDirective())) {
       File file = getIt<ChanStorage>().getMediaFile(widget.post.getMediaUrl()!, widget.post.getCacheDirective())!;
-      BetterPlayerDataSource betterPlayerDataSource =
-          BetterPlayerDataSource(BetterPlayerDataSourceType.file, file.absolute.path);
-      _betterPlayerController =
-          BetterPlayerController(betterPlayerConfiguration, betterPlayerDataSource: betterPlayerDataSource);
+      BetterPlayerDataSource betterPlayerDataSource = BetterPlayerDataSource(
+        BetterPlayerDataSourceType.file,
+        file.absolute.path,
+      );
+      _betterPlayerController = BetterPlayerController(
+        betterPlayerConfiguration,
+        betterPlayerDataSource: betterPlayerDataSource,
+      );
     } else {
       BetterPlayerDataSource betterPlayerDataSource = BetterPlayerDataSource(
         BetterPlayerDataSourceType.network,

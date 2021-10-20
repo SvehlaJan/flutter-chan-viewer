@@ -34,15 +34,19 @@ class FavoritesBloc extends BaseBloc<ChanEvent, ChanState> {
       if (event is ChanEventFetchData) {
         yield ChanStateLoading();
 
-        if (!await Permission.storage.request().isGranted) {
-          yield ChanStateError("This feature requires permission to access external storage");
+        Map<Permission, PermissionStatus> statuses = await [
+          Permission.storage,
+        ].request();
+        if (statuses.values.any((status) => status.isGranted == false)) {
+          yield ChanStateError("This feature requires permission to access storage");
           return;
         }
 
         List<ThreadDetailModel> threads = await _repository!.getFavoriteThreads();
         bool showNsfw = Preferences.getBool(Preferences.KEY_SETTINGS_SHOW_NSFW, def: false);
         if (!showNsfw) {
-          List<String?> sfwBoardIds = (await _repository!.fetchCachedBoardList(false))!.boards.map((board) => board.boardId).toList();
+          List<String?> sfwBoardIds =
+              (await _repository!.fetchCachedBoardList(false))!.boards.map((board) => board.boardId).toList();
           threads.removeWhere((model) => !sfwBoardIds.contains(model.thread.boardId));
         }
         _favoriteThreads = threads.map((e) => FavoritesThreadWrapper(e)).toList();
@@ -54,7 +58,8 @@ class FavoritesBloc extends BaseBloc<ChanEvent, ChanState> {
             .toList();
 
         int currentTimestamp = ChanUtil.getNowTimestamp();
-        bool shouldRefreshDetails = event.forceRefresh || currentTimestamp - _lastDetailRefreshTimestamp > DETAIL_REFRESH_TIMEOUT;
+        bool shouldRefreshDetails =
+            event.forceRefresh || currentTimestamp - _lastDetailRefreshTimestamp > DETAIL_REFRESH_TIMEOUT;
         if (_favoriteThreads.isNotEmpty && shouldRefreshDetails) {
           _lastDetailRefreshTimestamp = currentTimestamp;
           add(FavoritesEventFetchDetail(0));
@@ -71,7 +76,8 @@ class FavoritesBloc extends BaseBloc<ChanEvent, ChanState> {
           yield _buildContentState(lazyLoading: true);
 
           try {
-            refreshedThread = await _repository!.fetchRemoteThreadDetail(cachedThread.thread.boardId, cachedThread.thread.threadId, false);
+            refreshedThread = await _repository!
+                .fetchRemoteThreadDetail(cachedThread.thread.boardId, cachedThread.thread.threadId, false);
             _repository!.downloadAllMedia(refreshedThread);
           } on HttpException {
             ChanLogger.v("Thread not found. Probably offline. Ignoring");

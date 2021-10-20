@@ -12,6 +12,7 @@ import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/utils/navigation_helper.dart';
 import 'package:flutter_chan_viewer/utils/preferences.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import 'app_event.dart';
 import 'app_state.dart';
@@ -21,7 +22,7 @@ class AppBloc extends Bloc<AppEvent, ChanState> {
 
   LocalAuthentication auth = LocalAuthentication();
   AppLifecycleState lastLifecycleState = AppLifecycleState.inactive;
-  AuthState authState = AuthState.not_required;
+  AuthState authState = AuthState.auth_required;
   AppTheme appTheme = AppTheme.undefined;
 
   Future<void> initBloc() async {
@@ -29,6 +30,8 @@ class AppBloc extends Bloc<AppEvent, ChanState> {
     await getIt.getAsync<ChanDownloader>();
     await getIt.getAsync<ChanStorage>();
     await getIt.getAsync<ChanRepository>();
+
+    requestAuthentication();
   }
 
   @override
@@ -38,7 +41,15 @@ class AppBloc extends Bloc<AppEvent, ChanState> {
         await initBloc();
         int appThemeIndex = Preferences.getInt(Preferences.KEY_SETTINGS_THEME) ?? 0;
         appTheme = AppTheme.values[appThemeIndex];
-        yield _buildContentState();
+
+        Map<Permission, PermissionStatus> statuses = await [
+          Permission.storage,
+        ].request();
+        if (statuses.values.any((status) => (status.isGranted == false))) {
+          yield _buildContentState(event: ChanSingleEvent.SHOW_STORAGE_PERM);
+        } else {
+          yield _buildContentState();
+        }
       } else if (event is AppEventSetTheme) {
         appTheme = event.appTheme;
         yield _buildContentState();
@@ -46,22 +57,14 @@ class AppBloc extends Bloc<AppEvent, ChanState> {
         this.lastLifecycleState = event.lastLifecycleState;
         print("ChanViewerEventLifecycleChange: ${event.lastLifecycleState}");
         if (event.lastLifecycleState == AppLifecycleState.paused) {
-          this.authState = AuthState.auth_required;
-          yield _buildContentState();
-        } else if (event.lastLifecycleState == AppLifecycleState.resumed && this.authState == AuthState.auth_required) {
-          bool result = await auth.authenticate(
-            localizedReason: 'Scan your fingerprint (or face or whatever) to authenticate',
-            useErrorDialogs: true,
-            stickyAuth: true,
-            biometricOnly: true,
-          );
-          if (result) {
-            this.authState = AuthState.authenticated;
-          } else {
-            this.authState = AuthState.forbidden;
-          }
-          yield _buildContentState();
+          add(AppEventAuthStateChange(authState: AuthState.auth_required));
+        } else if (event.lastLifecycleState == AppLifecycleState.resumed &&
+            [AuthState.auth_required, AuthState.forbidden].contains(this.authState)) {
+          await requestAuthentication();
         }
+      } else if (event is AppEventAuthStateChange) {
+        this.authState = event.authState;
+        yield _buildContentState();
       }
     } catch (e, stackTrace) {
       ChanLogger.e("Event error!", e, stackTrace);
@@ -69,10 +72,21 @@ class AppBloc extends Bloc<AppEvent, ChanState> {
     }
   }
 
-  AppStateContent _buildContentState({AppTheme? appTheme, AuthState? authState}) {
+  Future<void> requestAuthentication() async {
+    bool result = await auth.authenticate(
+      localizedReason: 'Scan your fingerprint (or face or whatever) to authenticate',
+      useErrorDialogs: true,
+      stickyAuth: true,
+      biometricOnly: true,
+    );
+    add(AppEventAuthStateChange(authState: result ? AuthState.authenticated : AuthState.forbidden));
+  }
+
+  AppStateContent _buildContentState({AppTheme? appTheme, AuthState? authState, ChanSingleEvent? event}) {
     return AppStateContent(
       appTheme: appTheme ?? this.appTheme,
       authState: authState ?? this.authState,
+      event: event,
     );
   }
 }

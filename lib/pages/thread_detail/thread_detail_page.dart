@@ -298,7 +298,7 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
               value: BlocProvider.of<ThreadDetailBloc>(context),
               child: GalleryPage(
                 showAsReply: false,
-                selectedPostId: post.postId,
+                explicitPostId: post.postId,
               ),
             );
           }),

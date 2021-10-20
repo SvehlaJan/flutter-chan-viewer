@@ -5,7 +5,6 @@ import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
 class ThreadDetailStateContent extends ChanStateContent {
   final ThreadDetailModel? model;
   final List<ThreadItem> customThreads;
-  final int? selectedPostId;
   final bool isFavorite;
   final bool catalogMode;
 
@@ -15,17 +14,16 @@ class ThreadDetailStateContent extends ChanStateContent {
     required event,
     required this.model,
     required this.customThreads,
-    required this.selectedPostId,
     required this.isFavorite,
     required this.catalogMode,
   }) : super(showSearchBar: showSearchBar, showLazyLoading: showLazyLoading, event: event);
 
-  get selectedMediaIndex => model?.getMediaIndex(selectedPostId);
+  get selectedMediaIndex => model?.selectedMediaIndex;
 
-  get selectedPostIndex => model?.getPostIndex(selectedPostId);
+  get selectedPostIndex => model?.selectedPostIndex;
 
   @override
-  List<Object?> get props => super.props..addAll([model, selectedPostId, isFavorite, catalogMode]);
+  List<Object?> get props => super.props..addAll([model, isFavorite, catalogMode]);
 }
 
 class ThreadDetailSingleEvent extends ChanSingleEvent {

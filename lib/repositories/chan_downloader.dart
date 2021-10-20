@@ -96,9 +96,10 @@ class ChanDownloader {
   }
 
   Future<void> _requestDownload(_TaskInfo task) async {
+    String dirPath = task.getCacheDir(_chanStorage);
     String? taskId = await FlutterDownloader.enqueue(
       url: task.url!,
-      savedDir: task.getCacheDir(_chanStorage),
+      savedDir: dirPath,
       showNotification: false,
       openFileFromNotification: false,
     );

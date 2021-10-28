@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_chan_viewer/data/local/dao/boards_dao.dart';
 import 'package:flutter_chan_viewer/data/local/dao/posts_dao.dart';
@@ -20,7 +21,7 @@ void setupLocator() {
   getIt.registerLazySingleton<CacheManager>(
       () => ChanCacheManager.createCacheManager());
   getIt.registerLazySingleton<RemoteDataSource>(() => RemoteDataSource());
-  getIt.registerLazySingleton<MoorDB>(() => MoorDB());
+  getIt.registerLazySingleton<MoorDB>(() => MoorDB.connect(DatabaseConnection.delayed(MoorDB.connectAsync())));
   getIt.registerLazySingleton<PostsDao>(() => PostsDao(getIt<MoorDB>()));
   getIt.registerLazySingleton<ThreadsDao>(() => ThreadsDao(getIt<MoorDB>()));
   getIt.registerLazySingleton<BoardsDao>(() => BoardsDao(getIt<MoorDB>()));

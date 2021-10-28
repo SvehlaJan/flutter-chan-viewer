@@ -55,7 +55,9 @@ class ChanRepository {
     // initialization code
   }
 
-  bool isMediaDownloaded(ChanPostBase postBase) => _chanStorage.mediaFileExists(postBase.getMediaUrl()!, postBase.getCacheDirective());
+  bool isMediaDownloaded(ChanPostBase postBase) {
+    return _chanStorage.mediaFileExists(postBase.getMediaUrl()!, postBase.getCacheDirective());
+  }
 
   Future<BoardListModel?> fetchRemoteBoardList(bool includeNsfw) async {
     BoardListModel model = await _chanApiProvider.fetchBoardList();

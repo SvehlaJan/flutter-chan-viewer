@@ -30,8 +30,9 @@ class ChanStorage {
     return _instance;
   }
 
-  bool mediaFileExists(String url, CacheDirective cacheDirective) =>
-      File(join(_permanentDirectory.path, _getFileRelativePath(url, cacheDirective))).existsSync();
+  bool mediaFileExists(String url, CacheDirective cacheDirective) {
+    return File(join(_permanentDirectory.path, _getFileRelativePath(url, cacheDirective))).existsSync();
+  }
 
   List<String> listDirectory(CacheDirective cacheDirective) =>
       Directory(getFolderAbsolutePath(cacheDirective)).listSync(recursive: true).map((file) => file.path) as List<String>;

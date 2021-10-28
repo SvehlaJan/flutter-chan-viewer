@@ -1,3 +1,4 @@
+import 'package:collection/src/iterable_extensions.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_chan_viewer/models/local/threads_table.dart';
 import 'package:flutter_chan_viewer/models/ui/post_item.dart';
@@ -103,19 +104,25 @@ class ThreadDetailModel extends Equatable {
   List<PostItem> get allMediaPosts =>
       _posts.where((post) => post.hasMedia()).toList();
 
-  PostItem? findPostById(int? postId) =>
-      _posts.where((post) => post.postId == postId).first;
+  PostItem? findPostById(int? postId) {
+    return _posts.where((post) => post.postId == postId).firstOrNull;
+  }
 
-  int get selectedPostId => thread.selectedPostId;
+  int get selectedPostId {
+    return thread.selectedPostId;
+  }
 
-  int get selectedPostIndex =>
-      _posts.indexWhere((post) => post.postId == selectedPostId);
+  int get selectedPostIndex {
+    return _posts.indexWhere((post) => post.postId == selectedPostId);
+  }
 
-  int get selectedMediaIndex =>
-      allMediaPosts.indexWhere((post) => post.postId == selectedPostId);
+  int get selectedMediaIndex {
+    return allMediaPosts.indexWhere((post) => post.postId == selectedPostId);
+  }
 
-  PostItem? get selectedPost =>
-      _posts.where((post) => post.postId == selectedPostId).first;
+  PostItem? get selectedPost {
+    return _posts.where((post) => post.postId == selectedPostId).firstOrNull;
+  }
 
   bool get isFavorite => thread.isFavorite();
 

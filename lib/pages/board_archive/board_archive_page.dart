@@ -1,4 +1,3 @@
-import 'package:draggable_scrollbar/draggable_scrollbar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -92,7 +91,7 @@ class _BoardArchivePageState extends BasePageState<BoardArchivePage> {
 
       return Stack(
         children: [
-          DraggableScrollbar.semicircle(
+          Scrollbar(
             controller: _listScrollController!,
             child: ListView.builder(
               controller: _listScrollController,

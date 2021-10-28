@@ -1,4 +1,3 @@
-import 'package:draggable_scrollbar/draggable_scrollbar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -20,8 +19,7 @@ import 'bloc/thread_detail_state.dart';
 class ThreadDetailPage extends StatefulWidget {
   static const String ARG_BOARD_ID = "ThreadDetailPage.ARG_BOARD_ID";
   static const String ARG_THREAD_ID = "ThreadDetailPage.ARG_THREAD_ID";
-  static const String ARG_SHOW_DOWNLOADS_ONLY =
-      "ThreadDetailPage.ARG_SHOW_DOWNLOADS_ONLY";
+  static const String ARG_SHOW_DOWNLOADS_ONLY = "ThreadDetailPage.ARG_SHOW_DOWNLOADS_ONLY";
 
   final String? boardId;
   final int? threadId;
@@ -66,21 +64,15 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
   String getPageTitle() => "/${widget.boardId}/${widget.threadId}";
 
   List<PageAction> getPageActions(BuildContext context, ChanState state) {
-    bool showSearch =
-        state is ThreadDetailStateContent && !state.showLazyLoading;
+    bool showSearch = state is ThreadDetailStateContent && !state.showLazyLoading;
     bool isFavorite = state is ThreadDetailStateContent && state.isFavorite;
     bool isCatalogMode = state is ThreadDetailStateContent && state.catalogMode;
-    bool isCollection = state is ThreadDetailStateContent &&
-        state.model?.thread.onlineStatus == OnlineState.CUSTOM.index;
-    List<PageAction> actions = [
-      if (showSearch) PageAction("Search", Icons.search, _onSearchClick)
-    ];
+    bool isCollection =
+        state is ThreadDetailStateContent && state.model?.thread.onlineStatus == OnlineState.CUSTOM.index;
+    List<PageAction> actions = [if (showSearch) PageAction("Search", Icons.search, _onSearchClick)];
     if (isCollection && state.model?.thread.threadId != null) {
-      actions.add(PageAction(
-          "Delete collection",
-          Icons.delete_forever,
-          () => _onDeleteCollectionClicked(
-              context, state.model!.thread.threadId)));
+      actions.add(PageAction("Delete collection", Icons.delete_forever,
+          () => _onDeleteCollectionClicked(context, state.model!.thread.threadId)));
     } else {
       actions.add(isFavorite
           ? PageAction("Unstar", Icons.star, _onFavoriteToggleClick)
@@ -97,14 +89,11 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
 
   void _onRefreshClick() => bloc.add(ChanEventFetchData());
 
-  void _onCatalogModeToggleClick() =>
-      bloc.add(ThreadDetailEventToggleCatalogMode());
+  void _onCatalogModeToggleClick() => bloc.add(ThreadDetailEventToggleCatalogMode());
 
-  void _onFavoriteToggleClick() =>
-      bloc.add(ThreadDetailEventToggleFavorite(confirmed: false));
+  void _onFavoriteToggleClick() => bloc.add(ThreadDetailEventToggleFavorite(confirmed: false));
 
-  void _onDeleteCollectionClicked(BuildContext context, int threadId) =>
-      showConfirmCollectionDeleteDialog(threadId);
+  void _onDeleteCollectionClicked(BuildContext context, int threadId) => showConfirmCollectionDeleteDialog(threadId);
 
   @override
   Widget build(BuildContext context) {
@@ -116,8 +105,7 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
               showConfirmUnstarDialog();
               break;
             case ThreadDetailSingleEvent.SCROLL_TO_SELECTED:
-              scrollToSelectedPost(
-                  state.selectedPostIndex, state.selectedMediaIndex, state);
+              scrollToSelectedPost(state.selectedPostIndex, state.selectedMediaIndex, state);
               break;
             case ChanSingleEvent.CLOSE_PAGE:
               Navigator.of(context).pop();
@@ -171,14 +159,11 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
         ],
       );
     } else {
-      return BasePageState.buildErrorScreen(
-          context, (state as ChanStateError).message);
+      return BasePageState.buildErrorScreen(context, (state as ChanStateError).message);
     }
   }
 
-  Widget buildList(
-      BuildContext context, List<PostItem> posts, int selectedPostIndex) {
-    // return DraggableScrollbar.semicircle(child: null, controller: _listScrollController);
+  Widget buildList(BuildContext context, List<PostItem> posts, int selectedPostIndex) {
     return ScrollablePositionedList.builder(
       key: PageStorageKey<String>(KEY_LIST),
       itemCount: posts.length,
@@ -199,9 +184,8 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
     );
   }
 
-  Widget buildGrid(
-      BuildContext context, List<PostItem> mediaPosts, int selectedMediaIndex) {
-    return DraggableScrollbar.semicircle(
+  Widget buildGrid(BuildContext context, List<PostItem> mediaPosts, int selectedMediaIndex) {
+    return Scrollbar(
       controller: _gridScrollController,
       child: GridView.builder(
         key: PageStorageKey<String>(KEY_GRID),
@@ -221,8 +205,7 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
             post: mediaPosts[index],
             selected: index == selectedMediaIndex,
             onTap: () => _onItemTap(context, mediaPosts[index]),
-            onLongPress: () =>
-                _onItemLongPress(context, mediaPosts[index], itemKey),
+            onLongPress: () => _onItemLongPress(context, mediaPosts[index], itemKey),
           );
         },
       ),
@@ -235,8 +218,7 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
         builder: (BuildContext context) {
           return AlertDialog(
             title: Text("Warning"),
-            content:
-                Text("This will delete downloaded content for this thread"),
+            content: Text("This will delete downloaded content for this thread"),
             actions: [
               TextButton(
                   child: Text("Cancel".toUpperCase()),
@@ -260,12 +242,9 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
         builder: (BuildContext context) {
           return AlertDialog(
             title: Text("Warning"),
-            content: Text(
-                "This will also delete downloaded content from this collection"),
+            content: Text("This will also delete downloaded content from this collection"),
             actions: [
-              TextButton(
-                  child: Text("Cancel".toUpperCase()),
-                  onPressed: () => Navigator.of(context).pop()),
+              TextButton(child: Text("Cancel".toUpperCase()), onPressed: () => Navigator.of(context).pop()),
               TextButton(
                   child: Text("OK, delete".toUpperCase()),
                   onPressed: () {
@@ -277,8 +256,7 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
         });
   }
 
-  void scrollToSelectedPost(
-      int selectedPostIndex, int selectedMediaIndex, ChanState state) {
+  void scrollToSelectedPost(int selectedPostIndex, int selectedMediaIndex, ChanState state) {
     if (selectedPostIndex < 0) {
       return;
     }
@@ -288,22 +266,16 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
     // TODO - dirty! Find a way how to scroll when list/grid is already shown
     Future.delayed(const Duration(milliseconds: 500), () {
       if (isCatalogMode) {
-        _gridScrollController.animateTo(
-            _getGridScrollOffset(selectedMediaIndex),
-            duration: Duration(milliseconds: 500),
-            curve: Curves.easeInOut);
+        _gridScrollController.animateTo(_getGridScrollOffset(selectedMediaIndex),
+            duration: Duration(milliseconds: 500), curve: Curves.easeInOut);
       } else {
-        _listScrollController.scrollTo(
-            index: selectedPostIndex,
-            duration: Duration(milliseconds: 500),
-            alignment: 0.5);
+        _listScrollController.scrollTo(index: selectedPostIndex, duration: Duration(milliseconds: 500), alignment: 0.5);
       }
     });
   }
 
   double _getGridScrollOffset(int mediaIndex) {
-    double itemHeight =
-        MediaQuery.of(context).size.width / _getGridColumnCount();
+    double itemHeight = MediaQuery.of(context).size.width / _getGridColumnCount();
     int targetRow = mediaIndex ~/ _getGridColumnCount();
     return targetRow * itemHeight - itemHeight;
   }
@@ -314,8 +286,7 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
   }
 
   void _onItemTap(BuildContext context, PostItem post) {
-    bloc.add(
-        ThreadDetailEventOnPostSelected(mediaIndex: null, postId: post.postId));
+    bloc.add(ThreadDetailEventOnPostSelected(mediaIndex: null, postId: post.postId));
 
     Navigator.of(context).push(
       PageRouteBuilder(
@@ -354,6 +325,5 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
     // menu.show(widgetKey: itemKey);
   }
 
-  void _onLinkClicked(String url, BuildContext context) =>
-      bloc.add(ThreadDetailEventOnLinkClicked(url));
+  void _onLinkClicked(String url, BuildContext context) => bloc.add(ThreadDetailEventOnLinkClicked(url));
 }

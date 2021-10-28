@@ -21,7 +21,7 @@ void setupLocator() {
   getIt.registerLazySingleton<CacheManager>(
       () => ChanCacheManager.createCacheManager());
   getIt.registerLazySingleton<RemoteDataSource>(() => RemoteDataSource());
-  getIt.registerLazySingleton<MoorDB>(() => MoorDB.connect(DatabaseConnection.delayed(MoorDB.connectAsync())));
+  getIt.registerLazySingleton<MoorDB>(() => MoorDB.connect(MoorDB.createDriftIsolateAndConnect()));
   getIt.registerLazySingleton<PostsDao>(() => PostsDao(getIt<MoorDB>()));
   getIt.registerLazySingleton<ThreadsDao>(() => ThreadsDao(getIt<MoorDB>()));
   getIt.registerLazySingleton<BoardsDao>(() => BoardsDao(getIt<MoorDB>()));

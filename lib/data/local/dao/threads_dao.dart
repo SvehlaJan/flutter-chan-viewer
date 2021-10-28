@@ -24,13 +24,19 @@ class ThreadsDao extends DatabaseAccessor<MoorDB> with _$ThreadsDaoMixin {
 
   Future<List<ThreadsTableData>> getAllThreadItems() => select(threadsTable).get();
 
-  Future<List<int>> getFavoriteThreadIds() =>
-      (select(threadsTable)..where((thread) => thread.isFavorite.equals(true))).map((thread) => thread.threadId).get();
+  Future<List<int>> getFavoriteThreadIds() {
+    return (select(threadsTable)..where((thread) => thread.isFavorite.equals(true)))
+        .map((thread) => thread.threadId)
+        .get();
+  }
 
-  Future<List<ThreadsTableData>> getFavoriteThreads() => (select(threadsTable)
-        ..where((thread) => thread.isFavorite.equals(true) & thread.onlineState.equals(OnlineState.CUSTOM.index).not())
-        ..orderBy([(thread) => OrderingTerm(expression: thread.timestamp, mode: OrderingMode.desc)]))
-      .get();
+  Future<List<ThreadsTableData>> getFavoriteThreads() {
+    return (select(threadsTable)
+          ..where(
+              (thread) => thread.isFavorite.equals(true) & thread.onlineState.equals(OnlineState.CUSTOM.index).not())
+          ..orderBy([(thread) => OrderingTerm(expression: thread.timestamp, mode: OrderingMode.desc)]))
+        .get();
+  }
 
   Future<List<ThreadsTableData>> getThreadsByBoardId(String? boardId) =>
       (select(threadsTable)..where((thread) => thread.boardId.equals(boardId))).get();

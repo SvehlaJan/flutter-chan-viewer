@@ -1,4 +1,3 @@
-import 'package:draggable_scrollbar/draggable_scrollbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/chan_event.dart';
@@ -128,7 +127,7 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
 
   Widget _buildListView(BuildContext context, BoardDetailStateContent state,
       Function(ThreadItem) onItemClicked) {
-    return DraggableScrollbar.semicircle(
+    return Scrollbar(
       controller: _scrollController!,
       child: ListView.builder(
         key: PageStorageKey<String>(KEY_LIST),

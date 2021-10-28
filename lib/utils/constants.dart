@@ -28,10 +28,14 @@ class Constants {
   static const double progressPlaceholderSize = 40.0;
   static const double errorPlaceholderSize = 100.0;
   static const double minFlingDistance = 100.0;
-  static const Widget progressIndicator =
-      const SizedBox(width: Constants.progressPlaceholderSize, height: Constants.progressPlaceholderSize, child: CircularProgressIndicator());
-  static const Widget centeredProgressIndicator = const Center(child: progressIndicator);
-  static const Widget noDataPlaceholder = const Center(child: Text("No data :-("));
+  static const Widget progressIndicator = const SizedBox(
+      width: Constants.progressPlaceholderSize,
+      height: Constants.progressPlaceholderSize,
+      child: CircularProgressIndicator());
+  static const Widget centeredProgressIndicator =
+      const Center(child: progressIndicator);
+  static const Widget noDataPlaceholder =
+      const Center(child: Text("No data :-("));
 
   //strings
   static const String appName = "Chan Viewer";
@@ -51,7 +55,12 @@ class Constants {
     return theme.copyWith(
       textTheme: theme.primaryTextTheme,
       inputDecorationTheme: InputDecorationTheme(
-        hintStyle: Theme.of(context).textTheme.headline6!.copyWith(color: Theme.of(context).primaryTextTheme.headline6!.color!.withOpacity(0.8)),
+        hintStyle: Theme.of(context).textTheme.headline6!.copyWith(
+            color: Theme.of(context)
+                .primaryTextTheme
+                .headline6!
+                .color!
+                .withOpacity(0.8)),
       ),
     );
   }

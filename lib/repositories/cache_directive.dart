@@ -9,7 +9,8 @@ class CacheDirective {
 
   static CacheDirective fromPath(String path) {
     int dividerIndex = path.indexOf(RegExp(r"\d"));
-    return new CacheDirective(path.substring(0, dividerIndex), int.parse(path.substring(dividerIndex)));
+    return new CacheDirective(path.substring(0, dividerIndex),
+        int.parse(path.substring(dividerIndex)));
   }
 
   // static CacheDirective fromUrl(String url) {

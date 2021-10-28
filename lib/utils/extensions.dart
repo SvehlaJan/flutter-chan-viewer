@@ -37,20 +37,26 @@ extension GeneralUtilsObjectExtension on Object? {
   /// - null `Object`
   /// - empty `String`
   /// - empty `Iterable` (list, map, set, ...)
-  bool get isNullOrEmpty => isNull || _isStringObjectEmpty || _isIterableObjectEmpty;
+  bool get isNullOrEmpty =>
+      isNull || _isStringObjectEmpty || _isIterableObjectEmpty;
 
   /// Returns true if object is NOT:
   /// - null `Object`
   /// - empty `String`
   /// - empty `Iterable` (list, map, set, ...)
-  bool get isNotNullNorEmpty => isNotNull && !_isStringObjectEmpty && !_isIterableObjectEmpty;
+  bool get isNotNullNorEmpty =>
+      isNotNull && !_isStringObjectEmpty && !_isIterableObjectEmpty;
 
   /// Returns true if object is:
   /// - null `Object`
   /// - empty `String`
   /// - empty `Iterable` (list, map, set, ...)
   /// - false `bool`
-  bool get isNullEmptyOrFalse => isNull || _isStringObjectEmpty || _isIterableObjectEmpty || _isBoolObjectFalse;
+  bool get isNullEmptyOrFalse =>
+      isNull ||
+      _isStringObjectEmpty ||
+      _isIterableObjectEmpty ||
+      _isBoolObjectFalse;
 
   /// Returns true if object is:
   /// - null `Object`
@@ -58,7 +64,12 @@ extension GeneralUtilsObjectExtension on Object? {
   /// - empty `Iterable` (list, map, set, ...)
   /// - false `bool`
   /// - zero `num`
-  bool get isNullEmptyFalseOrZero => isNull || _isStringObjectEmpty || _isIterableObjectEmpty || _isBoolObjectFalse || _isNumObjectZero;
+  bool get isNullEmptyFalseOrZero =>
+      isNull ||
+      _isStringObjectEmpty ||
+      _isIterableObjectEmpty ||
+      _isBoolObjectFalse ||
+      _isNumObjectZero;
 
   // ------- PRIVATE EXTENSION HELPERS -------
   /// **Private helper**
@@ -66,21 +77,24 @@ extension GeneralUtilsObjectExtension on Object? {
   /// If `String` object, return String's method `isEmpty`
   ///
   /// Otherwise return `false` to not affect logical-OR expression. As `false` denotes undefined or N/A since object is not `String`
-  bool get _isStringObjectEmpty => (this is String) ? (this as String).isEmpty : false;
+  bool get _isStringObjectEmpty =>
+      (this is String) ? (this as String).isEmpty : false;
 
   /// **Private helper**
   ///
   /// If `Iterable` object, return Iterable's method `isEmpty`
   ///
   /// Otherwise return `false` to not affect logical-OR expression. As `false` denotes undefined or N/A since object is not `Iterable`
-  bool get _isIterableObjectEmpty => (this is Iterable) ? (this as Iterable).isEmpty : false;
+  bool get _isIterableObjectEmpty =>
+      (this is Iterable) ? (this as Iterable).isEmpty : false;
 
   /// **Private helper**
   ///
   /// If `bool` object, return `isFalse` expression
   ///
   /// Otherwise return `false` to not affect logical-OR expression. As `false` denotes undefined or N/A since object is not `bool`
-  bool get _isBoolObjectFalse => (this is bool) ? (this as bool?) == false : false;
+  bool get _isBoolObjectFalse =>
+      (this is bool) ? (this as bool?) == false : false;
 
   /// **Private helper**
   ///

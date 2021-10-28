@@ -48,7 +48,8 @@ class _ChanVideoPlayerState extends State<ChanVideoPlayer> {
         fit: BoxFit.contain);
 
     if (getIt<ChanRepository>().isMediaDownloaded(widget.post)) {
-      File file = getIt<ChanStorage>().getMediaFile(widget.post.getMediaUrl()!, widget.post.getCacheDirective())!;
+      File file = getIt<ChanStorage>().getMediaFile(
+          widget.post.getMediaUrl()!, widget.post.getCacheDirective())!;
       BetterPlayerDataSource betterPlayerDataSource = BetterPlayerDataSource(
         BetterPlayerDataSourceType.file,
         file.absolute.path,
@@ -67,8 +68,9 @@ class _ChanVideoPlayerState extends State<ChanVideoPlayer> {
           maxCacheFileSize: 10 * 1024 * 1024,
         ),
       );
-      _betterPlayerController =
-          BetterPlayerController(betterPlayerConfiguration, betterPlayerDataSource: betterPlayerDataSource);
+      _betterPlayerController = BetterPlayerController(
+          betterPlayerConfiguration,
+          betterPlayerDataSource: betterPlayerDataSource);
     }
   }
 

@@ -9,7 +9,8 @@ class SettingsStateContent extends ChanState {
   final bool showNsfw;
   final MoorDbOverview moorDbOverview;
 
-  SettingsStateContent(this.theme, this.downloads, this.showNsfw, this.moorDbOverview);
+  SettingsStateContent(
+      this.theme, this.downloads, this.showNsfw, this.moorDbOverview);
 
   @override
   List<Object?> get props => [theme, downloads, showNsfw];

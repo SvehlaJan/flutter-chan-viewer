@@ -74,18 +74,25 @@ class ChanDownloader {
   }
 
   Future<void> downloadPostMedia(PostItem post) async {
-    bool fileExists = _chanStorage.mediaFileExists(post.getMediaUrl()!, post.getCacheDirective());
-    DownloadTask? existingTask = currentTasks.firstWhereOrNull((element) => element.url == post.getMediaUrl2());
+    bool fileExists = _chanStorage.mediaFileExists(
+        post.getMediaUrl()!, post.getCacheDirective());
+    DownloadTask? existingTask = currentTasks
+        .firstWhereOrNull((element) => element.url == post.getMediaUrl2());
 
     if (existingTask == null) {
       await _requestDownload(_TaskInfo(post));
       return;
     }
-    if ([DownloadTaskStatus.enqueued, DownloadTaskStatus.running].contains(existingTask.status)) {
+    if ([DownloadTaskStatus.enqueued, DownloadTaskStatus.running]
+        .contains(existingTask.status)) {
       print("Url is already enqueued to download. Skipping.");
       return;
     }
-    if ([DownloadTaskStatus.complete, DownloadTaskStatus.failed, DownloadTaskStatus.canceled].contains(existingTask.status)) {
+    if ([
+      DownloadTaskStatus.complete,
+      DownloadTaskStatus.failed,
+      DownloadTaskStatus.canceled
+    ].contains(existingTask.status)) {
       if (fileExists) {
         return;
       } else {
@@ -110,15 +117,19 @@ class ChanDownloader {
     }
   }
 
-  static void downloadCallback(String id, DownloadTaskStatus status, int progress) {
-    print('Background Isolate Callback: task ($id) is in status ($status) and process ($progress)');
-    final SendPort port = IsolateNameServer.lookupPortByName(Constants.downloaderPortName)!;
+  static void downloadCallback(
+      String id, DownloadTaskStatus status, int progress) {
+    print(
+        'Background Isolate Callback: task ($id) is in status ($status) and process ($progress)');
+    final SendPort port =
+        IsolateNameServer.lookupPortByName(Constants.downloaderPortName)!;
     port.send([id, status, progress]);
     print('Message sent.');
   }
 
   static Future<void> onDownloadFinished(String taskId) async {
-    _TaskInfo? task = taskList.firstWhereOrNull((element) => element.taskId == taskId);
+    _TaskInfo? task =
+        taskList.firstWhereOrNull((element) => element.taskId == taskId);
     if (task != null && task.post.isWebm()) {
       await ChanRepository.createVideoThumbnail(task.post);
     }
@@ -130,7 +141,8 @@ class ChanDownloader {
 
   Future<void> cancelThreadDownload(ThreadDetailModel model) async {
     for (PostItem post in model.allMediaPosts) {
-      _TaskInfo? task = taskList.firstWhereOrNull((element) => element.post.postId == post.postId);
+      _TaskInfo? task = taskList
+          .firstWhereOrNull((element) => element.post.postId == post.postId);
       if (task != null) {
         await FlutterDownloader.cancel(taskId: task.taskId);
       }
@@ -148,7 +160,8 @@ class _TaskInfo {
 
   String? get fileName => post.filename;
 
-  String getCacheDir(ChanStorage cache) => cache.getFolderAbsolutePath(post.getCacheDirective());
+  String getCacheDir(ChanStorage cache) =>
+      cache.getFolderAbsolutePath(post.getCacheDirective());
 
   _TaskInfo(this.post);
 }

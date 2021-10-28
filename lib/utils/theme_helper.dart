@@ -22,8 +22,12 @@ class ThemeHelper {
       buttonTheme: Theme.of(context).buttonTheme.copyWith(
             buttonColor: swatchLight.shade500,
             minWidth: 100.0,
-            colorScheme: Theme.of(context).buttonTheme.colorScheme!.copyWith(primary: swatchLight.shade500),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(4.0))),
+            colorScheme: Theme.of(context)
+                .buttonTheme
+                .colorScheme!
+                .copyWith(primary: swatchLight.shade500),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(4.0))),
             textTheme: ButtonTextTheme.primary,
           ),
     );
@@ -37,8 +41,12 @@ class ThemeHelper {
       buttonTheme: Theme.of(context).buttonTheme.copyWith(
             buttonColor: swatchLight.shade200,
             minWidth: 100.0,
-            colorScheme: Theme.of(context).buttonTheme.colorScheme!.copyWith(primary: swatchLight.shade200),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(4.0))),
+            colorScheme: Theme.of(context)
+                .buttonTheme
+                .colorScheme!
+                .copyWith(primary: swatchLight.shade200),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(4.0))),
             textTheme: ButtonTextTheme.primary,
           ),
       brightness: Brightness.dark,

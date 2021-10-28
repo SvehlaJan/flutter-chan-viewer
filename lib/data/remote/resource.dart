@@ -16,7 +16,8 @@ class Resource<T> {
 
   static Resource<T> loading<T>({T? data}) => Resource<T>(data: data, status: Status.loading);
 
-  static Resource<T> failed<T>({Exception? error, T? data}) => Resource<T>(error: ErrorMapper.from(error), data: data, status: Status.failed);
+  static Resource<T> failed<T>({Exception? error, T? data}) =>
+      Resource<T>(error: ErrorMapper.from(error), data: data, status: Status.failed);
 
   static Resource<T> success<T>({T? data}) => Resource<T>(data: data, status: Status.success);
 

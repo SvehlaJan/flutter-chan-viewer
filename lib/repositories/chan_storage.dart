@@ -35,13 +35,17 @@ class ChanStorage {
   }
 
   List<String> listDirectory(CacheDirective cacheDirective) =>
-      Directory(getFolderAbsolutePath(cacheDirective)).listSync(recursive: true).map((file) => file.path) as List<String>;
+      Directory(getFolderAbsolutePath(cacheDirective)).listSync(recursive: true).map((file) => file.path)
+          as List<String>;
 
-  String getFolderAbsolutePath(CacheDirective cacheDirective) => join(_permanentDirectory.path, _getFolderRelativePath(cacheDirective));
+  String getFolderAbsolutePath(CacheDirective cacheDirective) =>
+      join(_permanentDirectory.path, _getFolderRelativePath(cacheDirective));
 
-  String getFileAbsolutePath(String url, CacheDirective cacheDirective) => join(_permanentDirectory.path, _getFileRelativePath(url, cacheDirective));
+  String getFileAbsolutePath(String url, CacheDirective cacheDirective) =>
+      join(_permanentDirectory.path, _getFileRelativePath(url, cacheDirective));
 
-  String _getFolderRelativePath(CacheDirective cacheDirective) => "${cacheDirective.boardId}$SEPARATOR${cacheDirective.threadId}";
+  String _getFolderRelativePath(CacheDirective cacheDirective) =>
+      "${cacheDirective.boardId}$SEPARATOR${cacheDirective.threadId}";
 
   String _getFileRelativePath(String url, CacheDirective cacheDirective) =>
       "${cacheDirective.boardId}$SEPARATOR${cacheDirective.threadId}$SEPARATOR${basename(url)}";
@@ -94,7 +98,8 @@ class ChanStorage {
     }
   }
 
-  Future<File?> copyMediaFile(String name, CacheDirective sourceCacheDirective, CacheDirective targetCacheDirective) async {
+  Future<File?> copyMediaFile(
+      String name, CacheDirective sourceCacheDirective, CacheDirective targetCacheDirective) async {
     try {
       File sourceMediaFile = File(getFileAbsolutePath(name, sourceCacheDirective));
       Uint8List data = await sourceMediaFile.readAsBytes();

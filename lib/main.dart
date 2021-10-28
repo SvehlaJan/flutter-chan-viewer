@@ -66,13 +66,15 @@ class MainApp extends StatelessWidget with WidgetsBindingObserver {
                   home: ChanViewerApp(),
                 ),
               ),
-              if (state.authState == AuthState.auth_required) AuthRequiredPage(),
+              if (state.authState == AuthState.auth_required)
+                AuthRequiredPage(),
               if (state.authState == AuthState.forbidden) NotFoundPage(),
             ],
           ),
         );
       } else {
-        return BasePageState.buildErrorScreen(context, (state as ChanStateError).message);
+        return BasePageState.buildErrorScreen(
+            context, (state as ChanStateError).message);
       }
     });
   }

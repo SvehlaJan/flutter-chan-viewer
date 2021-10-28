@@ -9,5 +9,6 @@ class MoorBoardOverview {
   final int notFoundCount;
   final int unknownCount;
 
-  MoorBoardOverview(this.boardId, this.onlineCount, this.archivedCount, this.notFoundCount, this.unknownCount);
+  MoorBoardOverview(this.boardId, this.onlineCount, this.archivedCount,
+      this.notFoundCount, this.unknownCount);
 }

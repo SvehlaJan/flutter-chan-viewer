@@ -17,15 +17,20 @@ GetIt getIt = GetIt.instance;
 
 void setupLocator() {
   getIt.registerLazySingleton<NavigationService>(() => NavigationService());
-  getIt.registerLazySingleton<CacheManager>(() => ChanCacheManager.createCacheManager());
+  getIt.registerLazySingleton<CacheManager>(
+      () => ChanCacheManager.createCacheManager());
   getIt.registerLazySingleton<RemoteDataSource>(() => RemoteDataSource());
   getIt.registerLazySingleton<MoorDB>(() => MoorDB());
   getIt.registerLazySingleton<PostsDao>(() => PostsDao(getIt<MoorDB>()));
   getIt.registerLazySingleton<ThreadsDao>(() => ThreadsDao(getIt<MoorDB>()));
   getIt.registerLazySingleton<BoardsDao>(() => BoardsDao(getIt<MoorDB>()));
   getIt.registerLazySingleton<LocalDataSource>(() => LocalDataSource());
-  getIt.registerSingletonAsync<Preferences>(() async => Preferences.initAndGet());
-  getIt.registerLazySingletonAsync<ChanRepository>(() async => ChanRepository.initAndGet());
-  getIt.registerLazySingletonAsync<ChanStorage>(() async => ChanStorage.initAndGet());
-  getIt.registerLazySingletonAsync<ChanDownloader>(() async => ChanDownloader.initAndGet());
+  getIt.registerSingletonAsync<Preferences>(
+      () async => Preferences.initAndGet());
+  getIt.registerLazySingletonAsync<ChanRepository>(
+      () async => ChanRepository.initAndGet());
+  getIt.registerLazySingletonAsync<ChanStorage>(
+      () async => ChanStorage.initAndGet());
+  getIt.registerLazySingletonAsync<ChanDownloader>(
+      () async => ChanDownloader.initAndGet());
 }

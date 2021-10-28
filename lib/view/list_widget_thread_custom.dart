@@ -17,7 +17,11 @@ class CustomThreadListWidget extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: [if (thread.subtitle.isNotNullNorEmpty) Text(thread.subtitle!, style: Theme.of(context).textTheme.headline6, maxLines: 2)],
+          children: [
+            if (thread.subtitle.isNotNullNorEmpty)
+              Text(thread.subtitle!,
+                  style: Theme.of(context).textTheme.headline6, maxLines: 2)
+          ],
         ),
       ),
     );

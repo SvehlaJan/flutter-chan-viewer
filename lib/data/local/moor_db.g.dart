@@ -18,6 +18,7 @@ class PostsTableData extends DataClass implements Insertable<PostsTableData> {
   final int threadId;
   final int postId;
   final bool? isHidden;
+
   PostsTableData(
       {this.timestamp,
       this.subtitle,
@@ -29,33 +30,23 @@ class PostsTableData extends DataClass implements Insertable<PostsTableData> {
       required this.threadId,
       required this.postId,
       this.isHidden});
-  factory PostsTableData.fromData(
-      Map<String, dynamic> data, GeneratedDatabase db,
-      {String? prefix}) {
+
+  factory PostsTableData.fromData(Map<String, dynamic> data, {String? prefix}) {
     final effectivePrefix = prefix ?? '';
     return PostsTableData(
-      timestamp: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}timestamp']),
-      subtitle: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}subtitle']),
-      content: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}content']),
-      filename: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}filename']),
-      imageId: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}image_id']),
-      extension: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}extension']),
-      boardId: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}board_id'])!,
-      threadId: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}thread_id'])!,
-      postId: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}post_id'])!,
-      isHidden: const BoolType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}is_hidden']),
+      timestamp: const IntType().mapFromDatabaseResponse(data['${effectivePrefix}timestamp']),
+      subtitle: const StringType().mapFromDatabaseResponse(data['${effectivePrefix}subtitle']),
+      content: const StringType().mapFromDatabaseResponse(data['${effectivePrefix}content']),
+      filename: const StringType().mapFromDatabaseResponse(data['${effectivePrefix}filename']),
+      imageId: const StringType().mapFromDatabaseResponse(data['${effectivePrefix}image_id']),
+      extension: const StringType().mapFromDatabaseResponse(data['${effectivePrefix}extension']),
+      boardId: const StringType().mapFromDatabaseResponse(data['${effectivePrefix}board_id'])!,
+      threadId: const IntType().mapFromDatabaseResponse(data['${effectivePrefix}thread_id'])!,
+      postId: const IntType().mapFromDatabaseResponse(data['${effectivePrefix}post_id'])!,
+      isHidden: const BoolType().mapFromDatabaseResponse(data['${effectivePrefix}is_hidden']),
     );
   }
+
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -88,36 +79,21 @@ class PostsTableData extends DataClass implements Insertable<PostsTableData> {
 
   PostsTableCompanion toCompanion(bool nullToAbsent) {
     return PostsTableCompanion(
-      timestamp: timestamp == null && nullToAbsent
-          ? const Value.absent()
-          : Value(timestamp),
-      subtitle: subtitle == null && nullToAbsent
-          ? const Value.absent()
-          : Value(subtitle),
-      content: content == null && nullToAbsent
-          ? const Value.absent()
-          : Value(content),
-      filename: filename == null && nullToAbsent
-          ? const Value.absent()
-          : Value(filename),
-      imageId: imageId == null && nullToAbsent
-          ? const Value.absent()
-          : Value(imageId),
-      extension: extension == null && nullToAbsent
-          ? const Value.absent()
-          : Value(extension),
+      timestamp: timestamp == null && nullToAbsent ? const Value.absent() : Value(timestamp),
+      subtitle: subtitle == null && nullToAbsent ? const Value.absent() : Value(subtitle),
+      content: content == null && nullToAbsent ? const Value.absent() : Value(content),
+      filename: filename == null && nullToAbsent ? const Value.absent() : Value(filename),
+      imageId: imageId == null && nullToAbsent ? const Value.absent() : Value(imageId),
+      extension: extension == null && nullToAbsent ? const Value.absent() : Value(extension),
       boardId: Value(boardId),
       threadId: Value(threadId),
       postId: Value(postId),
-      isHidden: isHidden == null && nullToAbsent
-          ? const Value.absent()
-          : Value(isHidden),
+      isHidden: isHidden == null && nullToAbsent ? const Value.absent() : Value(isHidden),
     );
   }
 
-  factory PostsTableData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+  factory PostsTableData.fromJson(Map<String, dynamic> json, {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return PostsTableData(
       timestamp: serializer.fromJson<int?>(json['timestamp']),
       subtitle: serializer.fromJson<String?>(json['subtitle']),
@@ -131,9 +107,10 @@ class PostsTableData extends DataClass implements Insertable<PostsTableData> {
       isHidden: serializer.fromJson<bool?>(json['isHidden']),
     );
   }
+
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'timestamp': serializer.toJson<int?>(timestamp),
       'subtitle': serializer.toJson<String?>(subtitle),
@@ -171,6 +148,7 @@ class PostsTableData extends DataClass implements Insertable<PostsTableData> {
         postId: postId ?? this.postId,
         isHidden: isHidden ?? this.isHidden,
       );
+
   @override
   String toString() {
     return (StringBuffer('PostsTableData(')
@@ -189,24 +167,9 @@ class PostsTableData extends DataClass implements Insertable<PostsTableData> {
   }
 
   @override
-  int get hashCode => $mrjf($mrjc(
-      timestamp.hashCode,
-      $mrjc(
-          subtitle.hashCode,
-          $mrjc(
-              content.hashCode,
-              $mrjc(
-                  filename.hashCode,
-                  $mrjc(
-                      imageId.hashCode,
-                      $mrjc(
-                          extension.hashCode,
-                          $mrjc(
-                              boardId.hashCode,
-                              $mrjc(
-                                  threadId.hashCode,
-                                  $mrjc(postId.hashCode,
-                                      isHidden.hashCode))))))))));
+  int get hashCode =>
+      Object.hash(timestamp, subtitle, content, filename, imageId, extension, boardId, threadId, postId, isHidden);
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -234,6 +197,7 @@ class PostsTableCompanion extends UpdateCompanion<PostsTableData> {
   final Value<int> threadId;
   final Value<int> postId;
   final Value<bool?> isHidden;
+
   const PostsTableCompanion({
     this.timestamp = const Value.absent(),
     this.subtitle = const Value.absent(),
@@ -246,6 +210,7 @@ class PostsTableCompanion extends UpdateCompanion<PostsTableData> {
     this.postId = const Value.absent(),
     this.isHidden = const Value.absent(),
   });
+
   PostsTableCompanion.insert({
     this.timestamp = const Value.absent(),
     this.subtitle = const Value.absent(),
@@ -260,6 +225,7 @@ class PostsTableCompanion extends UpdateCompanion<PostsTableData> {
   })  : boardId = Value(boardId),
         threadId = Value(threadId),
         postId = Value(postId);
+
   static Insertable<PostsTableData> custom({
     Expression<int?>? timestamp,
     Expression<String?>? subtitle,
@@ -365,133 +331,104 @@ class PostsTableCompanion extends UpdateCompanion<PostsTableData> {
   }
 }
 
-class $PostsTableTable extends PostsTable
-    with TableInfo<$PostsTableTable, PostsTableData> {
+class $PostsTableTable extends PostsTable with TableInfo<$PostsTableTable, PostsTableData> {
   final GeneratedDatabase _db;
   final String? _alias;
+
   $PostsTableTable(this._db, [this._alias]);
+
   final VerificationMeta _timestampMeta = const VerificationMeta('timestamp');
-  late final GeneratedColumn<int?> timestamp = GeneratedColumn<int?>(
-      'timestamp', aliasedName, true,
-      typeName: 'INTEGER', requiredDuringInsert: false);
+  late final GeneratedColumn<int?> timestamp =
+      GeneratedColumn<int?>('timestamp', aliasedName, true, typeName: 'INTEGER', requiredDuringInsert: false);
   final VerificationMeta _subtitleMeta = const VerificationMeta('subtitle');
-  late final GeneratedColumn<String?> subtitle = GeneratedColumn<String?>(
-      'subtitle', aliasedName, true,
-      typeName: 'TEXT', requiredDuringInsert: false);
+  late final GeneratedColumn<String?> subtitle =
+      GeneratedColumn<String?>('subtitle', aliasedName, true, typeName: 'TEXT', requiredDuringInsert: false);
   final VerificationMeta _contentMeta = const VerificationMeta('content');
-  late final GeneratedColumn<String?> content = GeneratedColumn<String?>(
-      'content', aliasedName, true,
-      typeName: 'TEXT', requiredDuringInsert: false);
+  late final GeneratedColumn<String?> content =
+      GeneratedColumn<String?>('content', aliasedName, true, typeName: 'TEXT', requiredDuringInsert: false);
   final VerificationMeta _filenameMeta = const VerificationMeta('filename');
-  late final GeneratedColumn<String?> filename = GeneratedColumn<String?>(
-      'filename', aliasedName, true,
-      typeName: 'TEXT', requiredDuringInsert: false);
+  late final GeneratedColumn<String?> filename =
+      GeneratedColumn<String?>('filename', aliasedName, true, typeName: 'TEXT', requiredDuringInsert: false);
   final VerificationMeta _imageIdMeta = const VerificationMeta('imageId');
-  late final GeneratedColumn<String?> imageId = GeneratedColumn<String?>(
-      'image_id', aliasedName, true,
-      typeName: 'TEXT', requiredDuringInsert: false);
+  late final GeneratedColumn<String?> imageId =
+      GeneratedColumn<String?>('image_id', aliasedName, true, typeName: 'TEXT', requiredDuringInsert: false);
   final VerificationMeta _extensionMeta = const VerificationMeta('extension');
-  late final GeneratedColumn<String?> extension = GeneratedColumn<String?>(
-      'extension', aliasedName, true,
-      typeName: 'TEXT', requiredDuringInsert: false);
+  late final GeneratedColumn<String?> extension =
+      GeneratedColumn<String?>('extension', aliasedName, true, typeName: 'TEXT', requiredDuringInsert: false);
   final VerificationMeta _boardIdMeta = const VerificationMeta('boardId');
-  late final GeneratedColumn<String?> boardId = GeneratedColumn<String?>(
-      'board_id', aliasedName, false,
-      typeName: 'TEXT', requiredDuringInsert: true);
+  late final GeneratedColumn<String?> boardId =
+      GeneratedColumn<String?>('board_id', aliasedName, false, typeName: 'TEXT', requiredDuringInsert: true);
   final VerificationMeta _threadIdMeta = const VerificationMeta('threadId');
-  late final GeneratedColumn<int?> threadId = GeneratedColumn<int?>(
-      'thread_id', aliasedName, false,
+  late final GeneratedColumn<int?> threadId = GeneratedColumn<int?>('thread_id', aliasedName, false,
       typeName: 'INTEGER',
       requiredDuringInsert: true,
-      $customConstraints:
-          'REFERENCES threads_table(threadId) ON DELETE CASCADE');
+      $customConstraints: 'REFERENCES threads_table(threadId) ON DELETE CASCADE');
   final VerificationMeta _postIdMeta = const VerificationMeta('postId');
-  late final GeneratedColumn<int?> postId = GeneratedColumn<int?>(
-      'post_id', aliasedName, false,
-      typeName: 'INTEGER', requiredDuringInsert: true);
+  late final GeneratedColumn<int?> postId =
+      GeneratedColumn<int?>('post_id', aliasedName, false, typeName: 'INTEGER', requiredDuringInsert: true);
   final VerificationMeta _isHiddenMeta = const VerificationMeta('isHidden');
-  late final GeneratedColumn<bool?> isHidden = GeneratedColumn<bool?>(
-      'is_hidden', aliasedName, true,
-      typeName: 'INTEGER',
-      requiredDuringInsert: false,
-      defaultConstraints: 'CHECK (is_hidden IN (0, 1))');
+  late final GeneratedColumn<bool?> isHidden = GeneratedColumn<bool?>('is_hidden', aliasedName, true,
+      typeName: 'INTEGER', requiredDuringInsert: false, defaultConstraints: 'CHECK (is_hidden IN (0, 1))');
+
   @override
-  List<GeneratedColumn> get $columns => [
-        timestamp,
-        subtitle,
-        content,
-        filename,
-        imageId,
-        extension,
-        boardId,
-        threadId,
-        postId,
-        isHidden
-      ];
+  List<GeneratedColumn> get $columns =>
+      [timestamp, subtitle, content, filename, imageId, extension, boardId, threadId, postId, isHidden];
+
   @override
   String get aliasedName => _alias ?? 'posts_table';
+
   @override
   String get actualTableName => 'posts_table';
+
   @override
-  VerificationContext validateIntegrity(Insertable<PostsTableData> instance,
-      {bool isInserting = false}) {
+  VerificationContext validateIntegrity(Insertable<PostsTableData> instance, {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('timestamp')) {
-      context.handle(_timestampMeta,
-          timestamp.isAcceptableOrUnknown(data['timestamp']!, _timestampMeta));
+      context.handle(_timestampMeta, timestamp.isAcceptableOrUnknown(data['timestamp']!, _timestampMeta));
     }
     if (data.containsKey('subtitle')) {
-      context.handle(_subtitleMeta,
-          subtitle.isAcceptableOrUnknown(data['subtitle']!, _subtitleMeta));
+      context.handle(_subtitleMeta, subtitle.isAcceptableOrUnknown(data['subtitle']!, _subtitleMeta));
     }
     if (data.containsKey('content')) {
-      context.handle(_contentMeta,
-          content.isAcceptableOrUnknown(data['content']!, _contentMeta));
+      context.handle(_contentMeta, content.isAcceptableOrUnknown(data['content']!, _contentMeta));
     }
     if (data.containsKey('filename')) {
-      context.handle(_filenameMeta,
-          filename.isAcceptableOrUnknown(data['filename']!, _filenameMeta));
+      context.handle(_filenameMeta, filename.isAcceptableOrUnknown(data['filename']!, _filenameMeta));
     }
     if (data.containsKey('image_id')) {
-      context.handle(_imageIdMeta,
-          imageId.isAcceptableOrUnknown(data['image_id']!, _imageIdMeta));
+      context.handle(_imageIdMeta, imageId.isAcceptableOrUnknown(data['image_id']!, _imageIdMeta));
     }
     if (data.containsKey('extension')) {
-      context.handle(_extensionMeta,
-          extension.isAcceptableOrUnknown(data['extension']!, _extensionMeta));
+      context.handle(_extensionMeta, extension.isAcceptableOrUnknown(data['extension']!, _extensionMeta));
     }
     if (data.containsKey('board_id')) {
-      context.handle(_boardIdMeta,
-          boardId.isAcceptableOrUnknown(data['board_id']!, _boardIdMeta));
+      context.handle(_boardIdMeta, boardId.isAcceptableOrUnknown(data['board_id']!, _boardIdMeta));
     } else if (isInserting) {
       context.missing(_boardIdMeta);
     }
     if (data.containsKey('thread_id')) {
-      context.handle(_threadIdMeta,
-          threadId.isAcceptableOrUnknown(data['thread_id']!, _threadIdMeta));
+      context.handle(_threadIdMeta, threadId.isAcceptableOrUnknown(data['thread_id']!, _threadIdMeta));
     } else if (isInserting) {
       context.missing(_threadIdMeta);
     }
     if (data.containsKey('post_id')) {
-      context.handle(_postIdMeta,
-          postId.isAcceptableOrUnknown(data['post_id']!, _postIdMeta));
+      context.handle(_postIdMeta, postId.isAcceptableOrUnknown(data['post_id']!, _postIdMeta));
     } else if (isInserting) {
       context.missing(_postIdMeta);
     }
     if (data.containsKey('is_hidden')) {
-      context.handle(_isHiddenMeta,
-          isHidden.isAcceptableOrUnknown(data['is_hidden']!, _isHiddenMeta));
+      context.handle(_isHiddenMeta, isHidden.isAcceptableOrUnknown(data['is_hidden']!, _isHiddenMeta));
     }
     return context;
   }
 
   @override
   Set<GeneratedColumn> get $primaryKey => {postId, threadId, boardId};
+
   @override
   PostsTableData map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return PostsTableData.fromData(data, _db,
-        prefix: tablePrefix != null ? '$tablePrefix.' : null);
+    return PostsTableData.fromData(data, prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override
@@ -500,8 +437,7 @@ class $PostsTableTable extends PostsTable
   }
 }
 
-class ThreadsTableData extends DataClass
-    implements Insertable<ThreadsTableData> {
+class ThreadsTableData extends DataClass implements Insertable<ThreadsTableData> {
   final int? timestamp;
   final String? subtitle;
   final String? content;
@@ -517,6 +453,7 @@ class ThreadsTableData extends DataClass
   final int? replyCount;
   final int? imageCount;
   final int? lastSeenPostIndex;
+
   ThreadsTableData(
       {this.timestamp,
       this.subtitle,
@@ -533,43 +470,28 @@ class ThreadsTableData extends DataClass
       this.replyCount,
       this.imageCount,
       this.lastSeenPostIndex});
-  factory ThreadsTableData.fromData(
-      Map<String, dynamic> data, GeneratedDatabase db,
-      {String? prefix}) {
+
+  factory ThreadsTableData.fromData(Map<String, dynamic> data, {String? prefix}) {
     final effectivePrefix = prefix ?? '';
     return ThreadsTableData(
-      timestamp: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}timestamp']),
-      subtitle: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}subtitle']),
-      content: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}content']),
-      filename: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}filename']),
-      imageId: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}image_id']),
-      extension: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}extension']),
-      boardId: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}board_id'])!,
-      threadId: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}thread_id'])!,
-      lastModified: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}last_modified']),
-      selectedPostId: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}selected_post_id']),
-      isFavorite: const BoolType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}is_favorite']),
-      onlineState: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}online_state']),
-      replyCount: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}reply_count']),
-      imageCount: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}image_count']),
-      lastSeenPostIndex: const IntType().mapFromDatabaseResponse(
-          data['${effectivePrefix}last_seen_post_index']),
+      timestamp: const IntType().mapFromDatabaseResponse(data['${effectivePrefix}timestamp']),
+      subtitle: const StringType().mapFromDatabaseResponse(data['${effectivePrefix}subtitle']),
+      content: const StringType().mapFromDatabaseResponse(data['${effectivePrefix}content']),
+      filename: const StringType().mapFromDatabaseResponse(data['${effectivePrefix}filename']),
+      imageId: const StringType().mapFromDatabaseResponse(data['${effectivePrefix}image_id']),
+      extension: const StringType().mapFromDatabaseResponse(data['${effectivePrefix}extension']),
+      boardId: const StringType().mapFromDatabaseResponse(data['${effectivePrefix}board_id'])!,
+      threadId: const IntType().mapFromDatabaseResponse(data['${effectivePrefix}thread_id'])!,
+      lastModified: const IntType().mapFromDatabaseResponse(data['${effectivePrefix}last_modified']),
+      selectedPostId: const IntType().mapFromDatabaseResponse(data['${effectivePrefix}selected_post_id']),
+      isFavorite: const BoolType().mapFromDatabaseResponse(data['${effectivePrefix}is_favorite']),
+      onlineState: const IntType().mapFromDatabaseResponse(data['${effectivePrefix}online_state']),
+      replyCount: const IntType().mapFromDatabaseResponse(data['${effectivePrefix}reply_count']),
+      imageCount: const IntType().mapFromDatabaseResponse(data['${effectivePrefix}image_count']),
+      lastSeenPostIndex: const IntType().mapFromDatabaseResponse(data['${effectivePrefix}last_seen_post_index']),
     );
   }
+
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -619,53 +541,26 @@ class ThreadsTableData extends DataClass
 
   ThreadsTableCompanion toCompanion(bool nullToAbsent) {
     return ThreadsTableCompanion(
-      timestamp: timestamp == null && nullToAbsent
-          ? const Value.absent()
-          : Value(timestamp),
-      subtitle: subtitle == null && nullToAbsent
-          ? const Value.absent()
-          : Value(subtitle),
-      content: content == null && nullToAbsent
-          ? const Value.absent()
-          : Value(content),
-      filename: filename == null && nullToAbsent
-          ? const Value.absent()
-          : Value(filename),
-      imageId: imageId == null && nullToAbsent
-          ? const Value.absent()
-          : Value(imageId),
-      extension: extension == null && nullToAbsent
-          ? const Value.absent()
-          : Value(extension),
+      timestamp: timestamp == null && nullToAbsent ? const Value.absent() : Value(timestamp),
+      subtitle: subtitle == null && nullToAbsent ? const Value.absent() : Value(subtitle),
+      content: content == null && nullToAbsent ? const Value.absent() : Value(content),
+      filename: filename == null && nullToAbsent ? const Value.absent() : Value(filename),
+      imageId: imageId == null && nullToAbsent ? const Value.absent() : Value(imageId),
+      extension: extension == null && nullToAbsent ? const Value.absent() : Value(extension),
       boardId: Value(boardId),
       threadId: Value(threadId),
-      lastModified: lastModified == null && nullToAbsent
-          ? const Value.absent()
-          : Value(lastModified),
-      selectedPostId: selectedPostId == null && nullToAbsent
-          ? const Value.absent()
-          : Value(selectedPostId),
-      isFavorite: isFavorite == null && nullToAbsent
-          ? const Value.absent()
-          : Value(isFavorite),
-      onlineState: onlineState == null && nullToAbsent
-          ? const Value.absent()
-          : Value(onlineState),
-      replyCount: replyCount == null && nullToAbsent
-          ? const Value.absent()
-          : Value(replyCount),
-      imageCount: imageCount == null && nullToAbsent
-          ? const Value.absent()
-          : Value(imageCount),
-      lastSeenPostIndex: lastSeenPostIndex == null && nullToAbsent
-          ? const Value.absent()
-          : Value(lastSeenPostIndex),
+      lastModified: lastModified == null && nullToAbsent ? const Value.absent() : Value(lastModified),
+      selectedPostId: selectedPostId == null && nullToAbsent ? const Value.absent() : Value(selectedPostId),
+      isFavorite: isFavorite == null && nullToAbsent ? const Value.absent() : Value(isFavorite),
+      onlineState: onlineState == null && nullToAbsent ? const Value.absent() : Value(onlineState),
+      replyCount: replyCount == null && nullToAbsent ? const Value.absent() : Value(replyCount),
+      imageCount: imageCount == null && nullToAbsent ? const Value.absent() : Value(imageCount),
+      lastSeenPostIndex: lastSeenPostIndex == null && nullToAbsent ? const Value.absent() : Value(lastSeenPostIndex),
     );
   }
 
-  factory ThreadsTableData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+  factory ThreadsTableData.fromJson(Map<String, dynamic> json, {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return ThreadsTableData(
       timestamp: serializer.fromJson<int?>(json['timestamp']),
       subtitle: serializer.fromJson<String?>(json['subtitle']),
@@ -684,9 +579,10 @@ class ThreadsTableData extends DataClass
       lastSeenPostIndex: serializer.fromJson<int?>(json['lastSeenPostIndex']),
     );
   }
+
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'timestamp': serializer.toJson<int?>(timestamp),
       'subtitle': serializer.toJson<String?>(subtitle),
@@ -739,6 +635,7 @@ class ThreadsTableData extends DataClass
         imageCount: imageCount ?? this.imageCount,
         lastSeenPostIndex: lastSeenPostIndex ?? this.lastSeenPostIndex,
       );
+
   @override
   String toString() {
     return (StringBuffer('ThreadsTableData(')
@@ -762,36 +659,9 @@ class ThreadsTableData extends DataClass
   }
 
   @override
-  int get hashCode => $mrjf($mrjc(
-      timestamp.hashCode,
-      $mrjc(
-          subtitle.hashCode,
-          $mrjc(
-              content.hashCode,
-              $mrjc(
-                  filename.hashCode,
-                  $mrjc(
-                      imageId.hashCode,
-                      $mrjc(
-                          extension.hashCode,
-                          $mrjc(
-                              boardId.hashCode,
-                              $mrjc(
-                                  threadId.hashCode,
-                                  $mrjc(
-                                      lastModified.hashCode,
-                                      $mrjc(
-                                          selectedPostId.hashCode,
-                                          $mrjc(
-                                              isFavorite.hashCode,
-                                              $mrjc(
-                                                  onlineState.hashCode,
-                                                  $mrjc(
-                                                      replyCount.hashCode,
-                                                      $mrjc(
-                                                          imageCount.hashCode,
-                                                          lastSeenPostIndex
-                                                              .hashCode)))))))))))))));
+  int get hashCode => Object.hash(timestamp, subtitle, content, filename, imageId, extension, boardId, threadId,
+      lastModified, selectedPostId, isFavorite, onlineState, replyCount, imageCount, lastSeenPostIndex);
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -829,6 +699,7 @@ class ThreadsTableCompanion extends UpdateCompanion<ThreadsTableData> {
   final Value<int?> replyCount;
   final Value<int?> imageCount;
   final Value<int?> lastSeenPostIndex;
+
   const ThreadsTableCompanion({
     this.timestamp = const Value.absent(),
     this.subtitle = const Value.absent(),
@@ -846,6 +717,7 @@ class ThreadsTableCompanion extends UpdateCompanion<ThreadsTableData> {
     this.imageCount = const Value.absent(),
     this.lastSeenPostIndex = const Value.absent(),
   });
+
   ThreadsTableCompanion.insert({
     this.timestamp = const Value.absent(),
     this.subtitle = const Value.absent(),
@@ -864,6 +736,7 @@ class ThreadsTableCompanion extends UpdateCompanion<ThreadsTableData> {
     this.lastSeenPostIndex = const Value.absent(),
   })  : boardId = Value(boardId),
         threadId = Value(threadId);
+
   static Insertable<ThreadsTableData> custom({
     Expression<int?>? timestamp,
     Expression<String?>? subtitle,
@@ -1009,92 +882,63 @@ class ThreadsTableCompanion extends UpdateCompanion<ThreadsTableData> {
   }
 }
 
-class $ThreadsTableTable extends ThreadsTable
-    with TableInfo<$ThreadsTableTable, ThreadsTableData> {
+class $ThreadsTableTable extends ThreadsTable with TableInfo<$ThreadsTableTable, ThreadsTableData> {
   final GeneratedDatabase _db;
   final String? _alias;
+
   $ThreadsTableTable(this._db, [this._alias]);
+
   final VerificationMeta _timestampMeta = const VerificationMeta('timestamp');
-  late final GeneratedColumn<int?> timestamp = GeneratedColumn<int?>(
-      'timestamp', aliasedName, true,
-      typeName: 'INTEGER', requiredDuringInsert: false);
+  late final GeneratedColumn<int?> timestamp =
+      GeneratedColumn<int?>('timestamp', aliasedName, true, typeName: 'INTEGER', requiredDuringInsert: false);
   final VerificationMeta _subtitleMeta = const VerificationMeta('subtitle');
-  late final GeneratedColumn<String?> subtitle = GeneratedColumn<String?>(
-      'subtitle', aliasedName, true,
-      typeName: 'TEXT', requiredDuringInsert: false);
+  late final GeneratedColumn<String?> subtitle =
+      GeneratedColumn<String?>('subtitle', aliasedName, true, typeName: 'TEXT', requiredDuringInsert: false);
   final VerificationMeta _contentMeta = const VerificationMeta('content');
-  late final GeneratedColumn<String?> content = GeneratedColumn<String?>(
-      'content', aliasedName, true,
-      typeName: 'TEXT', requiredDuringInsert: false);
+  late final GeneratedColumn<String?> content =
+      GeneratedColumn<String?>('content', aliasedName, true, typeName: 'TEXT', requiredDuringInsert: false);
   final VerificationMeta _filenameMeta = const VerificationMeta('filename');
-  late final GeneratedColumn<String?> filename = GeneratedColumn<String?>(
-      'filename', aliasedName, true,
-      typeName: 'TEXT', requiredDuringInsert: false);
+  late final GeneratedColumn<String?> filename =
+      GeneratedColumn<String?>('filename', aliasedName, true, typeName: 'TEXT', requiredDuringInsert: false);
   final VerificationMeta _imageIdMeta = const VerificationMeta('imageId');
-  late final GeneratedColumn<String?> imageId = GeneratedColumn<String?>(
-      'image_id', aliasedName, true,
-      typeName: 'TEXT', requiredDuringInsert: false);
+  late final GeneratedColumn<String?> imageId =
+      GeneratedColumn<String?>('image_id', aliasedName, true, typeName: 'TEXT', requiredDuringInsert: false);
   final VerificationMeta _extensionMeta = const VerificationMeta('extension');
-  late final GeneratedColumn<String?> extension = GeneratedColumn<String?>(
-      'extension', aliasedName, true,
-      typeName: 'TEXT', requiredDuringInsert: false);
+  late final GeneratedColumn<String?> extension =
+      GeneratedColumn<String?>('extension', aliasedName, true, typeName: 'TEXT', requiredDuringInsert: false);
   final VerificationMeta _boardIdMeta = const VerificationMeta('boardId');
-  late final GeneratedColumn<String?> boardId = GeneratedColumn<String?>(
-      'board_id', aliasedName, false,
+  late final GeneratedColumn<String?> boardId = GeneratedColumn<String?>('board_id', aliasedName, false,
       typeName: 'TEXT',
       requiredDuringInsert: true,
       $customConstraints: 'REFERENCES boards_table(boardId) ON DELETE CASCADE');
   final VerificationMeta _threadIdMeta = const VerificationMeta('threadId');
-  late final GeneratedColumn<int?> threadId = GeneratedColumn<int?>(
-      'thread_id', aliasedName, false,
-      typeName: 'INTEGER', requiredDuringInsert: true);
-  final VerificationMeta _lastModifiedMeta =
-      const VerificationMeta('lastModified');
-  late final GeneratedColumn<int?> lastModified = GeneratedColumn<int?>(
-      'last_modified', aliasedName, true,
-      typeName: 'INTEGER',
-      requiredDuringInsert: false,
-      defaultValue: const Constant(0));
-  final VerificationMeta _selectedPostIdMeta =
-      const VerificationMeta('selectedPostId');
-  late final GeneratedColumn<int?> selectedPostId = GeneratedColumn<int?>(
-      'selected_post_id', aliasedName, true,
-      typeName: 'INTEGER',
-      requiredDuringInsert: false,
-      defaultValue: const Constant(-1));
+  late final GeneratedColumn<int?> threadId =
+      GeneratedColumn<int?>('thread_id', aliasedName, false, typeName: 'INTEGER', requiredDuringInsert: true);
+  final VerificationMeta _lastModifiedMeta = const VerificationMeta('lastModified');
+  late final GeneratedColumn<int?> lastModified = GeneratedColumn<int?>('last_modified', aliasedName, true,
+      typeName: 'INTEGER', requiredDuringInsert: false, defaultValue: const Constant(0));
+  final VerificationMeta _selectedPostIdMeta = const VerificationMeta('selectedPostId');
+  late final GeneratedColumn<int?> selectedPostId = GeneratedColumn<int?>('selected_post_id', aliasedName, true,
+      typeName: 'INTEGER', requiredDuringInsert: false, defaultValue: const Constant(-1));
   final VerificationMeta _isFavoriteMeta = const VerificationMeta('isFavorite');
-  late final GeneratedColumn<bool?> isFavorite = GeneratedColumn<bool?>(
-      'is_favorite', aliasedName, true,
+  late final GeneratedColumn<bool?> isFavorite = GeneratedColumn<bool?>('is_favorite', aliasedName, true,
       typeName: 'INTEGER',
       requiredDuringInsert: false,
       defaultConstraints: 'CHECK (is_favorite IN (0, 1))',
       defaultValue: const Constant(false));
-  final VerificationMeta _onlineStateMeta =
-      const VerificationMeta('onlineState');
-  late final GeneratedColumn<int?> onlineState = GeneratedColumn<int?>(
-      'online_state', aliasedName, true,
-      typeName: 'INTEGER',
-      requiredDuringInsert: false,
-      defaultValue: const Constant(0));
+  final VerificationMeta _onlineStateMeta = const VerificationMeta('onlineState');
+  late final GeneratedColumn<int?> onlineState = GeneratedColumn<int?>('online_state', aliasedName, true,
+      typeName: 'INTEGER', requiredDuringInsert: false, defaultValue: const Constant(0));
   final VerificationMeta _replyCountMeta = const VerificationMeta('replyCount');
-  late final GeneratedColumn<int?> replyCount = GeneratedColumn<int?>(
-      'reply_count', aliasedName, true,
-      typeName: 'INTEGER',
-      requiredDuringInsert: false,
-      defaultValue: const Constant(-1));
+  late final GeneratedColumn<int?> replyCount = GeneratedColumn<int?>('reply_count', aliasedName, true,
+      typeName: 'INTEGER', requiredDuringInsert: false, defaultValue: const Constant(-1));
   final VerificationMeta _imageCountMeta = const VerificationMeta('imageCount');
-  late final GeneratedColumn<int?> imageCount = GeneratedColumn<int?>(
-      'image_count', aliasedName, true,
-      typeName: 'INTEGER',
-      requiredDuringInsert: false,
-      defaultValue: const Constant(-1));
-  final VerificationMeta _lastSeenPostIndexMeta =
-      const VerificationMeta('lastSeenPostIndex');
-  late final GeneratedColumn<int?> lastSeenPostIndex = GeneratedColumn<int?>(
-      'last_seen_post_index', aliasedName, true,
-      typeName: 'INTEGER',
-      requiredDuringInsert: false,
-      defaultValue: const Constant(-1));
+  late final GeneratedColumn<int?> imageCount = GeneratedColumn<int?>('image_count', aliasedName, true,
+      typeName: 'INTEGER', requiredDuringInsert: false, defaultValue: const Constant(-1));
+  final VerificationMeta _lastSeenPostIndexMeta = const VerificationMeta('lastSeenPostIndex');
+  late final GeneratedColumn<int?> lastSeenPostIndex = GeneratedColumn<int?>('last_seen_post_index', aliasedName, true,
+      typeName: 'INTEGER', requiredDuringInsert: false, defaultValue: const Constant(-1));
+
   @override
   List<GeneratedColumn> get $columns => [
         timestamp,
@@ -1113,102 +957,77 @@ class $ThreadsTableTable extends ThreadsTable
         imageCount,
         lastSeenPostIndex
       ];
+
   @override
   String get aliasedName => _alias ?? 'threads_table';
+
   @override
   String get actualTableName => 'threads_table';
+
   @override
-  VerificationContext validateIntegrity(Insertable<ThreadsTableData> instance,
-      {bool isInserting = false}) {
+  VerificationContext validateIntegrity(Insertable<ThreadsTableData> instance, {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('timestamp')) {
-      context.handle(_timestampMeta,
-          timestamp.isAcceptableOrUnknown(data['timestamp']!, _timestampMeta));
+      context.handle(_timestampMeta, timestamp.isAcceptableOrUnknown(data['timestamp']!, _timestampMeta));
     }
     if (data.containsKey('subtitle')) {
-      context.handle(_subtitleMeta,
-          subtitle.isAcceptableOrUnknown(data['subtitle']!, _subtitleMeta));
+      context.handle(_subtitleMeta, subtitle.isAcceptableOrUnknown(data['subtitle']!, _subtitleMeta));
     }
     if (data.containsKey('content')) {
-      context.handle(_contentMeta,
-          content.isAcceptableOrUnknown(data['content']!, _contentMeta));
+      context.handle(_contentMeta, content.isAcceptableOrUnknown(data['content']!, _contentMeta));
     }
     if (data.containsKey('filename')) {
-      context.handle(_filenameMeta,
-          filename.isAcceptableOrUnknown(data['filename']!, _filenameMeta));
+      context.handle(_filenameMeta, filename.isAcceptableOrUnknown(data['filename']!, _filenameMeta));
     }
     if (data.containsKey('image_id')) {
-      context.handle(_imageIdMeta,
-          imageId.isAcceptableOrUnknown(data['image_id']!, _imageIdMeta));
+      context.handle(_imageIdMeta, imageId.isAcceptableOrUnknown(data['image_id']!, _imageIdMeta));
     }
     if (data.containsKey('extension')) {
-      context.handle(_extensionMeta,
-          extension.isAcceptableOrUnknown(data['extension']!, _extensionMeta));
+      context.handle(_extensionMeta, extension.isAcceptableOrUnknown(data['extension']!, _extensionMeta));
     }
     if (data.containsKey('board_id')) {
-      context.handle(_boardIdMeta,
-          boardId.isAcceptableOrUnknown(data['board_id']!, _boardIdMeta));
+      context.handle(_boardIdMeta, boardId.isAcceptableOrUnknown(data['board_id']!, _boardIdMeta));
     } else if (isInserting) {
       context.missing(_boardIdMeta);
     }
     if (data.containsKey('thread_id')) {
-      context.handle(_threadIdMeta,
-          threadId.isAcceptableOrUnknown(data['thread_id']!, _threadIdMeta));
+      context.handle(_threadIdMeta, threadId.isAcceptableOrUnknown(data['thread_id']!, _threadIdMeta));
     } else if (isInserting) {
       context.missing(_threadIdMeta);
     }
     if (data.containsKey('last_modified')) {
-      context.handle(
-          _lastModifiedMeta,
-          lastModified.isAcceptableOrUnknown(
-              data['last_modified']!, _lastModifiedMeta));
+      context.handle(_lastModifiedMeta, lastModified.isAcceptableOrUnknown(data['last_modified']!, _lastModifiedMeta));
     }
     if (data.containsKey('selected_post_id')) {
       context.handle(
-          _selectedPostIdMeta,
-          selectedPostId.isAcceptableOrUnknown(
-              data['selected_post_id']!, _selectedPostIdMeta));
+          _selectedPostIdMeta, selectedPostId.isAcceptableOrUnknown(data['selected_post_id']!, _selectedPostIdMeta));
     }
     if (data.containsKey('is_favorite')) {
-      context.handle(
-          _isFavoriteMeta,
-          isFavorite.isAcceptableOrUnknown(
-              data['is_favorite']!, _isFavoriteMeta));
+      context.handle(_isFavoriteMeta, isFavorite.isAcceptableOrUnknown(data['is_favorite']!, _isFavoriteMeta));
     }
     if (data.containsKey('online_state')) {
-      context.handle(
-          _onlineStateMeta,
-          onlineState.isAcceptableOrUnknown(
-              data['online_state']!, _onlineStateMeta));
+      context.handle(_onlineStateMeta, onlineState.isAcceptableOrUnknown(data['online_state']!, _onlineStateMeta));
     }
     if (data.containsKey('reply_count')) {
-      context.handle(
-          _replyCountMeta,
-          replyCount.isAcceptableOrUnknown(
-              data['reply_count']!, _replyCountMeta));
+      context.handle(_replyCountMeta, replyCount.isAcceptableOrUnknown(data['reply_count']!, _replyCountMeta));
     }
     if (data.containsKey('image_count')) {
-      context.handle(
-          _imageCountMeta,
-          imageCount.isAcceptableOrUnknown(
-              data['image_count']!, _imageCountMeta));
+      context.handle(_imageCountMeta, imageCount.isAcceptableOrUnknown(data['image_count']!, _imageCountMeta));
     }
     if (data.containsKey('last_seen_post_index')) {
-      context.handle(
-          _lastSeenPostIndexMeta,
-          lastSeenPostIndex.isAcceptableOrUnknown(
-              data['last_seen_post_index']!, _lastSeenPostIndexMeta));
+      context.handle(_lastSeenPostIndexMeta,
+          lastSeenPostIndex.isAcceptableOrUnknown(data['last_seen_post_index']!, _lastSeenPostIndexMeta));
     }
     return context;
   }
 
   @override
   Set<GeneratedColumn> get $primaryKey => {threadId, boardId};
+
   @override
   ThreadsTableData map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return ThreadsTableData.fromData(data, _db,
-        prefix: tablePrefix != null ? '$tablePrefix.' : null);
+    return ThreadsTableData.fromData(data, prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override
@@ -1221,21 +1040,18 @@ class BoardsTableData extends DataClass implements Insertable<BoardsTableData> {
   final String boardId;
   final String title;
   final bool workSafe;
-  BoardsTableData(
-      {required this.boardId, required this.title, required this.workSafe});
-  factory BoardsTableData.fromData(
-      Map<String, dynamic> data, GeneratedDatabase db,
-      {String? prefix}) {
+
+  BoardsTableData({required this.boardId, required this.title, required this.workSafe});
+
+  factory BoardsTableData.fromData(Map<String, dynamic> data, {String? prefix}) {
     final effectivePrefix = prefix ?? '';
     return BoardsTableData(
-      boardId: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}board_id'])!,
-      title: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}title'])!,
-      workSafe: const BoolType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}work_safe'])!,
+      boardId: const StringType().mapFromDatabaseResponse(data['${effectivePrefix}board_id'])!,
+      title: const StringType().mapFromDatabaseResponse(data['${effectivePrefix}title'])!,
+      workSafe: const BoolType().mapFromDatabaseResponse(data['${effectivePrefix}work_safe'])!,
     );
   }
+
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -1253,18 +1069,18 @@ class BoardsTableData extends DataClass implements Insertable<BoardsTableData> {
     );
   }
 
-  factory BoardsTableData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+  factory BoardsTableData.fromJson(Map<String, dynamic> json, {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return BoardsTableData(
       boardId: serializer.fromJson<String>(json['boardId']),
       title: serializer.fromJson<String>(json['title']),
       workSafe: serializer.fromJson<bool>(json['workSafe']),
     );
   }
+
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'boardId': serializer.toJson<String>(boardId),
       'title': serializer.toJson<String>(title),
@@ -1272,12 +1088,12 @@ class BoardsTableData extends DataClass implements Insertable<BoardsTableData> {
     };
   }
 
-  BoardsTableData copyWith({String? boardId, String? title, bool? workSafe}) =>
-      BoardsTableData(
+  BoardsTableData copyWith({String? boardId, String? title, bool? workSafe}) => BoardsTableData(
         boardId: boardId ?? this.boardId,
         title: title ?? this.title,
         workSafe: workSafe ?? this.workSafe,
       );
+
   @override
   String toString() {
     return (StringBuffer('BoardsTableData(')
@@ -1289,8 +1105,8 @@ class BoardsTableData extends DataClass implements Insertable<BoardsTableData> {
   }
 
   @override
-  int get hashCode =>
-      $mrjf($mrjc(boardId.hashCode, $mrjc(title.hashCode, workSafe.hashCode)));
+  int get hashCode => Object.hash(boardId, title, workSafe);
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1304,11 +1120,13 @@ class BoardsTableCompanion extends UpdateCompanion<BoardsTableData> {
   final Value<String> boardId;
   final Value<String> title;
   final Value<bool> workSafe;
+
   const BoardsTableCompanion({
     this.boardId = const Value.absent(),
     this.title = const Value.absent(),
     this.workSafe = const Value.absent(),
   });
+
   BoardsTableCompanion.insert({
     required String boardId,
     required String title,
@@ -1316,6 +1134,7 @@ class BoardsTableCompanion extends UpdateCompanion<BoardsTableData> {
   })  : boardId = Value(boardId),
         title = Value(title),
         workSafe = Value(workSafe);
+
   static Insertable<BoardsTableData> custom({
     Expression<String>? boardId,
     Expression<String>? title,
@@ -1328,8 +1147,7 @@ class BoardsTableCompanion extends UpdateCompanion<BoardsTableData> {
     });
   }
 
-  BoardsTableCompanion copyWith(
-      {Value<String>? boardId, Value<String>? title, Value<bool>? workSafe}) {
+  BoardsTableCompanion copyWith({Value<String>? boardId, Value<String>? title, Value<bool>? workSafe}) {
     return BoardsTableCompanion(
       boardId: boardId ?? this.boardId,
       title: title ?? this.title,
@@ -1363,51 +1181,47 @@ class BoardsTableCompanion extends UpdateCompanion<BoardsTableData> {
   }
 }
 
-class $BoardsTableTable extends BoardsTable
-    with TableInfo<$BoardsTableTable, BoardsTableData> {
+class $BoardsTableTable extends BoardsTable with TableInfo<$BoardsTableTable, BoardsTableData> {
   final GeneratedDatabase _db;
   final String? _alias;
+
   $BoardsTableTable(this._db, [this._alias]);
+
   final VerificationMeta _boardIdMeta = const VerificationMeta('boardId');
-  late final GeneratedColumn<String?> boardId = GeneratedColumn<String?>(
-      'board_id', aliasedName, false,
-      typeName: 'TEXT', requiredDuringInsert: true);
+  late final GeneratedColumn<String?> boardId =
+      GeneratedColumn<String?>('board_id', aliasedName, false, typeName: 'TEXT', requiredDuringInsert: true);
   final VerificationMeta _titleMeta = const VerificationMeta('title');
-  late final GeneratedColumn<String?> title = GeneratedColumn<String?>(
-      'title', aliasedName, false,
-      typeName: 'TEXT', requiredDuringInsert: true);
+  late final GeneratedColumn<String?> title =
+      GeneratedColumn<String?>('title', aliasedName, false, typeName: 'TEXT', requiredDuringInsert: true);
   final VerificationMeta _workSafeMeta = const VerificationMeta('workSafe');
-  late final GeneratedColumn<bool?> workSafe = GeneratedColumn<bool?>(
-      'work_safe', aliasedName, false,
-      typeName: 'INTEGER',
-      requiredDuringInsert: true,
-      defaultConstraints: 'CHECK (work_safe IN (0, 1))');
+  late final GeneratedColumn<bool?> workSafe = GeneratedColumn<bool?>('work_safe', aliasedName, false,
+      typeName: 'INTEGER', requiredDuringInsert: true, defaultConstraints: 'CHECK (work_safe IN (0, 1))');
+
   @override
   List<GeneratedColumn> get $columns => [boardId, title, workSafe];
+
   @override
   String get aliasedName => _alias ?? 'boards_table';
+
   @override
   String get actualTableName => 'boards_table';
+
   @override
-  VerificationContext validateIntegrity(Insertable<BoardsTableData> instance,
-      {bool isInserting = false}) {
+  VerificationContext validateIntegrity(Insertable<BoardsTableData> instance, {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('board_id')) {
-      context.handle(_boardIdMeta,
-          boardId.isAcceptableOrUnknown(data['board_id']!, _boardIdMeta));
+      context.handle(_boardIdMeta, boardId.isAcceptableOrUnknown(data['board_id']!, _boardIdMeta));
     } else if (isInserting) {
       context.missing(_boardIdMeta);
     }
     if (data.containsKey('title')) {
-      context.handle(
-          _titleMeta, title.isAcceptableOrUnknown(data['title']!, _titleMeta));
+      context.handle(_titleMeta, title.isAcceptableOrUnknown(data['title']!, _titleMeta));
     } else if (isInserting) {
       context.missing(_titleMeta);
     }
     if (data.containsKey('work_safe')) {
-      context.handle(_workSafeMeta,
-          workSafe.isAcceptableOrUnknown(data['work_safe']!, _workSafeMeta));
+      context.handle(_workSafeMeta, workSafe.isAcceptableOrUnknown(data['work_safe']!, _workSafeMeta));
     } else if (isInserting) {
       context.missing(_workSafeMeta);
     }
@@ -1416,10 +1230,10 @@ class $BoardsTableTable extends BoardsTable
 
   @override
   Set<GeneratedColumn> get $primaryKey => {boardId};
+
   @override
   BoardsTableData map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return BoardsTableData.fromData(data, _db,
-        prefix: tablePrefix != null ? '$tablePrefix.' : null);
+    return BoardsTableData.fromData(data, prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override
@@ -1436,9 +1250,10 @@ abstract class _$MoorDB extends GeneratedDatabase {
   late final PostsDao postsDao = PostsDao(this as MoorDB);
   late final ThreadsDao threadsDao = ThreadsDao(this as MoorDB);
   late final BoardsDao boardsDao = BoardsDao(this as MoorDB);
+
   @override
   Iterable<TableInfo> get allTables => allSchemaEntities.whereType<TableInfo>();
+
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities =>
-      [postsTable, threadsTable, boardsTable];
+  List<DatabaseSchemaEntity> get allSchemaEntities => [postsTable, threadsTable, boardsTable];
 }

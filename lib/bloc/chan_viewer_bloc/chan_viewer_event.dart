@@ -1,4 +1,3 @@
-
 import 'package:flutter_chan_viewer/utils/navigation_helper.dart';
 
 import '../chan_event.dart';

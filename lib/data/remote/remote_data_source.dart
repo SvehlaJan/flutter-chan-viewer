@@ -58,7 +58,8 @@ class RemoteDataSource {
     final response = await client.get(Uri.parse(url));
 //    ChanLogger.d("Post list fetched. { url: $url, response status: ${response.statusCode} }");
     if (response.statusCode == 200) {
-      return ThreadDetailModel.fromJson(boardId, threadId, isArchived ? OnlineState.ARCHIVED : OnlineState.ONLINE, json.decode(response.body));
+      return ThreadDetailModel.fromJson(
+          boardId, threadId, isArchived ? OnlineState.ARCHIVED : OnlineState.ONLINE, json.decode(response.body));
     } else {
       throw HttpException(message: response.body, errorCode: response.statusCode);
     }

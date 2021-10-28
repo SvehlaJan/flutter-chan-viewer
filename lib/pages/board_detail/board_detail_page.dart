@@ -54,7 +54,9 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
       PageAction("Search", Icons.search, _onSearchClick),
       PageAction("Refresh", Icons.refresh, _onRefreshClick),
       PageAction("Archive", Icons.history, _onArchiveClick),
-      isFavorite ? PageAction("Unstar", Icons.star, _onFavoriteToggleClick) : PageAction("Star", Icons.star_border, _onFavoriteToggleClick),
+      isFavorite
+          ? PageAction("Unstar", Icons.star, _onFavoriteToggleClick)
+          : PageAction("Star", Icons.star_border, _onFavoriteToggleClick),
     ];
   }
 
@@ -94,7 +96,8 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
           builder: (context, state) {
             return buildScaffold(
               context,
-              buildBody(context, state, ((thread) => _openThreadDetailPage(thread))),
+              buildBody(
+                  context, state, ((thread) => _openThreadDetailPage(thread))),
               pageActions: getPageActions(context, state),
               showSearchBar: state.showSearchBar,
             );
@@ -102,7 +105,8 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
     });
   }
 
-  Widget buildBody(BuildContext context, ChanState state, Function(ThreadItem) onItemClicked) {
+  Widget buildBody(BuildContext context, ChanState state,
+      Function(ThreadItem) onItemClicked) {
     if (state is ChanStateLoading) {
       return Constants.centeredProgressIndicator;
     } else if (state is BoardDetailStateContent) {
@@ -117,11 +121,13 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
         ],
       );
     } else {
-      return BasePageState.buildErrorScreen(context, (state as ChanStateError).message);
+      return BasePageState.buildErrorScreen(
+          context, (state as ChanStateError).message);
     }
   }
 
-  Widget _buildListView(BuildContext context, BoardDetailStateContent state, Function(ThreadItem) onItemClicked) {
+  Widget _buildListView(BuildContext context, BoardDetailStateContent state,
+      Function(ThreadItem) onItemClicked) {
     return DraggableScrollbar.semicircle(
       controller: _scrollController!,
       child: ListView.builder(

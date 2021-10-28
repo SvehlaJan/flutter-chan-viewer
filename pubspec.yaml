@@ -29,7 +29,7 @@ dependencies:
   logger: ^1.1.0
   #  logger_flutter: ^0.7.1
 
-  moor: ^4.3.2
+  drift: ^1.0.0
   sqlite3_flutter_libs: ^0.5.1
   sqflite: ^2.0.0+3
 
@@ -69,7 +69,7 @@ dependencies:
   sliding_sheet: ^0.5.2
 
 dev_dependencies:
-  moor_generator: ^4.6.0
+  drift_dev: ^1.0.0
   build_runner: ^2.1.4
 #dev_dependencies:
 #  flutter_test:

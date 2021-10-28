@@ -39,7 +39,8 @@ class _SettingsPageState extends BasePageState<SettingsPage> {
   Widget build(BuildContext context) {
     return BlocBuilder<SettingsBloc, ChanState>(
       bloc: _settingsBloc,
-      builder: (context, state) => buildScaffold(context, buildBody(context, state)),
+      builder: (context, state) =>
+          buildScaffold(context, buildBody(context, state)),
     );
   }
 
@@ -54,7 +55,8 @@ class _SettingsPageState extends BasePageState<SettingsPage> {
           children: <Widget>[
             Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Text("Visual", style: Theme.of(context).textTheme.subtitle1),
+              child:
+                  Text("Visual", style: Theme.of(context).textTheme.subtitle1),
             ),
             Card(
               elevation: 2.0,
@@ -75,26 +77,36 @@ class _SettingsPageState extends BasePageState<SettingsPage> {
             ),
             Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Text("Others", style: Theme.of(context).textTheme.subtitle1),
+              child:
+                  Text("Others", style: Theme.of(context).textTheme.subtitle1),
             ),
             Card(
               elevation: 2.0,
               child: Column(
                 children: <Widget>[
-                  ListTile(leading: Icon(Icons.block), title: Text("Experiment"), onTap: _onExperimentClicked),
+                  ListTile(
+                      leading: Icon(Icons.block),
+                      title: Text("Experiment"),
+                      onTap: _onExperimentClicked),
                   ListTile(
                     leading: Icon(Icons.priority_high),
                     title: Text("Show NSFW"),
-                    trailing: CommonSwitch(onChanged: _onToggleShowSfwOnlyClicked, defValue: state.showNsfw),
+                    trailing: CommonSwitch(
+                        onChanged: _onToggleShowSfwOnlyClicked,
+                        defValue: state.showNsfw),
                   ),
-                  ListTile(leading: Icon(Icons.cancel), title: Text("Cancel downloads"), onTap: _onCancelDownloadsClicked),
+                  ListTile(
+                      leading: Icon(Icons.cancel),
+                      title: Text("Cancel downloads"),
+                      onTap: _onCancelDownloadsClicked),
                 ],
               ),
             ),
             if (state.moorDbOverview.boards.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.all(16.0),
-                child: Text("Db overview", style: Theme.of(context).textTheme.subtitle1),
+                child: Text("Db overview",
+                    style: Theme.of(context).textTheme.subtitle1),
               ),
             if (state.moorDbOverview.boards.isNotEmpty)
               ListView.builder(
@@ -102,7 +114,8 @@ class _SettingsPageState extends BasePageState<SettingsPage> {
                 shrinkWrap: true,
                 physics: NeverScrollableScrollPhysics(),
                 itemBuilder: (context, index) {
-                  MoorBoardOverview boardOverview = state.moorDbOverview.boards[index];
+                  MoorBoardOverview boardOverview =
+                      state.moorDbOverview.boards[index];
                   return Card(
                     elevation: 2.0,
                     child: ListTile(
@@ -116,7 +129,8 @@ class _SettingsPageState extends BasePageState<SettingsPage> {
               ),
             Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Text("Downloads", style: Theme.of(context).textTheme.subtitle1),
+              child: Text("Downloads",
+                  style: Theme.of(context).textTheme.subtitle1),
             ),
             ListView.builder(
               itemCount: state.downloads!.length,
@@ -128,8 +142,12 @@ class _SettingsPageState extends BasePageState<SettingsPage> {
                   elevation: 2.0,
                   child: ListTile(
                     title: Text(folderInfo.cacheDirective.toPath()),
-                    subtitle: Text("Size: ${folderInfo.filesSize} Files ${folderInfo.filesCount}"),
-                    trailing: IconButton(icon: Icon(Icons.delete), onPressed: () => _onDeleteFolderClicked(folderInfo.cacheDirective)),
+                    subtitle: Text(
+                        "Size: ${folderInfo.filesSize} Files ${folderInfo.filesCount}"),
+                    trailing: IconButton(
+                        icon: Icon(Icons.delete),
+                        onPressed: () =>
+                            _onDeleteFolderClicked(folderInfo.cacheDirective)),
                     onTap: () => _onFolderTileClicked(folderInfo),
                   ),
                 );
@@ -139,7 +157,8 @@ class _SettingsPageState extends BasePageState<SettingsPage> {
         ),
       );
     } else {
-      return BasePageState.buildErrorScreen(context, (state as ChanStateError).message);
+      return BasePageState.buildErrorScreen(
+          context, (state as ChanStateError).message);
     }
   }
 
@@ -147,7 +166,9 @@ class _SettingsPageState extends BasePageState<SettingsPage> {
     Navigator.of(context).push(
       NavigationHelper.getRoute(
         Constants.threadDetailRoute,
-        ThreadDetailPage.createArguments(folderInfo.cacheDirective.boardId, folderInfo.cacheDirective.threadId, showDownloadsOnly: true),
+        ThreadDetailPage.createArguments(folderInfo.cacheDirective.boardId,
+            folderInfo.cacheDirective.threadId,
+            showDownloadsOnly: true),
       )!,
     );
   }
@@ -169,9 +190,12 @@ class _SettingsPageState extends BasePageState<SettingsPage> {
 
   void _onExperimentClicked() => _settingsBloc.add(SettingsEventExperiment());
 
-  void _onToggleShowSfwOnlyClicked(bool enabled) => _settingsBloc.add(SettingsEventToggleShowNsfw(enabled));
+  void _onToggleShowSfwOnlyClicked(bool enabled) =>
+      _settingsBloc.add(SettingsEventToggleShowNsfw(enabled));
 
-  void _onCancelDownloadsClicked() => _settingsBloc.add(SettingsEventCancelDownloads());
+  void _onCancelDownloadsClicked() =>
+      _settingsBloc.add(SettingsEventCancelDownloads());
 
-  void _onDeleteFolderClicked(CacheDirective cacheDirective) => _settingsBloc.add(SettingsEventDeleteFolder(cacheDirective));
+  void _onDeleteFolderClicked(CacheDirective cacheDirective) =>
+      _settingsBloc.add(SettingsEventDeleteFolder(cacheDirective));
 }

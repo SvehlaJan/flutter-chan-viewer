@@ -18,15 +18,19 @@ class ChanUtil {
     if (htmlContent == null) {
       htmlContent = 'null';
     } else if (truncate && htmlContent.length > IDEAL_TEXT_LENGTH) {
-      int idealIndex = max(htmlContent.indexOf(RegExp(r'\s'), IDEAL_TEXT_LENGTH), IDEAL_TEXT_LENGTH);
-      htmlContent = htmlContent.substring(0, min(idealIndex, MAX_TEXT_LENGTH)) + "...";
+      int idealIndex = max(
+          htmlContent.indexOf(RegExp(r'\s'), IDEAL_TEXT_LENGTH),
+          IDEAL_TEXT_LENGTH);
+      htmlContent =
+          htmlContent.substring(0, min(idealIndex, MAX_TEXT_LENGTH)) + "...";
     }
     return htmlContent;
   }
 
   static String? getPlainString(String? htmlContent) {
     if (htmlContent.isNotNullNorEmpty) {
-      Document document = parse(htmlContent!.replaceAll("<br>", " ").replaceAll("</p><p>", " "));
+      Document document = parse(
+          htmlContent!.replaceAll("<br>", " ").replaceAll("</p><p>", " "));
       return parse(document.body!.text).documentElement!.text;
     }
     return null;
@@ -52,10 +56,12 @@ class ChanUtil {
     return postIds;
   }
 
-  static int getPostIdFromUrl(String url) => url.startsWith("#p") ? int.parse(url.substring(2)) : -1;
+  static int getPostIdFromUrl(String url) =>
+      url.startsWith("#p") ? int.parse(url.substring(2)) : -1;
 
   static String getHumanDate(int timestamp) {
-    return formatDate(DateTime.fromMillisecondsSinceEpoch(timestamp * 1000), [mm, '-', dd, ' ', HH, ':', nn, ':', ss]);
+    return formatDate(DateTime.fromMillisecondsSinceEpoch(timestamp * 1000),
+        [mm, '-', dd, ' ', HH, ':', nn, ':', ss]);
   }
 
   static int getNowTimestamp() {

@@ -11,8 +11,7 @@ class ChanLogger {
         lineLength: 200,
         colors: true,
         printEmojis: true,
-        printTime: false
-    );
+        printTime: false);
     _instance = Logger(printer: printer);
     _initialized = true;
   }

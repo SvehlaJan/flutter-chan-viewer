@@ -28,20 +28,31 @@ class BoardListBloc extends BaseBloc<ChanEvent, ChanState> {
       if (event is ChanEventFetchData) {
         yield ChanStateLoading();
 
-        bool showNsfw = Preferences.getBool(Preferences.KEY_SETTINGS_SHOW_NSFW, def: false);
-        List<String?> favoriteBoardIds = Preferences.getStringList(Preferences.KEY_FAVORITE_BOARDS);
+        bool showNsfw =
+            Preferences.getBool(Preferences.KEY_SETTINGS_SHOW_NSFW, def: false);
+        List<String?> favoriteBoardIds =
+            Preferences.getStringList(Preferences.KEY_FAVORITE_BOARDS);
 
-        BoardListModel? boardListModel = await _repository.fetchCachedBoardList(showNsfw);
+        BoardListModel? boardListModel =
+            await _repository.fetchCachedBoardList(showNsfw);
         if (boardListModel != null) {
-          favoriteBoards = boardListModel.boards.where((board) => favoriteBoardIds.contains(board.boardId)).toList();
-          otherBoards = boardListModel.boards.where((board) => !favoriteBoardIds.contains(board.boardId)).toList();
+          favoriteBoards = boardListModel.boards
+              .where((board) => favoriteBoardIds.contains(board.boardId))
+              .toList();
+          otherBoards = boardListModel.boards
+              .where((board) => !favoriteBoardIds.contains(board.boardId))
+              .toList();
           yield _buildContentState(lazyLoading: true);
         }
 
         try {
           boardListModel = await _repository.fetchRemoteBoardList(showNsfw);
-          favoriteBoards = boardListModel!.boards.where((board) => favoriteBoardIds.contains(board.boardId)).toList();
-          otherBoards = boardListModel.boards.where((board) => !favoriteBoardIds.contains(board.boardId)).toList();
+          favoriteBoards = boardListModel!.boards
+              .where((board) => favoriteBoardIds.contains(board.boardId))
+              .toList();
+          otherBoards = boardListModel.boards
+              .where((board) => !favoriteBoardIds.contains(board.boardId))
+              .toList();
           yield _buildContentState(lazyLoading: false);
         } catch (e) {
           if (e is HttpException || e is SocketException) {
@@ -50,7 +61,9 @@ class BoardListBloc extends BaseBloc<ChanEvent, ChanState> {
             rethrow;
           }
         }
-      } else if (event is ChanEventSearch || event is ChanEventShowSearch || event is ChanEventCloseSearch) {
+      } else if (event is ChanEventSearch ||
+          event is ChanEventShowSearch ||
+          event is ChanEventCloseSearch) {
         mapEventDefaults(event);
         yield _buildContentState(lazyLoading: false);
       }
@@ -60,12 +73,17 @@ class BoardListBloc extends BaseBloc<ChanEvent, ChanState> {
     }
   }
 
-  BoardListStateContent _buildContentState({bool lazyLoading = false, ChanSingleEvent? event}) {
+  BoardListStateContent _buildContentState(
+      {bool lazyLoading = false, ChanSingleEvent? event}) {
     List<ChanBoardItemWrapper> boards = [];
-    List<ChanBoardItemWrapper> filteredFavoriteBoards =
-        favoriteBoards.where((board) => _matchesQuery(board, searchQuery)).map((board) => ChanBoardItemWrapper(chanBoard: board)).toList();
-    List<ChanBoardItemWrapper> filteredOtherBoards =
-        otherBoards.where((board) => _matchesQuery(board, searchQuery)).map((board) => ChanBoardItemWrapper(chanBoard: board)).toList();
+    List<ChanBoardItemWrapper> filteredFavoriteBoards = favoriteBoards
+        .where((board) => _matchesQuery(board, searchQuery))
+        .map((board) => ChanBoardItemWrapper(chanBoard: board))
+        .toList();
+    List<ChanBoardItemWrapper> filteredOtherBoards = otherBoards
+        .where((board) => _matchesQuery(board, searchQuery))
+        .map((board) => ChanBoardItemWrapper(chanBoard: board))
+        .toList();
     if (filteredFavoriteBoards.isNotEmpty) {
       boards.add(ChanBoardItemWrapper(headerTitle: "Favorites"));
       boards.addAll(filteredFavoriteBoards);
@@ -75,10 +93,15 @@ class BoardListBloc extends BaseBloc<ChanEvent, ChanState> {
     }
     boards.addAll(filteredOtherBoards);
 
-    return BoardListStateContent(boards: boards, showLazyLoading: lazyLoading, showSearchBar: showSearchBar, event: event);
+    return BoardListStateContent(
+        boards: boards,
+        showLazyLoading: lazyLoading,
+        showSearchBar: showSearchBar,
+        event: event);
   }
 
   bool _matchesQuery(BoardItem board, String query) {
-    return board.boardId.containsIgnoreCase(query) || board.title.containsIgnoreCase(query);
+    return board.boardId.containsIgnoreCase(query) ||
+        board.title.containsIgnoreCase(query);
   }
 }

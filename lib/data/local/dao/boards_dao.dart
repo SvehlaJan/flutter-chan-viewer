@@ -1,10 +1,10 @@
+import 'package:drift/drift.dart';
 import 'package:flutter_chan_viewer/data/local/moor_db.dart';
 import 'package:flutter_chan_viewer/models/local/boards_table.dart';
-import 'package:moor/moor.dart';
 
 part 'boards_dao.g.dart';
 
-@UseDao(tables: [BoardsTable])
+@DriftAccessor(tables: [BoardsTable])
 class BoardsDao extends DatabaseAccessor<MoorDB> with _$BoardsDaoMixin {
   BoardsDao(MoorDB db) : super(db);
 
@@ -33,7 +33,8 @@ class BoardsDao extends DatabaseAccessor<MoorDB> with _$BoardsDaoMixin {
     });
   }
 
-  Future<int> deleteBoardById(String boardId) => (delete(boardsTable)..where((board) => board.boardId.equals(boardId))).go().then((value) {
+  Future<int> deleteBoardById(String boardId) =>
+      (delete(boardsTable)..where((board) => board.boardId.equals(boardId))).go().then((value) {
         print("Row affecteds: $value");
         return value;
       });

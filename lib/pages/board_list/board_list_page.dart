@@ -54,7 +54,8 @@ class _BoardListPageState extends BasePageState<BoardListPage> {
     );
   }
 
-  Widget buildBody(BuildContext context, ChanState state, Function(BoardItem?) onItemClicked) {
+  Widget buildBody(BuildContext context, ChanState state,
+      Function(BoardItem?) onItemClicked) {
     if (state is ChanStateLoading) {
       return Constants.centeredProgressIndicator;
     } else if (state is BoardListStateContent) {
@@ -63,14 +64,19 @@ class _BoardListPageState extends BasePageState<BoardListPage> {
       }
 
       return Stack(
-        children: <Widget>[Scrollbar(child: _buildListView(context, state, onItemClicked)), if (state.showLazyLoading) LinearProgressIndicator()],
+        children: <Widget>[
+          Scrollbar(child: _buildListView(context, state, onItemClicked)),
+          if (state.showLazyLoading) LinearProgressIndicator()
+        ],
       );
     } else {
-      return BasePageState.buildErrorScreen(context, (state as ChanStateError).message);
+      return BasePageState.buildErrorScreen(
+          context, (state as ChanStateError).message);
     }
   }
 
-  Widget _buildListView(BuildContext context, BoardListStateContent state, Function(BoardItem?) onItemClicked) {
+  Widget _buildListView(BuildContext context, BoardListStateContent state,
+      Function(BoardItem?) onItemClicked) {
     return Scrollbar(
       child: ListView.builder(
         key: PageStorageKey<String>(KEY_LIST),
@@ -78,9 +84,14 @@ class _BoardListPageState extends BasePageState<BoardListPage> {
         itemBuilder: (context, index) {
           ChanBoardItemWrapper item = state.boards[index];
           if (item.isHeader) {
-            return Padding(padding: const EdgeInsets.all(8.0), child: Text(item.headerTitle!, style: Theme.of(context).textTheme.subtitle1));
+            return Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(item.headerTitle!,
+                    style: Theme.of(context).textTheme.subtitle1));
           } else {
-            return InkWell(child: BoardListWidget(board: item.chanBoard!), onTap: (() => onItemClicked(item.chanBoard)));
+            return InkWell(
+                child: BoardListWidget(board: item.chanBoard!),
+                onTap: (() => onItemClicked(item.chanBoard)));
           }
         },
       ),

@@ -2,7 +2,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/chan_event.dart';
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 
-abstract class BaseBloc<E extends ChanEvent, S extends ChanState> extends Bloc<E, S> {
+abstract class BaseBloc<E extends ChanEvent, S extends ChanState>
+    extends Bloc<E, S> {
   BaseBloc(ChanState state) : super(state as S);
 
   bool _showSearchBar = false;

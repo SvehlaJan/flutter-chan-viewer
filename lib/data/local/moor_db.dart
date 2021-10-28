@@ -6,14 +6,14 @@ import 'package:flutter_chan_viewer/data/local/dao/threads_dao.dart';
 import 'package:flutter_chan_viewer/models/local/boards_table.dart';
 import 'package:flutter_chan_viewer/models/local/posts_table.dart';
 import 'package:flutter_chan_viewer/models/local/threads_table.dart';
-import 'package:moor/ffi.dart';
-import 'package:moor/moor.dart';
+import 'package:drift/native.dart';
+import 'package:drift/drift.dart';
 import 'package:path/path.dart' as p;
 import 'package:sqflite/sqflite.dart';
 
 part 'moor_db.g.dart';
 
-@UseMoor(tables: [
+@DriftDatabase(tables: [
   PostsTable,
   ThreadsTable,
   BoardsTable,
@@ -22,17 +22,17 @@ part 'moor_db.g.dart';
   ThreadsDao,
   BoardsDao
 ]
-  //   , queries: {
-  // "insertSingleThread":
-  //     "INSERT OR REPLACE INTO threads_table (timestamp, subtitle, content, filename, image_id, extension, board_id, thread_id, last_modified, selected_post_id, is_favorite, online_state, reply_count, image_count, unread_replies_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(board_id, thread_id) DO UPDATE SET selected_post_id = excluded.selected_post_id, is_favorite = excluded.is_favorite, unread_replies_count = excluded.unread_replies_count"
+    //   , queries: {
+    // "insertSingleThread":
+    //     "INSERT OR REPLACE INTO threads_table (timestamp, subtitle, content, filename, image_id, extension, board_id, thread_id, last_modified, selected_post_id, is_favorite, online_state, reply_count, image_count, unread_replies_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(board_id, thread_id) DO UPDATE SET selected_post_id = excluded.selected_post_id, is_favorite = excluded.is_favorite, unread_replies_count = excluded.unread_replies_count"
 // }
-)
+    )
 class MoorDB extends _$MoorDB {
   MoorDB()
       : super(LazyDatabase(() async {
           final dbFolder = await getDatabasesPath();
           final file = File(p.join(dbFolder, 'db.sqlite'));
-          return VmDatabase(file, logStatements: true);
+          return NativeDatabase(file, logStatements: true);
         }));
 
   // FlutterQueryExecutor.inDatabaseFolder(

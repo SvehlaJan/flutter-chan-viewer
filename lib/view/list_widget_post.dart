@@ -87,7 +87,9 @@ class _PostListWidgetState extends State<PostListWidget> with SingleTickerProvid
                   minHeight: Constants.avatarImageSize,
                 ),
                 child: widget.showHeroAnimation
-                    ? Hero(tag: widget.post.getMediaUrl()!, child: ChanCachedImage(post: widget.post, boxFit: BoxFit.fitWidth))
+                    ? Hero(
+                        tag: widget.post.getMediaUrl()!,
+                        child: ChanCachedImage(post: widget.post, boxFit: BoxFit.fitWidth))
                     : ChanCachedImage(post: widget.post, boxFit: BoxFit.fitWidth)),
           Flexible(
             child: Padding(
@@ -103,7 +105,8 @@ class _PostListWidgetState extends State<PostListWidget> with SingleTickerProvid
                       Text(ChanUtil.getHumanDate(widget.post.timestamp), style: Theme.of(context).textTheme.caption),
                     ],
                   ),
-                  if (widget.post.subtitle.isNotNullNorEmpty) Text(widget.post.subtitle!, style: Theme.of(context).textTheme.bodyText1),
+                  if (widget.post.subtitle.isNotNullNorEmpty)
+                    Text(widget.post.subtitle!, style: Theme.of(context).textTheme.bodyText1),
                   if (widget.post.htmlContent.isNotNullNorEmpty)
                     Html(
                       data: ChanUtil.getReadableHtml(widget.post.htmlContent, false),

@@ -1,4 +1,4 @@
-import 'package:moor/moor.dart';
+import 'package:drift/drift.dart';
 
 abstract class ChanBaseTable extends Table {
   IntColumn get timestamp => integer().nullable()();

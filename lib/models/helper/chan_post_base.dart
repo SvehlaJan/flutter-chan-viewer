@@ -35,9 +35,11 @@ abstract class ChanPostBase {
 
   bool hasMedia() => filename?.isNotEmpty ?? false;
 
-  String? getMediaUrl() => _getMediaUrl(this.boardId, this.imageId, this.extension, false);
+  String? getMediaUrl() =>
+      _getMediaUrl(this.boardId, this.imageId, this.extension, false);
 
-  String? getThumbnailUrl() => _getMediaUrl(this.boardId, this.imageId, this.extension, true);
+  String? getThumbnailUrl() =>
+      _getMediaUrl(this.boardId, this.imageId, this.extension, true);
 
   String? get content => ChanUtil.getPlainString(htmlContent);
 
@@ -45,7 +47,8 @@ abstract class ChanPostBase {
     return ChanUtil.getReadableHtml(htmlContent, truncate);
   }
 
-  String? _getMediaUrl(String? boardId, String? imageId, String? extension, bool thumbnail) {
+  String? _getMediaUrl(
+      String? boardId, String? imageId, String? extension, bool thumbnail) {
     if (boardId != null && imageId != null && extension != null) {
       String targetImageId = thumbnail ? "${imageId}s" : imageId;
       String targetExtension = thumbnail ? ".jpg" : extension;
@@ -83,5 +86,14 @@ abstract class ChanPostBase {
 
   CacheDirective getCacheDirective() => CacheDirective(boardId, threadId);
 
-  List<Object?> get props => [boardId, threadId, timestamp, subtitle, htmlContent, filename, imageId, extension];
+  List<Object?> get props => [
+        boardId,
+        threadId,
+        timestamp,
+        subtitle,
+        htmlContent,
+        filename,
+        imageId,
+        extension
+      ];
 }

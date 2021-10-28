@@ -1,5 +1,5 @@
 import 'package:flutter_chan_viewer/models/local/chan_base_table.dart';
-import 'package:moor/moor.dart';
+import 'package:drift/drift.dart';
 
 class PostsTable extends ChanBaseTable {
   @override
@@ -7,7 +7,8 @@ class PostsTable extends ChanBaseTable {
 
   TextColumn get boardId => text()();
 
-  IntColumn get threadId => integer().customConstraint('REFERENCES threads_table(threadId) ON DELETE CASCADE')();
+  IntColumn get threadId => integer().customConstraint(
+      'REFERENCES threads_table(threadId) ON DELETE CASCADE')();
 
   IntColumn get postId => integer()();
 

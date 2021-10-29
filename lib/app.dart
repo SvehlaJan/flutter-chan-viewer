@@ -22,8 +22,7 @@ class ChanViewerApp extends StatefulWidget {
   State<StatefulWidget> createState() => ChanViewerAppState();
 }
 
-class ChanViewerAppState extends State<ChanViewerApp>
-    with WidgetsBindingObserver {
+class ChanViewerAppState extends State<ChanViewerApp> with WidgetsBindingObserver {
   late Bloc bloc;
   final List<Widget> _children = [
     BlocProvider(create: (context) => FavoritesBloc(), child: FavoritesPage()),
@@ -53,8 +52,7 @@ class ChanViewerAppState extends State<ChanViewerApp>
   }
 
   void _selectTabIndex(int tabIndex) {
-    bloc.add(
-        ChanViewerEventSelectTab(currentTab: NavigationHelper.item(tabIndex)));
+    bloc.add(ChanViewerEventSelectTab(currentTab: NavigationHelper.item(tabIndex)));
   }
 
   @override
@@ -73,8 +71,7 @@ class ChanViewerAppState extends State<ChanViewerApp>
             ),
           );
         } else {
-          return BasePageState.buildErrorScreen(
-              context, (state as ChanStateError).message);
+          return BasePageState.buildErrorScreen(context, (state as ChanStateError).message);
         }
       },
       bloc: bloc as ChanViewerBloc,

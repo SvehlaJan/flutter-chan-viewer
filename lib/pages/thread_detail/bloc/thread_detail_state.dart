@@ -1,9 +1,10 @@
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
+import 'package:flutter_chan_viewer/models/ui/post_item.dart';
 import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
 
 class ThreadDetailStateContent extends ChanStateContent {
-  final ThreadDetailModel? model;
+  final ThreadDetailModel model;
   final List<ThreadItem> customThreads;
   final bool isFavorite;
   final bool catalogMode;
@@ -21,9 +22,13 @@ class ThreadDetailStateContent extends ChanStateContent {
             showLazyLoading: showLazyLoading,
             event: event);
 
-  get selectedMediaIndex => model?.selectedMediaIndex;
+  int get selectedMediaIndex => model.selectedMediaIndex;
 
-  get selectedPostIndex => model?.selectedPostIndex;
+  int get selectedPostIndex => model.selectedPostIndex;
+
+  PostItem? get selectedPost => model.selectedPost;
+
+  int get selectedPostId => model.selectedPostId;
 
   @override
   List<Object?> get props =>

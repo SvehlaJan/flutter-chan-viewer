@@ -11,7 +11,7 @@ import 'package:flutter_chan_viewer/utils/constants.dart';
 
 enum TabItem { favorites, boards, settings }
 
-enum AuthState { authenticated, auth_required, forbidden, not_required }
+enum AuthState { authenticated, auth_required, requesting, forbidden, not_required }
 
 class NavigationHelper {
   static List<BottomNavigationBarItem> getItems(BuildContext context) {

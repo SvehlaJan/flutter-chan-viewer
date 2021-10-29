@@ -31,8 +31,7 @@ class GalleryPage extends StatefulWidget {
   _GalleryPageState createState() => _GalleryPageState();
 }
 
-class _GalleryPageState extends BasePageState<GalleryPage>
-    with TickerProviderStateMixin {
+class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderStateMixin {
   late SheetController _sheetController;
   TextEditingController? _newCollectionTextController;
 
@@ -43,9 +42,8 @@ class _GalleryPageState extends BasePageState<GalleryPage>
     _newCollectionTextController = TextEditingController();
     _sheetController = SheetController.of(context) ?? SheetController();
     Future.delayed(const Duration(milliseconds: 100), () {
-      ThreadDetailStateContent? contentState =
-          bloc.state is ThreadDetailStateContent ? bloc.state : null;
-      bool hasMedia = contentState?.model?.selectedPost?.hasMedia() ?? false;
+      ThreadDetailStateContent? contentState = bloc.state is ThreadDetailStateContent ? bloc.state : null;
+      bool hasMedia = contentState?.selectedPost?.hasMedia() ?? false;
       if (widget.showAsReply || !hasMedia) {
         _sheetController.expand();
       }
@@ -74,21 +72,16 @@ class _GalleryPageState extends BasePageState<GalleryPage>
           if (state is ThreadDetailStateContent && state.event != null) {
             switch (state.event) {
               case ThreadDetailSingleEvent.SHOW_COLLECTIONS_DIALOG:
-                List<ThreadItem> threads = bloc.state.customThreads;
+                List<ThreadItem> threads = state.customThreads;
                 DialogUtil.showCustomCollectionPickerDialog(
                   context,
                   threads,
                   _newCollectionTextController,
-                  (context, name) =>
-                      {bloc.add(ThreadDetailEventCreateNewCollection(name))},
-                  (context, name) => {
-                    bloc.add(ThreadDetailEventAddPostToCollection(
-                        name, widget.explicitPostId))
-                  },
+                  (context, name) => {bloc.add(ThreadDetailEventCreateNewCollection(name))},
+                  (context, name) => {bloc.add(ThreadDetailEventAddPostToCollection(name, state.selectedPostId))},
                 );
                 break;
-              case ThreadDetailSingleEvent
-                  .SHOW_POST_ADDED_TO_COLLECTION_SUCCESS:
+              case ThreadDetailSingleEvent.SHOW_POST_ADDED_TO_COLLECTION_SUCCESS:
                 showPostAddedToCollectionSuccessSnackbar(context);
                 break;
               case ChanSingleEvent.SHOW_OFFLINE:
@@ -106,10 +99,9 @@ class _GalleryPageState extends BasePageState<GalleryPage>
                 return Constants.centeredProgressIndicator;
               } else if (state is ThreadDetailStateContent) {
                 if (widget.showAsReply) {
-                  return _buildSinglePostBody(
-                      context, state, widget.explicitPostId);
+                  return _buildSinglePostBody(context, state, widget.explicitPostId);
                 } else {
-                  PostItem? post = state.model?.selectedPost;
+                  PostItem? post = state.selectedPost;
                   if (post == null) {
                     return Constants.noDataPlaceholder;
                   } else if (post.hasMedia()) {
@@ -119,19 +111,16 @@ class _GalleryPageState extends BasePageState<GalleryPage>
                   }
                 }
               } else {
-                return BasePageState.buildErrorScreen(
-                    context, (state as ChanStateError).message);
+                return BasePageState.buildErrorScreen(context, (state as ChanStateError).message);
               }
             },
           );
         }),
-        backgroundColor:
-            Theme.of(context).scaffoldBackgroundColor.withOpacity(0.5));
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor.withOpacity(0.5));
   }
 
-  Widget _buildSinglePostBody(
-      BuildContext context, ThreadDetailStateContent state, int postId) {
-    PostItem post = state.model!.findPostById(postId)!;
+  Widget _buildSinglePostBody(BuildContext context, ThreadDetailStateContent state, int postId) {
+    PostItem post = state.model.findPostById(postId)!;
 
     return SafeArea(
       child: Stack(
@@ -145,8 +134,7 @@ class _GalleryPageState extends BasePageState<GalleryPage>
 
   Widget _buildSinglePostItem(BuildContext context, PostItem post) {
     if (post.isImage()) {
-      return Center(
-          child: ChanCachedImage(post: post, boxFit: BoxFit.fitWidth));
+      return Center(child: ChanCachedImage(post: post, boxFit: BoxFit.fitWidth));
     } else if (post.isWebm()) {
       return ChanVideoPlayer(post: post);
     } else {
@@ -154,26 +142,23 @@ class _GalleryPageState extends BasePageState<GalleryPage>
     }
   }
 
-  Widget _buildCarouselBody(
-      BuildContext context, ThreadDetailStateContent state, PostItem post) {
+  Widget _buildCarouselBody(BuildContext context, ThreadDetailStateContent state, PostItem post) {
     return SafeArea(
       child: Stack(
         children: <Widget>[
           PhotoViewGallery.builder(
-            itemCount: state.model!.visibleMediaPosts.length,
+            itemCount: state.model.visibleMediaPosts.length,
             builder: (context, index) {
-              return _buildCarouselItem(
-                  context, state.model!.visibleMediaPosts[index])!;
+              return _buildCarouselItem(context, state.model.visibleMediaPosts[index])!;
             },
             scrollPhysics: BouncingScrollPhysics(),
             backgroundDecoration: BoxDecoration(color: Colors.transparent),
             loadingBuilder: (context, index) => Constants.progressIndicator,
-            pageController:
-                PageController(initialPage: state.selectedMediaIndex),
+            pageController: PageController(initialPage: state.selectedMediaIndex),
             onPageChanged: ((newMediaIndex) {
               if (newMediaIndex != state.selectedMediaIndex) {
-                bloc.add(
-                    ThreadDetailEventOnPostSelected(mediaIndex: newMediaIndex));
+                PostItem item = state.model.visibleMediaPosts[newMediaIndex];
+                bloc.add(ThreadDetailEventOnPostSelected(item.postId));
                 _sheetController.collapse();
               }
             }),
@@ -184,7 +169,7 @@ class _GalleryPageState extends BasePageState<GalleryPage>
             child: Padding(
               padding: const EdgeInsets.all(4.0),
               child: Text(
-                "${state.selectedMediaIndex + 1}/${state.model!.visibleMediaPosts.length} ${post.filename}${post.extension}",
+                "${state.selectedMediaIndex + 1}/${state.model.visibleMediaPosts.length} ${post.filename}${post.extension}",
                 style: Theme.of(context).textTheme.caption,
               ),
             ),
@@ -194,16 +179,13 @@ class _GalleryPageState extends BasePageState<GalleryPage>
     );
   }
 
-  PhotoViewGalleryPageOptions? _buildCarouselItem(
-      BuildContext context, PostItem post) {
+  PhotoViewGalleryPageOptions? _buildCarouselItem(BuildContext context, PostItem post) {
     if (!post.hasMedia()) {
       return null;
     }
 
     return PhotoViewGalleryPageOptions.customChild(
-      child: post.isImage()
-          ? ChanCachedImage(post: post, boxFit: BoxFit.contain)
-          : ChanVideoPlayer(post: post),
+      child: post.isImage() ? ChanCachedImage(post: post, boxFit: BoxFit.contain) : ChanVideoPlayer(post: post),
       heroAttributes: PhotoViewHeroAttributes(tag: post.getMediaUrl()!),
       initialScale: PhotoViewComputedScale.contained,
       minScale: PhotoViewComputedScale.contained,
@@ -246,11 +228,8 @@ class _GalleryPageState extends BasePageState<GalleryPage>
                         post: replyPost,
                         showHeroAnimation: false,
                         showImage: index != 0,
-                        onTap: () => index != 0
-                            ? _onReplyPostClicked(context, replyPost)
-                            : null,
-                        onLongPress: () =>
-                            _showReplyDetailDialog(context, replyPost),
+                        onTap: () => index != 0 ? _onReplyPostClicked(context, replyPost) : null,
+                        onLongPress: () => _showReplyDetailDialog(context, replyPost),
                         onLinkTap: (url) => _onLinkClicked(context, url),
                         selected: false,
                       ),
@@ -284,8 +263,7 @@ class _GalleryPageState extends BasePageState<GalleryPage>
               margin: EdgeInsets.zero,
               child: Padding(
                 padding: const EdgeInsets.all(4.0),
-                child: Text("${post.visibleReplies.length} replies",
-                    style: Theme.of(context).textTheme.caption),
+                child: Text("${post.visibleReplies.length} replies", style: Theme.of(context).textTheme.caption),
               ),
             ),
           ),
@@ -302,12 +280,8 @@ class _GalleryPageState extends BasePageState<GalleryPage>
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                IconButton(
-                    icon: Icon(Icons.visibility_off),
-                    onPressed: () => _onHidePostClicked(context, post)),
-                IconButton(
-                    icon: Icon(Icons.add),
-                    onPressed: () => _onCollectionsClicked(context, post)),
+                IconButton(icon: Icon(Icons.visibility_off), onPressed: () => _onHidePostClicked(context, post)),
+                IconButton(icon: Icon(Icons.add), onPressed: () => _onCollectionsClicked(context, post)),
               ],
             ),
           ),
@@ -321,16 +295,14 @@ class _GalleryPageState extends BasePageState<GalleryPage>
         opaque: false,
         pageBuilder: (_, __, ___) => BlocProvider.value(
               value: bloc as ThreadDetailBloc,
-              child: GalleryPage(
-                  showAsReply: true, explicitPostId: replyPost.postId),
+              child: GalleryPage(showAsReply: true, explicitPostId: replyPost.postId),
             )));
   }
 
   void _onLinkClicked(BuildContext context, String url) =>
       bloc.add(ThreadDetailEventOnReplyClicked(ChanUtil.getPostIdFromUrl(url)));
 
-  void _onHidePostClicked(BuildContext context, PostItem post) =>
-      bloc.add(ThreadDetailEventHidePost(post.postId));
+  void _onHidePostClicked(BuildContext context, PostItem post) => bloc.add(ThreadDetailEventHidePost(post.postId));
 
   void _onCollectionsClicked(BuildContext context, PostItem post) {
     if (bloc.state is ThreadDetailStateContent) {
@@ -339,10 +311,8 @@ class _GalleryPageState extends BasePageState<GalleryPage>
         context,
         threads,
         _newCollectionTextController,
-        (context, name) =>
-            {bloc.add(ThreadDetailEventCreateNewCollection(name))},
-        (context, name) =>
-            {bloc.add(ThreadDetailEventAddPostToCollection(name, post.postId))},
+        (context, name) => {bloc.add(ThreadDetailEventCreateNewCollection(name))},
+        (context, name) => {bloc.add(ThreadDetailEventAddPostToCollection(name, post.postId))},
       );
     }
   }

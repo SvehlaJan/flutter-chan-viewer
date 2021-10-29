@@ -39,3 +39,12 @@ class AppEventAuthStateChange extends AppEvent {
   @override
   List<Object?> get props => super.props..addAll([authState]);
 }
+
+class AppEventPermissionRequestFinished extends AppEvent {
+  final bool granted;
+
+  const AppEventPermissionRequestFinished({required this.granted});
+
+  @override
+  List<Object?> get props => super.props..addAll([granted]);
+}

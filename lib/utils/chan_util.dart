@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:date_format/date_format.dart';
-import 'package:flutter_chan_viewer/utils/extensions.dart';
 import 'package:html/dom.dart';
 import 'package:html/parser.dart';
 import 'package:html_unescape/html_unescape.dart';
@@ -28,7 +27,7 @@ class ChanUtil {
   }
 
   static String? getPlainString(String? htmlContent) {
-    if (htmlContent.isNotNullNorEmpty) {
+    if (htmlContent?.isNotEmpty ?? false) {
       Document document = parse(
           htmlContent!.replaceAll("<br>", " ").replaceAll("</p><p>", " "));
       return parse(document.body!.text).documentElement!.text;

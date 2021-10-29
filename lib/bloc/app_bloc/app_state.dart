@@ -15,3 +15,5 @@ class AppStateContent extends ChanState {
   @override
   List<Object?> get props => super.props..addAll([appTheme, authState]);
 }
+
+class AppStateLoading extends ChanState {}

@@ -44,7 +44,7 @@ class MainApp extends StatelessWidget with WidgetsBindingObserver {
     );
 
     return BlocBuilder<AppBloc, ChanState>(builder: (context, state) {
-      if (state is ChanStateLoading) {
+      if (state is AppStateLoading) {
         return Constants.centeredProgressIndicator;
       } else if (state is AppStateContent) {
         ThemeData themeData;

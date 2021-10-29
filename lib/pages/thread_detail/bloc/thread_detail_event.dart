@@ -23,13 +23,12 @@ class ThreadDetailEventOnLinkClicked extends ChanEvent {
 }
 
 class ThreadDetailEventOnPostSelected extends ChanEvent {
-  final int? mediaIndex;
-  final int? postId;
+  final int postId;
 
-  ThreadDetailEventOnPostSelected({this.mediaIndex, this.postId});
+  ThreadDetailEventOnPostSelected(this.postId);
 
   @override
-  List<Object?> get props => [mediaIndex, postId];
+  List<Object?> get props => [postId];
 }
 
 class ThreadDetailEventOnReplyClicked extends ChanEvent {

@@ -68,11 +68,11 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
     bool isFavorite = state is ThreadDetailStateContent && state.isFavorite;
     bool isCatalogMode = state is ThreadDetailStateContent && state.catalogMode;
     bool isCollection =
-        state is ThreadDetailStateContent && state.model?.thread.onlineStatus == OnlineState.CUSTOM.index;
+        state is ThreadDetailStateContent && state.model.thread.onlineStatus == OnlineState.CUSTOM.index;
     List<PageAction> actions = [if (showSearch) PageAction("Search", Icons.search, _onSearchClick)];
-    if (isCollection && state.model?.thread.threadId != null) {
+    if (isCollection) {
       actions.add(PageAction("Delete collection", Icons.delete_forever,
-          () => _onDeleteCollectionClicked(context, state.model!.thread.threadId)));
+          () => _onDeleteCollectionClicked(context, state.model.thread.threadId)));
     } else {
       actions.add(isFavorite
           ? PageAction("Unstar", Icons.star, _onFavoriteToggleClick)
@@ -138,7 +138,7 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
       return Constants.centeredProgressIndicator;
     }
     if (state is ThreadDetailStateContent) {
-      if (state.model?.visiblePosts.isEmpty ?? true) {
+      if (state.model.visiblePosts.isEmpty) {
         return Constants.noDataPlaceholder;
       }
 
@@ -147,12 +147,12 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
           state.catalogMode
               ? buildGrid(
                   context,
-                  state.model!.visibleMediaPosts,
+                  state.model.visibleMediaPosts,
                   state.selectedMediaIndex,
                 )
               : buildList(
                   context,
-                  state.model!.visiblePosts,
+                  state.model.visiblePosts,
                   state.selectedPostIndex,
                 ),
           if (state.showLazyLoading) LinearProgressIndicator(),
@@ -285,8 +285,10 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
     return (orientation == Orientation.portrait) ? 2 : 3;
   }
 
-  void _onItemTap(BuildContext context, PostItem post) {
-    bloc.add(ThreadDetailEventOnPostSelected(mediaIndex: null, postId: post.postId));
+  void _onItemTap(BuildContext context, PostItem post) async {
+    bloc.add(ThreadDetailEventOnPostSelected(post.postId));
+    // hack to wait for selected post to be propagated to state
+    await bloc.stream.first;
 
     Navigator.of(context).push(
       PageRouteBuilder(

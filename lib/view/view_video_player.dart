@@ -59,14 +59,15 @@ class _ChanVideoPlayerState extends State<ChanVideoPlayer> {
         betterPlayerDataSource: betterPlayerDataSource,
       );
     } else {
+      BetterPlayerCacheConfiguration cacheConfiguration = BetterPlayerCacheConfiguration(
+        useCache: true,
+        maxCacheSize: 256 * 1024 * 1024,
+        maxCacheFileSize: 10 * 1024 * 1024,
+      );
       BetterPlayerDataSource betterPlayerDataSource = BetterPlayerDataSource(
         BetterPlayerDataSourceType.network,
         widget.post.getMediaUrl()!,
-        cacheConfiguration: BetterPlayerCacheConfiguration(
-          useCache: true,
-          maxCacheSize: 256 * 1024 * 1024,
-          maxCacheFileSize: 10 * 1024 * 1024,
-        ),
+        cacheConfiguration: null,
       );
       _betterPlayerController = BetterPlayerController(
           betterPlayerConfiguration,
@@ -100,6 +101,7 @@ class _ChanVideoPlayerState extends State<ChanVideoPlayer> {
 
   @override
   void dispose() {
+    _betterPlayerController.dispose(forceDispose: true);
     // _videoController.dispose();
     // _bottomChewieController.dispose();
 

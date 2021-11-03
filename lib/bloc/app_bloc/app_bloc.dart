@@ -53,7 +53,7 @@ class AppBloc extends Bloc<AppEvent, ChanState> {
           add(AppEventAuthStateChange(authState: AuthState.auth_required));
         } else if (event.lastLifecycleState == AppLifecycleState.resumed) {
           if ([AuthState.auth_required, AuthState.forbidden].contains(this.authState)) {
-            yield AppStateLoading();
+            yield _buildContentState();
             await requestAuthentication();
           }
         }

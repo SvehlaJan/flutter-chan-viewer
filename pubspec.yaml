@@ -44,8 +44,9 @@ dependencies:
 
   shared_preferences: ^2.0.8
   permission_handler: ^8.2.5
-  #  flutter_downloader: ^1.7.0
   flutter_downloader: ^1.7.1
+  flowder: ^0.2.0
+  download: any
 
   date_format: ^2.0.4
 
@@ -65,6 +66,7 @@ dependencies:
   html_unescape: ^2.0.0
   better_player: ^0.0.73
   video_thumbnail: ^0.4.3
+  dart_vlc: ^0.1.6
   carousel_slider: ^4.0.0
   sliding_sheet: ^0.5.2
 

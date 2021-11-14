@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:collection';
 import 'dart:io';
-import 'dart:isolate';
 import 'dart:ui';
 
 import 'package:flutter_chan_viewer/bloc/chan_event.dart';
@@ -13,7 +12,6 @@ import 'package:flutter_chan_viewer/models/ui/post_item.dart';
 import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
 import 'package:flutter_chan_viewer/pages/base/base_bloc.dart';
 import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
-import 'package:flutter_chan_viewer/repositories/chan_downloader.dart';
 import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
 import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
 import 'package:flutter_chan_viewer/utils/chan_logger.dart';
@@ -21,7 +19,6 @@ import 'package:flutter_chan_viewer/utils/chan_util.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/utils/extensions.dart';
 import 'package:flutter_chan_viewer/utils/preferences.dart';
-import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import 'thread_detail_event.dart';
@@ -40,7 +37,6 @@ class ThreadDetailBloc extends BaseBloc<ChanEvent, ChanState> {
   List<ThreadItem> customThreads = [];
 
   CacheDirective get cacheDirective => CacheDirective(_boardId, _threadId);
-  ReceivePort _port = ReceivePort();
 
   ThreadDetailBloc(this._boardId, this._threadId, this._showDownloadsOnly) : super(ChanStateLoading());
 
@@ -54,18 +50,6 @@ class ThreadDetailBloc extends BaseBloc<ChanEvent, ChanState> {
           _catalogMode = Preferences.getBool(Preferences.KEY_THREAD_CATALOG_MODE, def: false);
         }
         customThreads = await _repository.getCustomThreads();
-
-        IsolateNameServer.registerPortWithName(_port.sendPort, Constants.downloaderPortName);
-        _port.listen((dynamic data) async* {
-          String taskId = data[0];
-          DownloadTaskStatus status = data[1];
-          int progress = data[2];
-
-          if (status == DownloadTaskStatus.complete && progress == 100 && _threadDetailModel != null) {
-            await ChanDownloader.onDownloadFinished(taskId);
-            yield _buildContentState(lazyLoading: false);
-          }
-        });
 
         add(ChanEventFetchData());
       }

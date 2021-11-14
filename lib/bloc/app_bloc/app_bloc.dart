@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:bloc/bloc.dart';
@@ -25,6 +26,7 @@ class AppBloc extends Bloc<AppEvent, ChanState> {
   AuthState authState = AuthState.auth_required;
   AppTheme appTheme = AppTheme.undefined;
   bool permissionsGranted = false;
+  bool isMobile = Platform.isAndroid || Platform.isIOS;
 
   Future<void> initBloc() async {
     await getIt.getAsync<Preferences>();
@@ -32,8 +34,10 @@ class AppBloc extends Bloc<AppEvent, ChanState> {
     await getIt.getAsync<ChanStorage>();
     await getIt.getAsync<ChanRepository>();
 
-    requestAuthentication();
-    requestPermissions();
+    if (isMobile) {
+      requestAuthentication();
+      requestPermissions();
+    }
   }
 
   @override
@@ -43,10 +47,14 @@ class AppBloc extends Bloc<AppEvent, ChanState> {
         await initBloc();
         int appThemeIndex = Preferences.getInt(Preferences.KEY_SETTINGS_THEME) ?? 0;
         appTheme = AppTheme.values[appThemeIndex];
+        if (!isMobile) {
+          this.authState = AuthState.authenticated;
+          yield _buildContentState();
+        }
       } else if (event is AppEventSetTheme) {
         appTheme = event.appTheme;
         yield _buildContentState();
-      } else if (event is AppEventLifecycleChange) {
+      } else if (event is AppEventLifecycleChange && isMobile) {
         this.lastLifecycleState = event.lastLifecycleState;
         print("ChanViewerEventLifecycleChange: ${event.lastLifecycleState}");
         if (event.lastLifecycleState == AppLifecycleState.paused) {
@@ -71,6 +79,12 @@ class AppBloc extends Bloc<AppEvent, ChanState> {
   }
 
   Future<void> requestAuthentication() async {
+    if (!isMobile) {
+      print("Device does not support biometric auth");
+      add(AppEventAuthStateChange(authState: AuthState.authenticated));
+      return;
+    }
+
     this.authState = AuthState.requesting;
     bool result = await auth.authenticate(
       localizedReason: 'Scan your fingerprint (or face or whatever) to authenticate',

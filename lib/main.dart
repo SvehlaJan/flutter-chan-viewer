@@ -73,8 +73,11 @@ class MainApp extends StatelessWidget with WidgetsBindingObserver {
           ),
         );
       } else {
-        return BasePageState.buildErrorScreen(
-            context, (state as ChanStateError).message);
+        return Directionality(
+          textDirection: TextDirection.ltr,
+          child: BasePageState.buildErrorScreen(
+              context, (state as ChanStateError).message),
+        );
       }
     });
   }

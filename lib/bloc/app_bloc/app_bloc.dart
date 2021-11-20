@@ -45,7 +45,7 @@ class AppBloc extends Bloc<AppEvent, ChanState> {
     try {
       if (event is AppEventAppStarted) {
         await initBloc();
-        int appThemeIndex = Preferences.getInt(Preferences.KEY_SETTINGS_THEME) ?? 0;
+        int appThemeIndex = (await getIt.getAsync<Preferences>()).getInt(Preferences.KEY_SETTINGS_THEME) ?? 0;
         appTheme = AppTheme.values[appThemeIndex];
         if (!isMobile) {
           this.authState = AuthState.authenticated;

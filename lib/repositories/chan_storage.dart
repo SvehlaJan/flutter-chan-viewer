@@ -8,26 +8,14 @@ import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 
 class ChanStorage {
-  static final ChanStorage _instance = ChanStorage._internal();
-  static bool _initialized = false;
-
   static const String PERMANENT_DIR = "saved";
   static const String SEPARATOR = "/";
 
   late Directory _permanentDirectory;
 
-  ChanStorage._internal() {
-    // initialization code
-  }
-
-  static Future<ChanStorage> initAndGet() async {
-    if (_initialized) return _instance;
-
-    _instance._permanentDirectory = Directory(join((await getApplicationSupportDirectory()).path, PERMANENT_DIR));
-    if (!_instance._permanentDirectory.existsSync()) await _instance._permanentDirectory.create();
-
-    _initialized = true;
-    return _instance;
+  Future<void> initializeAsync() async {
+    _permanentDirectory = Directory(join((await getApplicationSupportDirectory()).path, PERMANENT_DIR));
+    if (!_permanentDirectory.existsSync()) await _permanentDirectory.create();
   }
 
   bool mediaFileExists(String url, CacheDirective cacheDirective) {

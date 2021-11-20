@@ -27,8 +27,6 @@ import 'package:stream_transform/stream_transform.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 
 class ChanRepository {
-  static final ChanRepository _instance = ChanRepository._internal();
-  static bool _initialized = false;
   static const int CACHE_MAX_SIZE = 10;
 
   late ChanStorage _chanStorage;
@@ -36,23 +34,14 @@ class ChanRepository {
   late RemoteDataSource _chanApiProvider;
   late LocalDataSource _localDataSource;
 
-  static Future<ChanRepository> initAndGet() async {
-    if (_initialized) return _instance;
-
-    _instance._chanStorage = await getIt.getAsync<ChanStorage>();
-    _instance._chanDownloader = await getIt.getAsync<ChanDownloader>();
-    _instance._chanApiProvider = getIt<RemoteDataSource>();
-    _instance._localDataSource = getIt<LocalDataSource>();
+  Future<void> initializeAsync() async {
+    _chanStorage = await getIt.getAsync<ChanStorage>();
+    _chanDownloader = await getIt.getAsync<ChanDownloader>();
+    _chanApiProvider = getIt<RemoteDataSource>();
+    _localDataSource = getIt<LocalDataSource>();
 
     var dir = await getApplicationDocumentsDirectory();
     await dir.create(recursive: true);
-
-    _initialized = true;
-    return _instance;
-  }
-
-  ChanRepository._internal() {
-    // initialization code
   }
 
   bool isMediaDownloaded(ChanPostBase postBase) {

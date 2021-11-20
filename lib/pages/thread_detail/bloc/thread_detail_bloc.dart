@@ -27,6 +27,7 @@ import 'thread_detail_state.dart';
 class ThreadDetailBloc extends BaseBloc<ChanEvent, ChanState> {
   final ChanRepository _repository = getIt<ChanRepository>();
   final ChanStorage _chanStorage = getIt<ChanStorage>();
+  final Preferences _preferences = getIt<Preferences>();
 
   final String _boardId;
   final int _threadId;
@@ -47,7 +48,7 @@ class ThreadDetailBloc extends BaseBloc<ChanEvent, ChanState> {
         yield ChanStateLoading();
 
         if (_catalogMode == null) {
-          _catalogMode = Preferences.getBool(Preferences.KEY_THREAD_CATALOG_MODE, def: false);
+          _catalogMode = _preferences.getBool(Preferences.KEY_THREAD_CATALOG_MODE, def: false);
         }
         customThreads = await _repository.getCustomThreads();
 
@@ -120,7 +121,7 @@ class ThreadDetailBloc extends BaseBloc<ChanEvent, ChanState> {
         yield ChanStateLoading();
 
         _catalogMode = !_catalogMode!;
-        Preferences.setBool(Preferences.KEY_THREAD_CATALOG_MODE, _catalogMode!);
+        _preferences.setBool(Preferences.KEY_THREAD_CATALOG_MODE, _catalogMode!);
 
         yield _buildContentState(event: ThreadDetailSingleEvent.SCROLL_TO_SELECTED);
       } else if (event is ThreadDetailEventOnPostSelected) {

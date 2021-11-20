@@ -30,19 +30,32 @@ void setupLocator() {
   getIt.registerLazySingleton<ThreadsDao>(() => ThreadsDao(getIt<MoorDB>()));
   getIt.registerLazySingleton<BoardsDao>(() => BoardsDao(getIt<MoorDB>()));
   getIt.registerLazySingleton<LocalDataSource>(() => LocalDataSource());
-  getIt.registerSingletonAsync<Preferences>(() async => Preferences.initAndGet());
-  getIt.registerLazySingletonAsync<ChanRepository>(() async => ChanRepository.initAndGet());
-  getIt.registerLazySingletonAsync<ChanStorage>(() async => ChanStorage.initAndGet());
 
-  if (isMobile) {
-    getIt.registerLazySingletonAsync<ChanDownloader>(() async {
+  getIt.registerSingletonAsync<Preferences>(() async {
+    Preferences preferences = new Preferences();
+    preferences.initializeAsync();
+    return preferences;
+  });
+
+  getIt.registerLazySingletonAsync<ChanRepository>(() async {
+    ChanRepository chanRepository = new ChanRepository();
+    await chanRepository.initializeAsync();
+    return chanRepository;
+  });
+
+  getIt.registerLazySingletonAsync<ChanStorage>(() async {
+    ChanStorage chanStorage = new ChanStorage();
+    await chanStorage.initializeAsync();
+    return chanStorage;
+  });
+
+  getIt.registerLazySingletonAsync<ChanDownloader>(() async {
+    if (isMobile) {
       ChanDownloader chanDownloader = new ChanDownloaderImpl();
       await chanDownloader.initializeAsync();
       return chanDownloader;
-    });
-  } else {
-    getIt.registerLazySingletonAsync<ChanDownloader>(() async {
+    } else {
       return new ChanDownloaderMock();
-    });
-  }
+    }
+  });
 }

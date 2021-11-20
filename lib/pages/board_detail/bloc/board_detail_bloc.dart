@@ -18,6 +18,7 @@ import 'package:flutter_chan_viewer/utils/preferences.dart';
 
 class BoardDetailBloc extends BaseBloc<ChanEvent, ChanState> {
   final ChanRepository _repository = getIt<ChanRepository>();
+  final Preferences _preferences = getIt<Preferences>();
 
   BoardDetailBloc(this.boardId) : super(ChanStateLoading());
 
@@ -30,8 +31,7 @@ class BoardDetailBloc extends BaseBloc<ChanEvent, ChanState> {
     try {
       if (event is ChanEventFetchData) {
         yield ChanStateLoading();
-        List<String> favoriteBoards =
-            Preferences.getStringList(Preferences.KEY_FAVORITE_BOARDS);
+        List<String> favoriteBoards = _preferences.getStringList(Preferences.KEY_FAVORITE_BOARDS);
         _isFavorite = favoriteBoards.contains(boardId);
 
         _boardDetailModel = await _repository.fetchCachedBoardDetail(boardId);
@@ -54,18 +54,14 @@ class BoardDetailBloc extends BaseBloc<ChanEvent, ChanState> {
         yield _buildContentState();
       } else if (event is BoardDetailEventToggleFavorite) {
         _isFavorite = !_isFavorite;
-        List<String> favoriteBoards =
-            Preferences.getStringList(Preferences.KEY_FAVORITE_BOARDS);
+        List<String> favoriteBoards = _preferences.getStringList(Preferences.KEY_FAVORITE_BOARDS);
         favoriteBoards.removeWhere((value) => value == boardId);
         if (_isFavorite) {
           favoriteBoards.add(boardId);
         }
-        Preferences.setStringList(
-            Preferences.KEY_FAVORITE_BOARDS, favoriteBoards);
+        _preferences.setStringList(Preferences.KEY_FAVORITE_BOARDS, favoriteBoards);
         yield _buildContentState();
-      } else if (event is ChanEventSearch ||
-          event is ChanEventShowSearch ||
-          event is ChanEventCloseSearch) {
+      } else if (event is ChanEventSearch || event is ChanEventShowSearch || event is ChanEventCloseSearch) {
         mapEventDefaults(event);
         yield _buildContentState();
       }
@@ -75,21 +71,15 @@ class BoardDetailBloc extends BaseBloc<ChanEvent, ChanState> {
     }
   }
 
-  BoardDetailStateContent _buildContentState(
-      {bool lazyLoading = false, ChanSingleEvent? event}) {
+  BoardDetailStateContent _buildContentState({bool lazyLoading = false, ChanSingleEvent? event}) {
     List<ThreadItem> threads;
     if (searchQuery.isNotNullNorEmpty) {
       List<ThreadItem> titleMatchThreads = _boardDetailModel!.threads
-          .where((thread) =>
-              (thread.subtitle ?? "").containsIgnoreCase(searchQuery))
+          .where((thread) => (thread.subtitle ?? "").containsIgnoreCase(searchQuery))
           .toList();
-      List<ThreadItem> bodyMatchThreads = _boardDetailModel!.threads
-          .where((thread) =>
-              (thread.content ?? "").containsIgnoreCase(searchQuery))
-          .toList();
-      threads =
-          LinkedHashSet<ThreadItem>.from(titleMatchThreads + bodyMatchThreads)
-              .toList();
+      List<ThreadItem> bodyMatchThreads =
+          _boardDetailModel!.threads.where((thread) => (thread.content ?? "").containsIgnoreCase(searchQuery)).toList();
+      threads = LinkedHashSet<ThreadItem>.from(titleMatchThreads + bodyMatchThreads).toList();
     } else {
       threads = _boardDetailModel!.threads;
     }

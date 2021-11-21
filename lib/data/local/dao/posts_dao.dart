@@ -5,8 +5,8 @@ import 'package:flutter_chan_viewer/models/local/posts_table.dart';
 part 'posts_dao.g.dart';
 
 @DriftAccessor(tables: [PostsTable])
-class PostsDao extends DatabaseAccessor<MoorDB> with _$PostsDaoMixin {
-  PostsDao(MoorDB db) : super(db);
+class PostsDao extends DatabaseAccessor<ChanDB> with _$PostsDaoMixin {
+  PostsDao(ChanDB db) : super(db);
 
   Future<PostsTableData?> getPostById(int postId, int threadId, String boardId) => (select(postsTable)
         ..where((post) => post.postId.equals(postId) & post.threadId.equals(threadId) & post.boardId.equals(boardId)))

@@ -6,8 +6,8 @@ import 'package:flutter_chan_viewer/models/local/threads_table.dart';
 part 'threads_dao.g.dart';
 
 @DriftAccessor(tables: [ThreadsTable, PostsTable])
-class ThreadsDao extends DatabaseAccessor<MoorDB> with _$ThreadsDaoMixin {
-  ThreadsDao(MoorDB db) : super(db);
+class ThreadsDao extends DatabaseAccessor<ChanDB> with _$ThreadsDaoMixin {
+  ThreadsDao(ChanDB db) : super(db);
 
 //  Stream<List<PostsTableData>> get allActiveThreadItemsStream => select(threadsTable).watch();
 

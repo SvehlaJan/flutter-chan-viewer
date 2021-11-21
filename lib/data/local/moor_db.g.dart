@@ -1393,15 +1393,15 @@ class $BoardsTableTable extends BoardsTable
   }
 }
 
-abstract class _$MoorDB extends GeneratedDatabase {
-  _$MoorDB(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e);
-  _$MoorDB.connect(DatabaseConnection c) : super.connect(c);
+abstract class _$ChanDB extends GeneratedDatabase {
+  _$ChanDB(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e);
+  _$ChanDB.connect(DatabaseConnection c) : super.connect(c);
   late final $PostsTableTable postsTable = $PostsTableTable(this);
   late final $ThreadsTableTable threadsTable = $ThreadsTableTable(this);
   late final $BoardsTableTable boardsTable = $BoardsTableTable(this);
-  late final PostsDao postsDao = PostsDao(this as MoorDB);
-  late final ThreadsDao threadsDao = ThreadsDao(this as MoorDB);
-  late final BoardsDao boardsDao = BoardsDao(this as MoorDB);
+  late final PostsDao postsDao = PostsDao(this as ChanDB);
+  late final ThreadsDao threadsDao = ThreadsDao(this as ChanDB);
+  late final BoardsDao boardsDao = BoardsDao(this as ChanDB);
   @override
   Iterable<TableInfo> get allTables => allSchemaEntities.whereType<TableInfo>();
   @override

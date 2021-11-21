@@ -3,6 +3,7 @@ import 'dart:collection';
 import 'dart:io';
 import 'dart:ui';
 
+import 'package:collection/src/iterable_extensions.dart';
 import 'package:flutter_chan_viewer/bloc/chan_event.dart';
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/data/remote/app_exception.dart';

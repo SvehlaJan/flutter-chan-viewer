@@ -4,36 +4,28 @@ import 'dart:isolate';
 import 'package:drift/drift.dart';
 import 'package:drift/isolate.dart';
 import 'package:drift/native.dart';
-import 'package:flutter_chan_viewer/data/local/dao/boards_dao.dart';
-import 'package:flutter_chan_viewer/data/local/dao/posts_dao.dart';
-import 'package:flutter_chan_viewer/data/local/dao/threads_dao.dart';
-import 'package:flutter_chan_viewer/models/local/boards_table.dart';
-import 'package:flutter_chan_viewer/models/local/posts_table.dart';
-import 'package:flutter_chan_viewer/models/local/threads_table.dart';
+import 'package:flutter_chan_viewer/data/local/dao/downloads_dao.dart';
+import 'package:flutter_chan_viewer/models/local/downloads_table.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
-part 'moor_db.g.dart';
+part 'downloads_db.g.dart';
 
 @DriftDatabase(tables: [
-  PostsTable,
-  ThreadsTable,
-  BoardsTable,
+  DownloadsTable,
 ], daos: [
-  PostsDao,
-  ThreadsDao,
-  BoardsDao
+  DownloadsDao,
 ])
-class ChanDB extends _$ChanDB {
-  ChanDB()
+class DownloadsDB extends _$DownloadsDB {
+  DownloadsDB()
       : super(LazyDatabase(() async {
           final dbFolder = await getDatabasesPath();
-          final file = File(p.join(dbFolder, 'db.sqlite'));
+          final file = File(p.join(dbFolder, 'downloads_db.sqlite'));
           return NativeDatabase(file, logStatements: true);
         }));
 
-  ChanDB.connect(DatabaseConnection connection) : super.connect(connection);
+  DownloadsDB.connect(DatabaseConnection connection) : super.connect(connection);
 
   // FlutterQueryExecutor.inDatabaseFolder(
   //   path: "chan_viewer_db_${FlavorConfig.name.toLowerCase()}.sqlite",
@@ -48,7 +40,7 @@ class ChanDB extends _$ChanDB {
     // the database path in the foreground isolate and then inform the
     // background isolate about the path.
     final dir = await getApplicationDocumentsDirectory();
-    final path = p.join(dir.path, 'db.sqlite');
+    final path = p.join(dir.path, 'downloads_db.sqlite');
     final receivePort = ReceivePort();
 
     await Isolate.spawn(

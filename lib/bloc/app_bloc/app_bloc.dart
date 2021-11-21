@@ -79,7 +79,8 @@ class AppBloc extends Bloc<AppEvent, ChanState> {
   }
 
   Future<void> requestAuthentication() async {
-    if (!isMobile) {
+    bool authAvailable = await auth.canCheckBiometrics;
+    if (!isMobile || !authAvailable) {
       print("Device does not support biometric auth");
       add(AppEventAuthStateChange(authState: AuthState.authenticated));
       return;
@@ -90,7 +91,7 @@ class AppBloc extends Bloc<AppEvent, ChanState> {
       localizedReason: 'Scan your fingerprint (or face or whatever) to authenticate',
       useErrorDialogs: true,
       stickyAuth: true,
-      biometricOnly: true,
+      biometricOnly: false,
     );
     add(AppEventAuthStateChange(authState: result ? AuthState.authenticated : AuthState.forbidden));
   }

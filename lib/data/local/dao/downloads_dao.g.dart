@@ -1,11 +1,11 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'boards_dao.dart';
+part of 'downloads_dao.dart';
 
 // **************************************************************************
 // DaoGenerator
 // **************************************************************************
 
-mixin _$BoardsDaoMixin on DatabaseAccessor<ChanDB> {
-  $BoardsTableTable get boardsTable => attachedDatabase.boardsTable;
+mixin _$DownloadsDaoMixin on DatabaseAccessor<DownloadsDB> {
+  $DownloadsTableTable get downloadsTable => attachedDatabase.downloadsTable;
 }

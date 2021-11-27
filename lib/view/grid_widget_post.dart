@@ -4,6 +4,7 @@ import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/models/ui/post_item.dart';
 import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
 import 'package:flutter_chan_viewer/view/view_cached_image.dart';
+import 'package:shimmer_animation/shimmer_animation.dart';
 
 class PostGridWidget extends StatefulWidget {
   final PostItem post;
@@ -45,11 +46,20 @@ class _PostGridWidgetState extends State<PostGridWidget> with SingleTickerProvid
 
   @override
   Widget build(BuildContext context) {
+    Widget content = buildContent(context);
     return GridTile(
       child: InkWell(
         onTap: widget.onTap as void Function()?,
         onLongPress: widget.onLongPress as void Function()?,
-        child: ScaleTransition(scale: _animation, child: buildContent(context)),
+        child: ScaleTransition(
+          scale: _animation,
+          child: widget.selected
+              ? Shimmer(
+                  child: content,
+                  duration: Duration(seconds: 3),
+                )
+              : content,
+        ),
       ),
     );
   }

@@ -133,14 +133,10 @@ class ThreadDetailBloc extends BaseBloc<ChanEvent, ChanState> {
 
         yield _buildContentState(event: ThreadDetailSingleEvent.SCROLL_TO_SELECTED);
       } else if (event is ThreadDetailEventOnLinkClicked) {
-        PostItem? post = _threadDetailModel!.findPostById(ChanUtil.getPostIdFromUrl(event.url));
-        if (post != null) {
-          _threadDetailModel =
-              _threadDetailModel!.copyWith(thread: _threadDetailModel!.thread.copyWith(selectedPostId: post.postId));
-          await _repository.updateThread(_threadDetailModel!.thread);
+        int postId = ChanUtil.getPostIdFromUrl(event.url);
+        if (postId > 0) {
+          add(ThreadDetailEventOnPostSelected(postId));
         }
-
-        yield _buildContentState(event: ThreadDetailSingleEvent.SCROLL_TO_SELECTED);
       } else if (event is ThreadDetailEventOnReplyClicked) {
         PostItem? post = _threadDetailModel!.findPostById(event.postId);
         if (post != null) {

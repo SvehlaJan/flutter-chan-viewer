@@ -30,6 +30,9 @@ class _FavoritesPageState extends BasePageState<FavoritesPage> {
   }
 
   @override
+  Future<bool> onBackPressed() => Future.value(false);
+
+  @override
   String getPageTitle() => "Favorites";
 
   List<PageAction> getPageActions(BuildContext context) => [
@@ -75,14 +78,11 @@ class _FavoritesPageState extends BasePageState<FavoritesPage> {
                 if (item.isHeader || thread == null) {
                   return Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: Text(item.headerTitle!,
-                          style: Theme.of(context).textTheme.subtitle1));
+                      child: Text(item.headerTitle!, style: Theme.of(context).textTheme.subtitle1));
                 } else {
                   Widget threadWidget = item.thread?.isCustom ?? false
                       ? CustomThreadListWidget(thread: thread)
-                      : ThreadListWidget(
-                          thread: thread,
-                          showProgress: item.thread?.isLoading ?? false);
+                      : ThreadListWidget(thread: thread, showProgress: item.thread?.isLoading ?? false);
                   return InkWell(
                     child: threadWidget,
                     onTap: () => _openThreadDetailPage(item.thread!),
@@ -96,8 +96,7 @@ class _FavoritesPageState extends BasePageState<FavoritesPage> {
         ],
       );
     } else {
-      return BasePageState.buildErrorScreen(
-          context, (state as ChanStateError).message);
+      return BasePageState.buildErrorScreen(context, (state as ChanStateError).message);
     }
   }
 

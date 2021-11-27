@@ -42,6 +42,12 @@ class ChanDB extends _$ChanDB {
 
   int get schemaVersion => 1;
 
+  Future<void> purgeDatabase() async {
+    await boardsDao.delete(boardsTable).go();
+    await threadsDao.delete(threadsTable).go();
+    await postsDao.delete(postsTable).go();
+  }
+
   static Future<DriftIsolate> _createDriftIsolate() async {
     // this method is called from the main isolate. Since we can't use
     // getApplicationDocumentsDirectory on a background isolate, we calculate

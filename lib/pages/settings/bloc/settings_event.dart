@@ -27,6 +27,8 @@ class SettingsEventToggleShowNsfw extends ChanEvent {
 
 class SettingsEventCancelDownloads extends ChanEvent {}
 
+class SettingsEventPurgeDatabase extends ChanEvent {}
+
 class SettingsEventDeleteFolder extends ChanEvent {
   final CacheDirective cacheDirective;
 

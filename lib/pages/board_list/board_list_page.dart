@@ -30,6 +30,9 @@ class _BoardListPageState extends BasePageState<BoardListPage> {
   }
 
   @override
+  Future<bool> onBackPressed() => Future.value(false);
+
+  @override
   String getPageTitle() => "Boards";
 
   List<PageAction> getPageActions(BuildContext context) => [

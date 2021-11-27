@@ -4,6 +4,7 @@ import 'package:bloc/bloc.dart';
 import 'package:flutter_chan_viewer/bloc/chan_event.dart';
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/data/local/local_data_source.dart';
+import 'package:flutter_chan_viewer/data/local/moor_db.dart';
 import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/models/helper/moor_db_overview.dart';
 import 'package:flutter_chan_viewer/models/local/threads_table.dart';
@@ -73,7 +74,11 @@ class SettingsBloc extends Bloc<ChanEvent, ChanState> {
         yield _contentState;
       } else if (event is SettingsEventCancelDownloads) {
         yield ChanStateLoading();
-        _downloader.cancelAllDownloads();
+        await _downloader.cancelAllDownloads();
+        yield _contentState;
+      } else if (event is SettingsEventPurgeDatabase) {
+        yield ChanStateLoading();
+        await getIt<ChanDB>().purgeDatabase();
         yield _contentState;
       } else if (event is SettingsEventDeleteFolder) {
         yield ChanStateLoading();

@@ -54,14 +54,16 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
   Future<bool> onBackPressed() {
     if (_sheetController.state?.isExpanded ?? false) {
       _sheetController.collapse();
-      if (widget.showAsReply) {
-        return Future.delayed(const Duration(milliseconds: 200), () {
+      // if (widget.showAsReply) {
+        return Future.delayed(const Duration(milliseconds: 150), () {
           return Future.value(true);
         });
-      }
-      return Future.value(false);
+      // } else {
+      //   return Future.value(false);
+      // }
+    } else {
+      return Future.value(true);
     }
-    return Future.value(true);
   }
 
   @override

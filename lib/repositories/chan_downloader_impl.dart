@@ -32,7 +32,7 @@ class ChanDownloaderImpl extends ChanDownloader {
     _chanStorage = await getIt.getAsync<ChanStorage>();
 
     await FlutterDownloader.initialize();
-    // FlutterDownloader.registerCallback(ChanDownloader.downloadCallback);
+    FlutterDownloader.registerCallback(ChanDownloaderImpl.downloadCallback);
 
     var dir = await getApplicationDocumentsDirectory();
     await dir.create(recursive: true);
@@ -76,6 +76,7 @@ class ChanDownloaderImpl extends ChanDownloader {
     }
     if ([DownloadTaskStatus.enqueued, DownloadTaskStatus.running].contains(existingTask.status)) {
       print("Url is already enqueued to download. Skipping. ${existingTask.status}");
+      // FlutterDownloader.remove(taskId: existingTask.taskId);
       return;
     }
     if ([DownloadTaskStatus.complete, DownloadTaskStatus.failed, DownloadTaskStatus.canceled]
@@ -105,10 +106,9 @@ class ChanDownloaderImpl extends ChanDownloader {
   }
 
   static void downloadCallback(String id, DownloadTaskStatus status, int progress) {
-    print('Background Isolate Callback: task ($id) is in status ($status) and process ($progress)');
+    // print('Background Isolate Callback: task ($id) is in status ($status) and process ($progress)');
     final SendPort port = IsolateNameServer.lookupPortByName(Constants.downloaderPortName)!;
     port.send([id, status, progress]);
-    print('Message sent.');
   }
 
   static Future<void> onDownloadFinished(String taskId) async {

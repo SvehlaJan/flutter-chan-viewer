@@ -20,12 +20,35 @@ class PostsDao extends DatabaseAccessor<ChanDB> with _$PostsDaoMixin {
   Stream<List<PostsTableData>> getAllPostsFromThreadStream(String boardId, int threadId) =>
       (select(postsTable)..where((post) => post.threadId.equals(threadId) & post.boardId.equals(boardId))).watch();
 
-  Future<int> insertPost(PostsTableData entry) => into(postsTable).insertOnConflictUpdate(entry);
+  Future<int> insertPost(PostsTableData entry) {
+    return into(postsTable).insert(
+      entry,
+      mode: InsertMode.insertOrReplace,
+      onConflict: DoUpdate(
+        (old) {
+          return PostsTableCompanion.custom(isHidden: old.isHidden);
+        },
+        target: [postsTable.boardId, postsTable.threadId, postsTable.postId],
+      ),
+    );
+  }
 
-  Future<void> insertPostsList(List<PostsTableData> entries) async => await batch(
-        (batch) => batch.insertAll(postsTable, entries,
-            onConflict: DoUpdate((dynamic old) => PostsTableCompanion.custom(isHidden: old.isHidden))),
-      );
+  Future<void> insertPostsList(List<PostsTableData> entries) async {
+    await batch(
+      (batch) {
+        batch.insertAll(
+          postsTable,
+          entries,
+          onConflict: DoUpdate(
+            (dynamic old) {
+              return PostsTableCompanion.custom(isHidden: old.isHidden);
+            },
+            target: [postsTable.boardId, postsTable.threadId, postsTable.postId],
+          ),
+        );
+      },
+    );
+  }
 
   Future<bool> updatePost(PostsTableData entry) {
     return (update(postsTable).replace(entry)).then((value) {

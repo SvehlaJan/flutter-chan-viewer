@@ -11,7 +11,11 @@ class ChanUtil {
   static const int MAX_TEXT_LENGTH = 300;
   static HtmlUnescape unescaper = HtmlUnescape();
 
-  static String unescapeHtml(String? raw) => unescaper.convert(raw ?? "");
+  static String unescapeHtml(String? raw) {
+    String html = unescaper.convert(raw ?? "");
+    html = html.replaceAll('href="#p', 'href="/#p'); // # causes HTML renderer to attempt to scroll to the label
+    return html;
+  }
 
   static String getReadableHtml(String? htmlContent, bool truncate) {
     if (htmlContent == null) {
@@ -55,8 +59,14 @@ class ChanUtil {
     return postIds;
   }
 
-  static int getPostIdFromUrl(String url) =>
-      url.startsWith("#p") ? int.parse(url.substring(2)) : -1;
+  static int getPostIdFromUrl(String url) {
+    int startIndex = url.indexOf("#p");
+    if (startIndex > 0) {
+      return int.parse(url.substring(startIndex + 2));
+    } else {
+      return -1;
+    }
+  }
 
   static String getHumanDate(int timestamp) {
     return formatDate(DateTime.fromMillisecondsSinceEpoch(timestamp * 1000),

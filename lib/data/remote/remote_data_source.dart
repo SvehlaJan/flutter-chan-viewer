@@ -1,13 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:flutter_chan_viewer/data/remote/app_exception.dart';
-import 'package:flutter_chan_viewer/data/remote/resource.dart';
 import 'package:flutter_chan_viewer/models/archive_list_model.dart';
 import 'package:flutter_chan_viewer/models/board_detail_model.dart';
 import 'package:flutter_chan_viewer/models/board_list_model.dart';
-import 'package:flutter_chan_viewer/models/local/threads_table.dart';
+import 'package:flutter_chan_viewer/models/helper/online_state.dart';
 import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
+import 'package:flutter_chan_viewer/utils/exceptions.dart';
 import 'package:flutter_chan_viewer/utils/flavor_config.dart';
 import 'package:http/http.dart' show Client;
 
@@ -24,20 +23,6 @@ class RemoteDataSource {
     } else {
       throw HttpException(message: response.body, errorCode: response.statusCode);
     }
-  }
-
-  Future<Resource<BoardListModel>> getBoardList() async {
-    String url = "${FlavorConfig.values().baseUrl}/boards.json";
-
-    return Resource.asFuture(() async {
-      return await client.get(Uri.parse(url)).then((response) {
-        if (response.statusCode == 200) {
-          return BoardListModel.fromJson(json.decode(response.body));
-        } else {
-          throw HttpException(message: response.body, errorCode: response.statusCode);
-        }
-      });
-    });
   }
 
   Future<BoardDetailModel> fetchThreadList(String boardId) async {

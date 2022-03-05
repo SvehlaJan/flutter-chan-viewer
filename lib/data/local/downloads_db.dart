@@ -5,7 +5,7 @@ import 'package:drift/drift.dart';
 import 'package:drift/isolate.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_chan_viewer/data/local/dao/downloads_dao.dart';
-import 'package:flutter_chan_viewer/models/local/downloads_table.dart';
+import 'package:flutter_chan_viewer/data/local/tables/downloads_table.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';

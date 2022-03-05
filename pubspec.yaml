@@ -64,7 +64,7 @@ dependencies:
   html_unescape: ^2.0.0
   better_player: ^0.0.73
   video_thumbnail: ^0.4.3
-#  dart_vlc: ^0.1.6
+  dart_vlc: ^0.1.8
   carousel_slider: ^4.0.0
   sliding_sheet: ^0.5.2
 

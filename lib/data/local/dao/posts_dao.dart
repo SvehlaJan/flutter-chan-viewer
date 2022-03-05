@@ -1,6 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:flutter_chan_viewer/data/local/moor_db.dart';
-import 'package:flutter_chan_viewer/models/local/posts_table.dart';
+import 'package:flutter_chan_viewer/data/local/tables/posts_table.dart';
 
 part 'posts_dao.g.dart';
 

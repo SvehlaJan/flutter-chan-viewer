@@ -1,6 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:flutter_chan_viewer/data/local/downloads_db.dart';
-import 'package:flutter_chan_viewer/models/local/downloads_table.dart';
+import 'package:flutter_chan_viewer/data/local/tables/downloads_table.dart';
 
 part 'downloads_dao.g.dart';
 

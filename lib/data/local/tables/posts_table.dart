@@ -1,5 +1,5 @@
-import 'package:flutter_chan_viewer/models/local/chan_base_table.dart';
 import 'package:drift/drift.dart';
+import 'package:flutter_chan_viewer/data/local/tables/chan_base_table.dart';
 
 class PostsTable extends ChanBaseTable {
   @override

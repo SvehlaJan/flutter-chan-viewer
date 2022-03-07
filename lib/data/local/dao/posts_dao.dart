@@ -1,12 +1,12 @@
 import 'package:drift/drift.dart';
 import 'package:flutter_chan_viewer/data/local/moor_db.dart';
-import 'package:flutter_chan_viewer/models/local/posts_table.dart';
+import 'package:flutter_chan_viewer/data/local/tables/posts_table.dart';
 
 part 'posts_dao.g.dart';
 
 @DriftAccessor(tables: [PostsTable])
-class PostsDao extends DatabaseAccessor<MoorDB> with _$PostsDaoMixin {
-  PostsDao(MoorDB db) : super(db);
+class PostsDao extends DatabaseAccessor<ChanDB> with _$PostsDaoMixin {
+  PostsDao(ChanDB db) : super(db);
 
   Future<PostsTableData?> getPostById(int postId, int threadId, String boardId) => (select(postsTable)
         ..where((post) => post.postId.equals(postId) & post.threadId.equals(threadId) & post.boardId.equals(boardId)))
@@ -20,12 +20,35 @@ class PostsDao extends DatabaseAccessor<MoorDB> with _$PostsDaoMixin {
   Stream<List<PostsTableData>> getAllPostsFromThreadStream(String boardId, int threadId) =>
       (select(postsTable)..where((post) => post.threadId.equals(threadId) & post.boardId.equals(boardId))).watch();
 
-  Future<int> insertPost(PostsTableData entry) => into(postsTable).insertOnConflictUpdate(entry);
+  Future<int> insertPost(PostsTableData entry) {
+    return into(postsTable).insert(
+      entry,
+      mode: InsertMode.insertOrReplace,
+      onConflict: DoUpdate(
+        (old) {
+          return PostsTableCompanion.custom(isHidden: old.isHidden);
+        },
+        target: [postsTable.boardId, postsTable.threadId, postsTable.postId],
+      ),
+    );
+  }
 
-  Future<void> insertPostsList(List<PostsTableData> entries) async => await batch(
-        (batch) => batch.insertAll(postsTable, entries,
-            onConflict: DoUpdate((dynamic old) => PostsTableCompanion.custom(isHidden: old.isHidden))),
-      );
+  Future<void> insertPostsList(List<PostsTableData> entries) async {
+    await batch(
+      (batch) {
+        batch.insertAll(
+          postsTable,
+          entries,
+          onConflict: DoUpdate(
+            (dynamic old) {
+              return PostsTableCompanion.custom(isHidden: old.isHidden);
+            },
+            target: [postsTable.boardId, postsTable.threadId, postsTable.postId],
+          ),
+        );
+      },
+    );
+  }
 
   Future<bool> updatePost(PostsTableData entry) {
     return (update(postsTable).replace(entry)).then((value) {

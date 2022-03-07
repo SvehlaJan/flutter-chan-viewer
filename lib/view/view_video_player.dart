@@ -102,9 +102,6 @@ class _ChanVideoPlayerState extends State<ChanVideoPlayer> {
   @override
   void dispose() {
     _betterPlayerController.dispose(forceDispose: true);
-    // _videoController.dispose();
-    // _bottomChewieController.dispose();
-
     super.dispose();
   }
 }

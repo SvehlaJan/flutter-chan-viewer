@@ -6,6 +6,6 @@ part of 'boards_dao.dart';
 // DaoGenerator
 // **************************************************************************
 
-mixin _$BoardsDaoMixin on DatabaseAccessor<MoorDB> {
+mixin _$BoardsDaoMixin on DatabaseAccessor<ChanDB> {
   $BoardsTableTable get boardsTable => attachedDatabase.boardsTable;
 }

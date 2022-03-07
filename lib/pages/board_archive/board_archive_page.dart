@@ -41,8 +41,9 @@ class _BoardArchivePageState extends BasePageState<BoardArchivePage> {
   String getPageTitle() => "/${widget.boardId} Archive";
 
   List<PageAction> getPageActions(BuildContext context, ChanState state) {
+    bool showSearchButton = state is ChanStateContent && !state.showSearchBar;
     return [
-      PageAction("Search", Icons.search, _onSearchClick),
+      if (showSearchButton) PageAction("Search", Icons.search, _onSearchClick),
       PageAction("Refresh", Icons.refresh, _onRefreshClick),
     ];
   }

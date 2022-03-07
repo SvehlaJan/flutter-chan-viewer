@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/models/ui/post_item.dart';
@@ -14,6 +13,7 @@ import 'package:flutter_chan_viewer/utils/dialog_util.dart';
 import 'package:flutter_chan_viewer/view/list_widget_post.dart';
 import 'package:flutter_chan_viewer/view/view_cached_image.dart';
 import 'package:flutter_chan_viewer/view/view_video_player.dart';
+import 'package:flutter_chan_viewer/view/view_video_player_vlc.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:sliding_sheet/sliding_sheet.dart';
@@ -31,8 +31,9 @@ class GalleryPage extends StatefulWidget {
   _GalleryPageState createState() => _GalleryPageState();
 }
 
-class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderStateMixin {
+class _GalleryPageState extends BasePageState<GalleryPage> {
   late SheetController _sheetController;
+  late PhotoViewController _photoViewController;
   TextEditingController? _newCollectionTextController;
 
   @override
@@ -41,6 +42,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
     bloc = BlocProvider.of<ThreadDetailBloc>(context);
     _newCollectionTextController = TextEditingController();
     _sheetController = SheetController.of(context) ?? SheetController();
+    _photoViewController = PhotoViewController();
     Future.delayed(const Duration(milliseconds: 100), () {
       ThreadDetailStateContent? contentState = bloc.state is ThreadDetailStateContent ? bloc.state : null;
       bool hasMedia = contentState?.selectedPost?.hasMedia() ?? false;
@@ -54,14 +56,16 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
   Future<bool> onBackPressed() {
     if (_sheetController.state?.isExpanded ?? false) {
       _sheetController.collapse();
-      if (widget.showAsReply) {
-        return Future.delayed(const Duration(milliseconds: 200), () {
+      // if (widget.showAsReply) {
+        return Future.delayed(const Duration(milliseconds: 150), () {
           return Future.value(true);
         });
-      }
-      return Future.value(false);
+      // } else {
+      //   return Future.value(false);
+      // }
+    } else {
+      return Future.value(true);
     }
-    return Future.value(true);
   }
 
   @override
@@ -136,7 +140,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
     if (post.isImage()) {
       return Center(child: ChanCachedImage(post: post, boxFit: BoxFit.fitWidth));
     } else if (post.isWebm()) {
-      return ChanVideoPlayer(post: post);
+      return _buildVideoPlayer(post);
     } else {
       return Container();
     }
@@ -185,14 +189,23 @@ class _GalleryPageState extends BasePageState<GalleryPage> with TickerProviderSt
     }
 
     return PhotoViewGalleryPageOptions.customChild(
-      child: post.isImage() ? ChanCachedImage(post: post, boxFit: BoxFit.contain) : ChanVideoPlayer(post: post),
+      child: post.isImage() ? ChanCachedImage(post: post, boxFit: BoxFit.contain) : _buildVideoPlayer(post),
       heroAttributes: PhotoViewHeroAttributes(tag: post.getMediaUrl()!),
+      controller: _photoViewController,
       initialScale: PhotoViewComputedScale.contained,
       minScale: PhotoViewComputedScale.contained,
       maxScale: PhotoViewComputedScale.covered * 32,
       tightMode: false,
       disableGestures: false,
     );
+  }
+
+  Widget _buildVideoPlayer(PostItem post) {
+    if (ChanUtil.isMobile()) {
+      return ChanVideoPlayer(post: post);
+    } else {
+      return ChanVideoPlayerVlc(post: post);
+    }
   }
 
   Widget _buildBottomView(PostItem post) {

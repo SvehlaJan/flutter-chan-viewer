@@ -35,6 +35,8 @@ abstract class ChanPostBase {
 
   bool hasMedia() => filename?.isNotEmpty ?? false;
 
+  String filenameWithExtension() => "${filename}${extension}";
+
   String? getMediaUrl() =>
       _getMediaUrl(this.boardId, this.imageId, this.extension, false);
 

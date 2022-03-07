@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:bloc/bloc.dart';
@@ -18,13 +19,55 @@ import 'app_event.dart';
 import 'app_state.dart';
 
 class AppBloc extends Bloc<AppEvent, ChanState> {
-  AppBloc() : super(AppStateLoading());
+  AppBloc() : super(AppStateLoading()) {
+    on<AppEventAppStarted>((event, emit) async {
+      await initBloc();
+      int appThemeIndex = (await getIt.getAsync<Preferences>()).getInt(Preferences.KEY_SETTINGS_THEME) ?? 0;
+      appTheme = AppTheme.values[appThemeIndex];
+      if (!isMobile) {
+        this.authState = AuthState.authenticated;
+        emit(_buildContentState());
+      }
+    });
+    on<AppEventSetTheme>((event, emit) {
+      appTheme = event.appTheme;
+      emit(_buildContentState());
+    });
+    on<AppEventAuthStateChange>((event, emit) {
+      authState = event.authState;
+      emit(_buildContentState());
+    });
+    on<AppEventPermissionRequestFinished>((event, emit) {
+      this.permissionsGranted = event.granted;
+      // emit(_buildContentState());
+    });
+    on<AppEventLifecycleChange>((event, emit) async {
+      this.lastLifecycleState = event.lastLifecycleState;
+      print("ChanViewerEventLifecycleChange: ${event.lastLifecycleState}");
+      if (event.lastLifecycleState == AppLifecycleState.paused) {
+        add(AppEventAuthStateChange(authState: AuthState.auth_required));
+      } else if (event.lastLifecycleState == AppLifecycleState.resumed) {
+        if ([AuthState.auth_required, AuthState.forbidden].contains(this.authState)) {
+          emit(_buildContentState());
+          await requestAuthentication();
+        }
+      }
+    });
+  }
+
+  @override
+  void onError(Object error, StackTrace stackTrace) {
+    super.onError(error, stackTrace);
+    print("AppBloc onError: $error");
+    // emit(ChanStateError(error.toString()));
+  }
 
   LocalAuthentication auth = LocalAuthentication();
   AppLifecycleState lastLifecycleState = AppLifecycleState.inactive;
   AuthState authState = AuthState.auth_required;
   AppTheme appTheme = AppTheme.undefined;
   bool permissionsGranted = false;
+  bool isMobile = Platform.isAndroid || Platform.isIOS;
 
   Future<void> initBloc() async {
     await getIt.getAsync<Preferences>();
@@ -32,51 +75,26 @@ class AppBloc extends Bloc<AppEvent, ChanState> {
     await getIt.getAsync<ChanStorage>();
     await getIt.getAsync<ChanRepository>();
 
-    requestAuthentication();
-    requestPermissions();
-  }
-
-  @override
-  Stream<ChanState> mapEventToState(AppEvent event) async* {
-    try {
-      if (event is AppEventAppStarted) {
-        await initBloc();
-        int appThemeIndex = Preferences.getInt(Preferences.KEY_SETTINGS_THEME) ?? 0;
-        appTheme = AppTheme.values[appThemeIndex];
-      } else if (event is AppEventSetTheme) {
-        appTheme = event.appTheme;
-        yield _buildContentState();
-      } else if (event is AppEventLifecycleChange) {
-        this.lastLifecycleState = event.lastLifecycleState;
-        print("ChanViewerEventLifecycleChange: ${event.lastLifecycleState}");
-        if (event.lastLifecycleState == AppLifecycleState.paused) {
-          add(AppEventAuthStateChange(authState: AuthState.auth_required));
-        } else if (event.lastLifecycleState == AppLifecycleState.resumed) {
-          if ([AuthState.auth_required, AuthState.forbidden].contains(this.authState)) {
-            yield _buildContentState();
-            await requestAuthentication();
-          }
-        }
-      } else if (event is AppEventAuthStateChange) {
-        this.authState = event.authState;
-        yield _buildContentState();
-      } else if (event is AppEventPermissionRequestFinished) {
-        this.permissionsGranted = event.granted;
-        // yield _buildContentState();
-      }
-    } catch (e, stackTrace) {
-      ChanLogger.e("Event error!", e, stackTrace);
-      yield ChanStateError(e.toString());
+    if (isMobile) {
+      requestAuthentication();
+      requestPermissions();
     }
   }
 
   Future<void> requestAuthentication() async {
+    bool authAvailable = await auth.canCheckBiometrics;
+    if (!isMobile || !authAvailable) {
+      print("Device does not support biometric auth");
+      add(AppEventAuthStateChange(authState: AuthState.authenticated));
+      return;
+    }
+
     this.authState = AuthState.requesting;
     bool result = await auth.authenticate(
       localizedReason: 'Scan your fingerprint (or face or whatever) to authenticate',
       useErrorDialogs: true,
       stickyAuth: true,
-      biometricOnly: true,
+      biometricOnly: false,
     );
     add(AppEventAuthStateChange(authState: result ? AuthState.authenticated : AuthState.forbidden));
   }

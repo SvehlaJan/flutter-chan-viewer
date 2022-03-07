@@ -48,9 +48,10 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
   String getPageTitle() => "/${widget.boardId}";
 
   List<PageAction> getPageActions(BuildContext context, ChanState state) {
+    bool showSearchButton = state is ChanStateContent && !state.showSearchBar;
     bool isFavorite = state is BoardDetailStateContent && state.isFavorite;
     return [
-      PageAction("Search", Icons.search, _onSearchClick),
+      if (showSearchButton) PageAction("Search", Icons.search, _onSearchClick),
       PageAction("Refresh", Icons.refresh, _onRefreshClick),
       PageAction("Archive", Icons.history, _onArchiveClick),
       isFavorite

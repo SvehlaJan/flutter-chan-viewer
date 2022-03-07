@@ -8,6 +8,7 @@ import 'package:flutter_chan_viewer/utils/extensions.dart';
 import 'package:flutter_chan_viewer/view/view_cached_image.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_html/style.dart';
+import 'package:shimmer_animation/shimmer_animation.dart';
 
 class PostListWidget extends StatefulWidget {
   final PostItem post;
@@ -61,11 +62,9 @@ class _PostListWidgetState extends State<PostListWidget> with SingleTickerProvid
       onTap: widget.onTap as void Function()?,
       onLongPress: widget.onLongPress as void Function()?,
       child: widget.selected
-          ? Stack(
-              children: <Widget>[
-                card,
-//                Positioned.fill(child: GlareDecoration()),
-              ],
+          ? Shimmer(
+              child: card,
+              duration: Duration(seconds: 3),
             )
           : card,
     );

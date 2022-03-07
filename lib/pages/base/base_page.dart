@@ -1,10 +1,10 @@
 import 'package:floating_action_bubble/floating_action_bubble.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/chan_event.dart';
 
-abstract class BasePageState<T extends StatefulWidget> extends State<T>
-    with SingleTickerProviderStateMixin {
+abstract class BasePageState<T extends StatefulWidget> extends State<T> with SingleTickerProviderStateMixin {
   late Animation<double> _fabAnimation;
   late AnimationController _fabAnimationController;
 
@@ -13,10 +13,8 @@ abstract class BasePageState<T extends StatefulWidget> extends State<T>
 
   @override
   void initState() {
-    _fabAnimationController =
-        AnimationController(vsync: this, duration: Duration(milliseconds: 500));
-    final curvedAnimation = CurvedAnimation(
-        curve: Curves.easeInOut, parent: _fabAnimationController);
+    _fabAnimationController = AnimationController(vsync: this, duration: Duration(milliseconds: 500));
+    final curvedAnimation = CurvedAnimation(curve: Curves.easeInOut, parent: _fabAnimationController);
     _fabAnimation = Tween<double>(begin: 0, end: 1).animate(curvedAnimation);
 
     super.initState();
@@ -24,7 +22,7 @@ abstract class BasePageState<T extends StatefulWidget> extends State<T>
 
   @override
   void dispose() {
-    bloc.add(ChanEventOnDispose());
+    // Dispose logic
     super.dispose();
   }
 
@@ -43,18 +41,15 @@ abstract class BasePageState<T extends StatefulWidget> extends State<T>
           items: [...pageActions.map((action) => _makeFabButton(action))],
           animation: _fabAnimation,
           onPress: () {
-            _fabAnimationController.isCompleted
-                ? _fabAnimationController.reverse()
-                : _fabAnimationController.forward();
+            _fabAnimationController.isCompleted ? _fabAnimationController.reverse() : _fabAnimationController.forward();
           },
-          iconColor: Theme.of(context).primaryIconTheme.color,
+          iconColor: Theme.of(context).primaryIconTheme.color!,
           animatedIconData: AnimatedIcons.menu_close,
-          backGroundColor: Theme.of(context).accentColor,
+          backGroundColor: Theme.of(context).colorScheme.secondary,
         );
       } else {
         return FloatingActionButton(
-            onPressed: pageActions[0].onTap as void Function()?,
-            child: Icon(pageActions[0].icon));
+            onPressed: pageActions[0].onTap as void Function()?, child: Icon(pageActions[0].icon));
       }
     } else {
       return null;
@@ -63,10 +58,10 @@ abstract class BasePageState<T extends StatefulWidget> extends State<T>
 
   Bubble _makeFabButton(PageAction action) => Bubble(
         title: action.title,
-        iconColor: Theme.of(context).primaryIconTheme.color,
-        bubbleColor: Theme.of(context).accentColor,
+        iconColor: Theme.of(context).primaryIconTheme.color!,
+        bubbleColor: Theme.of(context).colorScheme.secondary,
         icon: action.icon,
-        titleStyle: Theme.of(context).textTheme.subtitle1,
+        titleStyle: Theme.of(context).textTheme.subtitle1!,
         onPress: () {
           _fabAnimationController.reverse();
           action.onTap();
@@ -74,33 +69,40 @@ abstract class BasePageState<T extends StatefulWidget> extends State<T>
       );
 
   /// Return true if stack should pop. False will block the back-press.
-  Future<bool> onBackPressed() async => Future.value(true);
-
-  Widget buildWillPopScope(BuildContext context, Widget body) =>
-      WillPopScope(onWillPop: onBackPressed, child: body);
+  Future<bool> onBackPressed() async {
+    return Future.value(true);
+  }
 
   Widget buildScaffold(BuildContext context, Widget body,
-      {Color? backgroundColor,
-      FloatingActionButton? fab,
-      List<PageAction>? pageActions,
-      bool? showSearchBar}) {
+      {Color? backgroundColor, FloatingActionButton? fab, List<PageAction>? pageActions, bool? showSearchBar}) {
     return WillPopScope(
       onWillPop: onBackPressed,
-      child: Scaffold(
-        backgroundColor: backgroundColor != null
-            ? backgroundColor
-            : Theme.of(context).scaffoldBackgroundColor,
-        appBar: _buildAppBar(context, showSearchBar ?? false, getPageTitle())
-            as PreferredSizeWidget?,
-        body: Builder(builder: (BuildContext context) => body),
-        floatingActionButton: fab ?? getPageFab(context, pageActions),
-        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      child: FocusableActionDetector(
+        autofocus: true,
+        shortcuts: {
+          LogicalKeySet(LogicalKeyboardKey.escape): BackNavigationIntent(),
+        },
+        actions: {
+          BackNavigationIntent: CallbackAction<BackNavigationIntent>(onInvoke: (BackNavigationIntent intent) {
+            onBackPressed().then((value) {
+              if (value) {
+                Navigator.of(context).pop();
+              }
+            });
+          }),
+        },
+        child: Scaffold(
+          backgroundColor: backgroundColor != null ? backgroundColor : Theme.of(context).scaffoldBackgroundColor,
+          appBar: _buildAppBar(context, showSearchBar ?? false, getPageTitle()) as PreferredSizeWidget?,
+          body: Builder(builder: (BuildContext context) => body),
+          floatingActionButton: fab ?? getPageFab(context, pageActions),
+          floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+        ),
       ),
     );
   }
 
-  Widget? _buildAppBar(
-      BuildContext context, bool showSearchBar, String? pageTitle) {
+  Widget? _buildAppBar(BuildContext context, bool showSearchBar, String? pageTitle) {
     if (showSearchBar) {
       return AppBar(
         leading: IconButton(icon: Icon(Icons.search), onPressed: finishScreen),
@@ -117,9 +119,7 @@ abstract class BasePageState<T extends StatefulWidget> extends State<T>
       );
     } else if (pageTitle != null) {
       return AppBar(
-        leading: ModalRoute.of(context)!.canPop
-            ? IconButton(icon: BackButtonIcon(), onPressed: finishScreen)
-            : null,
+        leading: ModalRoute.of(context)!.canPop ? IconButton(icon: BackButtonIcon(), onPressed: finishScreen) : null,
         title: Text(pageTitle),
       );
     } else {
@@ -133,13 +133,10 @@ abstract class BasePageState<T extends StatefulWidget> extends State<T>
 
   void startSearch() {
     bloc.add(ChanEventShowSearch());
-    ModalRoute.of(context)!
-        .addLocalHistoryEntry(LocalHistoryEntry(onRemove: cancelSearching));
-  }
-
-  void cancelSearching() {
-    _searchQueryController.clear();
-    bloc.add(ChanEventCloseSearch());
+    ModalRoute.of(context)!.addLocalHistoryEntry(LocalHistoryEntry(onRemove: () {
+      _searchQueryController.clear();
+      bloc.add(ChanEventCloseSearch());
+    }));
   }
 
   static Widget buildErrorScreen(BuildContext context, String message) {
@@ -151,6 +148,8 @@ abstract class BasePageState<T extends StatefulWidget> extends State<T>
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 }
+
+class BackNavigationIntent extends Intent {}
 
 class PageAction {
   const PageAction(this.title, this.icon, this.onTap);

@@ -3,7 +3,7 @@ import 'package:flutter_chan_viewer/data/local/dao/posts_dao.dart';
 import 'package:flutter_chan_viewer/data/local/dao/threads_dao.dart';
 import 'package:flutter_chan_viewer/data/local/moor_db.dart';
 import 'package:flutter_chan_viewer/locator.dart';
-import 'package:flutter_chan_viewer/models/local/threads_table.dart';
+import 'package:flutter_chan_viewer/models/helper/online_state.dart';
 import 'package:flutter_chan_viewer/models/ui/board_item.dart';
 import 'package:flutter_chan_viewer/models/ui/post_item.dart';
 import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
@@ -97,7 +97,7 @@ class LocalDataSource {
     return threads;
   }
 
-  /// Sets state to UNKNOWN of local threads which are no longer online
+  /// Sets state to UNKNOWN of tables threads which are no longer online
   Future<void> syncWithNewOnlineThreads(String? boardId, List<int?> onlineThreadIds) async {
     List<ThreadsTableData> localThreads =
         await _threadsDao.getThreadsByBoardIdAndOnlineState(boardId, OnlineState.ONLINE);

@@ -1,3 +1,4 @@
+import 'package:dart_vlc/dart_vlc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -21,6 +22,7 @@ void main() async {
   EquatableConfig.stringify = true;
   WidgetsFlutterBinding.ensureInitialized();
   setupLocator();
+  DartVLC.initialize();
 
   getIt.allReady().then((value) {
     runApp(
@@ -73,8 +75,11 @@ class MainApp extends StatelessWidget with WidgetsBindingObserver {
           ),
         );
       } else {
-        return BasePageState.buildErrorScreen(
-            context, (state as ChanStateError).message);
+        return Directionality(
+          textDirection: TextDirection.ltr,
+          child: BasePageState.buildErrorScreen(
+              context, (state as ChanStateError).message),
+        );
       }
     });
   }

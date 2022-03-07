@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/chan_event.dart';
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
-import 'package:flutter_chan_viewer/models/local/threads_table.dart';
+import 'package:flutter_chan_viewer/models/helper/online_state.dart';
 import 'package:flutter_chan_viewer/models/ui/post_item.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
 import 'package:flutter_chan_viewer/pages/gallery/gallery_page.dart';
@@ -26,11 +26,10 @@ class ThreadDetailPage extends StatefulWidget {
 
   ThreadDetailPage(this.boardId, this.threadId);
 
-  static Map<String, dynamic> createArguments(
-    final String boardId,
-    final int threadId, {
-    final bool showDownloadsOnly = false,
-  }) {
+  static Map<String, dynamic> createArguments(final String boardId,
+      final int threadId, {
+        final bool showDownloadsOnly = false,
+      }) {
     Map<String, dynamic> arguments = {
       ARG_BOARD_ID: boardId,
       ARG_THREAD_ID: threadId,
@@ -64,15 +63,15 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
   String getPageTitle() => "/${widget.boardId}/${widget.threadId}";
 
   List<PageAction> getPageActions(BuildContext context, ChanState state) {
-    bool showSearch = state is ThreadDetailStateContent && !state.showLazyLoading;
+    bool showSearchButton = state is ThreadDetailStateContent && !state.showSearchBar;
     bool isFavorite = state is ThreadDetailStateContent && state.isFavorite;
     bool isCatalogMode = state is ThreadDetailStateContent && state.catalogMode;
     bool isCollection =
         state is ThreadDetailStateContent && state.model.thread.onlineStatus == OnlineState.CUSTOM.index;
-    List<PageAction> actions = [if (showSearch) PageAction("Search", Icons.search, _onSearchClick)];
+    List<PageAction> actions = [if (showSearchButton) PageAction("Search", Icons.search, _onSearchClick)];
     if (isCollection) {
       actions.add(PageAction("Delete collection", Icons.delete_forever,
-          () => _onDeleteCollectionClicked(context, state.model.thread.threadId)));
+              () => _onDeleteCollectionClicked(context, state.model.thread.threadId)));
     } else {
       actions.add(isFavorite
           ? PageAction("Unstar", Icons.star, _onFavoriteToggleClick)
@@ -145,16 +144,8 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
       return Stack(
         children: <Widget>[
           state.catalogMode
-              ? buildGrid(
-                  context,
-                  state.model.visibleMediaPosts,
-                  state.selectedMediaIndex,
-                )
-              : buildList(
-                  context,
-                  state.model.visiblePosts,
-                  state.selectedPostIndex,
-                ),
+              ? buildGrid(context, state.model.visibleMediaPosts, state.selectedMediaIndex)
+              : buildList(context, state.model.visiblePosts, state.selectedPostIndex),
           if (state.showLazyLoading) LinearProgressIndicator(),
         ],
       );
@@ -169,12 +160,13 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
       itemCount: posts.length,
       itemScrollController: _listScrollController,
       itemBuilder: (context, index) {
-        Key itemKey = GlobalKey();
+        PostItem post = posts[index];
+        Key itemKey = ValueKey(post.postId);
         return PostListWidget(
-          post: posts[index],
+          post: post,
           selected: index == selectedPostIndex,
-          onTap: () => _onItemTap(context, posts[index]),
-          onLongPress: () => _onItemLongPress(context, posts[index], itemKey),
+          onTap: () => _onItemTap(context, post),
+          onLongPress: () => _onItemLongPress(context, post, itemKey),
           onLinkTap: (url) => _onLinkClicked(url, context),
           showImage: true,
           showHeroAnimation: true,
@@ -199,13 +191,14 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
         padding: const EdgeInsets.all(0.0),
         itemCount: mediaPosts.length,
         itemBuilder: (BuildContext context, int index) {
-          Key itemKey = GlobalKey();
+          PostItem post = mediaPosts[index];
+          Key itemKey = ValueKey(post.postId);
           return PostGridWidget(
             key: itemKey,
-            post: mediaPosts[index],
+            post: post,
             selected: index == selectedMediaIndex,
-            onTap: () => _onItemTap(context, mediaPosts[index]),
-            onLongPress: () => _onItemLongPress(context, mediaPosts[index], itemKey),
+            onTap: () => _onItemTap(context, post),
+            onLongPress: () => _onItemLongPress(context, post, itemKey),
           );
         },
       ),
@@ -275,13 +268,18 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
   }
 
   double _getGridScrollOffset(int mediaIndex) {
-    double itemHeight = MediaQuery.of(context).size.width / _getGridColumnCount();
+    double itemHeight = MediaQuery
+        .of(context)
+        .size
+        .width / _getGridColumnCount();
     int targetRow = mediaIndex ~/ _getGridColumnCount();
     return targetRow * itemHeight - itemHeight;
   }
 
   int _getGridColumnCount() {
-    final Orientation orientation = MediaQuery.of(context).orientation;
+    final Orientation orientation = MediaQuery
+        .of(context)
+        .orientation;
     return (orientation == Orientation.portrait) ? 2 : 3;
   }
 
@@ -327,5 +325,7 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
     // menu.show(widgetKey: itemKey);
   }
 
-  void _onLinkClicked(String url, BuildContext context) => bloc.add(ThreadDetailEventOnLinkClicked(url));
+  void _onLinkClicked(String url, BuildContext context) {
+    bloc.add(ThreadDetailEventOnLinkClicked(url));
+  }
 }

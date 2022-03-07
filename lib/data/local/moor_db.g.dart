@@ -349,52 +349,63 @@ class PostsTableCompanion extends UpdateCompanion<PostsTableData> {
 
 class $PostsTableTable extends PostsTable
     with TableInfo<$PostsTableTable, PostsTableData> {
-  final GeneratedDatabase _db;
+  @override
+  final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $PostsTableTable(this._db, [this._alias]);
+  $PostsTableTable(this.attachedDatabase, [this._alias]);
   final VerificationMeta _timestampMeta = const VerificationMeta('timestamp');
+  @override
   late final GeneratedColumn<int?> timestamp = GeneratedColumn<int?>(
       'timestamp', aliasedName, true,
-      typeName: 'INTEGER', requiredDuringInsert: false);
+      type: const IntType(), requiredDuringInsert: false);
   final VerificationMeta _subtitleMeta = const VerificationMeta('subtitle');
+  @override
   late final GeneratedColumn<String?> subtitle = GeneratedColumn<String?>(
       'subtitle', aliasedName, true,
-      typeName: 'TEXT', requiredDuringInsert: false);
+      type: const StringType(), requiredDuringInsert: false);
   final VerificationMeta _contentMeta = const VerificationMeta('content');
+  @override
   late final GeneratedColumn<String?> content = GeneratedColumn<String?>(
       'content', aliasedName, true,
-      typeName: 'TEXT', requiredDuringInsert: false);
+      type: const StringType(), requiredDuringInsert: false);
   final VerificationMeta _filenameMeta = const VerificationMeta('filename');
+  @override
   late final GeneratedColumn<String?> filename = GeneratedColumn<String?>(
       'filename', aliasedName, true,
-      typeName: 'TEXT', requiredDuringInsert: false);
+      type: const StringType(), requiredDuringInsert: false);
   final VerificationMeta _imageIdMeta = const VerificationMeta('imageId');
+  @override
   late final GeneratedColumn<String?> imageId = GeneratedColumn<String?>(
       'image_id', aliasedName, true,
-      typeName: 'TEXT', requiredDuringInsert: false);
+      type: const StringType(), requiredDuringInsert: false);
   final VerificationMeta _extensionMeta = const VerificationMeta('extension');
+  @override
   late final GeneratedColumn<String?> extension = GeneratedColumn<String?>(
       'extension', aliasedName, true,
-      typeName: 'TEXT', requiredDuringInsert: false);
+      type: const StringType(), requiredDuringInsert: false);
   final VerificationMeta _boardIdMeta = const VerificationMeta('boardId');
+  @override
   late final GeneratedColumn<String?> boardId = GeneratedColumn<String?>(
       'board_id', aliasedName, false,
-      typeName: 'TEXT', requiredDuringInsert: true);
+      type: const StringType(), requiredDuringInsert: true);
   final VerificationMeta _threadIdMeta = const VerificationMeta('threadId');
+  @override
   late final GeneratedColumn<int?> threadId = GeneratedColumn<int?>(
       'thread_id', aliasedName, false,
-      typeName: 'INTEGER',
+      type: const IntType(),
       requiredDuringInsert: true,
       $customConstraints:
           'REFERENCES threads_table(threadId) ON DELETE CASCADE');
   final VerificationMeta _postIdMeta = const VerificationMeta('postId');
+  @override
   late final GeneratedColumn<int?> postId = GeneratedColumn<int?>(
       'post_id', aliasedName, false,
-      typeName: 'INTEGER', requiredDuringInsert: true);
+      type: const IntType(), requiredDuringInsert: true);
   final VerificationMeta _isHiddenMeta = const VerificationMeta('isHidden');
+  @override
   late final GeneratedColumn<bool?> isHidden = GeneratedColumn<bool?>(
       'is_hidden', aliasedName, true,
-      typeName: 'INTEGER',
+      type: const BoolType(),
       requiredDuringInsert: false,
       defaultConstraints: 'CHECK (is_hidden IN (0, 1))');
   @override
@@ -478,7 +489,7 @@ class $PostsTableTable extends PostsTable
 
   @override
   $PostsTableTable createAlias(String alias) {
-    return $PostsTableTable(_db, alias);
+    return $PostsTableTable(attachedDatabase, alias);
   }
 }
 
@@ -978,88 +989,104 @@ class ThreadsTableCompanion extends UpdateCompanion<ThreadsTableData> {
 
 class $ThreadsTableTable extends ThreadsTable
     with TableInfo<$ThreadsTableTable, ThreadsTableData> {
-  final GeneratedDatabase _db;
+  @override
+  final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $ThreadsTableTable(this._db, [this._alias]);
+  $ThreadsTableTable(this.attachedDatabase, [this._alias]);
   final VerificationMeta _timestampMeta = const VerificationMeta('timestamp');
+  @override
   late final GeneratedColumn<int?> timestamp = GeneratedColumn<int?>(
       'timestamp', aliasedName, true,
-      typeName: 'INTEGER', requiredDuringInsert: false);
+      type: const IntType(), requiredDuringInsert: false);
   final VerificationMeta _subtitleMeta = const VerificationMeta('subtitle');
+  @override
   late final GeneratedColumn<String?> subtitle = GeneratedColumn<String?>(
       'subtitle', aliasedName, true,
-      typeName: 'TEXT', requiredDuringInsert: false);
+      type: const StringType(), requiredDuringInsert: false);
   final VerificationMeta _contentMeta = const VerificationMeta('content');
+  @override
   late final GeneratedColumn<String?> content = GeneratedColumn<String?>(
       'content', aliasedName, true,
-      typeName: 'TEXT', requiredDuringInsert: false);
+      type: const StringType(), requiredDuringInsert: false);
   final VerificationMeta _filenameMeta = const VerificationMeta('filename');
+  @override
   late final GeneratedColumn<String?> filename = GeneratedColumn<String?>(
       'filename', aliasedName, true,
-      typeName: 'TEXT', requiredDuringInsert: false);
+      type: const StringType(), requiredDuringInsert: false);
   final VerificationMeta _imageIdMeta = const VerificationMeta('imageId');
+  @override
   late final GeneratedColumn<String?> imageId = GeneratedColumn<String?>(
       'image_id', aliasedName, true,
-      typeName: 'TEXT', requiredDuringInsert: false);
+      type: const StringType(), requiredDuringInsert: false);
   final VerificationMeta _extensionMeta = const VerificationMeta('extension');
+  @override
   late final GeneratedColumn<String?> extension = GeneratedColumn<String?>(
       'extension', aliasedName, true,
-      typeName: 'TEXT', requiredDuringInsert: false);
+      type: const StringType(), requiredDuringInsert: false);
   final VerificationMeta _boardIdMeta = const VerificationMeta('boardId');
+  @override
   late final GeneratedColumn<String?> boardId = GeneratedColumn<String?>(
       'board_id', aliasedName, false,
-      typeName: 'TEXT',
+      type: const StringType(),
       requiredDuringInsert: true,
       $customConstraints: 'REFERENCES boards_table(boardId) ON DELETE CASCADE');
   final VerificationMeta _threadIdMeta = const VerificationMeta('threadId');
+  @override
   late final GeneratedColumn<int?> threadId = GeneratedColumn<int?>(
       'thread_id', aliasedName, false,
-      typeName: 'INTEGER', requiredDuringInsert: true);
+      type: const IntType(), requiredDuringInsert: true);
   final VerificationMeta _lastModifiedMeta =
       const VerificationMeta('lastModified');
+  @override
   late final GeneratedColumn<int?> lastModified = GeneratedColumn<int?>(
       'last_modified', aliasedName, true,
-      typeName: 'INTEGER',
+      type: const IntType(),
       requiredDuringInsert: false,
       defaultValue: const Constant(0));
   final VerificationMeta _selectedPostIdMeta =
       const VerificationMeta('selectedPostId');
+  @override
   late final GeneratedColumn<int?> selectedPostId = GeneratedColumn<int?>(
       'selected_post_id', aliasedName, true,
-      typeName: 'INTEGER',
+      type: const IntType(),
       requiredDuringInsert: false,
       defaultValue: const Constant(-1));
   final VerificationMeta _isFavoriteMeta = const VerificationMeta('isFavorite');
+  @override
   late final GeneratedColumn<bool?> isFavorite = GeneratedColumn<bool?>(
       'is_favorite', aliasedName, true,
-      typeName: 'INTEGER',
+      type: const BoolType(),
       requiredDuringInsert: false,
       defaultConstraints: 'CHECK (is_favorite IN (0, 1))',
       defaultValue: const Constant(false));
   final VerificationMeta _onlineStateMeta =
       const VerificationMeta('onlineState');
+  @override
   late final GeneratedColumn<int?> onlineState = GeneratedColumn<int?>(
       'online_state', aliasedName, true,
-      typeName: 'INTEGER',
+      type: const IntType(),
       requiredDuringInsert: false,
       defaultValue: const Constant(0));
   final VerificationMeta _replyCountMeta = const VerificationMeta('replyCount');
+  @override
   late final GeneratedColumn<int?> replyCount = GeneratedColumn<int?>(
       'reply_count', aliasedName, true,
-      typeName: 'INTEGER',
+      type: const IntType(),
       requiredDuringInsert: false,
       defaultValue: const Constant(-1));
   final VerificationMeta _imageCountMeta = const VerificationMeta('imageCount');
+  @override
   late final GeneratedColumn<int?> imageCount = GeneratedColumn<int?>(
       'image_count', aliasedName, true,
-      typeName: 'INTEGER',
+      type: const IntType(),
       requiredDuringInsert: false,
       defaultValue: const Constant(-1));
   final VerificationMeta _lastSeenPostIndexMeta =
       const VerificationMeta('lastSeenPostIndex');
+  @override
   late final GeneratedColumn<int?> lastSeenPostIndex = GeneratedColumn<int?>(
       'last_seen_post_index', aliasedName, true,
-      typeName: 'INTEGER',
+      type: const IntType(),
       requiredDuringInsert: false,
       defaultValue: const Constant(-1));
   @override
@@ -1180,7 +1207,7 @@ class $ThreadsTableTable extends ThreadsTable
 
   @override
   $ThreadsTableTable createAlias(String alias) {
-    return $ThreadsTableTable(_db, alias);
+    return $ThreadsTableTable(attachedDatabase, alias);
   }
 }
 
@@ -1330,21 +1357,25 @@ class BoardsTableCompanion extends UpdateCompanion<BoardsTableData> {
 
 class $BoardsTableTable extends BoardsTable
     with TableInfo<$BoardsTableTable, BoardsTableData> {
-  final GeneratedDatabase _db;
+  @override
+  final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $BoardsTableTable(this._db, [this._alias]);
+  $BoardsTableTable(this.attachedDatabase, [this._alias]);
   final VerificationMeta _boardIdMeta = const VerificationMeta('boardId');
+  @override
   late final GeneratedColumn<String?> boardId = GeneratedColumn<String?>(
       'board_id', aliasedName, false,
-      typeName: 'TEXT', requiredDuringInsert: true);
+      type: const StringType(), requiredDuringInsert: true);
   final VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
   late final GeneratedColumn<String?> title = GeneratedColumn<String?>(
       'title', aliasedName, false,
-      typeName: 'TEXT', requiredDuringInsert: true);
+      type: const StringType(), requiredDuringInsert: true);
   final VerificationMeta _workSafeMeta = const VerificationMeta('workSafe');
+  @override
   late final GeneratedColumn<bool?> workSafe = GeneratedColumn<bool?>(
       'work_safe', aliasedName, false,
-      typeName: 'INTEGER',
+      type: const BoolType(),
       requiredDuringInsert: true,
       defaultConstraints: 'CHECK (work_safe IN (0, 1))');
   @override
@@ -1389,19 +1420,19 @@ class $BoardsTableTable extends BoardsTable
 
   @override
   $BoardsTableTable createAlias(String alias) {
-    return $BoardsTableTable(_db, alias);
+    return $BoardsTableTable(attachedDatabase, alias);
   }
 }
 
-abstract class _$MoorDB extends GeneratedDatabase {
-  _$MoorDB(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e);
-  _$MoorDB.connect(DatabaseConnection c) : super.connect(c);
+abstract class _$ChanDB extends GeneratedDatabase {
+  _$ChanDB(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e);
+  _$ChanDB.connect(DatabaseConnection c) : super.connect(c);
   late final $PostsTableTable postsTable = $PostsTableTable(this);
   late final $ThreadsTableTable threadsTable = $ThreadsTableTable(this);
   late final $BoardsTableTable boardsTable = $BoardsTableTable(this);
-  late final PostsDao postsDao = PostsDao(this as MoorDB);
-  late final ThreadsDao threadsDao = ThreadsDao(this as MoorDB);
-  late final BoardsDao boardsDao = BoardsDao(this as MoorDB);
+  late final PostsDao postsDao = PostsDao(this as ChanDB);
+  late final ThreadsDao threadsDao = ThreadsDao(this as ChanDB);
+  late final BoardsDao boardsDao = BoardsDao(this as ChanDB);
   @override
   Iterable<TableInfo> get allTables => allSchemaEntities.whereType<TableInfo>();
   @override

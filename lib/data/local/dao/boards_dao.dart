@@ -1,12 +1,12 @@
 import 'package:drift/drift.dart';
 import 'package:flutter_chan_viewer/data/local/moor_db.dart';
-import 'package:flutter_chan_viewer/models/local/boards_table.dart';
+import 'package:flutter_chan_viewer/data/local/tables/boards_table.dart';
 
 part 'boards_dao.g.dart';
 
 @DriftAccessor(tables: [BoardsTable])
-class BoardsDao extends DatabaseAccessor<MoorDB> with _$BoardsDaoMixin {
-  BoardsDao(MoorDB db) : super(db);
+class BoardsDao extends DatabaseAccessor<ChanDB> with _$BoardsDaoMixin {
+  BoardsDao(ChanDB db) : super(db);
 
 //  Stream<List<PostsTableData>> get allActiveBoardItemsStream => select(boardsTable).watch();
 

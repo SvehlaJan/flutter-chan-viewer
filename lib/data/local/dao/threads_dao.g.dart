@@ -6,7 +6,7 @@ part of 'threads_dao.dart';
 // DaoGenerator
 // **************************************************************************
 
-mixin _$ThreadsDaoMixin on DatabaseAccessor<MoorDB> {
+mixin _$ThreadsDaoMixin on DatabaseAccessor<ChanDB> {
   $ThreadsTableTable get threadsTable => attachedDatabase.threadsTable;
   $PostsTableTable get postsTable => attachedDatabase.postsTable;
 }

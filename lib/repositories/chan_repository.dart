@@ -4,14 +4,13 @@ import 'dart:typed_data';
 
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_chan_viewer/data/local/local_data_source.dart';
-import 'package:flutter_chan_viewer/data/remote/app_exception.dart';
 import 'package:flutter_chan_viewer/data/remote/remote_data_source.dart';
 import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/models/archive_list_model.dart';
 import 'package:flutter_chan_viewer/models/board_detail_model.dart';
 import 'package:flutter_chan_viewer/models/board_list_model.dart';
 import 'package:flutter_chan_viewer/models/helper/chan_post_base.dart';
-import 'package:flutter_chan_viewer/models/local/threads_table.dart';
+import 'package:flutter_chan_viewer/models/helper/online_state.dart';
 import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
 import 'package:flutter_chan_viewer/models/ui/board_item.dart';
 import 'package:flutter_chan_viewer/models/ui/post_item.dart';
@@ -22,13 +21,12 @@ import 'package:flutter_chan_viewer/utils/chan_logger.dart';
 import 'package:flutter_chan_viewer/utils/chan_util.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/utils/database_helper.dart';
+import 'package:flutter_chan_viewer/utils/exceptions.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:stream_transform/stream_transform.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 
 class ChanRepository {
-  static final ChanRepository _instance = ChanRepository._internal();
-  static bool _initialized = false;
   static const int CACHE_MAX_SIZE = 10;
 
   late ChanStorage _chanStorage;
@@ -36,23 +34,14 @@ class ChanRepository {
   late RemoteDataSource _chanApiProvider;
   late LocalDataSource _localDataSource;
 
-  static Future<ChanRepository> initAndGet() async {
-    if (_initialized) return _instance;
-
-    _instance._chanStorage = await getIt.getAsync<ChanStorage>();
-    _instance._chanDownloader = await getIt.getAsync<ChanDownloader>();
-    _instance._chanApiProvider = getIt<RemoteDataSource>();
-    _instance._localDataSource = getIt<LocalDataSource>();
+  Future<void> initializeAsync() async {
+    _chanStorage = await getIt.getAsync<ChanStorage>();
+    _chanDownloader = await getIt.getAsync<ChanDownloader>();
+    _chanApiProvider = getIt<RemoteDataSource>();
+    _localDataSource = getIt<LocalDataSource>();
 
     var dir = await getApplicationDocumentsDirectory();
     await dir.create(recursive: true);
-
-    _initialized = true;
-    return _instance;
-  }
-
-  ChanRepository._internal() {
-    // initialization code
   }
 
   bool isMediaDownloaded(ChanPostBase postBase) {

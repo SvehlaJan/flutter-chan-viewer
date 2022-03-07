@@ -7,9 +7,9 @@ import 'package:drift/native.dart';
 import 'package:flutter_chan_viewer/data/local/dao/boards_dao.dart';
 import 'package:flutter_chan_viewer/data/local/dao/posts_dao.dart';
 import 'package:flutter_chan_viewer/data/local/dao/threads_dao.dart';
-import 'package:flutter_chan_viewer/models/local/boards_table.dart';
-import 'package:flutter_chan_viewer/models/local/posts_table.dart';
-import 'package:flutter_chan_viewer/models/local/threads_table.dart';
+import 'package:flutter_chan_viewer/data/local/tables/boards_table.dart';
+import 'package:flutter_chan_viewer/data/local/tables/posts_table.dart';
+import 'package:flutter_chan_viewer/data/local/tables/threads_table.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
@@ -25,15 +25,15 @@ part 'moor_db.g.dart';
   ThreadsDao,
   BoardsDao
 ])
-class MoorDB extends _$MoorDB {
-  MoorDB()
+class ChanDB extends _$ChanDB {
+  ChanDB()
       : super(LazyDatabase(() async {
           final dbFolder = await getDatabasesPath();
           final file = File(p.join(dbFolder, 'db.sqlite'));
           return NativeDatabase(file, logStatements: true);
         }));
 
-  MoorDB.connect(DatabaseConnection connection) : super.connect(connection);
+  ChanDB.connect(DatabaseConnection connection) : super.connect(connection);
 
   // FlutterQueryExecutor.inDatabaseFolder(
   //   path: "chan_viewer_db_${FlavorConfig.name.toLowerCase()}.sqlite",
@@ -41,6 +41,12 @@ class MoorDB extends _$MoorDB {
   // ),
 
   int get schemaVersion => 1;
+
+  Future<void> purgeDatabase() async {
+    await boardsDao.delete(boardsTable).go();
+    await threadsDao.delete(threadsTable).go();
+    await postsDao.delete(postsTable).go();
+  }
 
   static Future<DriftIsolate> _createDriftIsolate() async {
     // this method is called from the main isolate. Since we can't use

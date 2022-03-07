@@ -10,21 +10,14 @@ import 'chan_viewer_event.dart';
 import 'chan_viewer_state.dart';
 
 class ChanViewerBloc extends Bloc<ChanEvent, ChanState> {
-  ChanViewerBloc() : super(ChanViewerStateContent(currentTab: TabItem.boards));
+  ChanViewerBloc() : super(ChanViewerStateContent(currentTab: TabItem.boards)) {
+    on<ChanViewerEventSelectTab>((event, emit) {
+      currentTab = event.selectedTab;
+      emit(_buildContentState(currentTab: event.selectedTab));
+    });
+  }
 
   TabItem currentTab = TabItem.boards;
-
-  @override
-  Stream<ChanState> mapEventToState(ChanEvent event) async* {
-    try {
-      if (event is ChanViewerEventSelectTab) {
-        yield _buildContentState(currentTab: event.currentTab);
-      }
-    } catch (e, stackTrace) {
-      ChanLogger.e("Chan viewer bloc error!", e, stackTrace);
-      yield ChanStateError(e.toString());
-    }
-  }
 
   ChanViewerStateContent _buildContentState({TabItem? currentTab, ChanSingleEvent? event}) {
     return ChanViewerStateContent(

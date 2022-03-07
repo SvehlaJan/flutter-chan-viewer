@@ -255,41 +255,49 @@ class DownloadsTableCompanion extends UpdateCompanion<DownloadsTableData> {
 
 class $DownloadsTableTable extends DownloadsTable
     with TableInfo<$DownloadsTableTable, DownloadsTableData> {
-  final GeneratedDatabase _db;
+  @override
+  final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $DownloadsTableTable(this._db, [this._alias]);
+  $DownloadsTableTable(this.attachedDatabase, [this._alias]);
   final VerificationMeta _mediaIdMeta = const VerificationMeta('mediaId');
+  @override
   late final GeneratedColumn<String?> mediaId = GeneratedColumn<String?>(
       'media_id', aliasedName, false,
-      typeName: 'TEXT', requiredDuringInsert: true);
+      type: const StringType(), requiredDuringInsert: true);
   final VerificationMeta _urlMeta = const VerificationMeta('url');
+  @override
   late final GeneratedColumn<String?> url = GeneratedColumn<String?>(
       'url', aliasedName, false,
-      typeName: 'TEXT', requiredDuringInsert: true);
+      type: const StringType(), requiredDuringInsert: true);
   final VerificationMeta _pathMeta = const VerificationMeta('path');
+  @override
   late final GeneratedColumn<String?> path = GeneratedColumn<String?>(
       'path', aliasedName, false,
-      typeName: 'TEXT', requiredDuringInsert: true);
+      type: const StringType(), requiredDuringInsert: true);
   final VerificationMeta _filenameMeta = const VerificationMeta('filename');
+  @override
   late final GeneratedColumn<String?> filename = GeneratedColumn<String?>(
       'filename', aliasedName, false,
-      typeName: 'TEXT', requiredDuringInsert: true);
+      type: const StringType(), requiredDuringInsert: true);
   final VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
   late final GeneratedColumn<int?> status = GeneratedColumn<int?>(
       'status', aliasedName, false,
-      typeName: 'INTEGER',
+      type: const IntType(),
       requiredDuringInsert: false,
       defaultValue: const Constant(0));
   final VerificationMeta _progressMeta = const VerificationMeta('progress');
+  @override
   late final GeneratedColumn<int?> progress = GeneratedColumn<int?>(
       'progress', aliasedName, false,
-      typeName: 'INTEGER',
+      type: const IntType(),
       requiredDuringInsert: false,
       defaultValue: const Constant(0));
   final VerificationMeta _timestampMeta = const VerificationMeta('timestamp');
+  @override
   late final GeneratedColumn<int?> timestamp = GeneratedColumn<int?>(
       'timestamp', aliasedName, false,
-      typeName: 'INTEGER',
+      type: const IntType(),
       requiredDuringInsert: false,
       defaultValue: const Constant(0));
   @override
@@ -353,7 +361,7 @@ class $DownloadsTableTable extends DownloadsTable
 
   @override
   $DownloadsTableTable createAlias(String alias) {
-    return $DownloadsTableTable(_db, alias);
+    return $DownloadsTableTable(attachedDatabase, alias);
   }
 }
 

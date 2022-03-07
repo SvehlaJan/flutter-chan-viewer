@@ -30,15 +30,15 @@ class _FavoritesPageState extends BasePageState<FavoritesPage> {
   }
 
   @override
-  Future<bool> onBackPressed() => Future.value(false);
-
-  @override
   String getPageTitle() => "Favorites";
 
-  List<PageAction> getPageActions(BuildContext context) => [
-        PageAction("Search", Icons.search, _onSearchClick),
-        PageAction("Refresh", Icons.refresh, _onRefreshClick),
-      ];
+  List<PageAction> getPageActions(BuildContext context, ChanState state) {
+    bool showSearchButton = state is ChanStateContent && !state.showSearchBar;
+    return [
+      if (showSearchButton) PageAction("Search", Icons.search, _onSearchClick),
+      PageAction("Refresh", Icons.refresh, _onRefreshClick),
+    ];
+  }
 
   void _onSearchClick() => startSearch();
 
@@ -52,7 +52,7 @@ class _FavoritesPageState extends BasePageState<FavoritesPage> {
         return buildScaffold(
           context,
           buildBody(context, state),
-          pageActions: getPageActions(context),
+          pageActions: getPageActions(context, state),
           showSearchBar: state.showSearchBar,
         );
       },

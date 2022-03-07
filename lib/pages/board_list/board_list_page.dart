@@ -30,15 +30,15 @@ class _BoardListPageState extends BasePageState<BoardListPage> {
   }
 
   @override
-  Future<bool> onBackPressed() => Future.value(false);
-
-  @override
   String getPageTitle() => "Boards";
 
-  List<PageAction> getPageActions(BuildContext context) => [
-        PageAction("Search", Icons.search, _onSearchClick),
-        PageAction("Refresh", Icons.refresh, _onRefreshClick),
-      ];
+  List<PageAction> getPageActions(BuildContext context, ChanState state) {
+    bool showSearchButton = state is ChanStateContent && !state.showSearchBar;
+    return [
+      if (showSearchButton) PageAction("Search", Icons.search, _onSearchClick),
+      PageAction("Refresh", Icons.refresh, _onRefreshClick),
+    ];
+  }
 
   void _onSearchClick() => startSearch();
 
@@ -51,14 +51,13 @@ class _BoardListPageState extends BasePageState<BoardListPage> {
       builder: (context, state) => buildScaffold(
         context,
         buildBody(context, state, ((board) => _openBoardDetailPage(board!))),
-        pageActions: getPageActions(context),
+        pageActions: getPageActions(context, state),
         showSearchBar: state.showSearchBar,
       ),
     );
   }
 
-  Widget buildBody(BuildContext context, ChanState state,
-      Function(BoardItem?) onItemClicked) {
+  Widget buildBody(BuildContext context, ChanState state, Function(BoardItem?) onItemClicked) {
     if (state is ChanStateLoading) {
       return Constants.centeredProgressIndicator;
     } else if (state is BoardListStateContent) {
@@ -73,13 +72,11 @@ class _BoardListPageState extends BasePageState<BoardListPage> {
         ],
       );
     } else {
-      return BasePageState.buildErrorScreen(
-          context, (state as ChanStateError).message);
+      return BasePageState.buildErrorScreen(context, (state as ChanStateError).message);
     }
   }
 
-  Widget _buildListView(BuildContext context, BoardListStateContent state,
-      Function(BoardItem?) onItemClicked) {
+  Widget _buildListView(BuildContext context, BoardListStateContent state, Function(BoardItem?) onItemClicked) {
     return Scrollbar(
       child: ListView.builder(
         key: PageStorageKey<String>(KEY_LIST),
@@ -89,12 +86,10 @@ class _BoardListPageState extends BasePageState<BoardListPage> {
           if (item.isHeader) {
             return Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: Text(item.headerTitle!,
-                    style: Theme.of(context).textTheme.subtitle1));
+                child: Text(item.headerTitle!, style: Theme.of(context).textTheme.subtitle1));
           } else {
             return InkWell(
-                child: BoardListWidget(board: item.chanBoard!),
-                onTap: (() => onItemClicked(item.chanBoard)));
+                child: BoardListWidget(board: item.chanBoard!), onTap: (() => onItemClicked(item.chanBoard)));
           }
         },
       ),

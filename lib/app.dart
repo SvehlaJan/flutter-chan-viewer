@@ -53,7 +53,7 @@ class ChanViewerAppState extends State<ChanViewerApp> with WidgetsBindingObserve
   }
 
   void _selectTabIndex(int tabIndex) {
-    bloc.add(ChanViewerEventSelectTab(currentTab: NavigationHelper.item(tabIndex)));
+    bloc.add(ChanViewerEventSelectTab(selectedTab: NavigationHelper.item(tabIndex)));
   }
 
   @override

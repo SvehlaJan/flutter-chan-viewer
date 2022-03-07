@@ -22,7 +22,7 @@ abstract class BasePageState<T extends StatefulWidget> extends State<T> with Sin
 
   @override
   void dispose() {
-    bloc.add(ChanEventOnDispose());
+    // Dispose logic
     super.dispose();
   }
 
@@ -43,9 +43,9 @@ abstract class BasePageState<T extends StatefulWidget> extends State<T> with Sin
           onPress: () {
             _fabAnimationController.isCompleted ? _fabAnimationController.reverse() : _fabAnimationController.forward();
           },
-          iconColor: Theme.of(context).primaryIconTheme.color,
+          iconColor: Theme.of(context).primaryIconTheme.color!,
           animatedIconData: AnimatedIcons.menu_close,
-          backGroundColor: Theme.of(context).accentColor,
+          backGroundColor: Theme.of(context).colorScheme.secondary,
         );
       } else {
         return FloatingActionButton(
@@ -58,10 +58,10 @@ abstract class BasePageState<T extends StatefulWidget> extends State<T> with Sin
 
   Bubble _makeFabButton(PageAction action) => Bubble(
         title: action.title,
-        iconColor: Theme.of(context).primaryIconTheme.color,
-        bubbleColor: Theme.of(context).accentColor,
+        iconColor: Theme.of(context).primaryIconTheme.color!,
+        bubbleColor: Theme.of(context).colorScheme.secondary,
         icon: action.icon,
-        titleStyle: Theme.of(context).textTheme.subtitle1,
+        titleStyle: Theme.of(context).textTheme.subtitle1!,
         onPress: () {
           _fabAnimationController.reverse();
           action.onTap();
@@ -69,7 +69,9 @@ abstract class BasePageState<T extends StatefulWidget> extends State<T> with Sin
       );
 
   /// Return true if stack should pop. False will block the back-press.
-  Future<bool> onBackPressed() async => Future.value(true);
+  Future<bool> onBackPressed() async {
+    return Future.value(true);
+  }
 
   Widget buildScaffold(BuildContext context, Widget body,
       {Color? backgroundColor, FloatingActionButton? fab, List<PageAction>? pageActions, bool? showSearchBar}) {
@@ -131,12 +133,10 @@ abstract class BasePageState<T extends StatefulWidget> extends State<T> with Sin
 
   void startSearch() {
     bloc.add(ChanEventShowSearch());
-    ModalRoute.of(context)!.addLocalHistoryEntry(LocalHistoryEntry(onRemove: cancelSearching));
-  }
-
-  void cancelSearching() {
-    _searchQueryController.clear();
-    bloc.add(ChanEventCloseSearch());
+    ModalRoute.of(context)!.addLocalHistoryEntry(LocalHistoryEntry(onRemove: () {
+      _searchQueryController.clear();
+      bloc.add(ChanEventCloseSearch());
+    }));
   }
 
   static Widget buildErrorScreen(BuildContext context, String message) {

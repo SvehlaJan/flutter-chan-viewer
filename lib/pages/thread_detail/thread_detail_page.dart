@@ -63,12 +63,12 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
   String getPageTitle() => "/${widget.boardId}/${widget.threadId}";
 
   List<PageAction> getPageActions(BuildContext context, ChanState state) {
-    bool showSearch = state is ThreadDetailStateContent && !state.showLazyLoading;
+    bool showSearchButton = state is ThreadDetailStateContent && !state.showSearchBar;
     bool isFavorite = state is ThreadDetailStateContent && state.isFavorite;
     bool isCatalogMode = state is ThreadDetailStateContent && state.catalogMode;
     bool isCollection =
         state is ThreadDetailStateContent && state.model.thread.onlineStatus == OnlineState.CUSTOM.index;
-    List<PageAction> actions = [if (showSearch) PageAction("Search", Icons.search, _onSearchClick)];
+    List<PageAction> actions = [if (showSearchButton) PageAction("Search", Icons.search, _onSearchClick)];
     if (isCollection) {
       actions.add(PageAction("Delete collection", Icons.delete_forever,
               () => _onDeleteCollectionClicked(context, state.model.thread.threadId)));
@@ -160,12 +160,13 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
       itemCount: posts.length,
       itemScrollController: _listScrollController,
       itemBuilder: (context, index) {
-        Key itemKey = GlobalKey();
+        PostItem post = posts[index];
+        Key itemKey = ValueKey(post.postId);
         return PostListWidget(
-          post: posts[index],
+          post: post,
           selected: index == selectedPostIndex,
-          onTap: () => _onItemTap(context, posts[index]),
-          onLongPress: () => _onItemLongPress(context, posts[index], itemKey),
+          onTap: () => _onItemTap(context, post),
+          onLongPress: () => _onItemLongPress(context, post, itemKey),
           onLinkTap: (url) => _onLinkClicked(url, context),
           showImage: true,
           showHeroAnimation: true,
@@ -190,13 +191,14 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
         padding: const EdgeInsets.all(0.0),
         itemCount: mediaPosts.length,
         itemBuilder: (BuildContext context, int index) {
-          Key itemKey = GlobalKey();
+          PostItem post = mediaPosts[index];
+          Key itemKey = ValueKey(post.postId);
           return PostGridWidget(
             key: itemKey,
-            post: mediaPosts[index],
+            post: post,
             selected: index == selectedMediaIndex,
-            onTap: () => _onItemTap(context, mediaPosts[index]),
-            onLongPress: () => _onItemLongPress(context, mediaPosts[index], itemKey),
+            onTap: () => _onItemTap(context, post),
+            onLongPress: () => _onItemLongPress(context, post, itemKey),
           );
         },
       ),

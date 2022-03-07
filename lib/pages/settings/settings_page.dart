@@ -31,9 +31,6 @@ class _SettingsPageState extends BasePageState<SettingsPage> {
   }
 
   @override
-  Future<bool> onBackPressed() => Future.value(false);
-
-  @override
   String getPageTitle() => "Settings";
 
   @override

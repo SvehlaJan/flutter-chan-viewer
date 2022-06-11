@@ -284,9 +284,9 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
   }
 
   void _onItemTap(BuildContext context, PostItem post) async {
-    bloc.add(ThreadDetailEventOnPostSelected(post.postId));
-    // hack to wait for selected post to be propagated to state
-    await bloc.stream.first;
+    // bloc.add(ThreadDetailEventOnPostSelected(post.postId));
+    // // hack to wait for selected post to be propagated to state
+    // await bloc.stream.first;
 
     Navigator.of(context).push(
       PageRouteBuilder(
@@ -296,7 +296,7 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
               value: BlocProvider.of<ThreadDetailBloc>(context),
               child: GalleryPage(
                 showAsReply: false,
-                explicitPostId: post.postId,
+                initialPostId: post.postId,
               ),
             );
           }),

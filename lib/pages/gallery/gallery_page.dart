@@ -20,11 +20,11 @@ import 'package:sliding_sheet/sliding_sheet.dart';
 
 class GalleryPage extends StatefulWidget {
   final bool showAsReply;
-  final int explicitPostId;
+  final int initialPostId;
 
   const GalleryPage({
     required this.showAsReply,
-    required this.explicitPostId,
+    required this.initialPostId,
   });
 
   @override
@@ -43,13 +43,22 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
     _newCollectionTextController = TextEditingController();
     _sheetController = SheetController.of(context) ?? SheetController();
     _photoViewController = PhotoViewController();
-    Future.delayed(const Duration(milliseconds: 100), () {
-      ThreadDetailStateContent? contentState = bloc.state is ThreadDetailStateContent ? bloc.state : null;
-      bool hasMedia = contentState?.selectedPost?.hasMedia() ?? false;
-      if (widget.showAsReply || !hasMedia) {
+
+    if (widget.showAsReply) {
+      Future.delayed(const Duration(milliseconds: 100), () {
         _sheetController.expand();
-      }
-    });
+      });
+    } else {
+      bloc.add(ThreadDetailEventOnPostSelected(widget.initialPostId));
+    }
+
+    // Future.delayed(const Duration(milliseconds: 100), () {
+    //   ThreadDetailStateContent? contentState = bloc.state is ThreadDetailStateContent ? bloc.state : null;
+    //   bool hasMedia = contentState?.selectedPost?.hasMedia() ?? false;
+    //   if (widget.showAsReply || !hasMedia) {
+    //     _sheetController.expand();
+    //   }
+    // });
   }
 
   @override
@@ -103,7 +112,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
                 return Constants.centeredProgressIndicator;
               } else if (state is ThreadDetailStateContent) {
                 if (widget.showAsReply) {
-                  return _buildSinglePostBody(context, state, widget.explicitPostId);
+                  return _buildSinglePostBody(context, state, widget.initialPostId);
                 } else {
                   PostItem? post = state.selectedPost;
                   if (post == null) {
@@ -147,6 +156,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
   }
 
   Widget _buildCarouselBody(BuildContext context, ThreadDetailStateContent state, PostItem post) {
+    int initialMediaIndex = state.model.findPostsMediaIndex(widget.initialPostId);
     return SafeArea(
       child: Stack(
         children: <Widget>[
@@ -158,7 +168,8 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
             scrollPhysics: BouncingScrollPhysics(),
             backgroundDecoration: BoxDecoration(color: Colors.transparent),
             loadingBuilder: (context, index) => Constants.progressIndicator,
-            pageController: PageController(initialPage: state.selectedMediaIndex),
+            pageController: PageController(initialPage: initialMediaIndex, keepPage: false),
+            allowImplicitScrolling: false,
             onPageChanged: ((newMediaIndex) {
               if (newMediaIndex != state.selectedMediaIndex) {
                 PostItem item = state.model.visibleMediaPosts[newMediaIndex];
@@ -308,7 +319,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
         opaque: false,
         pageBuilder: (_, __, ___) => BlocProvider.value(
               value: bloc as ThreadDetailBloc,
-              child: GalleryPage(showAsReply: true, explicitPostId: replyPost.postId),
+              child: GalleryPage(showAsReply: true, initialPostId: replyPost.postId),
             )));
   }
 

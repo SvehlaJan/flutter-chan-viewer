@@ -117,7 +117,7 @@ class ThreadDetailModel extends Equatable {
   }
 
   int get selectedMediaIndex {
-    return allMediaPosts.indexWhere((post) => post.postId == selectedPostId);
+    return findPostsMediaIndex(selectedPostId);
   }
 
   PostItem? get selectedPost {
@@ -125,6 +125,10 @@ class ThreadDetailModel extends Equatable {
   }
 
   bool get isFavorite => thread.isFavorite();
+
+  int findPostsMediaIndex(int postId) {
+    return allMediaPosts.indexWhere((post) => post.postId == postId);
+  }
 
   @override
   List<Object?> get props => [thread, _posts];

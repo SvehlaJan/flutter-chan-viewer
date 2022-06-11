@@ -7,19 +7,20 @@ class Preferences {
   late SharedPreferences _prefs;
   Map<String, dynamic> _memoryPrefs = Map<String, dynamic>();
 
-  static const String KEY_USER_UID = "user_uid";
-  static const String KEY_USER_NICK_NAME = "user_nick_name";
-  static const String KEY_USER_EMAIL = "user_email";
-  static const String KEY_USER_PHOTO_URL = "user_photo_url";
   static const String KEY_SETTINGS_THEME = "settings_theme";
   static const String KEY_SETTINGS_SHOW_NSFW = "settings_show_nsfw";
   static const String KEY_FAVORITE_BOARDS = "favorite_boards";
   static const String KEY_THREAD_CATALOG_MODE = "thread_catalog_mode";
   static const String KEY_NEXT_POST_ID = "next_post_id";
   static const String KEY_NEXT_THREAD_ID = "next_thread_id";
+  static const String KEY_PLAYER_VOLUME = "player_volume";
 
   Future<void> initializeAsync() async {
     _prefs = await SharedPreferences.getInstance();
+  }
+
+  void onAppResumed() {
+    setDouble(KEY_PLAYER_VOLUME, 0.0);
   }
 
   void setStringList(String key, List<String> value) {

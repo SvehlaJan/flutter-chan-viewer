@@ -6,8 +6,11 @@ import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/models/ui/post_item.dart';
 import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
 import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
+import 'package:flutter_chan_viewer/utils/chan_logger.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/view/view_cached_image.dart';
+
+import '../utils/preferences.dart';
 
 class ChanVideoPlayer extends StatefulWidget {
   final PostItem post;
@@ -36,16 +39,36 @@ class _ChanVideoPlayerState extends State<ChanVideoPlayer> {
           backgroundColor: Colors.transparent,
           forwardSkipTimeInMilliseconds: 5000,
           backwardSkipTimeInMilliseconds: 5000,
-          enableMute: false,
+          enableMute: true,
           enableSubtitles: false,
           enableQualities: false,
           enableAudioTracks: false,
         ),
-        aspectRatio: 0.1,
+        eventListener: (betterPlayerEvent) {
+          switch (betterPlayerEvent.betterPlayerEventType) {
+            case BetterPlayerEventType.initialized:
+              double volume = getIt<Preferences>().getDouble(Preferences.KEY_PLAYER_VOLUME, def: 0.0);
+              _betterPlayerController.setVolume(volume);
+              break;
+            case BetterPlayerEventType.setVolume:
+              double? volume = betterPlayerEvent.parameters?["volume"];
+              getIt<Preferences>().setDouble(Preferences.KEY_PLAYER_VOLUME, volume ?? 0.0);
+              break;
+            default:
+              break;
+          }
+        },
+        aspectRatio: 0.001,
         placeholder: _buildLoadingView(context),
         showPlaceholderUntilPlay: true,
         fullScreenByDefault: false,
+        autoDispose: true,
         fit: BoxFit.contain);
+    var bufferingConfiguration = BetterPlayerBufferingConfiguration(
+    minBufferMs: 2000,
+    maxBufferMs: 10000,
+    bufferForPlaybackMs: 1000,
+    bufferForPlaybackAfterRebufferMs: 2000);
 
     if (getIt<ChanRepository>().isMediaDownloaded(widget.post)) {
       File file = getIt<ChanStorage>().getMediaFile(
@@ -53,6 +76,7 @@ class _ChanVideoPlayerState extends State<ChanVideoPlayer> {
       BetterPlayerDataSource betterPlayerDataSource = BetterPlayerDataSource(
         BetterPlayerDataSourceType.file,
         file.absolute.path,
+        bufferingConfiguration: bufferingConfiguration,
       );
       _betterPlayerController = BetterPlayerController(
         betterPlayerConfiguration,
@@ -61,13 +85,14 @@ class _ChanVideoPlayerState extends State<ChanVideoPlayer> {
     } else {
       BetterPlayerCacheConfiguration cacheConfiguration = BetterPlayerCacheConfiguration(
         useCache: true,
-        maxCacheSize: 256 * 1024 * 1024,
-        maxCacheFileSize: 10 * 1024 * 1024,
+        maxCacheSize: 256 * 1024 * 1024, // 256 MB
+        maxCacheFileSize: 16 * 1024 * 1024, // 16 MB
       );
       BetterPlayerDataSource betterPlayerDataSource = BetterPlayerDataSource(
         BetterPlayerDataSourceType.network,
         widget.post.getMediaUrl()!,
-        cacheConfiguration: null,
+        cacheConfiguration: cacheConfiguration,
+        bufferingConfiguration: bufferingConfiguration,
       );
       _betterPlayerController = BetterPlayerController(
           betterPlayerConfiguration,

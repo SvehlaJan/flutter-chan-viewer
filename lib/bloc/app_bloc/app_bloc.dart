@@ -93,9 +93,11 @@ class AppBloc extends Bloc<AppEvent, ChanState> {
     this.authState = AuthState.requesting;
     bool result = await auth.authenticate(
       localizedReason: 'Scan your fingerprint (or face or whatever) to authenticate',
-      useErrorDialogs: true,
-      stickyAuth: true,
-      biometricOnly: false,
+      options: const AuthenticationOptions(
+        useErrorDialogs: true,
+        stickyAuth: true,
+        biometricOnly: false,
+      ),
     );
     add(AppEventAuthStateChange(authState: result ? AuthState.authenticated : AuthState.forbidden));
   }

@@ -39,10 +39,10 @@ class ThreadsDao extends DatabaseAccessor<ChanDB> with _$ThreadsDaoMixin {
         .get();
   }
 
-  Future<List<ThreadsTableData>> getThreadsByBoardId(String? boardId) =>
+  Future<List<ThreadsTableData>> getThreadsByBoardId(String boardId) =>
       (select(threadsTable)..where((thread) => thread.boardId.equals(boardId))).get();
 
-  Future<List<ThreadsTableData>> getThreadsByBoardIdAndOnlineState(String? boardId, OnlineState onlineState) =>
+  Future<List<ThreadsTableData>> getThreadsByBoardIdAndOnlineState(String boardId, OnlineState onlineState) =>
       (select(threadsTable)
             ..where((thread) => thread.boardId.equals(boardId) & thread.onlineState.equals(onlineState.index))
             ..orderBy([(thread) => OrderingTerm(expression: thread.threadId, mode: OrderingMode.desc)]))
@@ -64,18 +64,18 @@ class ThreadsDao extends DatabaseAccessor<ChanDB> with _$ThreadsDaoMixin {
           var data = ThreadsTableCompanion.custom(
             boardId: Variable<String>(entry.boardId),
             threadId: Variable<int>(entry.threadId),
-            timestamp: Variable<int?>(entry.timestamp),
-            subtitle: Variable<String?>(entry.subtitle),
-            content: Variable<String?>(entry.content),
-            filename: Variable<String?>(entry.filename),
-            imageId: Variable<String?>(entry.imageId),
-            extension: Variable<String?>(entry.extension),
-            lastModified: Variable<int?>(entry.lastModified),
-            onlineState: Variable<int?>(entry.onlineState),
+            timestamp: Variable<int>(entry.timestamp),
+            subtitle: Variable<String>(entry.subtitle),
+            content: Variable<String>(entry.content),
+            filename: Variable<String>(entry.filename),
+            imageId: Variable<String>(entry.imageId),
+            extension: Variable<String>(entry.extension),
+            lastModified: Variable<int>(entry.lastModified),
+            onlineState: Variable<int>(entry.onlineState),
             selectedPostId: old.selectedPostId,
             isFavorite: old.isFavorite,
-            replyCount: Variable<int?>(entry.replyCount),
-            imageCount: Variable<int?>(entry.imageCount),
+            replyCount: Variable<int>(entry.replyCount),
+            imageCount: Variable<int>(entry.imageCount),
             lastSeenPostIndex: old.lastSeenPostIndex,
           );
           return data;
@@ -132,7 +132,7 @@ class ThreadsDao extends DatabaseAccessor<ChanDB> with _$ThreadsDaoMixin {
     );
   }
 
-  Future<int> deleteThreadsWithOnlineStateOlderThan(OnlineState onlineState, int? timestamp) => (delete(threadsTable)
+  Future<int> deleteThreadsWithOnlineStateOlderThan(OnlineState onlineState, int timestamp) => (delete(threadsTable)
             ..where(
               (thread) =>
                   thread.onlineState.equals(onlineState.index) &
@@ -145,13 +145,13 @@ class ThreadsDao extends DatabaseAccessor<ChanDB> with _$ThreadsDaoMixin {
         return value;
       });
 
-  Future<int> deleteThreadsByIds(List<int?> threadIds) =>
+  Future<int> deleteThreadsByIds(List<int> threadIds) =>
       (delete(threadsTable)..where((thread) => thread.threadId.isIn(threadIds))).go().then((value) {
         print("Rows affected: $value");
         return value;
       });
 
-  Future<int> deleteThreadById(String? boardId, int? threadId) =>
+  Future<int> deleteThreadById(String boardId, int threadId) =>
       (delete(threadsTable)..where((thread) => thread.threadId.equals(threadId) & thread.boardId.equals(boardId)))
           .go()
           .then((value) {

@@ -3,10 +3,10 @@
 part of 'moor_db.dart';
 
 // **************************************************************************
-// MoorGenerator
+// DriftDatabaseGenerator
 // **************************************************************************
 
-// ignore_for_file: unnecessary_brace_in_string_interps, unnecessary_this
+// ignore_for_file: type=lint
 class PostsTableData extends DataClass implements Insertable<PostsTableData> {
   final int? timestamp;
   final String? subtitle;
@@ -18,7 +18,7 @@ class PostsTableData extends DataClass implements Insertable<PostsTableData> {
   final int threadId;
   final int postId;
   final bool? isHidden;
-  PostsTableData(
+  const PostsTableData(
       {this.timestamp,
       this.subtitle,
       this.content,
@@ -29,57 +29,32 @@ class PostsTableData extends DataClass implements Insertable<PostsTableData> {
       required this.threadId,
       required this.postId,
       this.isHidden});
-  factory PostsTableData.fromData(Map<String, dynamic> data, {String? prefix}) {
-    final effectivePrefix = prefix ?? '';
-    return PostsTableData(
-      timestamp: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}timestamp']),
-      subtitle: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}subtitle']),
-      content: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}content']),
-      filename: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}filename']),
-      imageId: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}image_id']),
-      extension: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}extension']),
-      boardId: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}board_id'])!,
-      threadId: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}thread_id'])!,
-      postId: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}post_id'])!,
-      isHidden: const BoolType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}is_hidden']),
-    );
-  }
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (!nullToAbsent || timestamp != null) {
-      map['timestamp'] = Variable<int?>(timestamp);
+      map['timestamp'] = Variable<int>(timestamp);
     }
     if (!nullToAbsent || subtitle != null) {
-      map['subtitle'] = Variable<String?>(subtitle);
+      map['subtitle'] = Variable<String>(subtitle);
     }
     if (!nullToAbsent || content != null) {
-      map['content'] = Variable<String?>(content);
+      map['content'] = Variable<String>(content);
     }
     if (!nullToAbsent || filename != null) {
-      map['filename'] = Variable<String?>(filename);
+      map['filename'] = Variable<String>(filename);
     }
     if (!nullToAbsent || imageId != null) {
-      map['image_id'] = Variable<String?>(imageId);
+      map['image_id'] = Variable<String>(imageId);
     }
     if (!nullToAbsent || extension != null) {
-      map['extension'] = Variable<String?>(extension);
+      map['extension'] = Variable<String>(extension);
     }
     map['board_id'] = Variable<String>(boardId);
     map['thread_id'] = Variable<int>(threadId);
     map['post_id'] = Variable<int>(postId);
     if (!nullToAbsent || isHidden != null) {
-      map['is_hidden'] = Variable<bool?>(isHidden);
+      map['is_hidden'] = Variable<bool>(isHidden);
     }
     return map;
   }
@@ -147,27 +122,27 @@ class PostsTableData extends DataClass implements Insertable<PostsTableData> {
   }
 
   PostsTableData copyWith(
-          {int? timestamp,
-          String? subtitle,
-          String? content,
-          String? filename,
-          String? imageId,
-          String? extension,
+          {Value<int?> timestamp = const Value.absent(),
+          Value<String?> subtitle = const Value.absent(),
+          Value<String?> content = const Value.absent(),
+          Value<String?> filename = const Value.absent(),
+          Value<String?> imageId = const Value.absent(),
+          Value<String?> extension = const Value.absent(),
           String? boardId,
           int? threadId,
           int? postId,
-          bool? isHidden}) =>
+          Value<bool?> isHidden = const Value.absent()}) =>
       PostsTableData(
-        timestamp: timestamp ?? this.timestamp,
-        subtitle: subtitle ?? this.subtitle,
-        content: content ?? this.content,
-        filename: filename ?? this.filename,
-        imageId: imageId ?? this.imageId,
-        extension: extension ?? this.extension,
+        timestamp: timestamp.present ? timestamp.value : this.timestamp,
+        subtitle: subtitle.present ? subtitle.value : this.subtitle,
+        content: content.present ? content.value : this.content,
+        filename: filename.present ? filename.value : this.filename,
+        imageId: imageId.present ? imageId.value : this.imageId,
+        extension: extension.present ? extension.value : this.extension,
         boardId: boardId ?? this.boardId,
         threadId: threadId ?? this.threadId,
         postId: postId ?? this.postId,
-        isHidden: isHidden ?? this.isHidden,
+        isHidden: isHidden.present ? isHidden.value : this.isHidden,
       );
   @override
   String toString() {
@@ -243,16 +218,16 @@ class PostsTableCompanion extends UpdateCompanion<PostsTableData> {
         threadId = Value(threadId),
         postId = Value(postId);
   static Insertable<PostsTableData> custom({
-    Expression<int?>? timestamp,
-    Expression<String?>? subtitle,
-    Expression<String?>? content,
-    Expression<String?>? filename,
-    Expression<String?>? imageId,
-    Expression<String?>? extension,
+    Expression<int>? timestamp,
+    Expression<String>? subtitle,
+    Expression<String>? content,
+    Expression<String>? filename,
+    Expression<String>? imageId,
+    Expression<String>? extension,
     Expression<String>? boardId,
     Expression<int>? threadId,
     Expression<int>? postId,
-    Expression<bool?>? isHidden,
+    Expression<bool>? isHidden,
   }) {
     return RawValuesInsertable({
       if (timestamp != null) 'timestamp': timestamp,
@@ -297,22 +272,22 @@ class PostsTableCompanion extends UpdateCompanion<PostsTableData> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (timestamp.present) {
-      map['timestamp'] = Variable<int?>(timestamp.value);
+      map['timestamp'] = Variable<int>(timestamp.value);
     }
     if (subtitle.present) {
-      map['subtitle'] = Variable<String?>(subtitle.value);
+      map['subtitle'] = Variable<String>(subtitle.value);
     }
     if (content.present) {
-      map['content'] = Variable<String?>(content.value);
+      map['content'] = Variable<String>(content.value);
     }
     if (filename.present) {
-      map['filename'] = Variable<String?>(filename.value);
+      map['filename'] = Variable<String>(filename.value);
     }
     if (imageId.present) {
-      map['image_id'] = Variable<String?>(imageId.value);
+      map['image_id'] = Variable<String>(imageId.value);
     }
     if (extension.present) {
-      map['extension'] = Variable<String?>(extension.value);
+      map['extension'] = Variable<String>(extension.value);
     }
     if (boardId.present) {
       map['board_id'] = Variable<String>(boardId.value);
@@ -324,7 +299,7 @@ class PostsTableCompanion extends UpdateCompanion<PostsTableData> {
       map['post_id'] = Variable<int>(postId.value);
     }
     if (isHidden.present) {
-      map['is_hidden'] = Variable<bool?>(isHidden.value);
+      map['is_hidden'] = Variable<bool>(isHidden.value);
     }
     return map;
   }
@@ -355,59 +330,59 @@ class $PostsTableTable extends PostsTable
   $PostsTableTable(this.attachedDatabase, [this._alias]);
   final VerificationMeta _timestampMeta = const VerificationMeta('timestamp');
   @override
-  late final GeneratedColumn<int?> timestamp = GeneratedColumn<int?>(
+  late final GeneratedColumn<int> timestamp = GeneratedColumn<int>(
       'timestamp', aliasedName, true,
-      type: const IntType(), requiredDuringInsert: false);
+      type: DriftSqlType.int, requiredDuringInsert: false);
   final VerificationMeta _subtitleMeta = const VerificationMeta('subtitle');
   @override
-  late final GeneratedColumn<String?> subtitle = GeneratedColumn<String?>(
+  late final GeneratedColumn<String> subtitle = GeneratedColumn<String>(
       'subtitle', aliasedName, true,
-      type: const StringType(), requiredDuringInsert: false);
+      type: DriftSqlType.string, requiredDuringInsert: false);
   final VerificationMeta _contentMeta = const VerificationMeta('content');
   @override
-  late final GeneratedColumn<String?> content = GeneratedColumn<String?>(
+  late final GeneratedColumn<String> content = GeneratedColumn<String>(
       'content', aliasedName, true,
-      type: const StringType(), requiredDuringInsert: false);
+      type: DriftSqlType.string, requiredDuringInsert: false);
   final VerificationMeta _filenameMeta = const VerificationMeta('filename');
   @override
-  late final GeneratedColumn<String?> filename = GeneratedColumn<String?>(
+  late final GeneratedColumn<String> filename = GeneratedColumn<String>(
       'filename', aliasedName, true,
-      type: const StringType(), requiredDuringInsert: false);
+      type: DriftSqlType.string, requiredDuringInsert: false);
   final VerificationMeta _imageIdMeta = const VerificationMeta('imageId');
   @override
-  late final GeneratedColumn<String?> imageId = GeneratedColumn<String?>(
+  late final GeneratedColumn<String> imageId = GeneratedColumn<String>(
       'image_id', aliasedName, true,
-      type: const StringType(), requiredDuringInsert: false);
+      type: DriftSqlType.string, requiredDuringInsert: false);
   final VerificationMeta _extensionMeta = const VerificationMeta('extension');
   @override
-  late final GeneratedColumn<String?> extension = GeneratedColumn<String?>(
+  late final GeneratedColumn<String> extension = GeneratedColumn<String>(
       'extension', aliasedName, true,
-      type: const StringType(), requiredDuringInsert: false);
+      type: DriftSqlType.string, requiredDuringInsert: false);
   final VerificationMeta _boardIdMeta = const VerificationMeta('boardId');
   @override
-  late final GeneratedColumn<String?> boardId = GeneratedColumn<String?>(
+  late final GeneratedColumn<String> boardId = GeneratedColumn<String>(
       'board_id', aliasedName, false,
-      type: const StringType(), requiredDuringInsert: true);
+      type: DriftSqlType.string, requiredDuringInsert: true);
   final VerificationMeta _threadIdMeta = const VerificationMeta('threadId');
   @override
-  late final GeneratedColumn<int?> threadId = GeneratedColumn<int?>(
+  late final GeneratedColumn<int> threadId = GeneratedColumn<int>(
       'thread_id', aliasedName, false,
-      type: const IntType(),
+      type: DriftSqlType.int,
       requiredDuringInsert: true,
       $customConstraints:
           'REFERENCES threads_table(threadId) ON DELETE CASCADE');
   final VerificationMeta _postIdMeta = const VerificationMeta('postId');
   @override
-  late final GeneratedColumn<int?> postId = GeneratedColumn<int?>(
+  late final GeneratedColumn<int> postId = GeneratedColumn<int>(
       'post_id', aliasedName, false,
-      type: const IntType(), requiredDuringInsert: true);
+      type: DriftSqlType.int, requiredDuringInsert: true);
   final VerificationMeta _isHiddenMeta = const VerificationMeta('isHidden');
   @override
-  late final GeneratedColumn<bool?> isHidden = GeneratedColumn<bool?>(
+  late final GeneratedColumn<bool> isHidden = GeneratedColumn<bool>(
       'is_hidden', aliasedName, true,
-      type: const BoolType(),
+      type: DriftSqlType.bool,
       requiredDuringInsert: false,
-      defaultConstraints: 'CHECK (is_hidden IN (0, 1))');
+      defaultConstraints: 'CHECK ("is_hidden" IN (0, 1))');
   @override
   List<GeneratedColumn> get $columns => [
         timestamp,
@@ -483,8 +458,29 @@ class $PostsTableTable extends PostsTable
   Set<GeneratedColumn> get $primaryKey => {postId, threadId, boardId};
   @override
   PostsTableData map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return PostsTableData.fromData(data,
-        prefix: tablePrefix != null ? '$tablePrefix.' : null);
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PostsTableData(
+      timestamp: attachedDatabase.options.types
+          .read(DriftSqlType.int, data['${effectivePrefix}timestamp']),
+      subtitle: attachedDatabase.options.types
+          .read(DriftSqlType.string, data['${effectivePrefix}subtitle']),
+      content: attachedDatabase.options.types
+          .read(DriftSqlType.string, data['${effectivePrefix}content']),
+      filename: attachedDatabase.options.types
+          .read(DriftSqlType.string, data['${effectivePrefix}filename']),
+      imageId: attachedDatabase.options.types
+          .read(DriftSqlType.string, data['${effectivePrefix}image_id']),
+      extension: attachedDatabase.options.types
+          .read(DriftSqlType.string, data['${effectivePrefix}extension']),
+      boardId: attachedDatabase.options.types
+          .read(DriftSqlType.string, data['${effectivePrefix}board_id'])!,
+      threadId: attachedDatabase.options.types
+          .read(DriftSqlType.int, data['${effectivePrefix}thread_id'])!,
+      postId: attachedDatabase.options.types
+          .read(DriftSqlType.int, data['${effectivePrefix}post_id'])!,
+      isHidden: attachedDatabase.options.types
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_hidden']),
+    );
   }
 
   @override
@@ -510,7 +506,7 @@ class ThreadsTableData extends DataClass
   final int? replyCount;
   final int? imageCount;
   final int? lastSeenPostIndex;
-  ThreadsTableData(
+  const ThreadsTableData(
       {this.timestamp,
       this.subtitle,
       this.content,
@@ -526,85 +522,49 @@ class ThreadsTableData extends DataClass
       this.replyCount,
       this.imageCount,
       this.lastSeenPostIndex});
-  factory ThreadsTableData.fromData(Map<String, dynamic> data,
-      {String? prefix}) {
-    final effectivePrefix = prefix ?? '';
-    return ThreadsTableData(
-      timestamp: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}timestamp']),
-      subtitle: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}subtitle']),
-      content: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}content']),
-      filename: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}filename']),
-      imageId: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}image_id']),
-      extension: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}extension']),
-      boardId: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}board_id'])!,
-      threadId: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}thread_id'])!,
-      lastModified: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}last_modified']),
-      selectedPostId: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}selected_post_id']),
-      isFavorite: const BoolType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}is_favorite']),
-      onlineState: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}online_state']),
-      replyCount: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}reply_count']),
-      imageCount: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}image_count']),
-      lastSeenPostIndex: const IntType().mapFromDatabaseResponse(
-          data['${effectivePrefix}last_seen_post_index']),
-    );
-  }
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (!nullToAbsent || timestamp != null) {
-      map['timestamp'] = Variable<int?>(timestamp);
+      map['timestamp'] = Variable<int>(timestamp);
     }
     if (!nullToAbsent || subtitle != null) {
-      map['subtitle'] = Variable<String?>(subtitle);
+      map['subtitle'] = Variable<String>(subtitle);
     }
     if (!nullToAbsent || content != null) {
-      map['content'] = Variable<String?>(content);
+      map['content'] = Variable<String>(content);
     }
     if (!nullToAbsent || filename != null) {
-      map['filename'] = Variable<String?>(filename);
+      map['filename'] = Variable<String>(filename);
     }
     if (!nullToAbsent || imageId != null) {
-      map['image_id'] = Variable<String?>(imageId);
+      map['image_id'] = Variable<String>(imageId);
     }
     if (!nullToAbsent || extension != null) {
-      map['extension'] = Variable<String?>(extension);
+      map['extension'] = Variable<String>(extension);
     }
     map['board_id'] = Variable<String>(boardId);
     map['thread_id'] = Variable<int>(threadId);
     if (!nullToAbsent || lastModified != null) {
-      map['last_modified'] = Variable<int?>(lastModified);
+      map['last_modified'] = Variable<int>(lastModified);
     }
     if (!nullToAbsent || selectedPostId != null) {
-      map['selected_post_id'] = Variable<int?>(selectedPostId);
+      map['selected_post_id'] = Variable<int>(selectedPostId);
     }
     if (!nullToAbsent || isFavorite != null) {
-      map['is_favorite'] = Variable<bool?>(isFavorite);
+      map['is_favorite'] = Variable<bool>(isFavorite);
     }
     if (!nullToAbsent || onlineState != null) {
-      map['online_state'] = Variable<int?>(onlineState);
+      map['online_state'] = Variable<int>(onlineState);
     }
     if (!nullToAbsent || replyCount != null) {
-      map['reply_count'] = Variable<int?>(replyCount);
+      map['reply_count'] = Variable<int>(replyCount);
     }
     if (!nullToAbsent || imageCount != null) {
-      map['image_count'] = Variable<int?>(imageCount);
+      map['image_count'] = Variable<int>(imageCount);
     }
     if (!nullToAbsent || lastSeenPostIndex != null) {
-      map['last_seen_post_index'] = Variable<int?>(lastSeenPostIndex);
+      map['last_seen_post_index'] = Variable<int>(lastSeenPostIndex);
     }
     return map;
   }
@@ -699,37 +659,41 @@ class ThreadsTableData extends DataClass
   }
 
   ThreadsTableData copyWith(
-          {int? timestamp,
-          String? subtitle,
-          String? content,
-          String? filename,
-          String? imageId,
-          String? extension,
+          {Value<int?> timestamp = const Value.absent(),
+          Value<String?> subtitle = const Value.absent(),
+          Value<String?> content = const Value.absent(),
+          Value<String?> filename = const Value.absent(),
+          Value<String?> imageId = const Value.absent(),
+          Value<String?> extension = const Value.absent(),
           String? boardId,
           int? threadId,
-          int? lastModified,
-          int? selectedPostId,
-          bool? isFavorite,
-          int? onlineState,
-          int? replyCount,
-          int? imageCount,
-          int? lastSeenPostIndex}) =>
+          Value<int?> lastModified = const Value.absent(),
+          Value<int?> selectedPostId = const Value.absent(),
+          Value<bool?> isFavorite = const Value.absent(),
+          Value<int?> onlineState = const Value.absent(),
+          Value<int?> replyCount = const Value.absent(),
+          Value<int?> imageCount = const Value.absent(),
+          Value<int?> lastSeenPostIndex = const Value.absent()}) =>
       ThreadsTableData(
-        timestamp: timestamp ?? this.timestamp,
-        subtitle: subtitle ?? this.subtitle,
-        content: content ?? this.content,
-        filename: filename ?? this.filename,
-        imageId: imageId ?? this.imageId,
-        extension: extension ?? this.extension,
+        timestamp: timestamp.present ? timestamp.value : this.timestamp,
+        subtitle: subtitle.present ? subtitle.value : this.subtitle,
+        content: content.present ? content.value : this.content,
+        filename: filename.present ? filename.value : this.filename,
+        imageId: imageId.present ? imageId.value : this.imageId,
+        extension: extension.present ? extension.value : this.extension,
         boardId: boardId ?? this.boardId,
         threadId: threadId ?? this.threadId,
-        lastModified: lastModified ?? this.lastModified,
-        selectedPostId: selectedPostId ?? this.selectedPostId,
-        isFavorite: isFavorite ?? this.isFavorite,
-        onlineState: onlineState ?? this.onlineState,
-        replyCount: replyCount ?? this.replyCount,
-        imageCount: imageCount ?? this.imageCount,
-        lastSeenPostIndex: lastSeenPostIndex ?? this.lastSeenPostIndex,
+        lastModified:
+            lastModified.present ? lastModified.value : this.lastModified,
+        selectedPostId:
+            selectedPostId.present ? selectedPostId.value : this.selectedPostId,
+        isFavorite: isFavorite.present ? isFavorite.value : this.isFavorite,
+        onlineState: onlineState.present ? onlineState.value : this.onlineState,
+        replyCount: replyCount.present ? replyCount.value : this.replyCount,
+        imageCount: imageCount.present ? imageCount.value : this.imageCount,
+        lastSeenPostIndex: lastSeenPostIndex.present
+            ? lastSeenPostIndex.value
+            : this.lastSeenPostIndex,
       );
   @override
   String toString() {
@@ -843,21 +807,21 @@ class ThreadsTableCompanion extends UpdateCompanion<ThreadsTableData> {
   })  : boardId = Value(boardId),
         threadId = Value(threadId);
   static Insertable<ThreadsTableData> custom({
-    Expression<int?>? timestamp,
-    Expression<String?>? subtitle,
-    Expression<String?>? content,
-    Expression<String?>? filename,
-    Expression<String?>? imageId,
-    Expression<String?>? extension,
+    Expression<int>? timestamp,
+    Expression<String>? subtitle,
+    Expression<String>? content,
+    Expression<String>? filename,
+    Expression<String>? imageId,
+    Expression<String>? extension,
     Expression<String>? boardId,
     Expression<int>? threadId,
-    Expression<int?>? lastModified,
-    Expression<int?>? selectedPostId,
-    Expression<bool?>? isFavorite,
-    Expression<int?>? onlineState,
-    Expression<int?>? replyCount,
-    Expression<int?>? imageCount,
-    Expression<int?>? lastSeenPostIndex,
+    Expression<int>? lastModified,
+    Expression<int>? selectedPostId,
+    Expression<bool>? isFavorite,
+    Expression<int>? onlineState,
+    Expression<int>? replyCount,
+    Expression<int>? imageCount,
+    Expression<int>? lastSeenPostIndex,
   }) {
     return RawValuesInsertable({
       if (timestamp != null) 'timestamp': timestamp,
@@ -917,22 +881,22 @@ class ThreadsTableCompanion extends UpdateCompanion<ThreadsTableData> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (timestamp.present) {
-      map['timestamp'] = Variable<int?>(timestamp.value);
+      map['timestamp'] = Variable<int>(timestamp.value);
     }
     if (subtitle.present) {
-      map['subtitle'] = Variable<String?>(subtitle.value);
+      map['subtitle'] = Variable<String>(subtitle.value);
     }
     if (content.present) {
-      map['content'] = Variable<String?>(content.value);
+      map['content'] = Variable<String>(content.value);
     }
     if (filename.present) {
-      map['filename'] = Variable<String?>(filename.value);
+      map['filename'] = Variable<String>(filename.value);
     }
     if (imageId.present) {
-      map['image_id'] = Variable<String?>(imageId.value);
+      map['image_id'] = Variable<String>(imageId.value);
     }
     if (extension.present) {
-      map['extension'] = Variable<String?>(extension.value);
+      map['extension'] = Variable<String>(extension.value);
     }
     if (boardId.present) {
       map['board_id'] = Variable<String>(boardId.value);
@@ -941,25 +905,25 @@ class ThreadsTableCompanion extends UpdateCompanion<ThreadsTableData> {
       map['thread_id'] = Variable<int>(threadId.value);
     }
     if (lastModified.present) {
-      map['last_modified'] = Variable<int?>(lastModified.value);
+      map['last_modified'] = Variable<int>(lastModified.value);
     }
     if (selectedPostId.present) {
-      map['selected_post_id'] = Variable<int?>(selectedPostId.value);
+      map['selected_post_id'] = Variable<int>(selectedPostId.value);
     }
     if (isFavorite.present) {
-      map['is_favorite'] = Variable<bool?>(isFavorite.value);
+      map['is_favorite'] = Variable<bool>(isFavorite.value);
     }
     if (onlineState.present) {
-      map['online_state'] = Variable<int?>(onlineState.value);
+      map['online_state'] = Variable<int>(onlineState.value);
     }
     if (replyCount.present) {
-      map['reply_count'] = Variable<int?>(replyCount.value);
+      map['reply_count'] = Variable<int>(replyCount.value);
     }
     if (imageCount.present) {
-      map['image_count'] = Variable<int?>(imageCount.value);
+      map['image_count'] = Variable<int>(imageCount.value);
     }
     if (lastSeenPostIndex.present) {
-      map['last_seen_post_index'] = Variable<int?>(lastSeenPostIndex.value);
+      map['last_seen_post_index'] = Variable<int>(lastSeenPostIndex.value);
     }
     return map;
   }
@@ -995,98 +959,98 @@ class $ThreadsTableTable extends ThreadsTable
   $ThreadsTableTable(this.attachedDatabase, [this._alias]);
   final VerificationMeta _timestampMeta = const VerificationMeta('timestamp');
   @override
-  late final GeneratedColumn<int?> timestamp = GeneratedColumn<int?>(
+  late final GeneratedColumn<int> timestamp = GeneratedColumn<int>(
       'timestamp', aliasedName, true,
-      type: const IntType(), requiredDuringInsert: false);
+      type: DriftSqlType.int, requiredDuringInsert: false);
   final VerificationMeta _subtitleMeta = const VerificationMeta('subtitle');
   @override
-  late final GeneratedColumn<String?> subtitle = GeneratedColumn<String?>(
+  late final GeneratedColumn<String> subtitle = GeneratedColumn<String>(
       'subtitle', aliasedName, true,
-      type: const StringType(), requiredDuringInsert: false);
+      type: DriftSqlType.string, requiredDuringInsert: false);
   final VerificationMeta _contentMeta = const VerificationMeta('content');
   @override
-  late final GeneratedColumn<String?> content = GeneratedColumn<String?>(
+  late final GeneratedColumn<String> content = GeneratedColumn<String>(
       'content', aliasedName, true,
-      type: const StringType(), requiredDuringInsert: false);
+      type: DriftSqlType.string, requiredDuringInsert: false);
   final VerificationMeta _filenameMeta = const VerificationMeta('filename');
   @override
-  late final GeneratedColumn<String?> filename = GeneratedColumn<String?>(
+  late final GeneratedColumn<String> filename = GeneratedColumn<String>(
       'filename', aliasedName, true,
-      type: const StringType(), requiredDuringInsert: false);
+      type: DriftSqlType.string, requiredDuringInsert: false);
   final VerificationMeta _imageIdMeta = const VerificationMeta('imageId');
   @override
-  late final GeneratedColumn<String?> imageId = GeneratedColumn<String?>(
+  late final GeneratedColumn<String> imageId = GeneratedColumn<String>(
       'image_id', aliasedName, true,
-      type: const StringType(), requiredDuringInsert: false);
+      type: DriftSqlType.string, requiredDuringInsert: false);
   final VerificationMeta _extensionMeta = const VerificationMeta('extension');
   @override
-  late final GeneratedColumn<String?> extension = GeneratedColumn<String?>(
+  late final GeneratedColumn<String> extension = GeneratedColumn<String>(
       'extension', aliasedName, true,
-      type: const StringType(), requiredDuringInsert: false);
+      type: DriftSqlType.string, requiredDuringInsert: false);
   final VerificationMeta _boardIdMeta = const VerificationMeta('boardId');
   @override
-  late final GeneratedColumn<String?> boardId = GeneratedColumn<String?>(
+  late final GeneratedColumn<String> boardId = GeneratedColumn<String>(
       'board_id', aliasedName, false,
-      type: const StringType(),
+      type: DriftSqlType.string,
       requiredDuringInsert: true,
       $customConstraints: 'REFERENCES boards_table(boardId) ON DELETE CASCADE');
   final VerificationMeta _threadIdMeta = const VerificationMeta('threadId');
   @override
-  late final GeneratedColumn<int?> threadId = GeneratedColumn<int?>(
+  late final GeneratedColumn<int> threadId = GeneratedColumn<int>(
       'thread_id', aliasedName, false,
-      type: const IntType(), requiredDuringInsert: true);
+      type: DriftSqlType.int, requiredDuringInsert: true);
   final VerificationMeta _lastModifiedMeta =
       const VerificationMeta('lastModified');
   @override
-  late final GeneratedColumn<int?> lastModified = GeneratedColumn<int?>(
+  late final GeneratedColumn<int> lastModified = GeneratedColumn<int>(
       'last_modified', aliasedName, true,
-      type: const IntType(),
+      type: DriftSqlType.int,
       requiredDuringInsert: false,
       defaultValue: const Constant(0));
   final VerificationMeta _selectedPostIdMeta =
       const VerificationMeta('selectedPostId');
   @override
-  late final GeneratedColumn<int?> selectedPostId = GeneratedColumn<int?>(
+  late final GeneratedColumn<int> selectedPostId = GeneratedColumn<int>(
       'selected_post_id', aliasedName, true,
-      type: const IntType(),
+      type: DriftSqlType.int,
       requiredDuringInsert: false,
       defaultValue: const Constant(-1));
   final VerificationMeta _isFavoriteMeta = const VerificationMeta('isFavorite');
   @override
-  late final GeneratedColumn<bool?> isFavorite = GeneratedColumn<bool?>(
+  late final GeneratedColumn<bool> isFavorite = GeneratedColumn<bool>(
       'is_favorite', aliasedName, true,
-      type: const BoolType(),
+      type: DriftSqlType.bool,
       requiredDuringInsert: false,
-      defaultConstraints: 'CHECK (is_favorite IN (0, 1))',
+      defaultConstraints: 'CHECK ("is_favorite" IN (0, 1))',
       defaultValue: const Constant(false));
   final VerificationMeta _onlineStateMeta =
       const VerificationMeta('onlineState');
   @override
-  late final GeneratedColumn<int?> onlineState = GeneratedColumn<int?>(
+  late final GeneratedColumn<int> onlineState = GeneratedColumn<int>(
       'online_state', aliasedName, true,
-      type: const IntType(),
+      type: DriftSqlType.int,
       requiredDuringInsert: false,
       defaultValue: const Constant(0));
   final VerificationMeta _replyCountMeta = const VerificationMeta('replyCount');
   @override
-  late final GeneratedColumn<int?> replyCount = GeneratedColumn<int?>(
+  late final GeneratedColumn<int> replyCount = GeneratedColumn<int>(
       'reply_count', aliasedName, true,
-      type: const IntType(),
+      type: DriftSqlType.int,
       requiredDuringInsert: false,
       defaultValue: const Constant(-1));
   final VerificationMeta _imageCountMeta = const VerificationMeta('imageCount');
   @override
-  late final GeneratedColumn<int?> imageCount = GeneratedColumn<int?>(
+  late final GeneratedColumn<int> imageCount = GeneratedColumn<int>(
       'image_count', aliasedName, true,
-      type: const IntType(),
+      type: DriftSqlType.int,
       requiredDuringInsert: false,
       defaultValue: const Constant(-1));
   final VerificationMeta _lastSeenPostIndexMeta =
       const VerificationMeta('lastSeenPostIndex');
   @override
-  late final GeneratedColumn<int?> lastSeenPostIndex = GeneratedColumn<int?>(
+  late final GeneratedColumn<int> lastSeenPostIndex = GeneratedColumn<int>(
       'last_seen_post_index', aliasedName, true,
-      type: const IntType(),
+      type: DriftSqlType.int,
       requiredDuringInsert: false,
       defaultValue: const Constant(-1));
   @override
@@ -1201,8 +1165,39 @@ class $ThreadsTableTable extends ThreadsTable
   Set<GeneratedColumn> get $primaryKey => {threadId, boardId};
   @override
   ThreadsTableData map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return ThreadsTableData.fromData(data,
-        prefix: tablePrefix != null ? '$tablePrefix.' : null);
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ThreadsTableData(
+      timestamp: attachedDatabase.options.types
+          .read(DriftSqlType.int, data['${effectivePrefix}timestamp']),
+      subtitle: attachedDatabase.options.types
+          .read(DriftSqlType.string, data['${effectivePrefix}subtitle']),
+      content: attachedDatabase.options.types
+          .read(DriftSqlType.string, data['${effectivePrefix}content']),
+      filename: attachedDatabase.options.types
+          .read(DriftSqlType.string, data['${effectivePrefix}filename']),
+      imageId: attachedDatabase.options.types
+          .read(DriftSqlType.string, data['${effectivePrefix}image_id']),
+      extension: attachedDatabase.options.types
+          .read(DriftSqlType.string, data['${effectivePrefix}extension']),
+      boardId: attachedDatabase.options.types
+          .read(DriftSqlType.string, data['${effectivePrefix}board_id'])!,
+      threadId: attachedDatabase.options.types
+          .read(DriftSqlType.int, data['${effectivePrefix}thread_id'])!,
+      lastModified: attachedDatabase.options.types
+          .read(DriftSqlType.int, data['${effectivePrefix}last_modified']),
+      selectedPostId: attachedDatabase.options.types
+          .read(DriftSqlType.int, data['${effectivePrefix}selected_post_id']),
+      isFavorite: attachedDatabase.options.types
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_favorite']),
+      onlineState: attachedDatabase.options.types
+          .read(DriftSqlType.int, data['${effectivePrefix}online_state']),
+      replyCount: attachedDatabase.options.types
+          .read(DriftSqlType.int, data['${effectivePrefix}reply_count']),
+      imageCount: attachedDatabase.options.types
+          .read(DriftSqlType.int, data['${effectivePrefix}image_count']),
+      lastSeenPostIndex: attachedDatabase.options.types.read(
+          DriftSqlType.int, data['${effectivePrefix}last_seen_post_index']),
+    );
   }
 
   @override
@@ -1215,20 +1210,8 @@ class BoardsTableData extends DataClass implements Insertable<BoardsTableData> {
   final String boardId;
   final String title;
   final bool workSafe;
-  BoardsTableData(
+  const BoardsTableData(
       {required this.boardId, required this.title, required this.workSafe});
-  factory BoardsTableData.fromData(Map<String, dynamic> data,
-      {String? prefix}) {
-    final effectivePrefix = prefix ?? '';
-    return BoardsTableData(
-      boardId: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}board_id'])!,
-      title: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}title'])!,
-      workSafe: const BoolType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}work_safe'])!,
-    );
-  }
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -1363,21 +1346,21 @@ class $BoardsTableTable extends BoardsTable
   $BoardsTableTable(this.attachedDatabase, [this._alias]);
   final VerificationMeta _boardIdMeta = const VerificationMeta('boardId');
   @override
-  late final GeneratedColumn<String?> boardId = GeneratedColumn<String?>(
+  late final GeneratedColumn<String> boardId = GeneratedColumn<String>(
       'board_id', aliasedName, false,
-      type: const StringType(), requiredDuringInsert: true);
+      type: DriftSqlType.string, requiredDuringInsert: true);
   final VerificationMeta _titleMeta = const VerificationMeta('title');
   @override
-  late final GeneratedColumn<String?> title = GeneratedColumn<String?>(
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
       'title', aliasedName, false,
-      type: const StringType(), requiredDuringInsert: true);
+      type: DriftSqlType.string, requiredDuringInsert: true);
   final VerificationMeta _workSafeMeta = const VerificationMeta('workSafe');
   @override
-  late final GeneratedColumn<bool?> workSafe = GeneratedColumn<bool?>(
+  late final GeneratedColumn<bool> workSafe = GeneratedColumn<bool>(
       'work_safe', aliasedName, false,
-      type: const BoolType(),
+      type: DriftSqlType.bool,
       requiredDuringInsert: true,
-      defaultConstraints: 'CHECK (work_safe IN (0, 1))');
+      defaultConstraints: 'CHECK ("work_safe" IN (0, 1))');
   @override
   List<GeneratedColumn> get $columns => [boardId, title, workSafe];
   @override
@@ -1414,8 +1397,15 @@ class $BoardsTableTable extends BoardsTable
   Set<GeneratedColumn> get $primaryKey => {boardId};
   @override
   BoardsTableData map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return BoardsTableData.fromData(data,
-        prefix: tablePrefix != null ? '$tablePrefix.' : null);
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return BoardsTableData(
+      boardId: attachedDatabase.options.types
+          .read(DriftSqlType.string, data['${effectivePrefix}board_id'])!,
+      title: attachedDatabase.options.types
+          .read(DriftSqlType.string, data['${effectivePrefix}title'])!,
+      workSafe: attachedDatabase.options.types
+          .read(DriftSqlType.bool, data['${effectivePrefix}work_safe'])!,
+    );
   }
 
   @override
@@ -1425,7 +1415,7 @@ class $BoardsTableTable extends BoardsTable
 }
 
 abstract class _$ChanDB extends GeneratedDatabase {
-  _$ChanDB(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e);
+  _$ChanDB(QueryExecutor e) : super(e);
   _$ChanDB.connect(DatabaseConnection c) : super.connect(c);
   late final $PostsTableTable postsTable = $PostsTableTable(this);
   late final $ThreadsTableTable threadsTable = $ThreadsTableTable(this);
@@ -1434,7 +1424,8 @@ abstract class _$ChanDB extends GeneratedDatabase {
   late final ThreadsDao threadsDao = ThreadsDao(this as ChanDB);
   late final BoardsDao boardsDao = BoardsDao(this as ChanDB);
   @override
-  Iterable<TableInfo> get allTables => allSchemaEntities.whereType<TableInfo>();
+  Iterable<TableInfo<Table, dynamic>> get allTables =>
+      allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities =>
       [postsTable, threadsTable, boardsTable];

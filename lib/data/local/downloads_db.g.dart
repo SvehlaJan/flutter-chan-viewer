@@ -3,10 +3,10 @@
 part of 'downloads_db.dart';
 
 // **************************************************************************
-// MoorGenerator
+// DriftDatabaseGenerator
 // **************************************************************************
 
-// ignore_for_file: unnecessary_brace_in_string_interps, unnecessary_this
+// ignore_for_file: type=lint
 class DownloadsTableData extends DataClass
     implements Insertable<DownloadsTableData> {
   final String mediaId;
@@ -16,7 +16,7 @@ class DownloadsTableData extends DataClass
   final int status;
   final int progress;
   final int timestamp;
-  DownloadsTableData(
+  const DownloadsTableData(
       {required this.mediaId,
       required this.url,
       required this.path,
@@ -24,26 +24,6 @@ class DownloadsTableData extends DataClass
       required this.status,
       required this.progress,
       required this.timestamp});
-  factory DownloadsTableData.fromData(Map<String, dynamic> data,
-      {String? prefix}) {
-    final effectivePrefix = prefix ?? '';
-    return DownloadsTableData(
-      mediaId: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}media_id'])!,
-      url: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}url'])!,
-      path: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}path'])!,
-      filename: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}filename'])!,
-      status: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}status'])!,
-      progress: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}progress'])!,
-      timestamp: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}timestamp'])!,
-    );
-  }
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -261,43 +241,43 @@ class $DownloadsTableTable extends DownloadsTable
   $DownloadsTableTable(this.attachedDatabase, [this._alias]);
   final VerificationMeta _mediaIdMeta = const VerificationMeta('mediaId');
   @override
-  late final GeneratedColumn<String?> mediaId = GeneratedColumn<String?>(
+  late final GeneratedColumn<String> mediaId = GeneratedColumn<String>(
       'media_id', aliasedName, false,
-      type: const StringType(), requiredDuringInsert: true);
+      type: DriftSqlType.string, requiredDuringInsert: true);
   final VerificationMeta _urlMeta = const VerificationMeta('url');
   @override
-  late final GeneratedColumn<String?> url = GeneratedColumn<String?>(
+  late final GeneratedColumn<String> url = GeneratedColumn<String>(
       'url', aliasedName, false,
-      type: const StringType(), requiredDuringInsert: true);
+      type: DriftSqlType.string, requiredDuringInsert: true);
   final VerificationMeta _pathMeta = const VerificationMeta('path');
   @override
-  late final GeneratedColumn<String?> path = GeneratedColumn<String?>(
+  late final GeneratedColumn<String> path = GeneratedColumn<String>(
       'path', aliasedName, false,
-      type: const StringType(), requiredDuringInsert: true);
+      type: DriftSqlType.string, requiredDuringInsert: true);
   final VerificationMeta _filenameMeta = const VerificationMeta('filename');
   @override
-  late final GeneratedColumn<String?> filename = GeneratedColumn<String?>(
+  late final GeneratedColumn<String> filename = GeneratedColumn<String>(
       'filename', aliasedName, false,
-      type: const StringType(), requiredDuringInsert: true);
+      type: DriftSqlType.string, requiredDuringInsert: true);
   final VerificationMeta _statusMeta = const VerificationMeta('status');
   @override
-  late final GeneratedColumn<int?> status = GeneratedColumn<int?>(
+  late final GeneratedColumn<int> status = GeneratedColumn<int>(
       'status', aliasedName, false,
-      type: const IntType(),
+      type: DriftSqlType.int,
       requiredDuringInsert: false,
       defaultValue: const Constant(0));
   final VerificationMeta _progressMeta = const VerificationMeta('progress');
   @override
-  late final GeneratedColumn<int?> progress = GeneratedColumn<int?>(
+  late final GeneratedColumn<int> progress = GeneratedColumn<int>(
       'progress', aliasedName, false,
-      type: const IntType(),
+      type: DriftSqlType.int,
       requiredDuringInsert: false,
       defaultValue: const Constant(0));
   final VerificationMeta _timestampMeta = const VerificationMeta('timestamp');
   @override
-  late final GeneratedColumn<int?> timestamp = GeneratedColumn<int?>(
+  late final GeneratedColumn<int> timestamp = GeneratedColumn<int>(
       'timestamp', aliasedName, false,
-      type: const IntType(),
+      type: DriftSqlType.int,
       requiredDuringInsert: false,
       defaultValue: const Constant(0));
   @override
@@ -355,8 +335,23 @@ class $DownloadsTableTable extends DownloadsTable
   Set<GeneratedColumn> get $primaryKey => {mediaId};
   @override
   DownloadsTableData map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return DownloadsTableData.fromData(data,
-        prefix: tablePrefix != null ? '$tablePrefix.' : null);
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return DownloadsTableData(
+      mediaId: attachedDatabase.options.types
+          .read(DriftSqlType.string, data['${effectivePrefix}media_id'])!,
+      url: attachedDatabase.options.types
+          .read(DriftSqlType.string, data['${effectivePrefix}url'])!,
+      path: attachedDatabase.options.types
+          .read(DriftSqlType.string, data['${effectivePrefix}path'])!,
+      filename: attachedDatabase.options.types
+          .read(DriftSqlType.string, data['${effectivePrefix}filename'])!,
+      status: attachedDatabase.options.types
+          .read(DriftSqlType.int, data['${effectivePrefix}status'])!,
+      progress: attachedDatabase.options.types
+          .read(DriftSqlType.int, data['${effectivePrefix}progress'])!,
+      timestamp: attachedDatabase.options.types
+          .read(DriftSqlType.int, data['${effectivePrefix}timestamp'])!,
+    );
   }
 
   @override
@@ -366,12 +361,13 @@ class $DownloadsTableTable extends DownloadsTable
 }
 
 abstract class _$DownloadsDB extends GeneratedDatabase {
-  _$DownloadsDB(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e);
+  _$DownloadsDB(QueryExecutor e) : super(e);
   _$DownloadsDB.connect(DatabaseConnection c) : super.connect(c);
   late final $DownloadsTableTable downloadsTable = $DownloadsTableTable(this);
   late final DownloadsDao downloadsDao = DownloadsDao(this as DownloadsDB);
   @override
-  Iterable<TableInfo> get allTables => allSchemaEntities.whereType<TableInfo>();
+  Iterable<TableInfo<Table, dynamic>> get allTables =>
+      allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [downloadsTable];
 }

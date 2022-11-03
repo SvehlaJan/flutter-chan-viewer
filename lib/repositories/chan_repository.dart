@@ -71,7 +71,7 @@ class ChanRepository {
         await _chanApiProvider.fetchThreadList(boardId);
 
     List<ThreadItem> newThreads = boardDetailModel.threads;
-    List<int?> newThreadIds =
+    List<int> newThreadIds =
         newThreads.map((thread) => thread.threadId).toList();
     await _localDataSource.syncWithNewOnlineThreads(boardId, newThreadIds);
     await _localDataSource.saveThreads(newThreads);

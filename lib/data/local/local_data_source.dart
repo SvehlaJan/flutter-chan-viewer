@@ -65,7 +65,7 @@ class LocalDataSource {
     return threads.map((threadData) => ThreadItem.fromTableData(threadData)).toList();
   }
 
-  Future<List<ThreadItem>> getThreadsByBoardId(String? boardId) async {
+  Future<List<ThreadItem>> getThreadsByBoardId(String boardId) async {
     List<ThreadsTableData> threads = await _threadsDao.getThreadsByBoardId(boardId);
     return threads.map((threadData) => ThreadItem.fromTableData(threadData)).toList();
   }
@@ -91,14 +91,14 @@ class LocalDataSource {
     return threads.map((threadData) => ThreadItem.fromTableData(threadData)).toList();
   }
 
-  Future<List<ThreadItem>> getThreadsByBoardIdAndOnlineState(String? boardId, OnlineState onlineState) async {
+  Future<List<ThreadItem>> getThreadsByBoardIdAndOnlineState(String boardId, OnlineState onlineState) async {
     List<ThreadsTableData> threadsTableData = await _threadsDao.getThreadsByBoardIdAndOnlineState(boardId, onlineState);
     List<ThreadItem> threads = threadsTableData.map((threadData) => ThreadItem.fromTableData(threadData)).toList();
     return threads;
   }
 
   /// Sets state to UNKNOWN of tables threads which are no longer online
-  Future<void> syncWithNewOnlineThreads(String? boardId, List<int?> onlineThreadIds) async {
+  Future<void> syncWithNewOnlineThreads(String boardId, List<int> onlineThreadIds) async {
     List<ThreadsTableData> localThreads =
         await _threadsDao.getThreadsByBoardIdAndOnlineState(boardId, OnlineState.ONLINE);
     List<ThreadsTableData> notFoundThreads =
@@ -116,18 +116,21 @@ class LocalDataSource {
     if (unknownThreads.length > 200) {
       unknownThreads.sort((a, b) => a.timestamp!.compareTo(b.timestamp!));
       ThreadsTableData pivotingUnknownThread = unknownThreads.elementAt(200);
-      _threadsDao.deleteThreadsWithOnlineStateOlderThan(OnlineState.UNKNOWN, pivotingUnknownThread.timestamp);
+      int? timestamp = pivotingUnknownThread.timestamp;
+      if (timestamp != null) {
+        _threadsDao.deleteThreadsWithOnlineStateOlderThan(OnlineState.UNKNOWN, timestamp);
+      }
     }
   }
 
   /// Deletes old archived threads, which are no login in archive.
-  Future<void> syncWithNewArchivedThreads(String? boardId, List<int> archivedThreadIds) async {
+  Future<void> syncWithNewArchivedThreads(String boardId, List<int> archivedThreadIds) async {
     List<ThreadsTableData> localArchivedThreads =
         await _threadsDao.getThreadsByBoardIdAndOnlineState(boardId, OnlineState.ARCHIVED);
     List<ThreadsTableData> notFoundThreads = localArchivedThreads
         .where((thread) => !archivedThreadIds.contains(thread.threadId) & !thread.isFavorite!)
         .toList();
-    List<int?> notFoundThreadIds = notFoundThreads.map((thread) => thread.threadId).toList();
+    List<int> notFoundThreadIds = notFoundThreads.map((thread) => thread.threadId).toList();
     await _threadsDao.deleteThreadsByIds(notFoundThreadIds);
 
     List<ThreadsTableData> localOnlineThreads =
@@ -144,7 +147,7 @@ class LocalDataSource {
     return postsData != null ? PostItem.fromTableData(postsData) : null;
   }
 
-  Future<void> deleteThread(String? boardId, int? threadId) async {
+  Future<void> deleteThread(String boardId, int threadId) async {
     await _threadsDao.deleteThreadById(boardId, threadId);
   }
 

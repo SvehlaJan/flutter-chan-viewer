@@ -23,51 +23,51 @@ dependencies:
 
   collection: ^1.16.0
 
-  flutter_bloc: ^8.0.1
+  flutter_bloc: ^8.1.1
   get_it: ^7.2.0
-  http: ^0.13.4
+  http: ^0.13.5
   logger: ^1.1.0
 
-  drift: ^1.7.0
-  sqlite3_flutter_libs: ^0.5.7
-  sqflite: ^2.0.2+1
+  drift: ^2.2.0
+  sqlite3_flutter_libs: ^0.5.10
+  sqflite: ^2.1.0+1
   path_provider: ^2.0.11
   path: ^1.8.2
 
-  local_auth: ^2.1.0
+  local_auth: ^2.1.2
 
-  kt_dart: ^0.10.0
-  equatable: ^2.0.3
+  kt_dart: ^1.0.0
+  equatable: ^2.0.5
   cupertino_icons: ^1.0.5
 
   shared_preferences: ^2.0.15
-  permission_handler: ^9.2.0
-  flutter_downloader: ^1.8.0+1
+  permission_handler: ^10.1.0
+  flutter_downloader: ^1.8.4
   flowder: ^0.2.0
   download: any
 
-  date_format: ^2.0.6
+  date_format: ^2.0.7
 
   flutter_cache_manager: ^3.3.0
-  cached_network_image: ^3.2.1
-  internet_file: ^1.0.0+2
+  cached_network_image: ^3.2.2
+  internet_file: ^1.2.0
   floating_action_bubble: ^1.1.4
   pull_to_refresh: ^2.0.0
   shimmer_animation: ^2.1.0+1
 
-  scrollable_positioned_list: ^0.3.2
+  scrollable_positioned_list: ^0.3.5
   photo_view: ^0.14.0
-  flutter_html: ^3.0.0-alpha.5
+  flutter_html: ^3.0.0-alpha.6
   html_unescape: ^2.0.0
   better_player: ^0.0.83
-  video_thumbnail: ^0.5.0
-  dart_vlc: ^0.2.1
+  video_thumbnail: ^0.5.3
+  dart_vlc: ^0.3.0
   carousel_slider: ^4.1.1
   sliding_sheet: ^0.5.2 # TODO - replace with https://pub.dev/packages/sliding_up_panel
 
 dev_dependencies:
-  drift_dev: ^1.7.0
-  build_runner: ^2.1.11
+  drift_dev: ^2.2.0+1
+  build_runner: ^2.3.0
 
 #dependency_overrides:
 #  photo_view:

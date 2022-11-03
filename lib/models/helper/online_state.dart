@@ -5,6 +5,4 @@
  */
 enum OnlineState { ONLINE, ARCHIVED, NOT_FOUND, CUSTOM, UNKNOWN }
 
-extension on OnlineState {
-
-}
+extension on OnlineState {}

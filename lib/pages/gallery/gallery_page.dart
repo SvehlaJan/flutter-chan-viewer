@@ -66,9 +66,9 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
     if (_sheetController.state?.isExpanded ?? false) {
       _sheetController.collapse();
       // if (widget.showAsReply) {
-        return Future.delayed(const Duration(milliseconds: 150), () {
-          return Future.value(true);
-        });
+      return Future.delayed(const Duration(milliseconds: 150), () {
+        return Future.value(true);
+      });
       // } else {
       //   return Future.value(false);
       // }

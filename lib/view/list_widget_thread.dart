@@ -15,9 +15,7 @@ class ThreadListWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    int newReplies = thread.lastSeenPostIndex > 0
-        ? thread.replies - thread.lastSeenPostIndex
-        : 0;
+    int newReplies = thread.lastSeenPostIndex > 0 ? thread.replies - thread.lastSeenPostIndex : 0;
     return Card(
       clipBehavior: Clip.antiAlias,
       margin: EdgeInsets.all(2.0),
@@ -33,10 +31,7 @@ class ThreadListWidget extends StatelessWidget {
                   minHeight: Constants.avatarImageSize,
 //                  maxHeight: Constants.avatarImageMaxHeight,
                 ),
-                child: ChanCachedImage(
-                    post: thread,
-                    boxFit: BoxFit.fitWidth,
-                    forceThumbnail: true)),
+                child: ChanCachedImage(post: thread, boxFit: BoxFit.fitWidth, forceThumbnail: true)),
           Flexible(
             child: Stack(
               alignment: Alignment.bottomCenter,
@@ -51,17 +46,12 @@ class ThreadListWidget extends StatelessWidget {
                           if (thread.isFavorite())
                             Padding(
                                 padding: const EdgeInsets.all(1.0),
-                                child: Icon(Icons.star,
-                                    color: Colors.yellow,
-                                    size: Constants.favoriteIconSize)),
-                          Text(thread.threadId.toString(),
-                              style: Theme.of(context).textTheme.caption),
+                                child: Icon(Icons.star, color: Colors.yellow, size: Constants.favoriteIconSize)),
+                          Text(thread.threadId.toString(), style: Theme.of(context).textTheme.caption),
                           Spacer(),
-                          Text("${thread.replies}p/${thread.images}m",
-                              style: Theme.of(context).textTheme.caption),
+                          Text("${thread.replies}p/${thread.images}m", style: Theme.of(context).textTheme.caption),
                           Spacer(),
-                          Text(ChanUtil.getHumanDate(thread.timestamp),
-                              style: Theme.of(context).textTheme.caption),
+                          Text(ChanUtil.getHumanDate(thread.timestamp), style: Theme.of(context).textTheme.caption),
                         ],
                       ),
                       Row(
@@ -70,24 +60,16 @@ class ThreadListWidget extends StatelessWidget {
                           if (thread.subtitle.isNotNullNorEmpty)
                             Flexible(
                                 child: Padding(
-                                    padding:
-                                        const EdgeInsets.only(bottom: 8.0),
+                                    padding: const EdgeInsets.only(bottom: 8.0),
                                     child: Text(thread.subtitle!,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .headline6,
-                                        maxLines: 2))),
+                                        style: Theme.of(context).textTheme.headline6, maxLines: 2))),
                           if (newReplies > 0)
                             Text("$newReplies NEW",
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .caption!
-                                    .copyWith(backgroundColor: Colors.red)),
+                                style: Theme.of(context).textTheme.caption!.copyWith(backgroundColor: Colors.red)),
                         ],
                       ),
                       Html(
-                        data: ChanUtil.getReadableHtml(
-                            thread.htmlContent ?? "", true),
+                        data: ChanUtil.getReadableHtml(thread.htmlContent ?? "", true),
                         style: {"*": Style(margin: Margins.zero)},
                         onLinkTap: (url, context, attributes, element) =>
                             ChanLogger.d("Html link clicked { url: $url }"),

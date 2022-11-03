@@ -17,10 +17,7 @@ class ThreadDetailStateContent extends ChanStateContent {
     required this.customThreads,
     required this.isFavorite,
     required this.catalogMode,
-  }) : super(
-            showSearchBar: showSearchBar,
-            showLazyLoading: showLazyLoading,
-            event: event);
+  }) : super(showSearchBar: showSearchBar, showLazyLoading: showLazyLoading, event: event);
 
   int get selectedMediaIndex => model.selectedMediaIndex;
 
@@ -31,8 +28,7 @@ class ThreadDetailStateContent extends ChanStateContent {
   int get selectedPostId => model.selectedPostId;
 
   @override
-  List<Object?> get props =>
-      super.props..addAll([model, isFavorite, catalogMode]);
+  List<Object?> get props => super.props..addAll([model, isFavorite, catalogMode]);
 }
 
 class ThreadDetailSingleEvent extends ChanSingleEvent {
@@ -40,8 +36,6 @@ class ThreadDetailSingleEvent extends ChanSingleEvent {
 
   static const ChanSingleEvent SHOW_UNSTAR_WARNING = const ChanSingleEvent(10);
   static const ChanSingleEvent SCROLL_TO_SELECTED = const ChanSingleEvent(11);
-  static const ChanSingleEvent SHOW_COLLECTIONS_DIALOG =
-      const ChanSingleEvent(12);
-  static const ChanSingleEvent SHOW_POST_ADDED_TO_COLLECTION_SUCCESS =
-      const ChanSingleEvent(13);
+  static const ChanSingleEvent SHOW_COLLECTIONS_DIALOG = const ChanSingleEvent(12);
+  static const ChanSingleEvent SHOW_POST_ADDED_TO_COLLECTION_SUCCESS = const ChanSingleEvent(13);
 }

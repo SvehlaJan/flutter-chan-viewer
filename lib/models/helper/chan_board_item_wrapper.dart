@@ -1,8 +1,7 @@
 import 'package:flutter_chan_viewer/models/ui/board_item.dart';
 
 class ChanBoardItemWrapper {
-  ChanBoardItemWrapper({this.chanBoard, this.headerTitle})
-      : assert(chanBoard != null || headerTitle != null);
+  ChanBoardItemWrapper({this.chanBoard, this.headerTitle}) : assert(chanBoard != null || headerTitle != null);
 
   BoardItem? chanBoard;
   String? headerTitle;

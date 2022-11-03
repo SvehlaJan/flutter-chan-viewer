@@ -64,14 +64,10 @@ class _ChanVideoPlayerState extends State<ChanVideoPlayer> {
         autoDispose: true,
         fit: BoxFit.contain);
     var bufferingConfiguration = BetterPlayerBufferingConfiguration(
-    minBufferMs: 2000,
-    maxBufferMs: 10000,
-    bufferForPlaybackMs: 1000,
-    bufferForPlaybackAfterRebufferMs: 2000);
+        minBufferMs: 2000, maxBufferMs: 10000, bufferForPlaybackMs: 1000, bufferForPlaybackAfterRebufferMs: 2000);
 
     if (getIt<ChanRepository>().isMediaDownloaded(widget.post)) {
-      File file = getIt<ChanStorage>().getMediaFile(
-          widget.post.getMediaUrl()!, widget.post.getCacheDirective())!;
+      File file = getIt<ChanStorage>().getMediaFile(widget.post.getMediaUrl()!, widget.post.getCacheDirective())!;
       BetterPlayerDataSource betterPlayerDataSource = BetterPlayerDataSource(
         BetterPlayerDataSourceType.file,
         file.absolute.path,
@@ -93,9 +89,8 @@ class _ChanVideoPlayerState extends State<ChanVideoPlayer> {
         cacheConfiguration: cacheConfiguration,
         bufferingConfiguration: bufferingConfiguration,
       );
-      _betterPlayerController = BetterPlayerController(
-          betterPlayerConfiguration,
-          betterPlayerDataSource: betterPlayerDataSource);
+      _betterPlayerController =
+          BetterPlayerController(betterPlayerConfiguration, betterPlayerDataSource: betterPlayerDataSource);
     }
   }
 

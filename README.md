@@ -2,7 +2,8 @@
 
 Playground project to learn Flutter.
 
-App consumes and shows content from 4chan. Be aware that the content can be extreme and NSFW! There is a filter in settings and it should stay turned ON.
+App consumes and shows content from 4chan. Be aware that the content can be extreme and NSFW! There
+is a filter in settings and it should stay turned ON.
 
 Currently works on Android (iOS should too). MacOs is working partially.
 

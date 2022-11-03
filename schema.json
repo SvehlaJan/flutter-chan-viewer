@@ -1,1 +1,312 @@
-{"_meta":{"description":"This file contains a serialized version of schema entities for moor.","version":"0.1.0-dev-preview"},"entities":[{"id":0,"references":[],"type":"table","data":{"name":"posts_table","was_declared_in_moor":false,"columns":[{"name":"timestamp","moor_type":"ColumnType.integer","nullable":false,"customConstraints":null,"default_dart":null,"default_client_dart":null,"dsl_features":[]},{"name":"subtitle","moor_type":"ColumnType.text","nullable":true,"customConstraints":null,"default_dart":null,"default_client_dart":null,"dsl_features":[]},{"name":"content","moor_type":"ColumnType.text","nullable":true,"customConstraints":null,"default_dart":null,"default_client_dart":null,"dsl_features":[]},{"name":"filename","moor_type":"ColumnType.text","nullable":true,"customConstraints":null,"default_dart":null,"default_client_dart":null,"dsl_features":[]},{"name":"image_id","moor_type":"ColumnType.text","nullable":true,"customConstraints":null,"default_dart":null,"default_client_dart":null,"dsl_features":[]},{"name":"extension","moor_type":"ColumnType.text","nullable":true,"customConstraints":null,"default_dart":null,"default_client_dart":null,"dsl_features":[]},{"name":"board_id","moor_type":"ColumnType.text","nullable":false,"customConstraints":null,"default_dart":null,"default_client_dart":null,"dsl_features":[]},{"name":"thread_id","moor_type":"ColumnType.integer","nullable":false,"customConstraints":"REFERENCES threads_table(threadId) ON DELETE CASCADE","default_dart":null,"default_client_dart":null,"dsl_features":[]},{"name":"post_id","moor_type":"ColumnType.integer","nullable":false,"customConstraints":null,"default_dart":null,"default_client_dart":null,"dsl_features":[]},{"name":"is_hidden","moor_type":"ColumnType.boolean","nullable":false,"customConstraints":null,"default_dart":null,"default_client_dart":null,"dsl_features":[]}],"is_virtual":false,"explicit_pk":["post_id","thread_id","board_id"]}},{"id":1,"references":[],"type":"table","data":{"name":"threads_table","was_declared_in_moor":false,"columns":[{"name":"timestamp","moor_type":"ColumnType.integer","nullable":false,"customConstraints":null,"default_dart":null,"default_client_dart":null,"dsl_features":[]},{"name":"subtitle","moor_type":"ColumnType.text","nullable":true,"customConstraints":null,"default_dart":null,"default_client_dart":null,"dsl_features":[]},{"name":"content","moor_type":"ColumnType.text","nullable":true,"customConstraints":null,"default_dart":null,"default_client_dart":null,"dsl_features":[]},{"name":"filename","moor_type":"ColumnType.text","nullable":true,"customConstraints":null,"default_dart":null,"default_client_dart":null,"dsl_features":[]},{"name":"image_id","moor_type":"ColumnType.text","nullable":true,"customConstraints":null,"default_dart":null,"default_client_dart":null,"dsl_features":[]},{"name":"extension","moor_type":"ColumnType.text","nullable":true,"customConstraints":null,"default_dart":null,"default_client_dart":null,"dsl_features":[]},{"name":"board_id","moor_type":"ColumnType.text","nullable":false,"customConstraints":"REFERENCES boards_table(boardId) ON DELETE CASCADE","default_dart":null,"default_client_dart":null,"dsl_features":[]},{"name":"thread_id","moor_type":"ColumnType.integer","nullable":false,"customConstraints":null,"default_dart":null,"default_client_dart":null,"dsl_features":[]},{"name":"last_modified","moor_type":"ColumnType.integer","nullable":false,"customConstraints":null,"default_dart":"const Constant(0)","default_client_dart":null,"dsl_features":[]},{"name":"selected_post_id","moor_type":"ColumnType.integer","nullable":false,"customConstraints":null,"default_dart":"const Constant(-1)","default_client_dart":null,"dsl_features":[]},{"name":"is_favorite","moor_type":"ColumnType.boolean","nullable":false,"customConstraints":null,"default_dart":null,"default_client_dart":null,"dsl_features":[]},{"name":"online_state","moor_type":"ColumnType.integer","nullable":false,"customConstraints":null,"default_dart":null,"default_client_dart":null,"dsl_features":[],"type_converter":{"dart_expr":"const EnumIndexConverter<OnlineState>(OnlineState.values)","dart_type_name":"OnlineState"}},{"name":"reply_count","moor_type":"ColumnType.integer","nullable":false,"customConstraints":null,"default_dart":null,"default_client_dart":null,"dsl_features":[]},{"name":"image_count","moor_type":"ColumnType.integer","nullable":false,"customConstraints":null,"default_dart":null,"default_client_dart":null,"dsl_features":[]},{"name":"unread_replies_count","moor_type":"ColumnType.integer","nullable":false,"customConstraints":null,"default_dart":"const Constant(0)","default_client_dart":null,"dsl_features":[]}],"is_virtual":false,"explicit_pk":["thread_id","board_id"]}},{"id":2,"references":[],"type":"table","data":{"name":"boards_table","was_declared_in_moor":false,"columns":[{"name":"board_id","moor_type":"ColumnType.text","nullable":false,"customConstraints":null,"default_dart":null,"default_client_dart":null,"dsl_features":[]},{"name":"title","moor_type":"ColumnType.text","nullable":false,"customConstraints":null,"default_dart":null,"default_client_dart":null,"dsl_features":[]},{"name":"work_safe","moor_type":"ColumnType.boolean","nullable":false,"customConstraints":null,"default_dart":null,"default_client_dart":null,"dsl_features":[]}],"is_virtual":false,"explicit_pk":["board_id"]}}]}
+{
+  "_meta": {
+    "description": "This file contains a serialized version of schema entities for moor.",
+    "version": "0.1.0-dev-preview"
+  },
+  "entities": [
+    {
+      "id": 0,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "posts_table",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "timestamp",
+            "moor_type": "ColumnType.integer",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "subtitle",
+            "moor_type": "ColumnType.text",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "content",
+            "moor_type": "ColumnType.text",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "filename",
+            "moor_type": "ColumnType.text",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "image_id",
+            "moor_type": "ColumnType.text",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "extension",
+            "moor_type": "ColumnType.text",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "board_id",
+            "moor_type": "ColumnType.text",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "thread_id",
+            "moor_type": "ColumnType.integer",
+            "nullable": false,
+            "customConstraints": "REFERENCES threads_table(threadId) ON DELETE CASCADE",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "post_id",
+            "moor_type": "ColumnType.integer",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "is_hidden",
+            "moor_type": "ColumnType.boolean",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "explicit_pk": [
+          "post_id",
+          "thread_id",
+          "board_id"
+        ]
+      }
+    },
+    {
+      "id": 1,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "threads_table",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "timestamp",
+            "moor_type": "ColumnType.integer",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "subtitle",
+            "moor_type": "ColumnType.text",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "content",
+            "moor_type": "ColumnType.text",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "filename",
+            "moor_type": "ColumnType.text",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "image_id",
+            "moor_type": "ColumnType.text",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "extension",
+            "moor_type": "ColumnType.text",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "board_id",
+            "moor_type": "ColumnType.text",
+            "nullable": false,
+            "customConstraints": "REFERENCES boards_table(boardId) ON DELETE CASCADE",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "thread_id",
+            "moor_type": "ColumnType.integer",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "last_modified",
+            "moor_type": "ColumnType.integer",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": "const Constant(0)",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "selected_post_id",
+            "moor_type": "ColumnType.integer",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": "const Constant(-1)",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "is_favorite",
+            "moor_type": "ColumnType.boolean",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "online_state",
+            "moor_type": "ColumnType.integer",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const EnumIndexConverter<OnlineState>(OnlineState.values)",
+              "dart_type_name": "OnlineState"
+            }
+          },
+          {
+            "name": "reply_count",
+            "moor_type": "ColumnType.integer",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "image_count",
+            "moor_type": "ColumnType.integer",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "unread_replies_count",
+            "moor_type": "ColumnType.integer",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": "const Constant(0)",
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "explicit_pk": [
+          "thread_id",
+          "board_id"
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "boards_table",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "board_id",
+            "moor_type": "ColumnType.text",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "title",
+            "moor_type": "ColumnType.text",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "work_safe",
+            "moor_type": "ColumnType.boolean",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "explicit_pk": [
+          "board_id"
+        ]
+      }
+    }
+  ]
+}

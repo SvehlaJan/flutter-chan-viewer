@@ -9,10 +9,7 @@ class BoardListStateContent extends ChanStateContent {
     required showLazyLoading,
     required event,
     required this.boards,
-  }) : super(
-            showSearchBar: showSearchBar,
-            showLazyLoading: showLazyLoading,
-            event: event);
+  }) : super(showSearchBar: showSearchBar, showLazyLoading: showLazyLoading, event: event);
 
   @override
   List<Object?> get props => super.props..addAll([boards]);

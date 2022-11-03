@@ -9,22 +9,14 @@ class FlavorConfig {
   final FlavorValues _values;
   static FlavorConfig? _instance;
 
-  factory FlavorConfig(
-      {required Flavor flavor,
-      Color color = Colors.blue,
-      required FlavorValues values}) {
-    _instance ??= FlavorConfig._internal(
-        flavor, flavor.toString().getNameFromEnum(), color, values);
+  factory FlavorConfig({required Flavor flavor, Color color = Colors.blue, required FlavorValues values}) {
+    _instance ??= FlavorConfig._internal(flavor, flavor.toString().getNameFromEnum(), color, values);
     return _instance!;
   }
 
   @visibleForTesting
-  factory FlavorConfig.tests(
-      {required Flavor flavor,
-      Color color = Colors.blue,
-      required FlavorValues values}) {
-    _instance = FlavorConfig._internal(
-        flavor, flavor.toString().getNameFromEnum(), color, values);
+  factory FlavorConfig.tests({required Flavor flavor, Color color = Colors.blue, required FlavorValues values}) {
+    _instance = FlavorConfig._internal(flavor, flavor.toString().getNameFromEnum(), color, values);
     return _instance!;
   }
 

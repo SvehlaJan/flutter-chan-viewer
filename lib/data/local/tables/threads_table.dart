@@ -1,6 +1,5 @@
 import 'package:drift/drift.dart';
 import 'package:flutter_chan_viewer/data/local/tables/chan_base_table.dart';
-import 'package:flutter_chan_viewer/models/helper/online_state.dart';
 
 // // It needs to be here because of generated code can't import it
 // enum OnlineStateDb { ONLINE, ARCHIVED, NOT_FOUND, CUSTOM, UNKNOWN }

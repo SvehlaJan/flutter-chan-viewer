@@ -18,8 +18,7 @@ class CustomThreadListWidget extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             if (thread.subtitle.isNotNullNorEmpty)
-              Text(thread.subtitle!,
-                  style: Theme.of(context).textTheme.headline6, maxLines: 2)
+              Text(thread.subtitle!, style: Theme.of(context).textTheme.headline6, maxLines: 2)
           ],
         ),
       ),

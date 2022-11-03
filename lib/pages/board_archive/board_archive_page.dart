@@ -54,8 +54,7 @@ class _BoardArchivePageState extends BasePageState<BoardArchivePage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<BoardArchiveBloc, ChanState>(
-        listener: (context, state) {
+    return BlocConsumer<BoardArchiveBloc, ChanState>(listener: (context, state) {
       switch (state.event) {
         case ChanSingleEvent.CLOSE_PAGE:
           Navigator.of(context).pop();
@@ -72,8 +71,7 @@ class _BoardArchivePageState extends BasePageState<BoardArchivePage> {
           builder: (context, state) {
             return buildScaffold(
               context,
-              buildBody(
-                  context, state, ((thread) => _openThreadDetailPage(thread))),
+              buildBody(context, state, ((thread) => _openThreadDetailPage(thread))),
               pageActions: getPageActions(context, state),
               showSearchBar: state.showSearchBar,
             );
@@ -81,8 +79,7 @@ class _BoardArchivePageState extends BasePageState<BoardArchivePage> {
     });
   }
 
-  Widget buildBody(BuildContext context, ChanState state,
-      Function(ThreadItem) onItemClicked) {
+  Widget buildBody(BuildContext context, ChanState state, Function(ThreadItem) onItemClicked) {
     if (state is ChanStateLoading) {
       return Constants.centeredProgressIndicator;
     } else if (state is BoardArchiveStateContent) {
@@ -98,8 +95,7 @@ class _BoardArchivePageState extends BasePageState<BoardArchivePage> {
               controller: _listScrollController,
               itemCount: state.threads.length,
               itemBuilder: (context, index) {
-                ThreadItem? thread =
-                    state.threads[index].threadDetailModel.thread;
+                ThreadItem? thread = state.threads[index].threadDetailModel.thread;
                 if (state.threads[index].isLoading) {
                   return ArchiveThreadListWidget(
                     thread: thread,
@@ -118,8 +114,7 @@ class _BoardArchivePageState extends BasePageState<BoardArchivePage> {
         ],
       );
     } else {
-      return BasePageState.buildErrorScreen(
-          context, (state as ChanStateError).message);
+      return BasePageState.buildErrorScreen(context, (state as ChanStateError).message);
     }
   }
 

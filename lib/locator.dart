@@ -11,7 +11,6 @@ import 'package:flutter_chan_viewer/data/local/moor_db.dart';
 import 'package:flutter_chan_viewer/data/remote/remote_data_source.dart';
 import 'package:flutter_chan_viewer/repositories/chan_downloader.dart';
 import 'package:flutter_chan_viewer/repositories/chan_downloader_impl.dart';
-import 'package:flutter_chan_viewer/repositories/chan_downloader_new.dart';
 import 'package:flutter_chan_viewer/repositories/chan_downloader_mock.dart';
 import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
 import 'package:flutter_chan_viewer/repositories/chan_storage.dart';

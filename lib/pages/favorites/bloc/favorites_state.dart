@@ -10,10 +10,7 @@ class FavoritesStateContent extends ChanStateContent {
     required showLazyLoading,
     required event,
     required this.threads,
-  }) : super(
-            showSearchBar: showSearchBar,
-            showLazyLoading: showLazyLoading,
-            event: event);
+  }) : super(showSearchBar: showSearchBar, showLazyLoading: showLazyLoading, event: event);
 
   @override
   List<Object?> get props => super.props..addAll([threads]);
@@ -35,8 +32,7 @@ class FavoritesThreadWrapper extends Equatable {
   final bool isLoading;
   final bool isCustom;
 
-  FavoritesThreadWrapper(this.threadDetailModel,
-      {this.isCustom = false, this.isLoading = false});
+  FavoritesThreadWrapper(this.threadDetailModel, {this.isCustom = false, this.isLoading = false});
 
   @override
   List<Object> get props => [threadDetailModel, isCustom, isLoading];

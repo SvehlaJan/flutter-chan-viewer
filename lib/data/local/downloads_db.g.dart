@@ -7,8 +7,7 @@ part of 'downloads_db.dart';
 // **************************************************************************
 
 // ignore_for_file: type=lint
-class DownloadsTableData extends DataClass
-    implements Insertable<DownloadsTableData> {
+class DownloadsTableData extends DataClass implements Insertable<DownloadsTableData> {
   final String mediaId;
   final String url;
   final String path;
@@ -16,6 +15,7 @@ class DownloadsTableData extends DataClass
   final int status;
   final int progress;
   final int timestamp;
+
   const DownloadsTableData(
       {required this.mediaId,
       required this.url,
@@ -24,6 +24,7 @@ class DownloadsTableData extends DataClass
       required this.status,
       required this.progress,
       required this.timestamp});
+
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -49,8 +50,7 @@ class DownloadsTableData extends DataClass
     );
   }
 
-  factory DownloadsTableData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
+  factory DownloadsTableData.fromJson(Map<String, dynamic> json, {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return DownloadsTableData(
       mediaId: serializer.fromJson<String>(json['mediaId']),
@@ -62,6 +62,7 @@ class DownloadsTableData extends DataClass
       timestamp: serializer.fromJson<int>(json['timestamp']),
     );
   }
+
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
@@ -77,13 +78,7 @@ class DownloadsTableData extends DataClass
   }
 
   DownloadsTableData copyWith(
-          {String? mediaId,
-          String? url,
-          String? path,
-          String? filename,
-          int? status,
-          int? progress,
-          int? timestamp}) =>
+          {String? mediaId, String? url, String? path, String? filename, int? status, int? progress, int? timestamp}) =>
       DownloadsTableData(
         mediaId: mediaId ?? this.mediaId,
         url: url ?? this.url,
@@ -93,6 +88,7 @@ class DownloadsTableData extends DataClass
         progress: progress ?? this.progress,
         timestamp: timestamp ?? this.timestamp,
       );
+
   @override
   String toString() {
     return (StringBuffer('DownloadsTableData(')
@@ -108,8 +104,8 @@ class DownloadsTableData extends DataClass
   }
 
   @override
-  int get hashCode =>
-      Object.hash(mediaId, url, path, filename, status, progress, timestamp);
+  int get hashCode => Object.hash(mediaId, url, path, filename, status, progress, timestamp);
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -131,6 +127,7 @@ class DownloadsTableCompanion extends UpdateCompanion<DownloadsTableData> {
   final Value<int> status;
   final Value<int> progress;
   final Value<int> timestamp;
+
   const DownloadsTableCompanion({
     this.mediaId = const Value.absent(),
     this.url = const Value.absent(),
@@ -140,6 +137,7 @@ class DownloadsTableCompanion extends UpdateCompanion<DownloadsTableData> {
     this.progress = const Value.absent(),
     this.timestamp = const Value.absent(),
   });
+
   DownloadsTableCompanion.insert({
     required String mediaId,
     required String url,
@@ -152,6 +150,7 @@ class DownloadsTableCompanion extends UpdateCompanion<DownloadsTableData> {
         url = Value(url),
         path = Value(path),
         filename = Value(filename);
+
   static Insertable<DownloadsTableData> custom({
     Expression<String>? mediaId,
     Expression<String>? url,
@@ -233,124 +232,101 @@ class DownloadsTableCompanion extends UpdateCompanion<DownloadsTableData> {
   }
 }
 
-class $DownloadsTableTable extends DownloadsTable
-    with TableInfo<$DownloadsTableTable, DownloadsTableData> {
+class $DownloadsTableTable extends DownloadsTable with TableInfo<$DownloadsTableTable, DownloadsTableData> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
+
   $DownloadsTableTable(this.attachedDatabase, [this._alias]);
+
   final VerificationMeta _mediaIdMeta = const VerificationMeta('mediaId');
   @override
-  late final GeneratedColumn<String> mediaId = GeneratedColumn<String>(
-      'media_id', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+  late final GeneratedColumn<String> mediaId =
+      GeneratedColumn<String>('media_id', aliasedName, false, type: DriftSqlType.string, requiredDuringInsert: true);
   final VerificationMeta _urlMeta = const VerificationMeta('url');
   @override
-  late final GeneratedColumn<String> url = GeneratedColumn<String>(
-      'url', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+  late final GeneratedColumn<String> url =
+      GeneratedColumn<String>('url', aliasedName, false, type: DriftSqlType.string, requiredDuringInsert: true);
   final VerificationMeta _pathMeta = const VerificationMeta('path');
   @override
-  late final GeneratedColumn<String> path = GeneratedColumn<String>(
-      'path', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+  late final GeneratedColumn<String> path =
+      GeneratedColumn<String>('path', aliasedName, false, type: DriftSqlType.string, requiredDuringInsert: true);
   final VerificationMeta _filenameMeta = const VerificationMeta('filename');
   @override
-  late final GeneratedColumn<String> filename = GeneratedColumn<String>(
-      'filename', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+  late final GeneratedColumn<String> filename =
+      GeneratedColumn<String>('filename', aliasedName, false, type: DriftSqlType.string, requiredDuringInsert: true);
   final VerificationMeta _statusMeta = const VerificationMeta('status');
   @override
-  late final GeneratedColumn<int> status = GeneratedColumn<int>(
-      'status', aliasedName, false,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultValue: const Constant(0));
+  late final GeneratedColumn<int> status = GeneratedColumn<int>('status', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: false, defaultValue: const Constant(0));
   final VerificationMeta _progressMeta = const VerificationMeta('progress');
   @override
-  late final GeneratedColumn<int> progress = GeneratedColumn<int>(
-      'progress', aliasedName, false,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultValue: const Constant(0));
+  late final GeneratedColumn<int> progress = GeneratedColumn<int>('progress', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: false, defaultValue: const Constant(0));
   final VerificationMeta _timestampMeta = const VerificationMeta('timestamp');
   @override
-  late final GeneratedColumn<int> timestamp = GeneratedColumn<int>(
-      'timestamp', aliasedName, false,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultValue: const Constant(0));
+  late final GeneratedColumn<int> timestamp = GeneratedColumn<int>('timestamp', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: false, defaultValue: const Constant(0));
+
   @override
-  List<GeneratedColumn> get $columns =>
-      [mediaId, url, path, filename, status, progress, timestamp];
+  List<GeneratedColumn> get $columns => [mediaId, url, path, filename, status, progress, timestamp];
+
   @override
   String get aliasedName => _alias ?? 'downloads_table';
+
   @override
   String get actualTableName => 'downloads_table';
+
   @override
-  VerificationContext validateIntegrity(Insertable<DownloadsTableData> instance,
-      {bool isInserting = false}) {
+  VerificationContext validateIntegrity(Insertable<DownloadsTableData> instance, {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('media_id')) {
-      context.handle(_mediaIdMeta,
-          mediaId.isAcceptableOrUnknown(data['media_id']!, _mediaIdMeta));
+      context.handle(_mediaIdMeta, mediaId.isAcceptableOrUnknown(data['media_id']!, _mediaIdMeta));
     } else if (isInserting) {
       context.missing(_mediaIdMeta);
     }
     if (data.containsKey('url')) {
-      context.handle(
-          _urlMeta, url.isAcceptableOrUnknown(data['url']!, _urlMeta));
+      context.handle(_urlMeta, url.isAcceptableOrUnknown(data['url']!, _urlMeta));
     } else if (isInserting) {
       context.missing(_urlMeta);
     }
     if (data.containsKey('path')) {
-      context.handle(
-          _pathMeta, path.isAcceptableOrUnknown(data['path']!, _pathMeta));
+      context.handle(_pathMeta, path.isAcceptableOrUnknown(data['path']!, _pathMeta));
     } else if (isInserting) {
       context.missing(_pathMeta);
     }
     if (data.containsKey('filename')) {
-      context.handle(_filenameMeta,
-          filename.isAcceptableOrUnknown(data['filename']!, _filenameMeta));
+      context.handle(_filenameMeta, filename.isAcceptableOrUnknown(data['filename']!, _filenameMeta));
     } else if (isInserting) {
       context.missing(_filenameMeta);
     }
     if (data.containsKey('status')) {
-      context.handle(_statusMeta,
-          status.isAcceptableOrUnknown(data['status']!, _statusMeta));
+      context.handle(_statusMeta, status.isAcceptableOrUnknown(data['status']!, _statusMeta));
     }
     if (data.containsKey('progress')) {
-      context.handle(_progressMeta,
-          progress.isAcceptableOrUnknown(data['progress']!, _progressMeta));
+      context.handle(_progressMeta, progress.isAcceptableOrUnknown(data['progress']!, _progressMeta));
     }
     if (data.containsKey('timestamp')) {
-      context.handle(_timestampMeta,
-          timestamp.isAcceptableOrUnknown(data['timestamp']!, _timestampMeta));
+      context.handle(_timestampMeta, timestamp.isAcceptableOrUnknown(data['timestamp']!, _timestampMeta));
     }
     return context;
   }
 
   @override
   Set<GeneratedColumn> get $primaryKey => {mediaId};
+
   @override
   DownloadsTableData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return DownloadsTableData(
-      mediaId: attachedDatabase.options.types
-          .read(DriftSqlType.string, data['${effectivePrefix}media_id'])!,
-      url: attachedDatabase.options.types
-          .read(DriftSqlType.string, data['${effectivePrefix}url'])!,
-      path: attachedDatabase.options.types
-          .read(DriftSqlType.string, data['${effectivePrefix}path'])!,
-      filename: attachedDatabase.options.types
-          .read(DriftSqlType.string, data['${effectivePrefix}filename'])!,
-      status: attachedDatabase.options.types
-          .read(DriftSqlType.int, data['${effectivePrefix}status'])!,
-      progress: attachedDatabase.options.types
-          .read(DriftSqlType.int, data['${effectivePrefix}progress'])!,
-      timestamp: attachedDatabase.options.types
-          .read(DriftSqlType.int, data['${effectivePrefix}timestamp'])!,
+      mediaId: attachedDatabase.options.types.read(DriftSqlType.string, data['${effectivePrefix}media_id'])!,
+      url: attachedDatabase.options.types.read(DriftSqlType.string, data['${effectivePrefix}url'])!,
+      path: attachedDatabase.options.types.read(DriftSqlType.string, data['${effectivePrefix}path'])!,
+      filename: attachedDatabase.options.types.read(DriftSqlType.string, data['${effectivePrefix}filename'])!,
+      status: attachedDatabase.options.types.read(DriftSqlType.int, data['${effectivePrefix}status'])!,
+      progress: attachedDatabase.options.types.read(DriftSqlType.int, data['${effectivePrefix}progress'])!,
+      timestamp: attachedDatabase.options.types.read(DriftSqlType.int, data['${effectivePrefix}timestamp'])!,
     );
   }
 
@@ -362,12 +338,14 @@ class $DownloadsTableTable extends DownloadsTable
 
 abstract class _$DownloadsDB extends GeneratedDatabase {
   _$DownloadsDB(QueryExecutor e) : super(e);
+
   _$DownloadsDB.connect(DatabaseConnection c) : super.connect(c);
   late final $DownloadsTableTable downloadsTable = $DownloadsTableTable(this);
   late final DownloadsDao downloadsDao = DownloadsDao(this as DownloadsDB);
+
   @override
-  Iterable<TableInfo<Table, dynamic>> get allTables =>
-      allSchemaEntities.whereType<TableInfo<Table, Object?>>();
+  Iterable<TableInfo<Table, dynamic>> get allTables => allSchemaEntities.whereType<TableInfo<Table, Object?>>();
+
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [downloadsTable];
 }

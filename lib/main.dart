@@ -68,8 +68,7 @@ class MainApp extends StatelessWidget with WidgetsBindingObserver {
                   home: ChanViewerApp(),
                 ),
               ),
-              if (state.authState == AuthState.auth_required)
-                AuthRequiredPage(),
+              if (state.authState == AuthState.auth_required) AuthRequiredPage(),
               if (state.authState == AuthState.forbidden) NotFoundPage(),
             ],
           ),
@@ -77,8 +76,7 @@ class MainApp extends StatelessWidget with WidgetsBindingObserver {
       } else {
         return Directionality(
           textDirection: TextDirection.ltr,
-          child: BasePageState.buildErrorScreen(
-              context, (state as ChanStateError).message),
+          child: BasePageState.buildErrorScreen(context, (state as ChanStateError).message),
         );
       }
     });

@@ -26,10 +26,11 @@ class ThreadDetailPage extends StatefulWidget {
 
   ThreadDetailPage(this.boardId, this.threadId);
 
-  static Map<String, dynamic> createArguments(final String boardId,
-      final int threadId, {
-        final bool showDownloadsOnly = false,
-      }) {
+  static Map<String, dynamic> createArguments(
+    final String boardId,
+    final int threadId, {
+    final bool showDownloadsOnly = false,
+  }) {
     Map<String, dynamic> arguments = {
       ARG_BOARD_ID: boardId,
       ARG_THREAD_ID: threadId,
@@ -71,7 +72,7 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
     List<PageAction> actions = [if (showSearchButton) PageAction("Search", Icons.search, _onSearchClick)];
     if (isCollection) {
       actions.add(PageAction("Delete collection", Icons.delete_forever,
-              () => _onDeleteCollectionClicked(context, state.model.thread.threadId)));
+          () => _onDeleteCollectionClicked(context, state.model.thread.threadId)));
     } else {
       actions.add(isFavorite
           ? PageAction("Unstar", Icons.star, _onFavoriteToggleClick)
@@ -268,18 +269,13 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
   }
 
   double _getGridScrollOffset(int mediaIndex) {
-    double itemHeight = MediaQuery
-        .of(context)
-        .size
-        .width / _getGridColumnCount();
+    double itemHeight = MediaQuery.of(context).size.width / _getGridColumnCount();
     int targetRow = mediaIndex ~/ _getGridColumnCount();
     return targetRow * itemHeight - itemHeight;
   }
 
   int _getGridColumnCount() {
-    final Orientation orientation = MediaQuery
-        .of(context)
-        .orientation;
+    final Orientation orientation = MediaQuery.of(context).orientation;
     return (orientation == Orientation.portrait) ? 2 : 3;
   }
 

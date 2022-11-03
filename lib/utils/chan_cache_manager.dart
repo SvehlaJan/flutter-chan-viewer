@@ -1,10 +1,10 @@
+import 'package:file/file.dart';
+import 'package:file/local.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:flutter_cache_manager/src/storage/file_system/file_system.dart'
+as c;
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
-import 'package:file/local.dart';
-import 'package:file/file.dart';
-import 'package:flutter_cache_manager/src/storage/file_system/file_system.dart'
-    as c;
 
 class ChanCacheManager {
   static const key = 'libCachedImageData';

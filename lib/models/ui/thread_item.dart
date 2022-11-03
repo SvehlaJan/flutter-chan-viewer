@@ -66,8 +66,7 @@ class ThreadItem extends ChanPostBase with EquatableMixin {
         images: json['images'],
       );
 
-  factory ThreadItem.fromCacheDirective(CacheDirective cacheDirective) =>
-      ThreadItem(
+  factory ThreadItem.fromCacheDirective(CacheDirective cacheDirective) => ThreadItem(
         boardId: cacheDirective.boardId,
         threadId: cacheDirective.threadId,
         timestamp: ChanUtil.getNowTimestamp(),
@@ -149,14 +148,5 @@ class ThreadItem extends ChanPostBase with EquatableMixin {
 
   @override
   List<Object?> get props =>
-      super.props +
-      [
-        onlineStatus,
-        lastModified,
-        selectedPostId,
-        isThreadFavorite,
-        replies,
-        images,
-        lastSeenPostIndex
-      ];
+      super.props + [onlineStatus, lastModified, selectedPostId, isThreadFavorite, replies, images, lastSeenPostIndex];
 }

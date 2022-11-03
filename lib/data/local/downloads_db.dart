@@ -60,7 +60,7 @@ class DownloadsDB extends _$DownloadsDB {
     // background isolate. If we used DriftIsolate.spawn, a third isolate would be
     // started which is not what we want!
     final driftIsolate = DriftIsolate.inCurrent(
-          () => DatabaseConnection.fromExecutor(executor),
+      () => DatabaseConnection.fromExecutor(executor),
     );
     // inform the starting isolate about this, so that it can call .connect()
     request.sendDriftIsolate.send(driftIsolate);

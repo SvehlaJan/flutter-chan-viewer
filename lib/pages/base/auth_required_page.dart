@@ -11,13 +11,8 @@ class AuthRequiredPage extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          Text("Please, authenticate",
-              style: Theme.of(context).textTheme.headline6,
-              textAlign: TextAlign.center),
-          IconButton(
-              icon: Icon(Icons.fingerprint),
-              iconSize: 70.0,
-              onPressed: () => null)
+          Text("Please, authenticate", style: Theme.of(context).textTheme.headline6, textAlign: TextAlign.center),
+          IconButton(icon: Icon(Icons.fingerprint), iconSize: 70.0, onPressed: () => null)
         ],
       ),
     );

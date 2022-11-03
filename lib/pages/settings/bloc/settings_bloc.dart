@@ -76,7 +76,8 @@ class SettingsBloc extends Bloc<ChanEvent, ChanState> {
 
     on<SettingsEventPurgeDatabase>((event, emit) async {
       emit(ChanStateLoading());
-      await getIt<ChanDB>()..purgeDatabase();
+      await getIt<ChanDB>()
+        ..purgeDatabase();
       emit(_contentState);
     });
 

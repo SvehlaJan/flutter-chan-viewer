@@ -59,12 +59,10 @@ class NavigationHelper {
     }
   }
 
-  static Route<dynamic>? getRoute(
-      String name, Map<String, dynamic>? arguments) {
+  static Route<dynamic>? getRoute(String name, Map<String, dynamic>? arguments) {
     switch (name) {
       case Constants.boardDetailRoute:
-        if (arguments != null &&
-            arguments.containsKey(BoardDetailPage.ARG_BOARD_ID)) {
+        if (arguments != null && arguments.containsKey(BoardDetailPage.ARG_BOARD_ID)) {
           String boardId = arguments[BoardDetailPage.ARG_BOARD_ID]!;
           return MaterialPageRoute<void>(
             builder: (BuildContext context) => BlocProvider(
@@ -75,8 +73,7 @@ class NavigationHelper {
         }
         return null;
       case Constants.boardArchiveRoute:
-        if (arguments != null &&
-            arguments.containsKey(BoardArchivePage.ARG_BOARD_ID)) {
+        if (arguments != null && arguments.containsKey(BoardArchivePage.ARG_BOARD_ID)) {
           String boardId = arguments[BoardArchivePage.ARG_BOARD_ID];
           return MaterialPageRoute<void>(
             builder: (BuildContext context) => BlocProvider(
@@ -97,8 +94,8 @@ class NavigationHelper {
                 arguments[ThreadDetailPage.ARG_THREAD_ID],
                 arguments[ThreadDetailPage.ARG_SHOW_DOWNLOADS_ONLY],
               ),
-              child: ThreadDetailPage(arguments[ThreadDetailPage.ARG_BOARD_ID],
-                  arguments[ThreadDetailPage.ARG_THREAD_ID]),
+              child:
+                  ThreadDetailPage(arguments[ThreadDetailPage.ARG_BOARD_ID], arguments[ThreadDetailPage.ARG_THREAD_ID]),
             ),
           );
         }

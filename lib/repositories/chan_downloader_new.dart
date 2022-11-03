@@ -1,8 +1,5 @@
 import 'dart:async';
-import 'dart:isolate';
-import 'dart:ui';
 
-import 'package:collection/collection.dart';
 import 'package:flutter_chan_viewer/data/local/dao/downloads_dao.dart';
 import 'package:flutter_chan_viewer/data/local/download_item.dart';
 import 'package:flutter_chan_viewer/locator.dart';
@@ -10,14 +7,9 @@ import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
 import 'package:flutter_chan_viewer/models/ui/post_item.dart';
 import 'package:flutter_chan_viewer/repositories/chan_downloader.dart';
 import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
-import 'package:flutter_chan_viewer/utils/chan_logger.dart';
-import 'package:flutter_chan_viewer/utils/constants.dart';
-import 'package:flutter_chan_viewer/utils/preferences.dart';
 import 'package:internet_file/internet_file.dart';
 import 'package:internet_file/storage_io.dart';
 import 'package:path_provider/path_provider.dart';
-
-import 'chan_repository.dart';
 
 class ChanDownloaderNew extends ChanDownloader {
   static const int CACHE_MAX_SIZE = 10;
@@ -57,8 +49,7 @@ class ChanDownloaderNew extends ChanDownloader {
       print("Url is already enqueued to download. Skipping.");
       return;
     }
-    if ([DownloadStatus.FINISHED, DownloadStatus.FAILED, DownloadStatus.DELETED]
-        .contains(existingTask.status)) {
+    if ([DownloadStatus.FINISHED, DownloadStatus.FAILED, DownloadStatus.DELETED].contains(existingTask.status)) {
       if (fileExists) {
         return;
       } else {
@@ -83,18 +74,13 @@ class ChanDownloaderNew extends ChanDownloader {
   }
 
   Future<void> _startDownload(DownloadItem item) async {
-    await InternetFile.get(
-      item.url,
-      storage: storageIO,
-      storageAdditional: {
-        'filename': item.filename,
-        'location': item.path,
-      },
-      process: (percentage) async {
-        print("Download progress: ${percentage}");
-        await _downloadsDao.updateDownload(item.copyWith(progress: percentage.toInt()).toTableData());
-      }
-    );
+    await InternetFile.get(item.url, storage: storageIO, storageAdditional: {
+      'filename': item.filename,
+      'location': item.path,
+    }, process: (percentage) async {
+      print("Download progress: ${percentage}");
+      await _downloadsDao.updateDownload(item.copyWith(progress: percentage.toInt()).toTableData());
+    });
   }
 
   @override

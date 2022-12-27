@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/app_bloc/app_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
@@ -33,14 +32,14 @@ class ChanViewerAppState extends State<ChanViewerApp> with WidgetsBindingObserve
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance!.addObserver(this);
+    WidgetsBinding.instance.addObserver(this);
 
     bloc = BlocProvider.of<ChanViewerBloc>(context);
   }
 
   @override
   void dispose() {
-    WidgetsBinding.instance!.removeObserver(this);
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 

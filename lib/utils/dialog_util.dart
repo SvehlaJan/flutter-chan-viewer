@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
 
 class DialogUtil {

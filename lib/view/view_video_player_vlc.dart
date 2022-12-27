@@ -35,7 +35,7 @@ class _ChanVideoPlayerVlcState extends State<ChanVideoPlayerVlc> {
       media.add(Media.network(widget.post.getMediaUrl()!));
     }
     _player = Player(id: widget.post.postId);
-    _player.open(Playlist(medias: media, playlistMode: PlaylistMode.loop));
+    _player.open(Playlist(medias: media));
   }
 
   @override

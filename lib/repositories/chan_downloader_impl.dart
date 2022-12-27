@@ -3,6 +3,7 @@ import 'dart:isolate';
 import 'dart:ui';
 
 import 'package:collection/collection.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
 import 'package:flutter_chan_viewer/models/ui/post_item.dart';
@@ -31,6 +32,7 @@ class ChanDownloaderImpl extends ChanDownloader {
   Future<void> initializeAsync() async {
     _chanStorage = await getIt.getAsync<ChanStorage>();
 
+    WidgetsFlutterBinding.ensureInitialized();
     await FlutterDownloader.initialize();
     FlutterDownloader.registerCallback(ChanDownloaderImpl.downloadCallback);
 

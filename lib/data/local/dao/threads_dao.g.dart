@@ -2,12 +2,8 @@
 
 part of 'threads_dao.dart';
 
-// **************************************************************************
-// DaoGenerator
-// **************************************************************************
-
+// ignore_for_file: type=lint
 mixin _$ThreadsDaoMixin on DatabaseAccessor<ChanDB> {
   $ThreadsTableTable get threadsTable => attachedDatabase.threadsTable;
-
   $PostsTableTable get postsTable => attachedDatabase.postsTable;
 }

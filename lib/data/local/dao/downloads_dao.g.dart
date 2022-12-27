@@ -2,10 +2,7 @@
 
 part of 'downloads_dao.dart';
 
-// **************************************************************************
-// DaoGenerator
-// **************************************************************************
-
+// ignore_for_file: type=lint
 mixin _$DownloadsDaoMixin on DatabaseAccessor<DownloadsDB> {
   $DownloadsTableTable get downloadsTable => attachedDatabase.downloadsTable;
 }

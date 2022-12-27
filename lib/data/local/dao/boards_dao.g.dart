@@ -2,10 +2,7 @@
 
 part of 'boards_dao.dart';
 
-// **************************************************************************
-// DaoGenerator
-// **************************************************************************
-
+// ignore_for_file: type=lint
 mixin _$BoardsDaoMixin on DatabaseAccessor<ChanDB> {
   $BoardsTableTable get boardsTable => attachedDatabase.boardsTable;
 }

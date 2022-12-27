@@ -31,7 +31,6 @@ class ThreadDetailBloc extends BaseBloc<ChanEvent, ChanState> {
   final String _boardId;
   final int _threadId;
   final bool? _showDownloadsOnly;
-  bool _showHidden = false;
   bool? _catalogMode;
   ThreadDetailModel? _threadDetailModel;
   List<ThreadItem> customThreads = [];

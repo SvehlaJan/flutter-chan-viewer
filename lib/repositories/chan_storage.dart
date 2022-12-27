@@ -3,11 +3,12 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
-import 'package:flutter_chan_viewer/utils/chan_logger.dart';
+import 'package:logger/logger.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 
 class ChanStorage {
+  final logger = Logger();
   static const String PERMANENT_DIR = "saved";
   static const String SEPARATOR = "/";
 
@@ -42,7 +43,7 @@ class ChanStorage {
     try {
       return File(getFileAbsolutePath(url, cacheDirective));
     } catch (e, stackTrace) {
-      ChanLogger.e("File read error!", e, stackTrace);
+      logger.e("File read error!", e, stackTrace);
     }
     return null;
   }
@@ -53,7 +54,7 @@ class ChanStorage {
       Uint8List data = await mediaFile.readAsBytes();
       return data;
     } catch (e) {
-//      ChanLogger.e("File read error!", e, stackTrace);
+//      logger.e("File read error!", e, stackTrace);
       return null;
     }
   }
@@ -67,7 +68,7 @@ class ChanStorage {
       File result = await mediaFile.writeAsBytes(data, flush: false);
       return result;
     } catch (e, stackTrace) {
-      ChanLogger.e("File write error!", e, stackTrace);
+      logger.e("File write error!", e, stackTrace);
       return null;
     }
   }
@@ -81,7 +82,7 @@ class ChanStorage {
       file.deleteSync(recursive: true);
       return null;
     } catch (e, stackTrace) {
-      ChanLogger.e("File delete error!", e, stackTrace);
+      logger.e("File delete error!", e, stackTrace);
       return null;
     }
   }
@@ -99,7 +100,7 @@ class ChanStorage {
       File result = await targetMediaFile.writeAsBytes(data, flush: false);
       return result;
     } catch (e, stackTrace) {
-      ChanLogger.e("File copy error!", e, stackTrace);
+      logger.e("File copy error!", e, stackTrace);
       return null;
     }
   }
@@ -112,7 +113,7 @@ class ChanStorage {
       directory.deleteSync(recursive: true);
       return null;
     } catch (e, stackTrace) {
-      ChanLogger.e("File delete error!", e, stackTrace);
+      logger.e("File delete error!", e, stackTrace);
       return null;
     }
   }
@@ -132,7 +133,7 @@ class ChanStorage {
 
       return threadMap;
     } catch (e, stackTrace) {
-      ChanLogger.e("Error listing downloads!", e, stackTrace);
+      logger.e("Error listing downloads!", e, stackTrace);
       return null;
     }
   }
@@ -157,7 +158,7 @@ class ChanStorage {
 
       return downloadedFolders;
     } catch (e, stackTrace) {
-      ChanLogger.e("File read error!", e, stackTrace);
+      logger.e("File read error!", e, stackTrace);
       return null;
     }
   }

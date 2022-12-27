@@ -17,16 +17,17 @@ import 'package:flutter_chan_viewer/models/ui/post_item.dart';
 import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
 import 'package:flutter_chan_viewer/repositories/chan_downloader.dart';
 import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
-import 'package:flutter_chan_viewer/utils/chan_logger.dart';
 import 'package:flutter_chan_viewer/utils/chan_util.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/utils/database_helper.dart';
 import 'package:flutter_chan_viewer/utils/exceptions.dart';
+import 'package:logger/logger.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:stream_transform/stream_transform.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 
 class ChanRepository {
+  final logger = Logger();
   static const int CACHE_MAX_SIZE = 10;
 
   late ChanStorage _chanStorage;
@@ -59,7 +60,7 @@ class ChanRepository {
       List<BoardItem> boards = await _localDataSource.getBoards(includeNsfw);
       return boards.isNotEmpty ? BoardListModel(boards) : null;
     } catch (e, stackTrace) {
-      ChanLogger.e("fetchCachedBoardList error", e, stackTrace);
+      logger.e("fetchCachedBoardList error", e, stackTrace);
     }
 
     return null;

@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
-import 'package:flutter_chan_viewer/utils/chan_logger.dart';
 import 'package:flutter_chan_viewer/utils/chan_util.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/utils/extensions.dart';
 import 'package:flutter_chan_viewer/view/view_cached_image.dart';
 import 'package:flutter_html/flutter_html.dart';
+import 'package:logger/logger.dart';
 
 class ThreadListWidget extends StatelessWidget {
+  final logger = Logger();
   final ThreadItem thread;
   final bool showProgress;
 
-  const ThreadListWidget({required this.thread, this.showProgress = false});
+  ThreadListWidget({required this.thread, this.showProgress = false});
 
   @override
   Widget build(BuildContext context) {
@@ -72,7 +73,7 @@ class ThreadListWidget extends StatelessWidget {
                         data: ChanUtil.getReadableHtml(thread.htmlContent ?? "", true),
                         style: {"*": Style(margin: Margins.zero)},
                         onLinkTap: (url, context, attributes, element) =>
-                            ChanLogger.d("Html link clicked { url: $url }"),
+                            logger.d("Html link clicked { url: $url }"),
                       )
                     ],
                   ),

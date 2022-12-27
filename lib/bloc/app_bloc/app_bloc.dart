@@ -83,7 +83,8 @@ class AppBloc extends Bloc<AppEvent, ChanState> {
 
   Future<void> requestAuthentication() async {
     bool authAvailable = await auth.canCheckBiometrics;
-    if (!isMobile || !authAvailable) {
+    bool deviceSupported = await auth.isDeviceSupported();
+    if (!isMobile || !authAvailable || !deviceSupported) {
       print("Device does not support biometric auth");
       add(AppEventAuthStateChange(authState: AuthState.authenticated));
       return;

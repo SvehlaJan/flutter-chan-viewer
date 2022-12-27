@@ -9,14 +9,15 @@ import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
 import 'package:flutter_chan_viewer/models/ui/post_item.dart';
 import 'package:flutter_chan_viewer/repositories/chan_downloader.dart';
 import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
-import 'package:flutter_chan_viewer/utils/chan_logger.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
+import 'package:logger/logger.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'chan_repository.dart';
 
 class ChanDownloaderImpl extends ChanDownloader {
+  final logger = Logger();
   static const int CACHE_MAX_SIZE = 10;
 
   late ChanStorage _chanStorage;
@@ -59,7 +60,7 @@ class ChanDownloaderImpl extends ChanDownloader {
     try {
       currentTasks = await FlutterDownloader.loadTasks() ?? [];
     } catch (e) {
-      ChanLogger.e("Failed to load tasks: ", e);
+      logger.e("Failed to load tasks: ", e);
     }
 
     for (PostItem post in model.allMediaPosts) {
@@ -77,7 +78,7 @@ class ChanDownloaderImpl extends ChanDownloader {
       return;
     }
     if ([DownloadTaskStatus.enqueued, DownloadTaskStatus.running].contains(existingTask.status)) {
-      print("Url is already enqueued to download. Skipping. ${existingTask.status}");
+      logger.i("Url is already enqueued to download. Skipping. ${existingTask.status}");
       // FlutterDownloader.remove(taskId: existingTask.taskId);
       return;
     }
@@ -108,7 +109,7 @@ class ChanDownloaderImpl extends ChanDownloader {
   }
 
   static void downloadCallback(String id, DownloadTaskStatus status, int progress) {
-    // print('Background Isolate Callback: task ($id) is in status ($status) and process ($progress)');
+    // Logger().i('Background Isolate Callback: task ($id) is in status ($status) and process ($progress)');
     final SendPort port = IsolateNameServer.lookupPortByName(Constants.downloaderPortName)!;
     port.send([id, status, progress]);
   }

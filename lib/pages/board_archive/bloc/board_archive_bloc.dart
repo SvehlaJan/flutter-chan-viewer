@@ -13,11 +13,12 @@ import 'package:flutter_chan_viewer/pages/board_archive/bloc/board_archive_event
 import 'package:flutter_chan_viewer/pages/board_archive/bloc/board_archive_state.dart';
 import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
 import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
-import 'package:flutter_chan_viewer/utils/chan_logger.dart';
 import 'package:flutter_chan_viewer/utils/exceptions.dart';
 import 'package:flutter_chan_viewer/utils/extensions.dart';
+import 'package:logger/logger.dart';
 
 class BoardArchiveBloc extends BaseBloc<ChanEvent, ChanState> {
+  final logger = Logger();
   final ChanRepository _repository = getIt<ChanRepository>();
   final String boardId;
   List<int> archiveThreadIds = [];
@@ -68,7 +69,7 @@ class BoardArchiveBloc extends BaseBloc<ChanEvent, ChanState> {
           }
           archiveThreads[archiveThreads.length - 1] = ArchiveThreadWrapper(threadDetailModel, false);
         } catch (e) {
-          ChanLogger.e("Failed to load archived thread", e);
+          logger.e("Failed to load archived thread", e);
         }
       }
 

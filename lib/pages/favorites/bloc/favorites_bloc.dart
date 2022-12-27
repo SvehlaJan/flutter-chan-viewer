@@ -9,16 +9,17 @@ import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
 import 'package:flutter_chan_viewer/pages/base/base_bloc.dart';
 import 'package:flutter_chan_viewer/pages/favorites/bloc/favorites_event.dart';
 import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
-import 'package:flutter_chan_viewer/utils/chan_logger.dart';
 import 'package:flutter_chan_viewer/utils/chan_util.dart';
 import 'package:flutter_chan_viewer/utils/exceptions.dart';
 import 'package:flutter_chan_viewer/utils/extensions.dart';
 import 'package:flutter_chan_viewer/utils/preferences.dart';
+import 'package:logger/logger.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import 'favorites_state.dart';
 
 class FavoritesBloc extends BaseBloc<ChanEvent, ChanState> {
+  final logger = Logger();
   final ChanRepository _repository = getIt<ChanRepository>();
   final Preferences _preferences = getIt<Preferences>();
   static const int DETAIL_REFRESH_TIMEOUT = 60 * 1000; // 60 seconds
@@ -78,7 +79,7 @@ class FavoritesBloc extends BaseBloc<ChanEvent, ChanState> {
               cachedThread.thread.boardId, cachedThread.thread.threadId, false);
           _repository.downloadAllMedia(refreshedThread);
         } on HttpException {
-          ChanLogger.v("Thread not found. Probably offline. Ignoring");
+          logger.v("Thread not found. Probably offline. Ignoring");
         } on SocketException {
           emit(buildContentState(event: ChanSingleEvent.SHOW_OFFLINE));
         }

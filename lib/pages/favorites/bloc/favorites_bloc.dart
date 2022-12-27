@@ -1,6 +1,7 @@
 import 'dart:collection';
 import 'dart:io';
 
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_chan_viewer/bloc/chan_event.dart';
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/locator.dart';
@@ -42,8 +43,7 @@ class FavoritesBloc extends BaseBloc<ChanEvent, ChanState> {
       List<ThreadDetailModel> threads = await _repository.getFavoriteThreads();
       bool showNsfw = _preferences.getBool(Preferences.KEY_SETTINGS_SHOW_NSFW, def: false);
       if (!showNsfw) {
-        List<String?> sfwBoardIds =
-            (await _repository.fetchCachedBoardList(false))!.boards.map((board) => board.boardId).toList();
+        List<String?> sfwBoardIds = (await _repository.fetchCachedBoardList(false))!.boards.map((board) => board.boardId).toList();
         threads.removeWhere((model) => !sfwBoardIds.contains(model.thread.boardId));
       }
       _favoriteThreads = threads.map((e) => FavoritesThreadWrapper(e)).toList();
@@ -55,8 +55,7 @@ class FavoritesBloc extends BaseBloc<ChanEvent, ChanState> {
           .toList();
 
       int currentTimestamp = ChanUtil.getNowTimestamp();
-      bool shouldRefreshDetails =
-          event.forceRefresh || currentTimestamp - _lastDetailRefreshTimestamp > DETAIL_REFRESH_TIMEOUT;
+      bool shouldRefreshDetails = event.forceRefresh || currentTimestamp - _lastDetailRefreshTimestamp > DETAIL_REFRESH_TIMEOUT;
       if (_favoriteThreads.isNotEmpty && shouldRefreshDetails) {
         _lastDetailRefreshTimestamp = currentTimestamp;
         add(FavoritesEventFetchDetail(0));
@@ -75,9 +74,12 @@ class FavoritesBloc extends BaseBloc<ChanEvent, ChanState> {
         emit(buildContentState(lazyLoading: true));
 
         try {
-          refreshedThread = await _repository.fetchRemoteThreadDetail(
-              cachedThread.thread.boardId, cachedThread.thread.threadId, false);
-          _repository.downloadAllMedia(refreshedThread);
+          refreshedThread = await _repository.fetchRemoteThreadDetail(cachedThread.thread.boardId, cachedThread.thread.threadId, false);
+
+          var connectivityResult = await (Connectivity().checkConnectivity());
+          if (connectivityResult == ConnectivityResult.wifi) {
+            _repository.downloadAllMedia(refreshedThread);
+          }
         } on HttpException {
           logger.v("Thread not found. Probably offline. Ignoring");
         } on SocketException {

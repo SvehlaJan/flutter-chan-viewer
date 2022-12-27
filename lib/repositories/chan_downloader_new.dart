@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_chan_viewer/data/local/dao/downloads_dao.dart';
 import 'package:flutter_chan_viewer/data/local/download_item.dart';
 import 'package:flutter_chan_viewer/locator.dart';
+import 'package:flutter_chan_viewer/models/helper/chan_post_base.dart';
 import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
 import 'package:flutter_chan_viewer/models/ui/post_item.dart';
 import 'package:flutter_chan_viewer/repositories/chan_downloader.dart';
@@ -36,7 +37,6 @@ class ChanDownloaderNew extends ChanDownloader {
     }
   }
 
-  @override
   Future<void> downloadPostMedia(PostItem post) async {
     bool fileExists = _chanStorage.mediaFileExists(post.getMediaUrl()!, post.getCacheDirective());
     DownloadItem? existingTask = (await _downloadsDao.getDownloadById(post.imageId!)).toDownloadsItem();
@@ -96,5 +96,10 @@ class ChanDownloaderNew extends ChanDownloader {
         // await FlutterDownloader.cancel(taskId: task.taskId);
       }
     }
+  }
+
+  @override
+  bool isPostMediaDownloaded(ChanPostBase post) {
+    return _chanStorage.mediaFileExists(post.getMediaUrl()!, post.getCacheDirective());
   }
 }

@@ -1,8 +1,10 @@
 import 'dart:collection';
 import 'dart:io';
+import 'dart:isolate';
 import 'dart:ui';
 
 import 'package:collection/src/iterable_extensions.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_chan_viewer/bloc/chan_event.dart';
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/locator.dart';
@@ -18,12 +20,14 @@ import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/utils/exceptions.dart';
 import 'package:flutter_chan_viewer/utils/extensions.dart';
 import 'package:flutter_chan_viewer/utils/preferences.dart';
+import 'package:logger/logger.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import 'thread_detail_event.dart';
 import 'thread_detail_state.dart';
 
 class ThreadDetailBloc extends BaseBloc<ChanEvent, ChanState> {
+  final logger = Logger();
   final ChanRepository _repository = getIt<ChanRepository>();
   final ChanStorage _chanStorage = getIt<ChanStorage>();
   final Preferences _preferences = getIt<Preferences>();
@@ -35,6 +39,8 @@ class ThreadDetailBloc extends BaseBloc<ChanEvent, ChanState> {
   ThreadDetailModel? _threadDetailModel;
   List<ThreadItem> customThreads = [];
 
+  ReceivePort _port = ReceivePort();
+
   CacheDirective get cacheDirective => CacheDirective(_boardId, _threadId);
 
   ThreadDetailBloc(this._boardId, this._threadId, this._showDownloadsOnly) : super(ChanStateLoading()) {
@@ -45,6 +51,13 @@ class ThreadDetailBloc extends BaseBloc<ChanEvent, ChanState> {
         _catalogMode = _preferences.getBool(Preferences.KEY_THREAD_CATALOG_MODE, def: false);
       }
       customThreads = await _repository.getCustomThreads();
+
+      IsolateNameServer.registerPortWithName(_port.sendPort, Constants.downloaderPortName);
+      _port.listen((dynamic data) {
+        String postId = data[0];
+        int progress = data[1];
+        logger.d("Download progress: $postId - $progress");
+      });
 
       add(ChanEventFetchData());
     });
@@ -67,7 +80,8 @@ class ThreadDetailBloc extends BaseBloc<ChanEvent, ChanState> {
       try {
         ThreadDetailModel remoteThread = await _repository.fetchRemoteThreadDetail(_boardId, _threadId, false);
 
-        if (remoteThread.isFavorite) {
+        var connectivityResult = await (Connectivity().checkConnectivity());
+        if (remoteThread.isFavorite && connectivityResult == ConnectivityResult.wifi) {
           _repository.downloadAllMedia(remoteThread);
         }
 

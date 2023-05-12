@@ -11,12 +11,11 @@ import 'package:flutter_chan_viewer/models/ui/post_item.dart';
 import 'package:flutter_chan_viewer/repositories/chan_downloader.dart';
 import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
+import 'package:flutter_chan_viewer/utils/log_utils.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
-import 'package:logger/logger.dart';
-import 'package:path_provider/path_provider.dart';
 
 class ChanDownloaderImpl extends ChanDownloader {
-  final logger = Logger();
+  static final logger = LogUtils.getLogger();
   static const int CACHE_MAX_SIZE = 10;
 
   late ChanStorage _chanStorage;
@@ -27,16 +26,15 @@ class ChanDownloaderImpl extends ChanDownloader {
     _chanStorage = await getIt.getAsync<ChanStorage>();
 
     WidgetsFlutterBinding.ensureInitialized();
-    await FlutterDownloader.initialize();
+    await FlutterDownloader.initialize(
+      debug: true,
+    );
     FlutterDownloader.registerCallback(ChanDownloaderImpl.downloadCallback);
-
-    var dir = await getApplicationDocumentsDirectory();
-    await dir.create(recursive: true);
   }
 
   @override
   Future<void> downloadThreadMedia(ThreadDetailModel model) async {
-    _chanStorage.createDirectory(model.cacheDirective);
+    await _chanStorage.createDirectory(model.cacheDirective);
 
     try {
       var currentTasks = await FlutterDownloader.loadTasks() ?? [];
@@ -51,7 +49,9 @@ class ChanDownloaderImpl extends ChanDownloader {
   Future<void> _downloadPostMedia(PostItem post, List<DownloadTask> allTasks) async {
     bool fileExists = _chanStorage.mediaFileExists(post.getMediaUrl()!, post.getCacheDirective());
     List<DownloadTask> existingTasks = allTasks.where((element) => element.url == post.getMediaUrl2()).toList();
-    DownloadTask? existingTask = existingTasks.isEmpty ? null : existingTasks.reduce((value, element) => value.timeCreated > element.timeCreated ? value : element);
+    DownloadTask? existingTask = existingTasks.isEmpty
+        ? null
+        : existingTasks.reduce((value, element) => value.timeCreated > element.timeCreated ? value : element);
 
     if (existingTask == null) {
       await _requestDownload(_TaskInfo(post));
@@ -73,11 +73,11 @@ class ChanDownloaderImpl extends ChanDownloader {
   }
 
   Future<void> _requestDownload(_TaskInfo task) async {
-    String dirPath = task.getCacheDir(_chanStorage);
+    String dirPath = _chanStorage.getFolderAbsolutePath(task.post.getCacheDirective());
     String? taskId = await FlutterDownloader.enqueue(
       url: task.url!,
       savedDir: dirPath,
-      showNotification: false,
+      showNotification: true,
       openFileFromNotification: false,
     );
 
@@ -93,7 +93,7 @@ class ChanDownloaderImpl extends ChanDownloader {
       final SendPort port = IsolateNameServer.lookupPortByName(Constants.downloaderPortName)!;
       port.send([task.post.postId, progress]);
     }
-    // Logger().i('Background Isolate Callback: task ($id) is in status ($status) and process ($progress)');
+    logger.i('Background Isolate Callback: task ($id) is in status ($status) and process ($progress)');
   }
 
   @override
@@ -115,8 +115,11 @@ class ChanDownloaderImpl extends ChanDownloader {
   bool isPostMediaDownloaded(ChanPostBase post) {
     bool fileExists = _chanStorage.mediaFileExists(post.getMediaUrl()!, post.getCacheDirective());
     List<_TaskInfo> existingTasks = taskList.where((element) => element.url == post.getMediaUrl2()).toList();
-    _TaskInfo? existingTask = existingTasks.isEmpty ? null : existingTasks.reduce((value, element) => value.timeCreated > element.timeCreated ? value : element);
-    bool isInProgress = existingTask != null && [DownloadTaskStatus.enqueued, DownloadTaskStatus.running].contains(existingTask.status);
+    _TaskInfo? existingTask = existingTasks.isEmpty
+        ? null
+        : existingTasks.reduce((value, element) => value.timeCreated > element.timeCreated ? value : element);
+    bool isInProgress =
+        existingTask != null && [DownloadTaskStatus.enqueued, DownloadTaskStatus.running].contains(existingTask.status);
     return !isInProgress && fileExists;
   }
 }
@@ -129,8 +132,6 @@ class _TaskInfo {
   DownloadTaskStatus status = DownloadTaskStatus.undefined;
 
   String? get url => post.getMediaUrl();
-
-  String getCacheDir(ChanStorage cache) => cache.getFolderAbsolutePath(post.getCacheDirective());
 
   _TaskInfo(this.post);
 }

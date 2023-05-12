@@ -16,20 +16,9 @@ class ThreadsDao extends DatabaseAccessor<ChanDB> with _$ThreadsDaoMixin {
       (select(threadsTable)..where((thread) => thread.boardId.equals(boardId) & thread.threadId.equals(threadId)))
           .getSingleOrNull();
 
-  Future<List<ThreadsTableData>> getThreadsByIds(String boardId, List<int> threadIds) =>
-      (select(threadsTable)..where((thread) => thread.boardId.equals(boardId) & thread.threadId.isIn(threadIds))).get();
-
-  Stream<ThreadsTableData> getThreadByStream(String boardId, int threadId) =>
+  Stream<ThreadsTableData> getThreadStreamById(String boardId, int threadId) =>
       (select(threadsTable)..where((thread) => thread.boardId.equals(boardId) & thread.threadId.equals(threadId)))
           .watchSingle();
-
-  Future<List<ThreadsTableData>> getAllThreadItems() => select(threadsTable).get();
-
-  Future<List<int>> getFavoriteThreadIds() {
-    return (select(threadsTable)..where((thread) => thread.isFavorite.equals(true)))
-        .map((thread) => thread.threadId)
-        .get();
-  }
 
   Future<List<ThreadsTableData>> getFavoriteThreads() {
     return (select(threadsTable)
@@ -47,6 +36,12 @@ class ThreadsDao extends DatabaseAccessor<ChanDB> with _$ThreadsDaoMixin {
             ..where((thread) => thread.boardId.equals(boardId) & thread.onlineState.equals(onlineState.index))
             ..orderBy([(thread) => OrderingTerm(expression: thread.threadId, mode: OrderingMode.desc)]))
           .get();
+
+  Stream<List<ThreadsTableData>> getThreadsStreamByBoardIdAndOnlineState(String boardId, OnlineState onlineState) =>
+      (select(threadsTable)
+            ..where((thread) => thread.boardId.equals(boardId) & thread.onlineState.equals(onlineState.index))
+            ..orderBy([(thread) => OrderingTerm(expression: thread.threadId, mode: OrderingMode.desc)]))
+          .watch();
 
   Future<List<ThreadsTableData>> getCustomThreads() => getThreadsByOnlineState(OnlineState.CUSTOM);
 

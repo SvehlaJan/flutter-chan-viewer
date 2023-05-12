@@ -3,12 +3,12 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
-import 'package:logger/logger.dart';
+import 'package:flutter_chan_viewer/utils/log_utils.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 
 class ChanStorage {
-  final logger = Logger();
+  final logger = LogUtils.getLogger();
   static const String PERMANENT_DIR = "saved";
   static const String SEPARATOR = "/";
 
@@ -17,6 +17,9 @@ class ChanStorage {
   Future<void> initializeAsync() async {
     _permanentDirectory = Directory(join((await getApplicationSupportDirectory()).path, PERMANENT_DIR));
     if (!_permanentDirectory.existsSync()) await _permanentDirectory.create();
+
+    var dir = await getApplicationDocumentsDirectory();
+    await dir.create(recursive: true);
   }
 
   bool mediaFileExists(String url, CacheDirective cacheDirective) {
@@ -138,6 +141,8 @@ class ChanStorage {
     }
   }
 
+
+
   DownloadFolderInfo getThreadDownloadFolderInfo(CacheDirective cacheDirective) {
     Directory threadDirectory = Directory(getFolderAbsolutePath(cacheDirective));
     DownloadFolderInfo folderInfo = _getThreadFolderInfo(threadDirectory, cacheDirective.boardId);
@@ -188,9 +193,9 @@ class ChanStorage {
     return DownloadFolderInfo(cacheDirective, filesCount, filesSize, fileNames);
   }
 
-  void createDirectory(CacheDirective cacheDirective) {
+  Future<void> createDirectory(CacheDirective cacheDirective) async {
     Directory directory = Directory(getFolderAbsolutePath(cacheDirective));
-    if (!directory.existsSync()) directory.createSync(recursive: true);
+    if (!directory.existsSync()) await directory.create(recursive: true);
   }
 }
 

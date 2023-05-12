@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter_chan_viewer/repositories/chan_result.dart';
 
 abstract class ChanEvent extends Equatable {
   const ChanEvent();
@@ -18,7 +19,23 @@ class ChanEventFetchData extends ChanEvent {
   List<Object?> get props => super.props..addAll([forceRefresh]);
 }
 
-class ChanEventNewDataReceived extends ChanEvent {}
+class ChanEventDataFetched<T> extends ChanEvent {
+  final DataResult<T> result;
+
+  ChanEventDataFetched(this.result);
+
+  @override
+  List<Object?> get props => super.props..addAll([result]);
+}
+
+class ChanEventDataError<T> extends ChanEvent {
+  final T error;
+
+  ChanEventDataError(this.error);
+
+  @override
+  List<Object?> get props => super.props..addAll([error]);
+}
 
 class ChanEventShowSearch extends ChanEvent {}
 

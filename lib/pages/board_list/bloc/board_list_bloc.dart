@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter_chan_viewer/bloc/chan_event.dart';
@@ -8,44 +9,65 @@ import 'package:flutter_chan_viewer/models/helper/chan_board_item_wrapper.dart';
 import 'package:flutter_chan_viewer/models/ui/board_item.dart';
 import 'package:flutter_chan_viewer/pages/base/base_bloc.dart';
 import 'package:flutter_chan_viewer/pages/board_list/bloc/board_list_state.dart';
-import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
+import 'package:flutter_chan_viewer/repositories/boards_repository.dart';
+import 'package:flutter_chan_viewer/repositories/chan_result.dart';
 import 'package:flutter_chan_viewer/utils/exceptions.dart';
 import 'package:flutter_chan_viewer/utils/extensions.dart';
 import 'package:flutter_chan_viewer/utils/preferences.dart';
 
 class BoardListBloc extends BaseBloc<ChanEvent, ChanState> {
-  final ChanRepository _repository = getIt<ChanRepository>();
+  final BoardsRepository _repository = getIt<BoardsRepository>();
   final Preferences _preferences = getIt<Preferences>();
   late List<BoardItem> favoriteBoards;
   late List<BoardItem> otherBoards;
 
+  late final StreamSubscription _subscription;
+
   BoardListBloc() : super(ChanStateLoading()) {
-    on<ChanEventFetchData>((event, emit) async {
-      emit(ChanStateLoading());
 
-      bool showNsfw = _preferences.getBool(Preferences.KEY_SETTINGS_SHOW_NSFW, def: false);
-      List<String?> favoriteBoardIds = _preferences.getStringList(Preferences.KEY_FAVORITE_BOARDS);
+    bool includeNsfw = _preferences.getBool(Preferences.KEY_SETTINGS_SHOW_NSFW, def: false);
+    List<String?> favoriteBoardIds = _preferences.getStringList(Preferences.KEY_FAVORITE_BOARDS);
 
-      BoardListModel? boardListModel = await _repository.fetchCachedBoardList(showNsfw);
-      if (boardListModel != null) {
-        favoriteBoards = boardListModel.boards.where((board) => favoriteBoardIds.contains(board.boardId)).toList();
-        otherBoards = boardListModel.boards.where((board) => !favoriteBoardIds.contains(board.boardId)).toList();
-        emit(buildContentState(lazyLoading: true));
-      }
+    _subscription = _repository.fetchAndObserveBoardList(includeNsfw).listen((data) {
+      add(ChanEventDataFetched(data));
+    }, onError: (e) {
+      add(ChanEventDataError(e));
+    });
 
-      try {
-        boardListModel = await _repository.fetchRemoteBoardList(showNsfw);
-        favoriteBoards = boardListModel!.boards.where((board) => favoriteBoardIds.contains(board.boardId)).toList();
-        otherBoards = boardListModel.boards.where((board) => !favoriteBoardIds.contains(board.boardId)).toList();
-        emit(buildContentState(lazyLoading: false));
-      } catch (e) {
-        if (e is HttpException || e is SocketException) {
-          emit(buildContentState(event: ChanSingleEvent.SHOW_OFFLINE));
+    on<ChanEventDataFetched<BoardListModel>>((event, emit) async {
+      if (event.result is Loading) {
+        BoardListModel? data = (event.result as Loading).data;
+        if (data != null) {
+          favoriteBoards = data.boards.where((board) => favoriteBoardIds.contains(board.boardId)).toList();
+          otherBoards = data.boards.where((board) => !favoriteBoardIds.contains(board.boardId)).toList();
+          emit(buildContentState(lazyLoading: true));
         } else {
-          rethrow;
+          emit(ChanStateLoading());
         }
+      } else if (event.result is Success) {
+        BoardListModel data = (event.result as Success).data;
+        favoriteBoards = data.boards.where((board) => favoriteBoardIds.contains(board.boardId)).toList();
+        otherBoards = data.boards.where((board) => !favoriteBoardIds.contains(board.boardId)).toList();
+        emit(buildContentState());
       }
     });
+
+    on<ChanEventDataError>((event, emit) async {
+      if (event.error is HttpException || event.error is SocketException) {
+        emit(buildContentState(event: ChanSingleEvent.SHOW_OFFLINE));
+      }
+    });
+
+    on<ChanEventFetchData>((event, emit) async {
+      emit(ChanStateLoading());
+      _repository.fetchBoardList(includeNsfw);
+    });
+  }
+
+  @override
+  Future<void> close() {
+    _subscription.cancel();
+    return super.close();
   }
 
   @override

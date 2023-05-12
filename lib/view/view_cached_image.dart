@@ -7,7 +7,9 @@ import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/models/helper/chan_post_base.dart';
 import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
 import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
+import 'package:flutter_chan_viewer/repositories/thumbnail_helper.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
+import 'package:flutter_chan_viewer/utils/log_utils.dart';
 
 class ChanCachedImage extends StatelessWidget {
   final ChanPostBase post;
@@ -43,14 +45,16 @@ class ChanCachedImage extends StatelessWidget {
     }
 
     if (post.isFavorite() && post.isWebm() && isDownloaded) {
-      File? thumbnailFile = ChanRepository.getVideoThumbnail(post);
+      File? thumbnailFile = ThumbnailHelper.getVideoThumbnail(post);
       if (thumbnailFile != null) {
         return Image.file(
           thumbnailFile,
           fit: boxFit,
         );
       } else {
-        ChanRepository.createVideoThumbnail(post);
+        ThumbnailHelper.createVideoThumbnail(post).then((value) {
+          LogUtils.getLogger().d("Thumbnail created: ${value?.path}");
+        });
       }
     }
 

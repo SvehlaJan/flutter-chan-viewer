@@ -3,12 +3,12 @@ import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
 import 'package:flutter_chan_viewer/utils/chan_util.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/utils/extensions.dart';
+import 'package:flutter_chan_viewer/utils/log_utils.dart';
 import 'package:flutter_chan_viewer/view/view_cached_image.dart';
 import 'package:flutter_html/flutter_html.dart';
-import 'package:logger/logger.dart';
 
 class ThreadListWidget extends StatelessWidget {
-  final logger = Logger();
+  final logger = LogUtils.getLogger();
   final ThreadItem thread;
   final bool showProgress;
 

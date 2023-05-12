@@ -9,11 +9,14 @@ import 'package:flutter_chan_viewer/data/local/downloads_db.dart';
 import 'package:flutter_chan_viewer/data/local/local_data_source.dart';
 import 'package:flutter_chan_viewer/data/local/moor_db.dart';
 import 'package:flutter_chan_viewer/data/remote/remote_data_source.dart';
+import 'package:flutter_chan_viewer/repositories/boards_repository.dart';
 import 'package:flutter_chan_viewer/repositories/chan_downloader.dart';
 import 'package:flutter_chan_viewer/repositories/chan_downloader_impl.dart';
 import 'package:flutter_chan_viewer/repositories/chan_downloader_mock.dart';
 import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
 import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
+import 'package:flutter_chan_viewer/repositories/posts_repository.dart';
+import 'package:flutter_chan_viewer/repositories/threads_repository.dart';
 import 'package:flutter_chan_viewer/utils/chan_cache_manager.dart';
 import 'package:flutter_chan_viewer/utils/navigation_service.dart';
 import 'package:flutter_chan_viewer/utils/preferences.dart';
@@ -42,10 +45,29 @@ void setupLocator() {
   });
 
   getIt.registerLazySingletonAsync<ChanRepository>(() async {
-    ChanRepository chanRepository = new ChanRepository();
-    await chanRepository.initializeAsync();
-    return chanRepository;
+    ChanRepository repository = new ChanRepository();
+    await repository.initializeAsync();
+    return repository;
   });
+
+  getIt.registerLazySingletonAsync<BoardsRepository>(() async {
+    BoardsRepository repository = new BoardsRepository();
+    await repository.initializeAsync();
+    return repository;
+  });
+
+  getIt.registerLazySingletonAsync<ThreadsRepository>(() async {
+    ThreadsRepository repository = new ThreadsRepository();
+    await repository.initializeAsync();
+    return repository;
+  });
+
+  getIt.registerLazySingletonAsync<PostsRepository>(() async {
+    PostsRepository repository = new PostsRepository();
+    await repository.initializeAsync();
+    return repository;
+  });
+
 
   getIt.registerLazySingletonAsync<ChanStorage>(() async {
     ChanStorage chanStorage = new ChanStorage();

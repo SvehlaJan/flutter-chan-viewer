@@ -5,9 +5,12 @@ import 'dart:ui';
 import 'package:bloc/bloc.dart';
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/locator.dart';
+import 'package:flutter_chan_viewer/repositories/boards_repository.dart';
 import 'package:flutter_chan_viewer/repositories/chan_downloader.dart';
 import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
 import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
+import 'package:flutter_chan_viewer/repositories/posts_repository.dart';
+import 'package:flutter_chan_viewer/repositories/threads_repository.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/utils/navigation_helper.dart';
 import 'package:flutter_chan_viewer/utils/preferences.dart';
@@ -74,6 +77,9 @@ class AppBloc extends Bloc<AppEvent, ChanState> {
     await getIt.getAsync<ChanDownloader>();
     await getIt.getAsync<ChanStorage>();
     await getIt.getAsync<ChanRepository>();
+    await getIt.getAsync<BoardsRepository>();
+    await getIt.getAsync<ThreadsRepository>();
+    await getIt.getAsync<PostsRepository>();
 
     if (isMobile) {
       requestAuthentication();

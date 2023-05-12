@@ -8,13 +8,11 @@ part 'boards_dao.g.dart';
 class BoardsDao extends DatabaseAccessor<ChanDB> with _$BoardsDaoMixin {
   BoardsDao(ChanDB db) : super(db);
 
-//  Stream<List<PostsTableData>> get allActiveBoardItemsStream => select(boardsTable).watch();
-
   Future<BoardsTableData?> getBoardById(String boardId) {
     return (select(boardsTable)..where((board) => board.boardId.equals(boardId))).getSingleOrNull();
   }
 
-  Future<List<BoardsTableData>> getBoardItems(bool includeNsfw) {
+  Future<List<BoardsTableData>> getAllBoards(bool includeNsfw) {
     if (includeNsfw) {
       return select(boardsTable).get();
     } else {
@@ -22,20 +20,15 @@ class BoardsDao extends DatabaseAccessor<ChanDB> with _$BoardsDaoMixin {
     }
   }
 
+  Stream<List<BoardsTableData>> getAllBoardsStream(bool includeNsfw) {
+    if (includeNsfw) {
+      return select(boardsTable).watch();
+    } else {
+      return (select(boardsTable)..where((board) => board.workSafe.equals(true))).watch();
+    }
+  }
+
   Future<void> insertBoardsList(List<BoardsTableData> entries) async {
     return await batch((batch) => batch.insertAll(boardsTable, entries, mode: InsertMode.insertOrReplace));
   }
-
-  Future<bool> updateBoard(BoardsTableData entry) {
-    return (update(boardsTable).replace(entry)).then((value) {
-      print(value ? "Update goal row success" : "Update goal row failed");
-      return value;
-    });
-  }
-
-  Future<int> deleteBoardById(String boardId) =>
-      (delete(boardsTable)..where((board) => board.boardId.equals(boardId))).go().then((value) {
-        print("Row affecteds: $value");
-        return value;
-      });
 }

@@ -9,18 +9,22 @@ import 'package:flutter_chan_viewer/models/helper/online_state.dart';
 import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
 import 'package:flutter_chan_viewer/pages/base/base_bloc.dart';
 import 'package:flutter_chan_viewer/pages/favorites/bloc/favorites_event.dart';
+import 'package:flutter_chan_viewer/repositories/boards_repository.dart';
 import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
+import 'package:flutter_chan_viewer/repositories/threads_repository.dart';
 import 'package:flutter_chan_viewer/utils/chan_util.dart';
 import 'package:flutter_chan_viewer/utils/exceptions.dart';
 import 'package:flutter_chan_viewer/utils/extensions.dart';
+import 'package:flutter_chan_viewer/utils/log_utils.dart';
 import 'package:flutter_chan_viewer/utils/preferences.dart';
-import 'package:logger/logger.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import 'favorites_state.dart';
 
 class FavoritesBloc extends BaseBloc<ChanEvent, ChanState> {
-  final logger = Logger();
+  final logger = LogUtils.getLogger();
+  final BoardsRepository _boardsRepository = getIt<BoardsRepository>();
+  final ThreadsRepository _threadsRepository = getIt<ThreadsRepository>();
   final ChanRepository _repository = getIt<ChanRepository>();
   final Preferences _preferences = getIt<Preferences>();
   static const int DETAIL_REFRESH_TIMEOUT = 60 * 1000; // 60 seconds
@@ -40,14 +44,14 @@ class FavoritesBloc extends BaseBloc<ChanEvent, ChanState> {
         return;
       }
 
-      List<ThreadDetailModel> threads = await _repository.getFavoriteThreads();
+      List<ThreadDetailModel> threads = await _threadsRepository.getFavoriteThreads();
       bool showNsfw = _preferences.getBool(Preferences.KEY_SETTINGS_SHOW_NSFW, def: false);
       if (!showNsfw) {
-        List<String?> sfwBoardIds = (await _repository.fetchCachedBoardList(false))!.boards.map((board) => board.boardId).toList();
+        List<String?> sfwBoardIds = (await _boardsRepository.fetchCachedBoardList(false))!.boards.map((board) => board.boardId).toList();
         threads.removeWhere((model) => !sfwBoardIds.contains(model.thread.boardId));
       }
       _favoriteThreads = threads.map((e) => FavoritesThreadWrapper(e)).toList();
-      _customThreads = (await _repository.getCustomThreads())
+      _customThreads = (await _threadsRepository.getCustomThreads())
           .map((thread) => FavoritesThreadWrapper(
                 ThreadDetailModel.fromThreadAndPosts(thread, []),
                 isCustom: true,
@@ -74,7 +78,7 @@ class FavoritesBloc extends BaseBloc<ChanEvent, ChanState> {
         emit(buildContentState(lazyLoading: true));
 
         try {
-          refreshedThread = await _repository.fetchRemoteThreadDetail(cachedThread.thread.boardId, cachedThread.thread.threadId, false);
+          refreshedThread = await _threadsRepository.fetchRemoteThreadDetail(cachedThread.thread.boardId, cachedThread.thread.threadId, false);
 
           var connectivityResult = await (Connectivity().checkConnectivity());
           if (connectivityResult == ConnectivityResult.wifi) {

@@ -11,6 +11,7 @@ class PostItem extends ChanPostBase with EquatableMixin {
   final List<int> repliesTo;
   final List<PostItem> repliesFrom;
   final bool isHidden;
+  final int progress;
   ThreadItem? thread;
 
   bool get hasReplies => repliesFrom.isNotEmpty;
@@ -30,6 +31,7 @@ class PostItem extends ChanPostBase with EquatableMixin {
     required this.repliesTo,
     required this.repliesFrom,
     this.isHidden = false,
+    this.progress = 0,
     this.thread,
   }) : super(
           boardId: boardId,
@@ -62,7 +64,6 @@ class PostItem extends ChanPostBase with EquatableMixin {
       repliesTo: ChanUtil.getPostReferences(json['com']),
       repliesFrom: [],
       thread: thread,
-      isHidden: false,
     );
   }
 
@@ -82,7 +83,6 @@ class PostItem extends ChanPostBase with EquatableMixin {
       repliesTo: [],
       repliesFrom: [],
       thread: null,
-      isHidden: false,
     );
   }
 
@@ -120,6 +120,7 @@ class PostItem extends ChanPostBase with EquatableMixin {
     List<int>? repliesTo,
     List<PostItem>? repliesFrom,
     bool? isHidden,
+    int? progress,
     ThreadItem? thread,
     String? boardId,
     int? threadId,
@@ -135,6 +136,7 @@ class PostItem extends ChanPostBase with EquatableMixin {
       repliesTo: repliesTo ?? this.repliesTo,
       repliesFrom: repliesFrom ?? this.repliesFrom,
       isHidden: isHidden ?? this.isHidden,
+      progress: progress ?? this.progress,
       thread: thread ?? this.thread,
       boardId: boardId ?? this.boardId,
       threadId: threadId ?? this.threadId,
@@ -148,5 +150,5 @@ class PostItem extends ChanPostBase with EquatableMixin {
   }
 
   @override
-  List<Object?> get props => super.props + [postId, repliesTo, repliesFrom, thread, isHidden];
+  List<Object?> get props => super.props + [postId, repliesTo, repliesFrom, thread, isHidden, progress];
 }

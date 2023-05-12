@@ -1,6 +1,7 @@
 import 'package:dart_vlc/dart_vlc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/app_bloc/app_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/app_bloc/app_event.dart';
@@ -21,6 +22,7 @@ import 'utils/constants.dart';
 void main() async {
   EquatableConfig.stringify = true;
   WidgetsFlutterBinding.ensureInitialized();
+  BackgroundIsolateBinaryMessenger.ensureInitialized(ServicesBinding.rootIsolateToken!);
   setupLocator();
   DartVLC.initialize();
 

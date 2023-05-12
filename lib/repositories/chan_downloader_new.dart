@@ -30,7 +30,7 @@ class ChanDownloaderNew extends ChanDownloader {
 
   @override
   Future<void> downloadThreadMedia(ThreadDetailModel model) async {
-    _chanStorage.createDirectory(model.cacheDirective);
+    await _chanStorage.createDirectory(model.cacheDirective);
 
     for (PostItem post in model.allMediaPosts) {
       await downloadPostMedia(post);

@@ -53,7 +53,7 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
   void initState() {
     super.initState();
     bloc = BlocProvider.of<ThreadDetailBloc>(context);
-    bloc.add(ChanEventInitBloc());
+    bloc.add(ChanEventFetchData());
 
     _gridScrollController = ScrollController();
     _listScrollController = ItemScrollController();

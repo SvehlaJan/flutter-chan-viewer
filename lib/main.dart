@@ -14,7 +14,6 @@ import 'package:flutter_chan_viewer/pages/base/base_page.dart';
 import 'package:flutter_chan_viewer/pages/base/notfound_page.dart';
 import 'package:flutter_chan_viewer/utils/flavor_config.dart';
 import 'package:flutter_chan_viewer/utils/navigation_helper.dart';
-import 'package:flutter_chan_viewer/utils/theme_helper.dart';
 
 import 'app.dart';
 import 'utils/constants.dart';
@@ -39,11 +38,12 @@ void main() async {
 }
 
 class MainApp extends StatelessWidget with WidgetsBindingObserver {
+  const MainApp({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     FlavorConfig(
       flavor: Flavor.dev,
-//      color: flavor == Flavor.dev ? Colors.green : Colors.deepPurpleAccent,
       values: Constants.flavorDev,
     );
 
@@ -51,12 +51,6 @@ class MainApp extends StatelessWidget with WidgetsBindingObserver {
       if (state is AppStateLoading) {
         return Constants.centeredProgressIndicator;
       } else if (state is AppStateContent) {
-        ThemeData themeData;
-        if (state.appTheme == AppTheme.light) {
-          themeData = ThemeHelper.getThemeLight(context);
-        } else {
-          themeData = ThemeHelper.getThemeDark(context);
-        }
 
         return Directionality(
           textDirection: TextDirection.ltr,
@@ -66,7 +60,7 @@ class MainApp extends StatelessWidget with WidgetsBindingObserver {
                 create: (context) => ChanViewerBloc(),
                 child: MaterialApp(
                   title: Constants.appName,
-                  theme: themeData,
+                  theme: state.appTheme,
                   home: ChanViewerApp(),
                 ),
               ),

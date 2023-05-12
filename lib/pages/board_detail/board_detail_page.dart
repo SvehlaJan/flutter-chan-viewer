@@ -39,7 +39,7 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
   void initState() {
     super.initState();
     bloc = BlocProvider.of<BoardDetailBloc>(context);
-    bloc.add(ChanEventFetchData());
+    bloc.add(ChanEventInitBloc());
 
     _scrollController = ScrollController();
   }

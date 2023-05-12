@@ -16,7 +16,7 @@ import 'package:flutter_chan_viewer/view/view_video_player.dart';
 import 'package:flutter_chan_viewer/view/view_video_player_vlc.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
-import 'package:sliding_sheet/sliding_sheet.dart';
+import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 class GalleryPage extends StatefulWidget {
   final bool showAsReply;
@@ -32,7 +32,7 @@ class GalleryPage extends StatefulWidget {
 }
 
 class _GalleryPageState extends BasePageState<GalleryPage> {
-  late SheetController _sheetController;
+  late PanelController _panelController;
   late PhotoViewController _photoViewController;
   TextEditingController? _newCollectionTextController;
 
@@ -41,12 +41,12 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
     super.initState();
     bloc = BlocProvider.of<ThreadDetailBloc>(context);
     _newCollectionTextController = TextEditingController();
-    _sheetController = SheetController.of(context) ?? SheetController();
+    _panelController = PanelController();
     _photoViewController = PhotoViewController();
 
     if (widget.showAsReply) {
       Future.delayed(const Duration(milliseconds: 100), () {
-        _sheetController.expand();
+        _panelController.open();
       });
     } else {
       bloc.add(ThreadDetailEventOnPostSelected(widget.initialPostId));
@@ -63,8 +63,8 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
 
   @override
   Future<bool> onBackPressed() {
-    if (_sheetController.state?.isExpanded ?? false) {
-      _sheetController.collapse();
+    if (_panelController.isPanelOpen) {
+      _panelController.close();
       // if (widget.showAsReply) {
       return Future.delayed(const Duration(milliseconds: 150), () {
         return Future.value(true);
@@ -174,7 +174,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
               if (newMediaIndex != state.selectedMediaIndex) {
                 PostItem item = state.model.visibleMediaPosts[newMediaIndex];
                 bloc.add(ThreadDetailEventOnPostSelected(item.postId));
-                _sheetController.collapse();
+                _panelController.close();
               }
             }),
           ),
@@ -222,50 +222,79 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
   Widget _buildBottomView(PostItem post) {
     List<PostItem> repliesPosts = [post, ...post.visibleReplies];
 
-    return SlidingSheet(
-      color: Colors.transparent,
-      shadowColor: Colors.transparent,
-      controller: _sheetController,
-      duration: Duration(milliseconds: 400),
-      snapSpec: const SnapSpec(
-        snap: false,
-        snappings: [20, 1000],
-        positioning: SnapPositioning.pixelOffset,
-      ),
-      builder: (context, state) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            _buildBottomViewHeader(repliesPosts[0]),
-            Material(
-              child: Padding(
-                padding: const EdgeInsets.only(top: 4.0),
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  itemCount: repliesPosts.length,
-                  itemBuilder: (context, index) {
-                    PostItem replyPost = repliesPosts[index];
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 2.0),
-                      child: PostListWidget(
-                        post: replyPost,
-                        showHeroAnimation: false,
-                        showImage: index != 0,
-                        onTap: () => index != 0 ? _onReplyPostClicked(context, replyPost) : null,
-                        onLongPress: () => _showReplyDetailDialog(context, replyPost),
-                        onLinkTap: (url) => _onLinkClicked(context, url),
-                        selected: false,
-                      ),
-                    );
-                  },
-                ),
+    return SlidingUpPanel(
+      controller: _panelController,
+      minHeight: 32,
+      maxHeight: MediaQuery.of(context).size.height * 0.8,
+      collapsed: _buildBottomViewHeader(repliesPosts[0]),
+      panel: Material(
+        child: ListView.builder(
+          shrinkWrap: true,
+          physics: NeverScrollableScrollPhysics(),
+          itemCount: repliesPosts.length,
+          itemBuilder: (context, index) {
+            PostItem replyPost = repliesPosts[index];
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 2.0),
+              child: PostListWidget(
+                post: replyPost,
+                showHeroAnimation: false,
+                showImage: index != 0,
+                onTap: () => index != 0 ? _onReplyPostClicked(context, replyPost) : null,
+                onLongPress: () => _showReplyDetailDialog(context, replyPost),
+                onLinkTap: (url) => _onLinkClicked(context, url),
+                selected: false,
               ),
-            ),
-          ],
-        );
-      },
+            );
+          },
+        ),
+      ),
     );
+
+    // return SlidingSheet(
+    //   color: Colors.transparent,
+    //   shadowColor: Colors.transparent,
+    //   controller: _panelController,
+    //   duration: Duration(milliseconds: 400),
+    //   snapSpec: const SnapSpec(
+    //     snap: false,
+    //     snappings: [20, 1000],
+    //     positioning: SnapPositioning.pixelOffset,
+    //   ),
+    //   builder: (context, state) {
+    //     return Column(
+    //       crossAxisAlignment: CrossAxisAlignment.end,
+    //       children: [
+    //         _buildBottomViewHeader(repliesPosts[0]),
+    //         Material(
+    //           child: Padding(
+    //             padding: const EdgeInsets.only(top: 4.0),
+    //             child: ListView.builder(
+    //               shrinkWrap: true,
+    //               physics: NeverScrollableScrollPhysics(),
+    //               itemCount: repliesPosts.length,
+    //               itemBuilder: (context, index) {
+    //                 PostItem replyPost = repliesPosts[index];
+    //                 return Padding(
+    //                   padding: const EdgeInsets.symmetric(horizontal: 2.0),
+    //                   child: PostListWidget(
+    //                     post: replyPost,
+    //                     showHeroAnimation: false,
+    //                     showImage: index != 0,
+    //                     onTap: () => index != 0 ? _onReplyPostClicked(context, replyPost) : null,
+    //                     onLongPress: () => _showReplyDetailDialog(context, replyPost),
+    //                     onLinkTap: (url) => _onLinkClicked(context, url),
+    //                     selected: false,
+    //                   ),
+    //                 );
+    //               },
+    //             ),
+    //           ),
+    //         ),
+    //       ],
+    //     );
+    //   },
+    // );
   }
 
   Widget _buildBottomViewHeader(PostItem post) {
@@ -276,7 +305,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           InkWell(
-            onTap: () => _sheetController.expand(),
+            onTap: () => _panelController.open(),
             child: Card(
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.only(

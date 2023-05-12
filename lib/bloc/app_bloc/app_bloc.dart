@@ -1,8 +1,11 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:ui';
 
 import 'package:bloc/bloc.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/repositories/boards_repository.dart';
@@ -14,6 +17,7 @@ import 'package:flutter_chan_viewer/repositories/threads_repository.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/utils/navigation_helper.dart';
 import 'package:flutter_chan_viewer/utils/preferences.dart';
+import 'package:json_theme/json_theme.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -21,18 +25,57 @@ import 'app_event.dart';
 import 'app_state.dart';
 
 class AppBloc extends Bloc<AppEvent, ChanState> {
+
+  late Preferences preferences;
+  late ThemeData appTheme;
+  LocalAuthentication auth = LocalAuthentication();
+  AppLifecycleState lastLifecycleState = AppLifecycleState.inactive;
+  AuthState authState = AuthState.auth_required;
+  bool permissionsGranted = false;
+  bool isMobile = Platform.isAndroid || Platform.isIOS;
+
+  Future<void> initBloc() async {
+    await getIt.getAsync<Preferences>();
+    await getIt.getAsync<ChanDownloader>();
+    await getIt.getAsync<ChanStorage>();
+    await getIt.getAsync<ChanRepository>();
+    await getIt.getAsync<BoardsRepository>();
+    await getIt.getAsync<ThreadsRepository>();
+    await getIt.getAsync<PostsRepository>();
+
+    if (isMobile) {
+      requestAuthentication();
+      requestPermissions();
+    }
+
+    preferences = getIt.get<Preferences>();
+  }
+
+  Future<ThemeData> loadTheme() async {
+    int appThemeIndex = preferences.getInt(Preferences.KEY_SETTINGS_THEME) ?? 0;
+    if (appThemeIndex == AppTheme.light) {
+      final themeStr = await rootBundle.loadString('assets/appainter_theme_light.json');
+      final themeJson = jsonDecode(themeStr);
+      return ThemeDecoder.decodeThemeData(themeJson)!;
+    } else {
+      final themeStr = await rootBundle.loadString('assets/appainter_theme_dark.json');
+      final themeJson = jsonDecode(themeStr);
+      return ThemeDecoder.decodeThemeData(themeJson)!;
+    }
+  }
+
   AppBloc() : super(AppStateLoading()) {
     on<AppEventAppStarted>((event, emit) async {
       await initBloc();
-      int appThemeIndex = (await getIt.getAsync<Preferences>()).getInt(Preferences.KEY_SETTINGS_THEME) ?? 0;
-      appTheme = AppTheme.values[appThemeIndex];
+      appTheme = await loadTheme();
       if (!isMobile) {
         this.authState = AuthState.authenticated;
         emit(_buildContentState());
       }
     });
-    on<AppEventSetTheme>((event, emit) {
-      appTheme = event.appTheme;
+    on<AppEventSetTheme>((event, emit) async {
+      preferences.setInt(Preferences.KEY_SETTINGS_THEME, event.appTheme.index);
+      appTheme = await loadTheme();
       emit(_buildContentState());
     });
     on<AppEventAuthStateChange>((event, emit) {
@@ -63,28 +106,6 @@ class AppBloc extends Bloc<AppEvent, ChanState> {
     super.onError(error, stackTrace);
     print("AppBloc onError: $error");
     // emit(ChanStateError(error.toString()));
-  }
-
-  LocalAuthentication auth = LocalAuthentication();
-  AppLifecycleState lastLifecycleState = AppLifecycleState.inactive;
-  AuthState authState = AuthState.auth_required;
-  AppTheme appTheme = AppTheme.undefined;
-  bool permissionsGranted = false;
-  bool isMobile = Platform.isAndroid || Platform.isIOS;
-
-  Future<void> initBloc() async {
-    await getIt.getAsync<Preferences>();
-    await getIt.getAsync<ChanDownloader>();
-    await getIt.getAsync<ChanStorage>();
-    await getIt.getAsync<ChanRepository>();
-    await getIt.getAsync<BoardsRepository>();
-    await getIt.getAsync<ThreadsRepository>();
-    await getIt.getAsync<PostsRepository>();
-
-    if (isMobile) {
-      requestAuthentication();
-      requestPermissions();
-    }
   }
 
   Future<void> requestAuthentication() async {
@@ -119,7 +140,7 @@ class AppBloc extends Bloc<AppEvent, ChanState> {
     }
   }
 
-  AppStateContent _buildContentState({AppTheme? appTheme, AuthState? authState, ChanSingleEvent? event}) {
+  AppStateContent _buildContentState({ThemeData? appTheme, AuthState? authState, ChanSingleEvent? event}) {
     return AppStateContent(
       appTheme: appTheme ?? this.appTheme,
       authState: authState ?? this.authState,

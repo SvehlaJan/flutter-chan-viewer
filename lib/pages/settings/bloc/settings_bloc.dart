@@ -28,7 +28,6 @@ class SettingsBloc extends Bloc<ChanEvent, ChanState> {
 
   SettingsBloc() : super(ChanStateLoading()) {
     on<SettingsEventSetTheme>((event, emit) {
-      _preferences.setInt(Preferences.KEY_SETTINGS_THEME, event.theme.index);
       _appTheme = event.theme;
       emit(_contentState);
     });

@@ -79,7 +79,7 @@ abstract class ChanPostBase {
       String fileName = "$targetImageId$targetExtension";
       return "${FlavorConfig.values().baseImgUrl}/$boardId/$fileName";
     } else {
-      throw NullThrownError();
+      throw Exception("Media URL not available");
     }
   }
 

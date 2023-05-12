@@ -34,6 +34,10 @@ class BoardListBloc extends BaseBloc<ChanEvent, ChanState> {
       add(ChanEventDataError(e));
     });
 
+    on<ChanEventInitBloc>((event, emit) async {
+      emit(ChanStateLoading());
+    });
+
     on<ChanEventDataFetched<BoardListModel>>((event, emit) async {
       if (event.result is Loading) {
         BoardListModel? data = (event.result as Loading).data;

@@ -1,9 +1,9 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
-import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/utils/navigation_helper.dart';
 
 class AppStateContent extends ChanState {
-  final AppTheme appTheme;
+  final ThemeData appTheme;
   final AuthState authState;
 
   AppStateContent({

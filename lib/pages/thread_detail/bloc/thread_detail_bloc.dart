@@ -61,8 +61,12 @@ class ThreadDetailBloc extends BaseBloc<ChanEvent, ChanState> {
       add(ChanEventDataError(e));
     });
 
-    on<ChanEventFetchData>((event, emit) async {
+    on<ChanEventInitBloc>((event, emit) async {
       emit(ChanStateLoading());
+    });
+
+    on<ChanEventFetchData>((event, emit) async {
+      emit(buildContentState(lazyLoading: true));
 
       try {
         await _threadsRepository.fetchRemoteThreadDetail(_boardId, _threadId, false);

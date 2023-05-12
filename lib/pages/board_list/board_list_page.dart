@@ -25,7 +25,7 @@ class _BoardListPageState extends BasePageState<BoardListPage> {
   void initState() {
     super.initState();
     bloc = BlocProvider.of<BoardListBloc>(context);
-    bloc.add(ChanEventFetchData());
+    bloc.add(ChanEventInitBloc());
   }
 
   @override

@@ -29,13 +29,15 @@ class GalleryBloc extends BaseBloc<ChanEvent, ChanState> {
 
   final String _boardId;
   final int _threadId;
+  final int _initialPostId;
   ThreadDetailModel? _threadDetailModel;
   List<ThreadItem>? customThreads = null;
+  int _selectedPostIndex = 0;
 
   CacheDirective get cacheDirective => CacheDirective(_boardId, _threadId);
   late final StreamSubscription _subscription;
 
-  GalleryBloc(this._boardId, this._threadId) : super(ChanStateLoading()) {
+  GalleryBloc(this._boardId, this._threadId, this._initialPostId) : super(ChanStateLoading()) {
 
     _subscription = _threadsRepository.observeThreadDetail(_boardId, _threadId).listen((data) {
       add(ChanEventDataFetched(data));
@@ -56,6 +58,10 @@ class GalleryBloc extends BaseBloc<ChanEvent, ChanState> {
           emit(ChanStateLoading());
         }
       } else if (event.result is Success) {
+        if (_threadDetailModel == null) {
+          _selectedPostIndex = event.result.data.findPostsMediaIndex(_initialPostId);
+        }
+
         _threadDetailModel = event.result.data;
         emit(buildContentState(lazyLoading: false));
       } else if (event.result is Error) {
@@ -77,6 +83,8 @@ class GalleryBloc extends BaseBloc<ChanEvent, ChanState> {
 
     on<GalleryEventOnPostSelected>((event, emit) async {
       await _threadsRepository.updateThread(_threadDetailModel!.thread.copyWith(selectedPostId: event.postId));
+      _selectedPostIndex = _threadDetailModel!.findPostsMediaIndex(event.postId);
+      emit(buildContentState());
     });
 
     on<GalleryEventOnLinkClicked>((event, emit) async {
@@ -156,9 +164,10 @@ class GalleryBloc extends BaseBloc<ChanEvent, ChanState> {
     }
 
     return GalleryStateContent(
-      posts: threadDetailModel!.visiblePosts,
-      selectedPostIndex: threadDetailModel.selectedPostIndex,
-      model: threadDetailModel,
+      posts: threadDetailModel!.visibleMediaPosts,
+      // initialPostIndex: threadDetailModel.findPostsMediaIndex(_initialPostId),
+      selectedPostIndex: _selectedPostIndex,
+      // model: threadDetailModel,
       event: event,
       showLazyLoading: lazyLoading,
       showSearchBar: showSearchBar,

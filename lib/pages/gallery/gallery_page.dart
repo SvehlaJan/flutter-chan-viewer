@@ -21,11 +21,9 @@ import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 class GalleryPage extends StatefulWidget {
   final bool showAsReply;
-  final int initialPostId;
 
   const GalleryPage({
     required this.showAsReply,
-    required this.initialPostId,
   });
 
   @override
@@ -47,19 +45,11 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
     _panelController = PanelController();
     _photoViewController = PhotoViewController();
 
-    // if (widget.showAsReply) {
-    //   Future.delayed(const Duration(milliseconds: 500), () {
-    //     _panelController.open();
-    //   });
-    // }
-
-    // Future.delayed(const Duration(milliseconds: 100), () {
-    //   GalleryStateContent? contentState = bloc.state is GalleryStateContent ? bloc.state : null;
-    //   bool hasMedia = contentState?.selectedPost?.hasMedia() ?? false;
-    //   if (widget.showAsReply || !hasMedia) {
-    //     _sheetController.expand();
-    //   }
-    // });
+    if (widget.showAsReply) {
+      Future.delayed(const Duration(milliseconds: 100), () {
+        _panelController.open();
+      });
+    }
   }
 
   @override
@@ -67,7 +57,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
     if (_panelController.isPanelOpen) {
       _panelController.close();
       // if (widget.showAsReply) {
-      return Future.delayed(const Duration(milliseconds: 150), () {
+      return Future.delayed(const Duration(milliseconds: 100), () {
         return Future.value(true);
       });
       // } else {
@@ -92,7 +82,9 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
                   threads,
                   _newCollectionTextController,
                   (context, name) => {bloc.add(GalleryEventCreateNewCollection(name))},
-                  (context, name) => {bloc.add(GalleryEventAddPostToCollection(name, state.selectedPostId))},
+                  (context, name) {
+                    bloc.add(GalleryEventAddPostToCollection(name, state.selectedPost!.postId));
+                  },
                 );
                 break;
               case GallerySingleEvent.SHOW_POST_ADDED_TO_COLLECTION_SUCCESS:
@@ -113,7 +105,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
                 return Constants.centeredProgressIndicator;
               } else if (state is GalleryStateContent) {
                 if (widget.showAsReply) {
-                  return _buildSinglePostBody(context, state, widget.initialPostId);
+                  return _buildSinglePostBody(context, state, state.selectedPost!);
                 } else {
                   PostItem? post = state.selectedPost;
                   if (post == null) {
@@ -121,7 +113,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
                   } else if (post.hasMedia()) {
                     return _buildCarouselBody(context, state, post);
                   } else {
-                    return _buildSinglePostBody(context, state, post.postId);
+                    return _buildSinglePostBody(context, state, post);
                   }
                 }
               } else {
@@ -133,9 +125,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
         backgroundColor: Theme.of(context).scaffoldBackgroundColor.withOpacity(0.5));
   }
 
-  Widget _buildSinglePostBody(BuildContext context, GalleryStateContent state, int postId) {
-    PostItem post = state.model.findPostById(postId)!;
-
+  Widget _buildSinglePostBody(BuildContext context, GalleryStateContent state, PostItem post) {
     return SafeArea(
       child: Stack(
         children: <Widget>[
@@ -157,23 +147,22 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
   }
 
   Widget _buildCarouselBody(BuildContext context, GalleryStateContent state, PostItem post) {
-    int initialMediaIndex = state.model.findPostsMediaIndex(widget.initialPostId);
     return SafeArea(
       child: Stack(
         children: <Widget>[
           PhotoViewGallery.builder(
-            itemCount: state.model.visibleMediaPosts.length,
+            itemCount: state.posts.length,
             builder: (context, index) {
-              return _buildCarouselItem(context, state.model.visibleMediaPosts[index])!;
+              return _buildCarouselItem(context, state.posts[index])!;
             },
             scrollPhysics: BouncingScrollPhysics(),
             backgroundDecoration: BoxDecoration(color: Colors.transparent),
             loadingBuilder: (context, index) => Constants.progressIndicator,
-            pageController: PageController(initialPage: initialMediaIndex, keepPage: false),
+            pageController: PageController(initialPage: state.selectedPostIndex, keepPage: false),
             allowImplicitScrolling: false,
             onPageChanged: ((newMediaIndex) {
-              if (newMediaIndex != state.selectedMediaIndex) {
-                PostItem item = state.model.visibleMediaPosts[newMediaIndex];
+              if (newMediaIndex != state.selectedPostIndex) {
+                PostItem item = state.posts[newMediaIndex];
                 bloc.add(GalleryEventOnPostSelected(item.postId));
                 _panelController.close();
               }
@@ -185,7 +174,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
             child: Padding(
               padding: const EdgeInsets.all(4.0),
               child: Text(
-                "${state.selectedMediaIndex + 1}/${state.model.visibleMediaPosts.length} ${post.filename}${post.extension}",
+                "${state.selectedPostIndex + 1}/${state.posts.length} ${post.filename}${post.extension}",
                 style: Theme.of(context).textTheme.caption,
               ),
             ),
@@ -225,78 +214,75 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
 
     return SlidingUpPanel(
       controller: _panelController,
-      defaultPanelState: widget.showAsReply ? PanelState.OPEN : PanelState.CLOSED,
-      minHeight: 32,
+      defaultPanelState: PanelState.CLOSED,
+      minHeight: 64,
       maxHeight: MediaQuery.of(context).size.height * 0.8,
-      collapsed: _buildBottomViewHeader(repliesPosts[0]),
-      panel: Material(
-        child: ListView.builder(
-          shrinkWrap: true,
-          physics: NeverScrollableScrollPhysics(),
-          itemCount: repliesPosts.length,
-          itemBuilder: (context, index) {
-            PostItem replyPost = repliesPosts[index];
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 2.0),
-              child: PostListWidget(
-                post: replyPost,
-                showHeroAnimation: false,
-                showImage: index != 0,
-                onTap: () => index != 0 ? _onReplyPostClicked(context, replyPost) : null,
-                onLongPress: () => _showReplyDetailDialog(context, replyPost),
-                onLinkTap: (url) => _onLinkClicked(context, url),
-                selected: false,
+      renderPanelSheet: false,
+      isDraggable: true,
+      // panelSnapping: true,
+      // collapsed: _buildBottomViewHeader(post),
+      panelBuilder: (sc) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            _buildBottomViewHeader(repliesPosts[0]),
+            Expanded(
+              child: Material(
+                child: ListView.builder(
+                  controller: sc,
+                  shrinkWrap: true,
+                  // physics: ClampingScrollPhysics(),
+                  itemCount: repliesPosts.length,
+                  itemBuilder: (context, index) {
+                    PostItem replyPost = repliesPosts[index];
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 2.0),
+                      child: PostListWidget(
+                        post: replyPost,
+                        showHeroAnimation: false,
+                        showImage: index != 0,
+                        onTap: () => index != 0 ? _onReplyPostClicked(context, replyPost) : null,
+                        onLongPress: () => _showReplyDetailDialog(context, replyPost),
+                        onLinkTap: (url) => _onLinkClicked(context, url),
+                        selected: false,
+                      ),
+                    );
+                  },
+                ),
               ),
-            );
-          },
-        ),
-      ),
+            ),
+          ],
+        );
+      },
+      // panel: Column(
+      //   crossAxisAlignment: CrossAxisAlignment.end,
+      //   children: [
+      //     _buildBottomViewHeader(repliesPosts[0]),
+      //     Material(
+      //       child: ListView.builder(
+      //         shrinkWrap: true,
+      //         physics: NeverScrollableScrollPhysics(),
+      //         itemCount: repliesPosts.length,
+      //         itemBuilder: (context, index) {
+      //           PostItem replyPost = repliesPosts[index];
+      //           return Padding(
+      //             padding: const EdgeInsets.symmetric(horizontal: 2.0),
+      //             child: PostListWidget(
+      //               post: replyPost,
+      //               showHeroAnimation: false,
+      //               showImage: index != 0,
+      //               onTap: () => index != 0 ? _onReplyPostClicked(context, replyPost) : null,
+      //               onLongPress: () => _showReplyDetailDialog(context, replyPost),
+      //               onLinkTap: (url) => _onLinkClicked(context, url),
+      //               selected: false,
+      //             ),
+      //           );
+      //         },
+      //       ),
+      //     ),
+      //   ],
+      // ),
     );
-
-    // return SlidingSheet(
-    //   color: Colors.transparent,
-    //   shadowColor: Colors.transparent,
-    //   controller: _panelController,
-    //   duration: Duration(milliseconds: 400),
-    //   snapSpec: const SnapSpec(
-    //     snap: false,
-    //     snappings: [20, 1000],
-    //     positioning: SnapPositioning.pixelOffset,
-    //   ),
-    //   builder: (context, state) {
-    //     return Column(
-    //       crossAxisAlignment: CrossAxisAlignment.end,
-    //       children: [
-    //         _buildBottomViewHeader(repliesPosts[0]),
-    //         Material(
-    //           child: Padding(
-    //             padding: const EdgeInsets.only(top: 4.0),
-    //             child: ListView.builder(
-    //               shrinkWrap: true,
-    //               physics: NeverScrollableScrollPhysics(),
-    //               itemCount: repliesPosts.length,
-    //               itemBuilder: (context, index) {
-    //                 PostItem replyPost = repliesPosts[index];
-    //                 return Padding(
-    //                   padding: const EdgeInsets.symmetric(horizontal: 2.0),
-    //                   child: PostListWidget(
-    //                     post: replyPost,
-    //                     showHeroAnimation: false,
-    //                     showImage: index != 0,
-    //                     onTap: () => index != 0 ? _onReplyPostClicked(context, replyPost) : null,
-    //                     onLongPress: () => _showReplyDetailDialog(context, replyPost),
-    //                     onLinkTap: (url) => _onLinkClicked(context, url),
-    //                     selected: false,
-    //                   ),
-    //                 );
-    //               },
-    //             ),
-    //           ),
-    //         ),
-    //       ],
-    //     );
-    //   },
-    // );
   }
 
   Widget _buildBottomViewHeader(PostItem post) {
@@ -350,15 +336,9 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
         opaque: false,
         pageBuilder: (_, __, ___) {
           return BlocProvider(
-            create: (context) => GalleryBloc(replyPost.boardId, replyPost.threadId),
-            // value: bloc as GalleryBloc,
-            child: GalleryPage(showAsReply: true, initialPostId: replyPost.postId),
+            create: (context) => GalleryBloc(replyPost.boardId, replyPost.threadId, replyPost.postId),
+            child: GalleryPage(showAsReply: true),
           );
-
-          return BlocProvider.value(
-              value: bloc as GalleryBloc,
-              child: GalleryPage(showAsReply: true, initialPostId: replyPost.postId),
-            );
         }));
   }
 

@@ -294,10 +294,9 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
             // );
             return BlocProvider(
               // value: BlocProvider.of<ThreadDetailBloc>(context),
-              create: (context) => GalleryBloc(post.boardId, post.threadId),
+              create: (context) => GalleryBloc(post.boardId, post.threadId, post.postId),
               child: GalleryPage(
                 showAsReply: false,
-                initialPostId: post.postId,
               ),
             );
           }),

@@ -86,6 +86,12 @@ class ThreadsRepository {
     return controller.stream;
   }
 
+  Stream<DataResult<ThreadDetailModel>> observeThreadDetail(String boardId, int threadId, [bool isArchived = false]) {
+    return _localDataSource.getThreadByIdStream(boardId, threadId).combineLatest(
+        _localDataSource.getPostsByThreadIdStream(boardId, threadId),
+        (thread, dynamic posts) => DataResult.success(ThreadDetailModel.fromThreadAndPosts(thread, posts)));
+  }
+
   Future<ThreadItem?> addThreadToFavorites(ThreadDetailModel model) async {
     await _localDataSource.updateThread(model.thread.copyWith(isThreadFavorite: true));
 

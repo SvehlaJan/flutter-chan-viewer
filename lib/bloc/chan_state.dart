@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter/foundation.dart';
 
+@immutable
 abstract class ChanState extends Equatable {
   final bool showSearchBar;
   final ChanSingleEvent? event;

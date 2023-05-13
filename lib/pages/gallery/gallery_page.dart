@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_chan_viewer/bloc/chan_event.dart';
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/models/ui/post_item.dart';
 import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
-import 'package:flutter_chan_viewer/pages/thread_detail/bloc/thread_detail_bloc.dart';
-import 'package:flutter_chan_viewer/pages/thread_detail/bloc/thread_detail_event.dart';
-import 'package:flutter_chan_viewer/pages/thread_detail/bloc/thread_detail_state.dart';
+import 'package:flutter_chan_viewer/pages/gallery/bloc/gallery_bloc.dart';
+import 'package:flutter_chan_viewer/pages/gallery/bloc/gallery_event.dart';
+import 'package:flutter_chan_viewer/pages/gallery/bloc/gallery_state.dart';
 import 'package:flutter_chan_viewer/utils/chan_util.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/utils/dialog_util.dart';
@@ -39,21 +40,21 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
   @override
   void initState() {
     super.initState();
-    bloc = BlocProvider.of<ThreadDetailBloc>(context);
+    bloc = BlocProvider.of<GalleryBloc>(context);
+    bloc.add(ChanEventInitBloc());
+
     _newCollectionTextController = TextEditingController();
     _panelController = PanelController();
     _photoViewController = PhotoViewController();
 
-    if (widget.showAsReply) {
-      Future.delayed(const Duration(milliseconds: 100), () {
-        _panelController.open();
-      });
-    } else {
-      bloc.add(ThreadDetailEventOnPostSelected(widget.initialPostId));
-    }
+    // if (widget.showAsReply) {
+    //   Future.delayed(const Duration(milliseconds: 500), () {
+    //     _panelController.open();
+    //   });
+    // }
 
     // Future.delayed(const Duration(milliseconds: 100), () {
-    //   ThreadDetailStateContent? contentState = bloc.state is ThreadDetailStateContent ? bloc.state : null;
+    //   GalleryStateContent? contentState = bloc.state is GalleryStateContent ? bloc.state : null;
     //   bool hasMedia = contentState?.selectedPost?.hasMedia() ?? false;
     //   if (widget.showAsReply || !hasMedia) {
     //     _sheetController.expand();
@@ -81,20 +82,20 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
   Widget build(BuildContext context) {
     return buildScaffold(
         context,
-        BlocConsumer<ThreadDetailBloc, ChanState>(listener: (context, state) {
-          if (state is ThreadDetailStateContent && state.event != null) {
+        BlocConsumer<GalleryBloc, ChanState>(listener: (context, state) {
+          if (state is GalleryStateContent && state.event != null) {
             switch (state.event) {
-              case ThreadDetailSingleEvent.SHOW_COLLECTIONS_DIALOG:
+              case GallerySingleEvent.SHOW_COLLECTIONS_DIALOG:
                 List<ThreadItem> threads = state.customThreads;
                 DialogUtil.showCustomCollectionPickerDialog(
                   context,
                   threads,
                   _newCollectionTextController,
-                  (context, name) => {bloc.add(ThreadDetailEventCreateNewCollection(name))},
-                  (context, name) => {bloc.add(ThreadDetailEventAddPostToCollection(name, state.selectedPostId))},
+                  (context, name) => {bloc.add(GalleryEventCreateNewCollection(name))},
+                  (context, name) => {bloc.add(GalleryEventAddPostToCollection(name, state.selectedPostId))},
                 );
                 break;
-              case ThreadDetailSingleEvent.SHOW_POST_ADDED_TO_COLLECTION_SUCCESS:
+              case GallerySingleEvent.SHOW_POST_ADDED_TO_COLLECTION_SUCCESS:
                 showPostAddedToCollectionSuccessSnackbar(context);
                 break;
               case ChanSingleEvent.SHOW_OFFLINE:
@@ -105,12 +106,12 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
             }
           }
         }, builder: (context, state) {
-          return BlocBuilder<ThreadDetailBloc, ChanState>(
-            bloc: bloc as ThreadDetailBloc?,
+          return BlocBuilder<GalleryBloc, ChanState>(
+            bloc: bloc as GalleryBloc?,
             builder: (context, state) {
               if (state is ChanStateLoading) {
                 return Constants.centeredProgressIndicator;
-              } else if (state is ThreadDetailStateContent) {
+              } else if (state is GalleryStateContent) {
                 if (widget.showAsReply) {
                   return _buildSinglePostBody(context, state, widget.initialPostId);
                 } else {
@@ -132,7 +133,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
         backgroundColor: Theme.of(context).scaffoldBackgroundColor.withOpacity(0.5));
   }
 
-  Widget _buildSinglePostBody(BuildContext context, ThreadDetailStateContent state, int postId) {
+  Widget _buildSinglePostBody(BuildContext context, GalleryStateContent state, int postId) {
     PostItem post = state.model.findPostById(postId)!;
 
     return SafeArea(
@@ -155,7 +156,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
     }
   }
 
-  Widget _buildCarouselBody(BuildContext context, ThreadDetailStateContent state, PostItem post) {
+  Widget _buildCarouselBody(BuildContext context, GalleryStateContent state, PostItem post) {
     int initialMediaIndex = state.model.findPostsMediaIndex(widget.initialPostId);
     return SafeArea(
       child: Stack(
@@ -173,7 +174,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
             onPageChanged: ((newMediaIndex) {
               if (newMediaIndex != state.selectedMediaIndex) {
                 PostItem item = state.model.visibleMediaPosts[newMediaIndex];
-                bloc.add(ThreadDetailEventOnPostSelected(item.postId));
+                bloc.add(GalleryEventOnPostSelected(item.postId));
                 _panelController.close();
               }
             }),
@@ -224,6 +225,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
 
     return SlidingUpPanel(
       controller: _panelController,
+      defaultPanelState: widget.showAsReply ? PanelState.OPEN : PanelState.CLOSED,
       minHeight: 32,
       maxHeight: MediaQuery.of(context).size.height * 0.8,
       collapsed: _buildBottomViewHeader(repliesPosts[0]),
@@ -346,26 +348,34 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
   void _onReplyPostClicked(BuildContext context, PostItem replyPost) {
     Navigator.of(context).push(PageRouteBuilder(
         opaque: false,
-        pageBuilder: (_, __, ___) => BlocProvider.value(
-              value: bloc as ThreadDetailBloc,
+        pageBuilder: (_, __, ___) {
+          return BlocProvider(
+            create: (context) => GalleryBloc(replyPost.boardId, replyPost.threadId),
+            // value: bloc as GalleryBloc,
+            child: GalleryPage(showAsReply: true, initialPostId: replyPost.postId),
+          );
+
+          return BlocProvider.value(
+              value: bloc as GalleryBloc,
               child: GalleryPage(showAsReply: true, initialPostId: replyPost.postId),
-            )));
+            );
+        }));
   }
 
   void _onLinkClicked(BuildContext context, String url) =>
-      bloc.add(ThreadDetailEventOnReplyClicked(ChanUtil.getPostIdFromUrl(url)));
+      bloc.add(GalleryEventOnReplyClicked(ChanUtil.getPostIdFromUrl(url)));
 
-  void _onHidePostClicked(BuildContext context, PostItem post) => bloc.add(ThreadDetailEventHidePost(post.postId));
+  void _onHidePostClicked(BuildContext context, PostItem post) => bloc.add(GalleryEventHidePost(post.postId));
 
   void _onCollectionsClicked(BuildContext context, PostItem post) {
-    if (bloc.state is ThreadDetailStateContent) {
+    if (bloc.state is GalleryStateContent) {
       List<ThreadItem> threads = bloc.state.customThreads;
       DialogUtil.showCustomCollectionPickerDialog(
         context,
         threads,
         _newCollectionTextController,
-        (context, name) => {bloc.add(ThreadDetailEventCreateNewCollection(name))},
-        (context, name) => {bloc.add(ThreadDetailEventAddPostToCollection(name, post.postId))},
+        (context, name) => {bloc.add(GalleryEventCreateNewCollection(name))},
+        (context, name) => {bloc.add(GalleryEventAddPostToCollection(name, post.postId))},
       );
     }
   }
@@ -385,7 +395,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
           children: <Widget>[
             SimpleDialogOption(
               onPressed: () {
-                bloc.add(ThreadDetailEventHidePost(replyPost.postId));
+                bloc.add(GalleryEventHidePost(replyPost.postId));
                 Navigator.of(context).pop();
               },
               child: const Text('Hide reply'),

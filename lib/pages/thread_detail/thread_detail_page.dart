@@ -5,6 +5,7 @@ import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/models/helper/online_state.dart';
 import 'package:flutter_chan_viewer/models/ui/post_item.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
+import 'package:flutter_chan_viewer/pages/gallery/bloc/gallery_bloc.dart';
 import 'package:flutter_chan_viewer/pages/gallery/gallery_page.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/view/grid_widget_post.dart';
@@ -279,7 +280,7 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
   }
 
   void _onItemTap(BuildContext context, PostItem post) async {
-    // bloc.add(ThreadDetailEventOnPostSelected(post.postId));
+    bloc.add(ThreadDetailEventOnPostSelected(post.postId));
     // // hack to wait for selected post to be propagated to state
     // await bloc.stream.first;
 
@@ -287,8 +288,13 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
       PageRouteBuilder(
           opaque: false,
           pageBuilder: (_, __, ___) {
-            return BlocProvider.value(
-              value: BlocProvider.of<ThreadDetailBloc>(context),
+            // return GalleryPage(
+            //   showAsReply: false,
+            //   initialPostId: post.postId,
+            // );
+            return BlocProvider(
+              // value: BlocProvider.of<ThreadDetailBloc>(context),
+              create: (context) => GalleryBloc(post.boardId, post.threadId),
               child: GalleryPage(
                 showAsReply: false,
                 initialPostId: post.postId,

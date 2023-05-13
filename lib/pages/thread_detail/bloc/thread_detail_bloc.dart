@@ -177,53 +177,6 @@ class ThreadDetailBloc extends BaseBloc<ChanEvent, ChanState> {
       }
     });
 
-    on<ThreadDetailEventOnReplyClicked>((event, emit) async {
-      PostItem? post = _threadDetailModel!.findPostById(event.postId);
-      if (post != null) {
-        await _threadsRepository.updateThread(_threadDetailModel!.thread.copyWith(selectedPostId: post.postId));
-      }
-    });
-
-    on<ThreadDetailEventHidePost>((event, emit) async {
-      PostItem post = _threadDetailModel!.findPostById(event.postId)!.copyWith(isHidden: true);
-      await _postsRepository.updatePost(post);
-
-      if (_threadDetailModel!.selectedPostIndex == event.postId) {
-        int? newSelectedPostId = -1;
-        for (int i = 0; i < _threadDetailModel!.allPosts.length; i++) {
-          int dilatation = (i ~/ 2) + 1;
-          int orientation = i % 2;
-          int diff = orientation == 0 ? -dilatation : dilatation;
-          int newSelectedPostIndex =
-              (_threadDetailModel!.selectedPostIndex + diff) % _threadDetailModel!.allPosts.length;
-          PostItem newSelectedPost = _threadDetailModel!.allPosts[newSelectedPostIndex];
-          if (!newSelectedPost.isHidden) {
-            newSelectedPostId = newSelectedPost.postId;
-            break;
-          }
-        }
-        await _threadsRepository.updateThread(_threadDetailModel!.thread.copyWith(selectedPostId: newSelectedPostId));
-      }
-
-      emit(buildContentState(lazyLoading: false, event: ThreadDetailSingleEvent.SCROLL_TO_SELECTED));
-    });
-
-    on<ThreadDetailEventCreateNewCollection>((event, emit) async {
-      await _threadsRepository.createCustomThread(event.name);
-      customThreads = await _threadsRepository.getCustomThreads();
-      emit(buildContentState(event: ThreadDetailSingleEvent.SHOW_COLLECTIONS_DIALOG));
-    });
-
-    on<ThreadDetailEventAddPostToCollection>((event, emit) async {
-      if (customThreads == null) {
-        customThreads = await _threadsRepository.getCustomThreads();
-      }
-      ThreadItem thread = customThreads!.where((element) => element.subtitle == event.name).firstOrNull!;
-      PostItem post = _threadDetailModel!.findPostById(event.postId)!;
-      await _threadsRepository.addPostToCustomThread(post, thread);
-      emit(buildContentState(event: ThreadDetailSingleEvent.SHOW_POST_ADDED_TO_COLLECTION_SUCCESS));
-    });
-
     on<ThreadDetailEventDeleteCollection>((event, emit) async {
       await _threadsRepository.deleteCustomThread(_threadDetailModel!);
       emit(buildContentState(event: ChanSingleEvent.CLOSE_PAGE));

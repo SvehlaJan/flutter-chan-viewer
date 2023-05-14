@@ -45,7 +45,7 @@ class _PostGridWidgetState extends State<PostGridWidget> with SingleTickerProvid
 
   @override
   Widget build(BuildContext context) {
-    Widget content = buildContent(context);
+    Widget content = buildContent(context, widget.post);
     return GridTile(
       child: InkWell(
         onTap: widget.onTap as void Function()?,
@@ -63,18 +63,18 @@ class _PostGridWidgetState extends State<PostGridWidget> with SingleTickerProvid
     );
   }
 
-  Widget buildContent(BuildContext context) {
-    final bool _isDownloaded = getIt<ChanRepository>().isMediaDownloaded(widget.post);
+  Widget buildContent(BuildContext context, PostItem post) {
+    final bool isDownloaded = getIt<ChanRepository>().isMediaDownloaded(post);
     return Card(
       margin: EdgeInsets.all(1.0),
       clipBehavior: Clip.antiAlias,
       child: Stack(
         fit: StackFit.passthrough,
         children: <Widget>[
-          Hero(tag: widget.post.getMediaUrl()!, child: ChanCachedImage(post: widget.post, boxFit: BoxFit.cover)),
-          if (_isDownloaded) Align(alignment: Alignment.bottomRight, child: Icon(Icons.sd_storage)),
-          if (widget.post.isGif()) Align(alignment: Alignment.bottomLeft, child: Icon(Icons.gif)),
-          if (widget.post.isWebm()) Align(alignment: Alignment.bottomRight, child: Icon(Icons.play_arrow)),
+          Hero(tag: post.getMediaUrl()!, child: ChanCachedImage(imageSource: post.getThumbnailImageSource(), boxFit: BoxFit.cover)),
+          if (isDownloaded) Align(alignment: Alignment.bottomRight, child: Icon(Icons.sd_storage)),
+          if (post.isGif()) Align(alignment: Alignment.bottomLeft, child: Icon(Icons.gif)),
+          if (post.isWebm()) Align(alignment: Alignment.bottomRight, child: Icon(Icons.play_arrow)),
         ],
       ),
     );

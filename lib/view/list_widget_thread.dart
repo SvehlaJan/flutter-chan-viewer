@@ -32,7 +32,7 @@ class ThreadListWidget extends StatelessWidget {
                   minHeight: Constants.avatarImageSize,
 //                  maxHeight: Constants.avatarImageMaxHeight,
                 ),
-                child: ChanCachedImage(post: thread, boxFit: BoxFit.fitWidth, forceThumbnail: true)),
+                child: ChanCachedImage(imageSource: thread.getThumbnailImageSource(), boxFit: BoxFit.fitWidth)),
           Flexible(
             child: Stack(
               alignment: Alignment.bottomCenter,
@@ -72,8 +72,7 @@ class ThreadListWidget extends StatelessWidget {
                       Html(
                         data: ChanUtil.getReadableHtml(thread.htmlContent ?? "", true),
                         style: {"*": Style(margin: Margins.zero)},
-                        onLinkTap: (url, context, attributes, element) =>
-                            logger.d("Html link clicked { url: $url }"),
+                        onLinkTap: (url, context, attributes, element) => logger.d("Html link clicked { url: $url }"),
                       )
                     ],
                   ),

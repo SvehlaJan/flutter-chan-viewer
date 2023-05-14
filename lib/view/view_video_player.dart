@@ -1,21 +1,17 @@
-import 'dart:io';
-
 import 'package:better_player/better_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chan_viewer/locator.dart';
-import 'package:flutter_chan_viewer/models/ui/post_item.dart';
-import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
-import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
+import 'package:flutter_chan_viewer/utils/media_helper.dart';
 import 'package:flutter_chan_viewer/view/view_cached_image.dart';
 
 import '../utils/preferences.dart';
 
 class ChanVideoPlayer extends StatefulWidget {
-  final PostItem post;
+  final VideoSource videoSource;
 
   const ChanVideoPlayer({
-    required this.post,
+    required this.videoSource,
   });
 
   @override
@@ -29,7 +25,8 @@ class _ChanVideoPlayerState extends State<ChanVideoPlayer> {
   void initState() {
     super.initState();
 
-    var betterPlayerConfiguration = BetterPlayerConfiguration(
+    late BetterPlayerDataSource betterPlayerDataSource;
+    BetterPlayerConfiguration betterPlayerConfiguration = BetterPlayerConfiguration(
         autoPlay: true,
         looping: true,
         controlsConfiguration: BetterPlayerControlsConfiguration(
@@ -58,40 +55,39 @@ class _ChanVideoPlayerState extends State<ChanVideoPlayer> {
           }
         },
         aspectRatio: 0.001,
-        placeholder: _buildLoadingView(context),
+        placeholder: _buildLoadingView(context, widget.videoSource.placeholderSource),
         showPlaceholderUntilPlay: true,
         fullScreenByDefault: false,
         autoDispose: true,
         fit: BoxFit.contain);
-    var bufferingConfiguration = BetterPlayerBufferingConfiguration(
+    BetterPlayerBufferingConfiguration bufferingConfiguration = BetterPlayerBufferingConfiguration(
         minBufferMs: 2000, maxBufferMs: 10000, bufferForPlaybackMs: 1000, bufferForPlaybackAfterRebufferMs: 2000);
 
-    if (getIt<ChanRepository>().isMediaDownloaded(widget.post)) {
-      File file = getIt<ChanStorage>().getMediaFile(widget.post.getMediaUrl()!, widget.post.getCacheDirective())!;
-      BetterPlayerDataSource betterPlayerDataSource = BetterPlayerDataSource(
-        BetterPlayerDataSourceType.file,
-        file.absolute.path,
-        bufferingConfiguration: bufferingConfiguration,
-      );
-      _betterPlayerController = BetterPlayerController(
-        betterPlayerConfiguration,
-        betterPlayerDataSource: betterPlayerDataSource,
-      );
-    } else {
-      BetterPlayerCacheConfiguration cacheConfiguration = BetterPlayerCacheConfiguration(
-        useCache: true,
-        maxCacheSize: 256 * 1024 * 1024, // 256 MB
-        maxCacheFileSize: 16 * 1024 * 1024, // 16 MB
-      );
-      BetterPlayerDataSource betterPlayerDataSource = BetterPlayerDataSource(
-        BetterPlayerDataSourceType.network,
-        widget.post.getMediaUrl()!,
-        cacheConfiguration: cacheConfiguration,
-        bufferingConfiguration: bufferingConfiguration,
-      );
-      _betterPlayerController =
-          BetterPlayerController(betterPlayerConfiguration, betterPlayerDataSource: betterPlayerDataSource);
+    switch (widget.videoSource) {
+      case NetworkVideoSource _:
+        final source = widget.videoSource as NetworkVideoSource;
+        BetterPlayerCacheConfiguration cacheConfiguration = BetterPlayerCacheConfiguration(
+          useCache: true,
+          maxCacheSize: 256 * 1024 * 1024, // 256 MB
+          maxCacheFileSize: 16 * 1024 * 1024, // 16 MB
+        );
+        betterPlayerDataSource = BetterPlayerDataSource(
+          BetterPlayerDataSourceType.network,
+          source.url,
+          cacheConfiguration: cacheConfiguration,
+          bufferingConfiguration: bufferingConfiguration,
+        );
+        break;
+      case FileVideoSource _:
+        final source = widget.videoSource as FileVideoSource;
+        betterPlayerDataSource = BetterPlayerDataSource(
+          BetterPlayerDataSourceType.file,
+          source.filePath,
+          bufferingConfiguration: bufferingConfiguration,
+        );
     }
+    _betterPlayerController =
+        BetterPlayerController(betterPlayerConfiguration, betterPlayerDataSource: betterPlayerDataSource);
   }
 
   @override
@@ -108,11 +104,11 @@ class _ChanVideoPlayerState extends State<ChanVideoPlayer> {
     );
   }
 
-  Widget _buildLoadingView(BuildContext context) {
+  Widget _buildLoadingView(BuildContext context, ImageSource placeholderSource) {
     return Stack(
       fit: StackFit.expand,
       children: <Widget>[
-        ChanCachedImage(post: widget.post, boxFit: BoxFit.contain),
+        ChanCachedImage(imageSource: placeholderSource, boxFit: BoxFit.contain),
         Constants.centeredProgressIndicator
       ],
     );

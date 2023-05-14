@@ -1,9 +1,10 @@
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/models/ui/post_item.dart';
 import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
+import 'package:flutter_chan_viewer/utils/media_helper.dart';
 
 class GalleryStateContent extends ChanStateContent {
-  final List<PostItem> posts;
+  final List<MediaSource> mediaSources;
   final PostItem selectedPost;
   final int selectedPostIndex;
   final List<ThreadItem> customThreads;
@@ -12,14 +13,14 @@ class GalleryStateContent extends ChanStateContent {
     required showSearchBar,
     required showLazyLoading,
     required event,
-    required this.posts,
+    required this.mediaSources,
     required this.selectedPost,
     required this.selectedPostIndex,
     required this.customThreads,
   }) : super(showSearchBar: showSearchBar, showLazyLoading: showLazyLoading, event: event);
 
   @override
-  List<Object?> get props => super.props..addAll([posts, selectedPostIndex, customThreads]);
+  List<Object?> get props => super.props..addAll([mediaSources, selectedPostIndex, customThreads]);
 }
 
 class GallerySingleEvent extends ChanSingleEvent {

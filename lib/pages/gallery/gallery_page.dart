@@ -11,6 +11,7 @@ import 'package:flutter_chan_viewer/pages/gallery/bloc/gallery_state.dart';
 import 'package:flutter_chan_viewer/utils/chan_util.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/utils/dialog_util.dart';
+import 'package:flutter_chan_viewer/utils/media_helper.dart';
 import 'package:flutter_chan_viewer/view/list_widget_post.dart';
 import 'package:flutter_chan_viewer/view/view_cached_image.dart';
 import 'package:flutter_chan_viewer/view/view_video_player.dart';
@@ -105,13 +106,13 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
                 return Constants.centeredProgressIndicator;
               } else if (state is GalleryStateContent) {
                 if (widget.showAsReply) {
-                  return _buildSinglePostBody(context, state, state.selectedPost);
+                  return _buildSinglePostBody(context, state.selectedPost);
                 } else {
                   PostItem? post = state.selectedPost;
                   if (post.hasMedia()) {
                     return _buildCarouselBody(context, state, post);
                   } else {
-                    return _buildSinglePostBody(context, state, post);
+                    return _buildSinglePostBody(context, post);
                   }
                 }
               } else {
@@ -123,24 +124,23 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
         backgroundColor: Theme.of(context).scaffoldBackgroundColor.withOpacity(0.5));
   }
 
-  Widget _buildSinglePostBody(BuildContext context, GalleryStateContent state, PostItem post) {
+  Widget _buildSinglePostBody(BuildContext context, PostItem post) {
     return SafeArea(
       child: Stack(
         children: <Widget>[
-          _buildSinglePostItem(context, post),
+          if (post.hasMedia()) _buildSinglePostItem(context, post.getMediaSource()),
           _buildBottomView(post),
         ],
       ),
     );
   }
 
-  Widget _buildSinglePostItem(BuildContext context, PostItem post) {
-    if (post.isImage()) {
-      return Center(child: ChanCachedImage(post: post, boxFit: BoxFit.fitWidth));
-    } else if (post.isWebm()) {
-      return _buildVideoPlayer(post);
-    } else {
-      return Container();
+  Widget _buildSinglePostItem(BuildContext context, MediaSource mediaSource) {
+    switch (mediaSource) {
+      case VideoSource _:
+        return _buildVideoPlayer(mediaSource);
+      case ImageSource _:
+        return Center(child: ChanCachedImage(imageSource: mediaSource, boxFit: BoxFit.fitWidth));
     }
   }
 
@@ -149,9 +149,9 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
       child: Stack(
         children: <Widget>[
           PhotoViewGallery.builder(
-            itemCount: state.posts.length,
+            itemCount: state.mediaSources.length,
             builder: (context, index) {
-              return _buildCarouselItem(context, state.posts[index])!;
+              return _buildCarouselItem(context, state.mediaSources[index])!;
             },
             scrollPhysics: BouncingScrollPhysics(),
             backgroundDecoration: BoxDecoration(color: Colors.transparent),
@@ -160,7 +160,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
             allowImplicitScrolling: false,
             onPageChanged: ((newMediaIndex) {
               if (newMediaIndex != state.selectedPostIndex) {
-                PostItem item = state.posts[newMediaIndex];
+                MediaSource item = state.mediaSources[newMediaIndex];
                 bloc.add(GalleryEventOnPostSelected(item.postId));
                 _panelController.close();
               }
@@ -172,7 +172,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
             child: Padding(
               padding: const EdgeInsets.all(4.0),
               child: Text(
-                "${state.selectedPostIndex + 1}/${state.posts.length} ${post.filename}${post.extension}",
+                "${state.selectedPostIndex + 1}/${state.mediaSources.length} ${post.filename}${post.extension}",
                 style: Theme.of(context).textTheme.caption,
               ),
             ),
@@ -182,14 +182,23 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
     );
   }
 
-  PhotoViewGalleryPageOptions? _buildCarouselItem(BuildContext context, PostItem post) {
-    if (!post.hasMedia()) {
-      return null;
+  PhotoViewGalleryPageOptions? _buildCarouselItem(BuildContext context, MediaSource mediaSource) {
+    late Widget child;
+    switch (mediaSource) {
+      case VideoSource _:
+        {
+          child = _buildVideoPlayer(mediaSource);
+          break;
+        }
+      case ImageSource _:
+        {
+          child = ChanCachedImage(imageSource: mediaSource, boxFit: BoxFit.contain);
+          break;
+        }
     }
-
     return PhotoViewGalleryPageOptions.customChild(
-      child: post.isImage() ? ChanCachedImage(post: post, boxFit: BoxFit.contain) : _buildVideoPlayer(post),
-      heroAttributes: PhotoViewHeroAttributes(tag: post.getMediaUrl()!),
+      child: child,
+      heroAttributes: PhotoViewHeroAttributes(tag: mediaSource.postId),
       controller: _photoViewController,
       initialScale: PhotoViewComputedScale.contained,
       minScale: PhotoViewComputedScale.contained,
@@ -199,11 +208,11 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
     );
   }
 
-  Widget _buildVideoPlayer(PostItem post) {
+  Widget _buildVideoPlayer(VideoSource videoSource) {
     if (ChanUtil.isMobile()) {
-      return ChanVideoPlayer(post: post);
+      return ChanVideoPlayer(videoSource: videoSource);
     } else {
-      return ChanVideoPlayerVlc(post: post);
+      return ChanVideoPlayerVlc(videoSource: videoSource);
     }
   }
 

@@ -2,18 +2,15 @@ import 'dart:io';
 
 import 'package:dart_vlc/dart_vlc.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_chan_viewer/locator.dart';
-import 'package:flutter_chan_viewer/models/ui/post_item.dart';
-import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
-import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
+import 'package:flutter_chan_viewer/utils/media_helper.dart';
 import 'package:flutter_chan_viewer/view/view_cached_image.dart';
 
 class ChanVideoPlayerVlc extends StatefulWidget {
-  final PostItem post;
+  final VideoSource videoSource;
 
   const ChanVideoPlayerVlc({
-    required this.post,
+    required this.videoSource,
   });
 
   @override
@@ -28,13 +25,17 @@ class _ChanVideoPlayerVlcState extends State<ChanVideoPlayerVlc> {
     super.initState();
 
     List<Media> media = [];
-    if (getIt<ChanRepository>().isMediaDownloaded(widget.post)) {
-      File file = getIt<ChanStorage>().getMediaFile(widget.post.getMediaUrl()!, widget.post.getCacheDirective())!;
-      media.add(Media.file(file));
-    } else {
-      media.add(Media.network(widget.post.getMediaUrl()!));
+    switch (widget.videoSource) {
+      case NetworkVideoSource _:
+        final source = widget.videoSource as NetworkVideoSource;
+        media.add(Media.network(source.url));
+        break;
+      case FileVideoSource _:
+        final source = widget.videoSource as FileVideoSource;
+        media.add(Media.file(File(source.filePath)));
+        break;
     }
-    _player = Player(id: widget.post.postId);
+    _player = Player(id: widget.videoSource.postId);
     _player.open(Playlist(medias: media));
   }
 
@@ -55,11 +56,11 @@ class _ChanVideoPlayerVlcState extends State<ChanVideoPlayerVlc> {
     );
   }
 
-  Widget _buildLoadingView(BuildContext context) {
+  Widget _buildLoadingView(BuildContext context, ImageSource placeholderSource) {
     return Stack(
       fit: StackFit.expand,
       children: <Widget>[
-        ChanCachedImage(post: widget.post, boxFit: BoxFit.contain),
+        ChanCachedImage(imageSource: placeholderSource, boxFit: BoxFit.contain),
         Constants.centeredProgressIndicator
       ],
     );

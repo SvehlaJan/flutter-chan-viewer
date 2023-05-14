@@ -4,6 +4,7 @@ import 'package:flutter_chan_viewer/models/helper/chan_post_base.dart';
 import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
 import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
 import 'package:flutter_chan_viewer/utils/chan_util.dart';
+import 'package:flutter_chan_viewer/utils/media_helper.dart';
 import 'package:path/path.dart';
 
 class PostItem extends ChanPostBase with EquatableMixin {
@@ -46,6 +47,10 @@ class PostItem extends ChanPostBase with EquatableMixin {
 
   @override
   bool isFavorite() => thread?.isFavorite() ?? false;
+
+  MediaSource getMediaSource() => MediaHelper.getMediaSource(this);
+
+  ImageSource getThumbnailImageSource() => MediaHelper.getImageSource(this, true);
 
   factory PostItem.fromMappedJson(ThreadItem thread, Map<String, dynamic> json) {
     dynamic boardId = json['board_id'] ?? thread.boardId;

@@ -165,7 +165,7 @@ class GalleryBloc extends BaseBloc<ChanEvent, ChanState> {
     }
 
     return GalleryStateContent(
-      posts: threadDetailModel.visibleMediaPosts,
+      mediaSources: threadDetailModel.visibleMediaPosts.map((post) => post.getMediaSource()).toList(),
       selectedPostIndex: threadDetailModel.selectedMediaIndex,
       selectedPost: _selectedPost,
       event: event,

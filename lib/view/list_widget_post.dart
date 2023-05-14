@@ -3,6 +3,7 @@ import 'package:flutter_chan_viewer/models/ui/post_item.dart';
 import 'package:flutter_chan_viewer/utils/chan_util.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/utils/extensions.dart';
+import 'package:flutter_chan_viewer/utils/media_helper.dart';
 import 'package:flutter_chan_viewer/view/view_cached_image.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:shimmer_animation/shimmer_animation.dart';
@@ -53,7 +54,7 @@ class _PostListWidgetState extends State<PostListWidget> with SingleTickerProvid
 
   @override
   Widget build(BuildContext context) {
-    Widget card = ScaleTransition(scale: _bounceAnimation, child: buildContent(context));
+    Widget card = ScaleTransition(scale: _bounceAnimation, child: buildContent(context, widget.post));
 
     return InkWell(
       onTap: widget.onTap as void Function()?,
@@ -67,7 +68,8 @@ class _PostListWidgetState extends State<PostListWidget> with SingleTickerProvid
     );
   }
 
-  Widget buildContent(BuildContext context) {
+  Widget buildContent(BuildContext context, PostItem post) {
+    ImageSource imageSource = post.getThumbnailImageSource();
     return Card(
       clipBehavior: Clip.antiAlias,
       margin: EdgeInsets.all(2.0),
@@ -75,7 +77,7 @@ class _PostListWidgetState extends State<PostListWidget> with SingleTickerProvid
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          if (widget.showImage && widget.post.getThumbnailUrl() != null)
+          if (widget.showImage && post.getThumbnailUrl() != null)
             ConstrainedBox(
                 constraints: BoxConstraints(
                   maxWidth: Constants.avatarImageSize,
@@ -84,9 +86,9 @@ class _PostListWidgetState extends State<PostListWidget> with SingleTickerProvid
                 ),
                 child: widget.showHeroAnimation
                     ? Hero(
-                        tag: widget.post.getMediaUrl()!,
-                        child: ChanCachedImage(post: widget.post, boxFit: BoxFit.fitWidth))
-                    : ChanCachedImage(post: widget.post, boxFit: BoxFit.fitWidth)),
+                        tag: post.getMediaUrl()!,
+                        child: ChanCachedImage(imageSource: imageSource, boxFit: BoxFit.fitWidth))
+                    : ChanCachedImage(imageSource: imageSource, boxFit: BoxFit.fitWidth)),
           Flexible(
             child: Padding(
               padding: const EdgeInsets.all(4.0),

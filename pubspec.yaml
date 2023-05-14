@@ -65,6 +65,7 @@ dependencies:
   better_player: ^0.0.83
   video_thumbnail: ^0.5.3
   dart_vlc: ^0.4.0
+  flutter_vlc_player: ^7.2.0
   carousel_slider: ^4.2.1
 #  sliding_sheet: ^0.5.2 # TODO - replace with https://pub.dev/packages/sliding_up_panel
   sliding_up_panel: ^2.0.0+1

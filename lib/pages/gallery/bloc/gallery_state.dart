@@ -4,10 +4,8 @@ import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
 
 class GalleryStateContent extends ChanStateContent {
   final List<PostItem> posts;
-  // final int initialPostIndex;
+  final PostItem selectedPost;
   final int selectedPostIndex;
-
-  // final ThreadDetailModel model;
   final List<ThreadItem> customThreads;
 
   const GalleryStateContent({
@@ -15,17 +13,10 @@ class GalleryStateContent extends ChanStateContent {
     required showLazyLoading,
     required event,
     required this.posts,
-    // required this.initialPostIndex,
+    required this.selectedPost,
     required this.selectedPostIndex,
-    // required this.model,
     required this.customThreads,
   }) : super(showSearchBar: showSearchBar, showLazyLoading: showLazyLoading, event: event);
-
-  // int get selectedMediaIndex => model.selectedMediaIndex;
-  //
-  PostItem? get selectedPost => selectedPostIndex >= 0 && selectedPostIndex < posts.length ? posts[selectedPostIndex] : null;
-  //
-  // int get selectedPostId => model.selectedPostId;
 
   @override
   List<Object?> get props => super.props..addAll([posts, selectedPostIndex, customThreads]);

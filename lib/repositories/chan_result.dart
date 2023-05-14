@@ -4,10 +4,10 @@ class Success<T> extends DataResult<T> {
   Success(this.data);
 }
 
-class Error<T> extends DataResult<T> {
+class Failure<T> extends DataResult<T> {
   final Exception exception;
 
-  Error(this.exception);
+  Failure(this.exception);
 }
 
 class Loading<T> extends DataResult<T> {
@@ -19,13 +19,13 @@ class Loading<T> extends DataResult<T> {
 abstract class DataResult<T> {
   static Success<T> success<T>(T data) => Success<T>(data);
 
-  static Error<T> error<T>(Exception message) => Error<T>(message);
+  static Failure<T> error<T>(Exception message) => Failure<T>(message);
 
   static Loading<T> loading<T>([T? data = null]) => Loading<T>(data);
 
   bool get isLoading => this is Loading<T>;
 
-  bool get isError => this is Error<T>;
+  bool get isError => this is Failure<T>;
 
   bool get isSuccess => this is Success<T>;
 

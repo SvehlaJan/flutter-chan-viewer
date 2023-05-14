@@ -1,34 +1,26 @@
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
-import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
 import 'package:flutter_chan_viewer/models/ui/post_item.dart';
-import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
 
 class ThreadDetailStateContent extends ChanStateContent {
-  final ThreadDetailModel model;
-  final List<ThreadItem> customThreads;
+  final List<PostItem> posts;
+  final int selectedPostIndex;
   final bool isFavorite;
+  final bool isCustomThread;
   final bool catalogMode;
 
   const ThreadDetailStateContent({
     required showSearchBar,
     required showLazyLoading,
     required event,
-    required this.model,
-    required this.customThreads,
+    required this.posts,
+    required this.selectedPostIndex,
     required this.isFavorite,
+    required this.isCustomThread,
     required this.catalogMode,
   }) : super(showSearchBar: showSearchBar, showLazyLoading: showLazyLoading, event: event);
 
-  int get selectedMediaIndex => model.selectedMediaIndex;
-
-  int get selectedPostIndex => model.selectedPostIndex;
-
-  PostItem? get selectedPost => model.selectedPost;
-
-  int get selectedPostId => model.selectedPostId;
-
   @override
-  List<Object?> get props => super.props..addAll([model, isFavorite, catalogMode]);
+  List<Object?> get props => super.props..addAll([posts, selectedPostIndex, isFavorite, isCustomThread, catalogMode]);
 }
 
 class ThreadDetailSingleEvent extends ChanSingleEvent {

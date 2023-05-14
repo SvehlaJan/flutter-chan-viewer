@@ -38,10 +38,15 @@ class ThreadsRepository {
     await dir.create(recursive: true);
   }
 
-  Future<ThreadDetailModel> fetchRemoteThreadDetail(String boardId, int threadId, bool isArchived) async {
+  Future<ThreadDetailModel> fetchRemoteThreadDetail(String boardId, int threadId, bool isArchived,
+      {bool markAsSeen = false}) async {
     try {
       ThreadDetailModel model = await _chanApiProvider.fetchThreadDetail(boardId, threadId, isArchived);
-      await _localDataSource.saveThread(model.thread);
+      if (markAsSeen) {
+        await _localDataSource.saveThread(model.thread.copyWith(lastSeenPostIndex: model.thread.replies));
+      } else {
+        await _localDataSource.saveThread(model.thread);
+      }
       await _localDataSource.savePosts(model.allPosts);
 
       ThreadDetailModel? updatedModel = await fetchCachedThreadDetail(boardId, threadId);
@@ -68,16 +73,24 @@ class ThreadsRepository {
       [bool isArchived = false]) {
     StreamController<DataResult<ThreadDetailModel>> controller = StreamController.broadcast();
     _localDataSource.getThreadById(boardId, threadId).then((thread) async {
-      _localDataSource.getPostsFromThread(thread!).then((posts) {
+      _localDataSource.getPostsFromThread(thread!).then((posts) async {
         controller.add(DataResult.loading(ThreadDetailModel.fromThreadAndPosts(thread, posts)));
-        _chanApiProvider.fetchThreadDetail(boardId, threadId, isArchived).then((model) async {
-          await _localDataSource.saveThread(model.thread);
-          await _localDataSource.savePosts(model.allPosts);
+        try {
+          await _chanApiProvider.fetchThreadDetail(boardId, threadId, isArchived).then((model) async {
+            await _localDataSource.saveThread(model.thread);
+            await _localDataSource.savePosts(model.allPosts);
 
-          controller.addStream(_localDataSource.getThreadByIdStream(boardId, threadId).combineLatest(
-              _localDataSource.getPostsByThreadIdStream(boardId, threadId),
-              (thread, dynamic posts) => DataResult.success(ThreadDetailModel.fromThreadAndPosts(thread, posts))));
-        });
+            controller.addStream(_localDataSource.getThreadByIdStream(boardId, threadId).combineLatest(
+                _localDataSource.getPostsByThreadIdStream(boardId, threadId),
+                    (thread, dynamic posts) =>
+                    DataResult.success(ThreadDetailModel.fromThreadAndPosts(thread, posts))));
+          });
+        } catch (e) {
+          if (e is HttpException && e.errorCode == 404) {
+            await _localDataSource.updateThreadOnlineState(threadId, OnlineState.NOT_FOUND);
+          }
+          controller.add(DataResult.error(e as Exception));
+        }
       });
     }).catchError((e) {
       controller.add(DataResult.error(e));

@@ -30,9 +30,11 @@ class GalleryBloc extends BaseBloc<ChanEvent, ChanState> {
   final String _boardId;
   final int _threadId;
   final int _initialPostId;
-  ThreadDetailModel? _threadDetailModel;
-  List<ThreadItem>? customThreads = null;
-  int _selectedPostIndex = 0;
+  late ThreadDetailModel _threadDetailModel;
+  List<ThreadItem>? _customThreads = null;
+  late PostItem _selectedPost;
+
+  bool _dataSuccessfullyFetched = false;
 
   CacheDirective get cacheDirective => CacheDirective(_boardId, _threadId);
   late final StreamSubscription _subscription;
@@ -50,6 +52,11 @@ class GalleryBloc extends BaseBloc<ChanEvent, ChanState> {
     });
 
     on<ChanEventDataFetched>((event, emit) {
+      if (!_dataSuccessfullyFetched && event.result.data != null) {
+        _selectedPost = event.result.data.findPostById(_initialPostId);
+        _dataSuccessfullyFetched = true;
+      }
+
       if (event.result is Loading) {
         if (event.result.data != null) {
           _threadDetailModel = event.result.data;
@@ -58,13 +65,9 @@ class GalleryBloc extends BaseBloc<ChanEvent, ChanState> {
           emit(ChanStateLoading());
         }
       } else if (event.result is Success) {
-        if (_threadDetailModel == null) {
-          _selectedPostIndex = event.result.data.findPostsMediaIndex(_initialPostId);
-        }
-
         _threadDetailModel = event.result.data;
         emit(buildContentState(lazyLoading: false));
-      } else if (event.result is Error) {
+      } else if (event.result is Failure) {
         if (event.result.data is HttpException || event.result.data is SocketException) {
           emit(buildContentState(event: ChanSingleEvent.SHOW_OFFLINE));
         } else {
@@ -82,9 +85,7 @@ class GalleryBloc extends BaseBloc<ChanEvent, ChanState> {
     });
 
     on<GalleryEventOnPostSelected>((event, emit) async {
-      await _threadsRepository.updateThread(_threadDetailModel!.thread.copyWith(selectedPostId: event.postId));
-      _selectedPostIndex = _threadDetailModel!.findPostsMediaIndex(event.postId);
-      emit(buildContentState());
+      await _threadsRepository.updateThread(_threadDetailModel.thread.copyWith(selectedPostId: event.postId));
     });
 
     on<GalleryEventOnLinkClicked>((event, emit) async {
@@ -95,46 +96,46 @@ class GalleryBloc extends BaseBloc<ChanEvent, ChanState> {
     });
 
     on<GalleryEventOnReplyClicked>((event, emit) async {
-      PostItem? post = _threadDetailModel!.findPostById(event.postId);
+      PostItem? post = _threadDetailModel.findPostById(event.postId);
       if (post != null) {
-        await _threadsRepository.updateThread(_threadDetailModel!.thread.copyWith(selectedPostId: post.postId));
+        await _threadsRepository.updateThread(_threadDetailModel.thread.copyWith(selectedPostId: post.postId));
       }
     });
 
     on<GalleryEventHidePost>((event, emit) async {
-      PostItem post = _threadDetailModel!.findPostById(event.postId)!.copyWith(isHidden: true);
+      PostItem post = _threadDetailModel.findPostById(event.postId)!.copyWith(isHidden: true);
       await _postsRepository.updatePost(post);
 
-      if (_threadDetailModel!.selectedPostIndex == event.postId) {
+      if (_threadDetailModel.selectedPostIndex == event.postId) {
         int? newSelectedPostId = -1;
-        for (int i = 0; i < _threadDetailModel!.allPosts.length; i++) {
+        for (int i = 0; i < _threadDetailModel.allPosts.length; i++) {
           int dilatation = (i ~/ 2) + 1;
           int orientation = i % 2;
           int diff = orientation == 0 ? -dilatation : dilatation;
           int newSelectedPostIndex =
-              (_threadDetailModel!.selectedPostIndex + diff) % _threadDetailModel!.allPosts.length;
-          PostItem newSelectedPost = _threadDetailModel!.allPosts[newSelectedPostIndex];
+              (_threadDetailModel.selectedPostIndex + diff) % _threadDetailModel.allPosts.length;
+          PostItem newSelectedPost = _threadDetailModel.allPosts[newSelectedPostIndex];
           if (!newSelectedPost.isHidden) {
             newSelectedPostId = newSelectedPost.postId;
             break;
           }
         }
-        await _threadsRepository.updateThread(_threadDetailModel!.thread.copyWith(selectedPostId: newSelectedPostId));
+        await _threadsRepository.updateThread(_threadDetailModel.thread.copyWith(selectedPostId: newSelectedPostId));
       }
     });
 
     on<GalleryEventCreateNewCollection>((event, emit) async {
       await _threadsRepository.createCustomThread(event.name);
-      customThreads = await _threadsRepository.getCustomThreads();
+      _customThreads = await _threadsRepository.getCustomThreads();
       emit(buildContentState(event: GallerySingleEvent.SHOW_COLLECTIONS_DIALOG));
     });
 
     on<GalleryEventAddPostToCollection>((event, emit) async {
-      if (customThreads == null) {
-        customThreads = await _threadsRepository.getCustomThreads();
+      if (_customThreads == null) {
+        _customThreads = await _threadsRepository.getCustomThreads();
       }
-      ThreadItem thread = customThreads!.where((element) => element.subtitle == event.name).firstOrNull!;
-      PostItem post = _threadDetailModel!.findPostById(event.postId)!;
+      ThreadItem thread = _customThreads!.where((element) => element.subtitle == event.name).firstOrNull!;
+      PostItem post = _threadDetailModel.findPostById(event.postId)!;
       await _threadsRepository.addPostToCustomThread(post, thread);
       emit(buildContentState(event: GallerySingleEvent.SHOW_POST_ADDED_TO_COLLECTION_SUCCESS));
     });
@@ -151,27 +152,26 @@ class GalleryBloc extends BaseBloc<ChanEvent, ChanState> {
     ThreadDetailModel? threadDetailModel;
     if (searchQuery.isNotNullNorEmpty) {
       List<PostItem> posts;
-      List<PostItem> titleMatchThreads = _threadDetailModel!.visiblePosts
+      List<PostItem> titleMatchThreads = _threadDetailModel.visiblePosts
           .where((post) => (post.subtitle ?? "").containsIgnoreCase(searchQuery))
           .toList();
-      List<PostItem> bodyMatchThreads = _threadDetailModel!.visiblePosts
+      List<PostItem> bodyMatchThreads = _threadDetailModel.visiblePosts
           .where((post) => (post.content ?? "").containsIgnoreCase(searchQuery))
           .toList();
       posts = LinkedHashSet<PostItem>.from(titleMatchThreads + bodyMatchThreads).toList();
-      threadDetailModel = _threadDetailModel!.copyWith(thread: _threadDetailModel!.thread, posts: posts);
+      threadDetailModel = _threadDetailModel.copyWith(thread: _threadDetailModel.thread, posts: posts);
     } else {
       threadDetailModel = _threadDetailModel;
     }
 
     return GalleryStateContent(
-      posts: threadDetailModel!.visibleMediaPosts,
-      // initialPostIndex: threadDetailModel.findPostsMediaIndex(_initialPostId),
-      selectedPostIndex: _selectedPostIndex,
-      // model: threadDetailModel,
+      posts: threadDetailModel.visibleMediaPosts,
+      selectedPostIndex: threadDetailModel.selectedMediaIndex,
+      selectedPost: _selectedPost,
       event: event,
       showLazyLoading: lazyLoading,
       showSearchBar: showSearchBar,
-      customThreads: customThreads ?? [],
+      customThreads: _customThreads ?? [],
     );
   }
 }

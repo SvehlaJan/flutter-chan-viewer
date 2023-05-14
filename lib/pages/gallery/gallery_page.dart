@@ -83,7 +83,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
                   _newCollectionTextController,
                   (context, name) => {bloc.add(GalleryEventCreateNewCollection(name))},
                   (context, name) {
-                    bloc.add(GalleryEventAddPostToCollection(name, state.selectedPost!.postId));
+                    bloc.add(GalleryEventAddPostToCollection(name, state.selectedPost.postId));
                   },
                 );
                 break;
@@ -105,12 +105,10 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
                 return Constants.centeredProgressIndicator;
               } else if (state is GalleryStateContent) {
                 if (widget.showAsReply) {
-                  return _buildSinglePostBody(context, state, state.selectedPost!);
+                  return _buildSinglePostBody(context, state, state.selectedPost);
                 } else {
                   PostItem? post = state.selectedPost;
-                  if (post == null) {
-                    return Constants.noDataPlaceholder;
-                  } else if (post.hasMedia()) {
+                  if (post.hasMedia()) {
                     return _buildCarouselBody(context, state, post);
                   } else {
                     return _buildSinglePostBody(context, state, post);
@@ -349,7 +347,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
 
   void _onCollectionsClicked(BuildContext context, PostItem post) {
     if (bloc.state is GalleryStateContent) {
-      List<ThreadItem> threads = bloc.state.customThreads;
+      List<ThreadItem> threads = bloc.state._customThreads;
       DialogUtil.showCustomCollectionPickerDialog(
         context,
         threads,

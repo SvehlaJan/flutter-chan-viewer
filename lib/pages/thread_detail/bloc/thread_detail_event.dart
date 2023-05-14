@@ -29,11 +29,6 @@ class ThreadDetailEventOnPostSelected extends ChanEvent {
   List<Object?> get props => [postId];
 }
 
-class ThreadDetailEventDeleteCollection extends ChanEvent {
-  final int threadId;
-
-  ThreadDetailEventDeleteCollection(this.threadId);
-
-  @override
-  List<Object?> get props => [threadId];
+class ThreadDetailEventDeleteThread extends ChanEvent {
+  ThreadDetailEventDeleteThread();
 }

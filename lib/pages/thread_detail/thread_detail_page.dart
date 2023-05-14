@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/chan_event.dart';
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
-import 'package:flutter_chan_viewer/models/helper/online_state.dart';
 import 'package:flutter_chan_viewer/models/ui/post_item.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
 import 'package:flutter_chan_viewer/pages/gallery/bloc/gallery_bloc.dart';
@@ -67,12 +66,10 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
     bool showSearchButton = state is ThreadDetailStateContent && !state.showSearchBar;
     bool isFavorite = state is ThreadDetailStateContent && state.isFavorite;
     bool isCatalogMode = state is ThreadDetailStateContent && state.catalogMode;
-    bool isCollection =
-        state is ThreadDetailStateContent && state.model.thread.onlineStatus == OnlineState.CUSTOM.index;
+    bool isCollection = state is ThreadDetailStateContent && state.isCustomThread;
     List<PageAction> actions = [if (showSearchButton) PageAction("Search", Icons.search, _onSearchClick)];
     if (isCollection) {
-      actions.add(PageAction("Delete collection", Icons.delete_forever,
-          () => _onDeleteCollectionClicked(context, state.model.thread.threadId)));
+      actions.add(PageAction("Delete collection", Icons.delete_forever, () => _onDeleteCollectionClicked()));
     } else {
       actions.add(isFavorite
           ? PageAction("Unstar", Icons.star, _onFavoriteToggleClick)
@@ -93,7 +90,7 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
 
   void _onFavoriteToggleClick() => bloc.add(ThreadDetailEventToggleFavorite(confirmed: false));
 
-  void _onDeleteCollectionClicked(BuildContext context, int threadId) => showConfirmCollectionDeleteDialog(threadId);
+  void _onDeleteCollectionClicked() => showConfirmCollectionDeleteDialog();
 
   @override
   Widget build(BuildContext context) {
@@ -105,7 +102,7 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
               showConfirmUnstarDialog();
               break;
             case ThreadDetailSingleEvent.SCROLL_TO_SELECTED:
-              scrollToSelectedPost(state.selectedPostIndex, state.selectedMediaIndex, state);
+              scrollToSelectedPost(state.selectedPostIndex, state.catalogMode);
               break;
             case ChanSingleEvent.CLOSE_PAGE:
               Navigator.of(context).pop();
@@ -138,15 +135,15 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
       return Constants.centeredProgressIndicator;
     }
     if (state is ThreadDetailStateContent) {
-      if (state.model.visiblePosts.isEmpty) {
+      if (state.posts.isEmpty) {
         return Constants.noDataPlaceholder;
       }
 
       return Stack(
         children: <Widget>[
           state.catalogMode
-              ? buildGrid(context, state.model.visibleMediaPosts, state.selectedMediaIndex)
-              : buildList(context, state.model.visiblePosts, state.selectedPostIndex),
+              ? buildGrid(context, state.posts, state.selectedPostIndex)
+              : buildList(context, state.posts, state.selectedPostIndex),
           if (state.showLazyLoading) LinearProgressIndicator(),
         ],
       );
@@ -230,7 +227,7 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
         });
   }
 
-  void showConfirmCollectionDeleteDialog(int threadId) {
+  void showConfirmCollectionDeleteDialog() {
     showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -242,7 +239,7 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
               TextButton(
                   child: Text("OK, delete".toUpperCase()),
                   onPressed: () {
-                    bloc.add(ThreadDetailEventDeleteCollection(threadId));
+                    bloc.add(ThreadDetailEventDeleteThread());
                     Navigator.of(context).pop();
                   }),
             ],
@@ -250,17 +247,15 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
         });
   }
 
-  void scrollToSelectedPost(int selectedPostIndex, int selectedMediaIndex, ChanState state) {
+  void scrollToSelectedPost(int selectedPostIndex, bool isCatalogMode) {
     if (selectedPostIndex < 0) {
       return;
     }
 
-    bool isCatalogMode = state is ThreadDetailStateContent && state.catalogMode;
-
     // TODO - dirty! Find a way how to scroll when list/grid is already shown
     Future.delayed(const Duration(milliseconds: 500), () {
       if (isCatalogMode) {
-        _gridScrollController.animateTo(_getGridScrollOffset(selectedMediaIndex),
+        _gridScrollController.animateTo(_getGridScrollOffset(selectedPostIndex),
             duration: Duration(milliseconds: 500), curve: Curves.easeInOut);
       } else {
         _listScrollController.scrollTo(index: selectedPostIndex, duration: Duration(milliseconds: 500), alignment: 0.5);

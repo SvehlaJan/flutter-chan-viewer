@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/chan_event.dart';
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/models/ui/post_item.dart';
+import 'package:flutter_chan_viewer/models/ui/post_item_vo.dart';
 import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
 import 'package:flutter_chan_viewer/pages/gallery/bloc/gallery_bloc.dart';
@@ -245,7 +246,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
                     return Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 2.0),
                       child: PostListWidget(
-                        post: replyPost,
+                        post: replyPost.toPostItemVO(),
                         showHeroAnimation: false,
                         showImage: index != 0,
                         onTap: () => index != 0 ? _onReplyPostClicked(context, replyPost) : null,

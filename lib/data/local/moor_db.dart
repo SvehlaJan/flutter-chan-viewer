@@ -40,7 +40,23 @@ class ChanDB extends _$ChanDB {
   //   logStatements: true,
   // ),
 
-  int get schemaVersion => 1;
+  @override
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration {
+    return MigrationStrategy(
+      onCreate: (Migrator m) async {
+        await m.createAll();
+      },
+      onUpgrade: (Migrator m, int from, int to) async {
+        if (from < 2) {
+          // we added the downloadProgress in the change from version 1 to version 2
+          await m.addColumn(postsTable, postsTable.downloadProgress);
+        }
+      },
+    );
+  }
 
   Future<void> purgeDatabase() async {
     await boardsDao.delete(boardsTable).go();

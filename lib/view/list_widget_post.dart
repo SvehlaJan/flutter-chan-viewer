@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_chan_viewer/models/ui/post_item.dart';
+import 'package:flutter_chan_viewer/models/ui/post_item_vo.dart';
 import 'package:flutter_chan_viewer/utils/chan_util.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/utils/extensions.dart';
@@ -9,7 +9,7 @@ import 'package:flutter_html/flutter_html.dart';
 import 'package:shimmer_animation/shimmer_animation.dart';
 
 class PostListWidget extends StatefulWidget {
-  final PostItem post;
+  final PostItemVO post;
   final bool selected;
   final bool showImage;
   final bool showHeroAnimation;
@@ -54,7 +54,18 @@ class _PostListWidgetState extends State<PostListWidget> with SingleTickerProvid
 
   @override
   Widget build(BuildContext context) {
-    Widget card = ScaleTransition(scale: _bounceAnimation, child: buildContent(context, widget.post));
+    Widget card = ScaleTransition(
+      scale: _bounceAnimation,
+      child: buildContent(
+        context,
+        widget.post.mediaSource,
+        widget.post.postId,
+        widget.post.replies,
+        widget.post.timestamp,
+        widget.post.subtitle,
+        widget.post.htmlContent,
+      ),
+    );
 
     return InkWell(
       onTap: widget.onTap as void Function()?,
@@ -68,8 +79,15 @@ class _PostListWidgetState extends State<PostListWidget> with SingleTickerProvid
     );
   }
 
-  Widget buildContent(BuildContext context, PostItem post) {
-    ImageSource imageSource = post.getThumbnailImageSource();
+  Widget buildContent(
+    BuildContext context,
+    MediaSource mediaSource,
+    int postId,
+    int replies,
+    int timestamp,
+    String? subtitle,
+    String? htmlContent,
+  ) {
     return Card(
       clipBehavior: Clip.antiAlias,
       margin: EdgeInsets.all(2.0),
@@ -77,7 +95,7 @@ class _PostListWidgetState extends State<PostListWidget> with SingleTickerProvid
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          if (widget.showImage && post.getThumbnailUrl() != null)
+          if (widget.showImage)
             ConstrainedBox(
                 constraints: BoxConstraints(
                   maxWidth: Constants.avatarImageSize,
@@ -86,9 +104,9 @@ class _PostListWidgetState extends State<PostListWidget> with SingleTickerProvid
                 ),
                 child: widget.showHeroAnimation
                     ? Hero(
-                        tag: post.getMediaUrl()!,
-                        child: ChanCachedImage(imageSource: imageSource, boxFit: BoxFit.fitWidth))
-                    : ChanCachedImage(imageSource: imageSource, boxFit: BoxFit.fitWidth)),
+                        tag: mediaSource.postId,
+                        child: ChanCachedImage(imageSource: mediaSource.asImageSource(), boxFit: BoxFit.fitWidth))
+                    : ChanCachedImage(imageSource: mediaSource.asImageSource(), boxFit: BoxFit.fitWidth)),
           Flexible(
             child: Padding(
               padding: const EdgeInsets.all(4.0),
@@ -98,18 +116,17 @@ class _PostListWidgetState extends State<PostListWidget> with SingleTickerProvid
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
-                      Text(widget.post.postId.toString(), style: Theme.of(context).textTheme.caption),
-                      Text("${widget.post.visibleReplies.length}r", style: Theme.of(context).textTheme.caption),
-                      Text(ChanUtil.getHumanDate(widget.post.timestamp), style: Theme.of(context).textTheme.caption),
+                      Text(postId.toString(), style: Theme.of(context).textTheme.caption),
+                      Text("${replies}r", style: Theme.of(context).textTheme.caption),
+                      Text(ChanUtil.getHumanDate(timestamp), style: Theme.of(context).textTheme.caption),
                     ],
                   ),
-                  if (widget.post.subtitle.isNotNullNorEmpty)
-                    Text(widget.post.subtitle!, style: Theme.of(context).textTheme.bodyText1),
-                  if (widget.post.htmlContent.isNotNullNorEmpty)
+                  if (subtitle.isNotNullNorEmpty) Text(subtitle!, style: Theme.of(context).textTheme.bodyText1),
+                  if (htmlContent.isNotNullNorEmpty)
                     Html(
-                      data: ChanUtil.getReadableHtml(widget.post.htmlContent, false),
+                      data: ChanUtil.getReadableHtml(htmlContent, false),
                       style: {"*": Style(margin: Margins.zero)},
-                      onLinkTap: (url, context, attributes, element) {
+                      onLinkTap: (url, attributes, element) {
                         widget.onLinkTap(url!);
                       },
                       // onLinkTap: widget.onLinkTap,

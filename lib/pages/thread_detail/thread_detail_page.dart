@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/chan_event.dart';
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
-import 'package:flutter_chan_viewer/models/ui/post_item.dart';
+import 'package:flutter_chan_viewer/models/ui/post_item_vo.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
 import 'package:flutter_chan_viewer/pages/gallery/bloc/gallery_bloc.dart';
 import 'package:flutter_chan_viewer/pages/gallery/gallery_page.dart';
@@ -20,8 +20,8 @@ class ThreadDetailPage extends StatefulWidget {
   static const String ARG_THREAD_ID = "ThreadDetailPage.ARG_THREAD_ID";
   static const String ARG_SHOW_DOWNLOADS_ONLY = "ThreadDetailPage.ARG_SHOW_DOWNLOADS_ONLY";
 
-  final String? boardId;
-  final int? threadId;
+  final String boardId;
+  final int threadId;
 
   ThreadDetailPage(this.boardId, this.threadId);
 
@@ -152,19 +152,19 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
     }
   }
 
-  Widget buildList(BuildContext context, List<PostItem> posts, int selectedPostIndex) {
+  Widget buildList(BuildContext context, List<PostItemVO> posts, int selectedPostIndex) {
     return ScrollablePositionedList.builder(
       key: PageStorageKey<String>(KEY_LIST),
       itemCount: posts.length,
       itemScrollController: _listScrollController,
       itemBuilder: (context, index) {
-        PostItem post = posts[index];
+        PostItemVO post = posts[index];
         Key itemKey = ValueKey(post.postId);
         return PostListWidget(
           post: post,
           selected: index == selectedPostIndex,
-          onTap: () => _onItemTap(context, post),
-          onLongPress: () => _onItemLongPress(context, post, itemKey),
+          onTap: () => _onItemTap(context, post.postId),
+          onLongPress: () => _onItemLongPress(context, post.postId, itemKey),
           onLinkTap: (url) => _onLinkClicked(url, context),
           showImage: true,
           showHeroAnimation: true,
@@ -174,7 +174,7 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
     );
   }
 
-  Widget buildGrid(BuildContext context, List<PostItem> mediaPosts, int selectedMediaIndex) {
+  Widget buildGrid(BuildContext context, List<PostItemVO> mediaPosts, int selectedMediaIndex) {
     return Scrollbar(
       controller: _gridScrollController,
       child: GridView.builder(
@@ -189,14 +189,14 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
         padding: const EdgeInsets.all(0.0),
         itemCount: mediaPosts.length,
         itemBuilder: (BuildContext context, int index) {
-          PostItem post = mediaPosts[index];
+          PostItemVO post = mediaPosts[index];
           Key itemKey = ValueKey(post.postId);
           return PostGridWidget(
             key: itemKey,
             post: post,
             selected: index == selectedMediaIndex,
-            onTap: () => _onItemTap(context, post),
-            onLongPress: () => _onItemLongPress(context, post, itemKey),
+            onTap: () => _onItemTap(context, post.postId),
+            onLongPress: () => _onItemLongPress(context, post.postId, itemKey),
           );
         },
       ),
@@ -274,8 +274,8 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
     return (orientation == Orientation.portrait) ? 2 : 3;
   }
 
-  void _onItemTap(BuildContext context, PostItem post) async {
-    bloc.add(ThreadDetailEventOnPostSelected(post.postId));
+  void _onItemTap(BuildContext context, int postId) async {
+    bloc.add(ThreadDetailEventOnPostSelected(postId));
     // // hack to wait for selected post to be propagated to state
     // await bloc.stream.first;
 
@@ -287,9 +287,10 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
             //   showAsReply: false,
             //   initialPostId: post.postId,
             // );
+            // TODO - dirty, move to bloc
             return BlocProvider(
               // value: BlocProvider.of<ThreadDetailBloc>(context),
-              create: (context) => GalleryBloc(post.boardId, post.threadId, post.postId),
+              create: (context) => GalleryBloc(widget.boardId, widget.threadId, postId),
               child: GalleryPage(
                 showAsReply: false,
               ),
@@ -298,7 +299,7 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
     );
   }
 
-  void _onItemLongPress(BuildContext context, PostItem post, Key itemKey) {
+  void _onItemLongPress(BuildContext context, int postId, Key itemKey) {
     // PopupMenu.context = context;
     // PopupMenu menu = PopupMenu(
     //   items: [

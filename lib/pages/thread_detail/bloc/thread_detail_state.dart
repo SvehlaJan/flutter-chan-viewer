@@ -1,8 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
-import 'package:flutter_chan_viewer/models/ui/post_item.dart';
+import 'package:flutter_chan_viewer/models/ui/post_item_vo.dart';
 
+@immutable
 class ThreadDetailStateContent extends ChanStateContent {
-  final List<PostItem> posts;
+  final List<PostItemVO> posts;
   final int selectedPostIndex;
   final bool isFavorite;
   final bool isCustomThread;
@@ -30,4 +32,5 @@ class ThreadDetailSingleEvent extends ChanSingleEvent {
   static const ChanSingleEvent SCROLL_TO_SELECTED = const ChanSingleEvent(11);
   static const ChanSingleEvent SHOW_COLLECTIONS_DIALOG = const ChanSingleEvent(12);
   static const ChanSingleEvent SHOW_POST_ADDED_TO_COLLECTION_SUCCESS = const ChanSingleEvent(13);
+  static const ChanSingleEvent SHOW_GALLERY = const ChanSingleEvent(14);
 }

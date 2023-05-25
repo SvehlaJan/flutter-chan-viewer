@@ -1,14 +1,18 @@
 import 'package:collection/src/iterable_extensions.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_chan_viewer/models/helper/online_state.dart';
 import 'package:flutter_chan_viewer/models/ui/post_item.dart';
 import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
 import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
 import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
 
+@immutable
 class ThreadDetailModel extends Equatable {
   final ThreadItem thread;
   final List<PostItem> _posts;
+  final Map<int?, PostItem> _repliesTo = {};
+  final Map<int?, List<PostItem>> _repliesFrom = {};
 
   ThreadDetailModel({
     required ThreadItem thread,
@@ -53,8 +57,8 @@ class ThreadDetailModel extends Equatable {
     return ThreadDetailModel(thread: ThreadItem.fromCacheDirective(cacheDirective), posts: []);
   }
 
-  factory ThreadDetailModel.fromThreadAndPosts(ThreadItem thread, List<PostItem> posts) {
-    posts.forEach((post) => post.thread = thread);
+  factory ThreadDetailModel.fromThreadAndPosts(ThreadItem thread, List<PostItem> standalonePosts) {
+    List<PostItem> posts = standalonePosts.map((e) => e.copyWith(thread: thread)).toList();
     _calculateReplies(posts);
     return ThreadDetailModel(thread: thread, posts: posts);
   }

@@ -67,9 +67,7 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
   void _onArchiveClick() async {
     await Navigator.of(context).push(NavigationHelper.getRoute(
       Constants.boardArchiveRoute,
-      {
-        BoardArchivePage.ARG_BOARD_ID: widget.boardId,
-      },
+      {BoardArchivePage.ARG_BOARD_ID: widget.boardId},
     )!);
 
     bloc.add(ChanEventFetchData());

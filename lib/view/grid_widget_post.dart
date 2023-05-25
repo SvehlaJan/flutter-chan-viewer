@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_chan_viewer/locator.dart';
-import 'package:flutter_chan_viewer/models/ui/post_item.dart';
-import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
+import 'package:flutter_chan_viewer/models/helper/media_type.dart';
+import 'package:flutter_chan_viewer/models/ui/post_item_vo.dart';
 import 'package:flutter_chan_viewer/view/view_cached_image.dart';
 import 'package:shimmer_animation/shimmer_animation.dart';
 
 class PostGridWidget extends StatefulWidget {
-  final PostItem post;
+  final PostItemVO post;
   final bool selected;
   final Function onTap;
   final Function onLongPress;
@@ -63,18 +62,19 @@ class _PostGridWidgetState extends State<PostGridWidget> with SingleTickerProvid
     );
   }
 
-  Widget buildContent(BuildContext context, PostItem post) {
-    final bool isDownloaded = getIt<ChanRepository>().isMediaDownloaded(post);
+  Widget buildContent(BuildContext context, PostItemVO post) {
     return Card(
       margin: EdgeInsets.all(1.0),
       clipBehavior: Clip.antiAlias,
       child: Stack(
         fit: StackFit.passthrough,
         children: <Widget>[
-          Hero(tag: post.getMediaUrl()!, child: ChanCachedImage(imageSource: post.getThumbnailImageSource(), boxFit: BoxFit.cover)),
-          if (isDownloaded) Align(alignment: Alignment.bottomRight, child: Icon(Icons.sd_storage)),
-          if (post.isGif()) Align(alignment: Alignment.bottomLeft, child: Icon(Icons.gif)),
-          if (post.isWebm()) Align(alignment: Alignment.bottomRight, child: Icon(Icons.play_arrow)),
+          Hero(
+              tag: post.postId,
+              child: ChanCachedImage(imageSource: post.mediaSource.asImageSource(), boxFit: BoxFit.cover)),
+          if (post.isDownloaded()) Align(alignment: Alignment.bottomRight, child: Icon(Icons.sd_storage)),
+          if (post.mediaType.isGif()) Align(alignment: Alignment.bottomLeft, child: Icon(Icons.gif)),
+          if (post.mediaType.isWebm()) Align(alignment: Alignment.bottomRight, child: Icon(Icons.play_arrow)),
         ],
       ),
     );

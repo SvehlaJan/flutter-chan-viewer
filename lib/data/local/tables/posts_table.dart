@@ -11,5 +11,7 @@ class PostsTable extends ChanBaseTable {
 
   IntColumn get postId => integer()();
 
+  IntColumn get downloadProgress => integer().withDefault(const Constant(0))();
+
   BoolColumn get isHidden => boolean().nullable()();
 }

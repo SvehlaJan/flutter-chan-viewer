@@ -1,9 +1,12 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter_chan_viewer/models/helper/media_type.dart';
 import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
 import 'package:flutter_chan_viewer/utils/chan_util.dart';
 import 'package:flutter_chan_viewer/utils/flavor_config.dart';
 
 enum ChanPostMediaType { MAIN, THUMBNAIL, VIDEO_THUMBNAIL }
 
+@immutable
 abstract class ChanPostBase {
   final String boardId;
   final int threadId;
@@ -13,6 +16,7 @@ abstract class ChanPostBase {
   final String? filename;
   final String? imageId;
   final String? extension;
+  final int downloadProgress;
 
   const ChanPostBase({
     required this.boardId,
@@ -23,29 +27,38 @@ abstract class ChanPostBase {
     required this.filename,
     required this.imageId,
     required this.extension,
+    this.downloadProgress = -1,
   });
 
   bool isFavorite();
 
-  bool isImage() => [".jpg", ".png", ".webp", ".gif"].contains(extension);
-
-  bool isGif() => [".gif"].contains(extension);
-
-  bool isWebm() => [".webm"].contains(extension);
-
   bool hasMedia() => filename?.isNotEmpty ?? false;
 
   String filenameWithExtension() => "${filename}${extension}";
-
-  String? getMediaUrl() => _getMediaUrl(this.boardId, this.imageId, this.extension, false);
-
-  String? getThumbnailUrl() => _getMediaUrl(this.boardId, this.imageId, this.extension, true);
 
   String? get content => ChanUtil.getPlainString(htmlContent);
 
   String? getTextContent({bool truncate = false}) {
     return ChanUtil.getReadableHtml(htmlContent, truncate);
   }
+
+  MediaType get mediaType {
+    if ([".jpg", ".png", ".webp"].contains(extension)) {
+      return MediaType.IMAGE;
+    } else if ([".webm"].contains(extension)) {
+      return MediaType.WEBM;
+    } else if ([".gif"].contains(extension)) {
+      return MediaType.GIF;
+    } else {
+      return MediaType.NONE;
+    }
+  }
+
+  // TODO - unify and move to MediaHelper
+
+  String? getMediaUrl() => _getMediaUrl(this.boardId, this.imageId, this.extension, false);
+
+  String? getThumbnailUrl() => _getMediaUrl(this.boardId, this.imageId, this.extension, true);
 
   String? _getMediaUrl(String? boardId, String? imageId, String? extension, bool thumbnail) {
     if (boardId != null && imageId != null && extension != null) {

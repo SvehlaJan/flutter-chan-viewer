@@ -149,7 +149,7 @@ class GalleryBloc extends BaseBloc<ChanEvent, ChanState> {
 
   @override
   GalleryStateContent buildContentState({bool lazyLoading = false, ChanSingleEvent? event}) {
-    ThreadDetailModel? threadDetailModel;
+    ThreadDetailModel threadDetailModel;
     if (searchQuery.isNotNullNorEmpty) {
       List<PostItem> posts;
       List<PostItem> titleMatchThreads = _threadDetailModel.visiblePosts

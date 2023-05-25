@@ -10,6 +10,7 @@ import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/models/helper/online_state.dart';
 import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
 import 'package:flutter_chan_viewer/models/ui/post_item.dart';
+import 'package:flutter_chan_viewer/models/ui/post_item_vo.dart';
 import 'package:flutter_chan_viewer/pages/base/base_bloc.dart';
 import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
 import 'package:flutter_chan_viewer/repositories/chan_result.dart';
@@ -182,8 +183,9 @@ class ThreadDetailBloc extends BaseBloc<ChanEvent, ChanState> {
       threadDetailModel = _threadDetailModel;
     }
 
+    List<PostItem> posts = _catalogMode ? threadDetailModel.visibleMediaPosts : threadDetailModel.visiblePosts;
     return ThreadDetailStateContent(
-      posts: _catalogMode ? threadDetailModel.visibleMediaPosts : threadDetailModel.visiblePosts,
+      posts: posts.map((e) => e.toPostItemVO()).toList(),
       selectedPostIndex: _catalogMode ? threadDetailModel.selectedMediaIndex : threadDetailModel.selectedPostIndex,
       isFavorite: threadDetailModel.isFavorite,
       isCustomThread: threadDetailModel.thread.onlineStatus == OnlineState.CUSTOM,

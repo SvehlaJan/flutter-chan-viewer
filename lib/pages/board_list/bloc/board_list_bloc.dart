@@ -6,7 +6,7 @@ import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/models/board_list_model.dart';
 import 'package:flutter_chan_viewer/models/helper/chan_board_item_wrapper.dart';
-import 'package:flutter_chan_viewer/models/ui/board_item.dart';
+import 'package:flutter_chan_viewer/models/ui/board_item_vo.dart';
 import 'package:flutter_chan_viewer/pages/base/base_bloc.dart';
 import 'package:flutter_chan_viewer/pages/board_list/bloc/board_list_state.dart';
 import 'package:flutter_chan_viewer/repositories/boards_repository.dart';
@@ -18,8 +18,8 @@ import 'package:flutter_chan_viewer/utils/preferences.dart';
 class BoardListBloc extends BaseBloc<ChanEvent, ChanState> {
   final BoardsRepository _repository = getIt<BoardsRepository>();
   final Preferences _preferences = getIt<Preferences>();
-  late List<BoardItem> favoriteBoards;
-  late List<BoardItem> otherBoards;
+  late List<BoardItemVO> favoriteBoards;
+  late List<BoardItemVO> otherBoards;
 
   late final StreamSubscription _subscription;
 
@@ -42,16 +42,16 @@ class BoardListBloc extends BaseBloc<ChanEvent, ChanState> {
       if (event.result is Loading) {
         BoardListModel? data = (event.result as Loading).data;
         if (data != null) {
-          favoriteBoards = data.boards.where((board) => favoriteBoardIds.contains(board.boardId)).toList();
-          otherBoards = data.boards.where((board) => !favoriteBoardIds.contains(board.boardId)).toList();
+          favoriteBoards = data.boards.where((board) => favoriteBoardIds.contains(board.boardId)).map((e) => e.toBoardItemVO()).toList();
+          otherBoards = data.boards.where((board) => !favoriteBoardIds.contains(board.boardId)).map((e) => e.toBoardItemVO()).toList();
           emit(buildContentState(lazyLoading: true));
         } else {
           emit(ChanStateLoading());
         }
       } else if (event.result is Success) {
         BoardListModel data = (event.result as Success).data;
-        favoriteBoards = data.boards.where((board) => favoriteBoardIds.contains(board.boardId)).toList();
-        otherBoards = data.boards.where((board) => !favoriteBoardIds.contains(board.boardId)).toList();
+        favoriteBoards = data.boards.where((board) => favoriteBoardIds.contains(board.boardId)).map((e) => e.toBoardItemVO()).toList();
+        otherBoards = data.boards.where((board) => !favoriteBoardIds.contains(board.boardId)).map((e) => e.toBoardItemVO()).toList();
         emit(buildContentState());
       }
     });
@@ -98,7 +98,7 @@ class BoardListBloc extends BaseBloc<ChanEvent, ChanState> {
         boards: boards, showLazyLoading: lazyLoading, showSearchBar: showSearchBar, event: event);
   }
 
-  bool _matchesQuery(BoardItem board, String query) {
+  bool _matchesQuery(BoardItemVO board, String query) {
     return board.boardId.containsIgnoreCase(query) || board.title.containsIgnoreCase(query);
   }
 }

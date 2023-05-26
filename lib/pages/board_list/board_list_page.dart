@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/chan_event.dart';
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/models/helper/chan_board_item_wrapper.dart';
-import 'package:flutter_chan_viewer/models/ui/board_item.dart';
+import 'package:flutter_chan_viewer/models/ui/board_item_vo.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
 import 'package:flutter_chan_viewer/pages/board_detail/board_detail_page.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
@@ -56,7 +56,7 @@ class _BoardListPageState extends BasePageState<BoardListPage> {
     );
   }
 
-  Widget buildBody(BuildContext context, ChanState state, Function(BoardItem?) onItemClicked) {
+  Widget buildBody(BuildContext context, ChanState state, Function(BoardItemVO?) onItemClicked) {
     if (state is ChanStateLoading) {
       return Constants.centeredProgressIndicator;
     } else if (state is BoardListStateContent) {
@@ -75,7 +75,7 @@ class _BoardListPageState extends BasePageState<BoardListPage> {
     }
   }
 
-  Widget _buildListView(BuildContext context, BoardListStateContent state, Function(BoardItem?) onItemClicked) {
+  Widget _buildListView(BuildContext context, BoardListStateContent state, Function(BoardItemVO?) onItemClicked) {
     return Scrollbar(
       child: ListView.builder(
         key: PageStorageKey<String>(KEY_LIST),
@@ -95,7 +95,7 @@ class _BoardListPageState extends BasePageState<BoardListPage> {
     );
   }
 
-  void _openBoardDetailPage(BoardItem board) async {
+  void _openBoardDetailPage(BoardItemVO board) async {
     await Navigator.of(context).push(NavigationHelper.getRoute(
       Constants.boardDetailRoute,
       {

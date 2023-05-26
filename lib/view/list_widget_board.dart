@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_chan_viewer/models/ui/board_item.dart';
+import 'package:flutter_chan_viewer/models/ui/board_item_vo.dart';
 
 class BoardListWidget extends StatelessWidget {
-  final BoardItem board;
+  final BoardItemVO board;
 
   const BoardListWidget({
     required this.board,

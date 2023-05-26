@@ -73,8 +73,14 @@ abstract class BasePageState<T extends StatefulWidget> extends State<T> with Sin
     return Future.value(true);
   }
 
-  Widget buildScaffold(BuildContext context, Widget body,
-      {Color? backgroundColor, FloatingActionButton? fab, List<PageAction>? pageActions, bool? showSearchBar}) {
+  Widget buildScaffold(
+    BuildContext context,
+    Widget body, {
+    Color? backgroundColor,
+    FloatingActionButton? fab,
+    List<PageAction>? pageActions,
+    bool? showSearchBar,
+  }) {
     return WillPopScope(
       onWillPop: onBackPressed,
       child: FocusableActionDetector(

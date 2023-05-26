@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 @immutable
 abstract class ChanState extends Equatable {
   final bool showSearchBar;
+  @deprecated // implement page-specific events instead
   final ChanSingleEvent? event;
 
   const ChanState({this.showSearchBar = false, this.event});

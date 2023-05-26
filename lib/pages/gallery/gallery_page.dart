@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/chan_event.dart';
-import 'package:flutter_chan_viewer/bloc/chan_state.dart';
-import 'package:flutter_chan_viewer/models/ui/post_item.dart';
 import 'package:flutter_chan_viewer/models/ui/post_item_vo.dart';
 import 'package:flutter_chan_viewer/models/ui/thread_item_vo.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
@@ -15,7 +13,7 @@ import 'package:flutter_chan_viewer/utils/dialog_util.dart';
 import 'package:flutter_chan_viewer/utils/media_helper.dart';
 import 'package:flutter_chan_viewer/view/list_widget_post.dart';
 import 'package:flutter_chan_viewer/view/view_cached_image.dart';
-import 'package:flutter_chan_viewer/view/view_video_player_new.dart';
+import 'package:flutter_chan_viewer/view/view_video_player.dart';
 import 'package:flutter_chan_viewer/view/view_video_player_vlc.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
@@ -74,71 +72,93 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
   Widget build(BuildContext context) {
     return buildScaffold(
         context,
-        BlocConsumer<GalleryBloc, ChanState>(listener: (context, state) {
-          if (state is GalleryStateContent && state.event != null) {
-            switch (state.event) {
-              case GallerySingleEvent.SHOW_COLLECTIONS_DIALOG:
-                final List<ThreadItemVO> threads = state.customThreads;
-                final PostItem post = state.selectedPost;
-
-                DialogUtil.showCustomCollectionPickerDialog(
-                  context,
-                  threads,
-                  _newCollectionTextController,
-                  (context, name) => {bloc.add(GalleryEventCreateNewCollection(name))},
-                  (context, name) {
-                    bloc.add(GalleryEventAddPostToCollection(name, post.postId));
-                  },
-                );
-                break;
-              case GallerySingleEvent.SHOW_POST_ADDED_TO_COLLECTION_SUCCESS:
-                showPostAddedToCollectionSuccessSnackbar(context);
-                break;
-              case ChanSingleEvent.SHOW_OFFLINE:
-                showOfflineSnackbar(context);
-                break;
-              default:
-                break;
-            }
-          }
-        }, builder: (context, state) {
-          return BlocBuilder<GalleryBloc, ChanState>(
-            bloc: bloc as GalleryBloc?,
-            builder: (context, state) {
-              if (state is ChanStateLoading) {
-                return Constants.centeredProgressIndicator;
-              } else if (state is GalleryStateContent) {
-                if (widget.showAsReply) {
-                  return _buildSinglePostBody(context, state.selectedPost);
-                } else {
-                  PostItem? post = state.selectedPost;
-                  if (post.hasMedia()) {
-                    return _buildCarouselBody(context, state, post);
-                  } else {
-                    return _buildSinglePostBody(context, post);
-                  }
-                }
-              } else {
-                return BasePageState.buildErrorScreen(context, (state as ChanStateError).message);
+        BlocConsumer<GalleryBloc, GalleryState>(
+          listener: (context, state) {
+            if (state is GalleryStateContent && state.galleryEvent != null) {
+              switch (state.galleryEvent) {
+                case GallerySingleEventShowCollectionsDialog _:
+                  var event = state.galleryEvent as GallerySingleEventShowCollectionsDialog;
+                  DialogUtil.showCustomCollectionPickerDialog(
+                    context,
+                    event.customThreads,
+                    _newCollectionTextController,
+                    (context, name) => {bloc.add(GalleryEventCreateNewCollection(name))},
+                    (context, name) {
+                      bloc.add(GalleryEventAddPostToCollection(name, event.selectedPostId));
+                    },
+                  );
+                  break;
+                case GallerySingleEventShowPostAddedToCollectionSuccess _:
+                  showPostAddedToCollectionSuccessSnackbar(context);
+                  break;
+                case GallerySingleEventShowOffline _:
+                  showOfflineSnackbar(context);
+                  break;
+                case GallerySingleEventShowReply _:
+                  var event = state.galleryEvent as GallerySingleEventShowReply;
+                  Navigator.of(context).push(PageRouteBuilder(
+                      opaque: false,
+                      pageBuilder: (_, __, ___) {
+                        return BlocProvider(
+                          create: (context) => GalleryBloc(event.boardId, event.threadId, event.postId),
+                          child: GalleryPage(showAsReply: true),
+                        );
+                      }));
+                default:
+                  break;
               }
-            },
-          );
-        }),
+            }
+          },
+          builder: (context, state) {
+            return BlocBuilder<GalleryBloc, GalleryState>(
+              bloc: bloc as GalleryBloc?,
+              builder: (context, state) {
+                switch (state) {
+                  case GalleryStateLoading _:
+                    return Constants.centeredProgressIndicator;
+                  case GalleryStateContent _:
+                    if (widget.showAsReply || state.selectedPost.mediaSource == null) {
+                      return _buildSinglePostBody(
+                        context,
+                        state.selectedPost.mediaSource,
+                        state.replies,
+                      );
+                    } else {
+                      return _buildCarouselBody(
+                        context,
+                        state.mediaSources,
+                        state.initialPostIndex,
+                        state.selectedPostIndex,
+                        state.selectedPost,
+                        state.replies,
+                      );
+                    }
+                  case GalleryStateError _:
+                    return BasePageState.buildErrorScreen(context, state.message);
+                }
+              },
+            );
+          },
+        ),
         backgroundColor: Theme.of(context).scaffoldBackgroundColor.withOpacity(0.5));
   }
 
-  Widget _buildSinglePostBody(BuildContext context, PostItem post) {
+  Widget _buildSinglePostBody(
+    BuildContext context,
+    MediaSource? mediaSource,
+    List<PostItemVO> replies,
+  ) {
     return SafeArea(
       child: Stack(
         children: <Widget>[
-          if (post.hasMedia()) _buildSinglePostItem(context, post.getMediaSource()),
-          _buildBottomView(post),
+          if (mediaSource != null) _buildSinglePostContent(context, mediaSource),
+          _buildBottomView(context, replies),
         ],
       ),
     );
   }
 
-  Widget _buildSinglePostItem(BuildContext context, MediaSource? mediaSource) {
+  Widget _buildSinglePostContent(BuildContext context, MediaSource? mediaSource) {
     switch (mediaSource) {
       case VideoSource _:
         return _buildVideoPlayer(mediaSource);
@@ -149,40 +169,64 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
     }
   }
 
-  Widget _buildCarouselBody(BuildContext context, GalleryStateContent state, PostItem post) {
+  Widget _buildCarouselBody(
+    BuildContext context,
+    List<MediaSource> mediaSources,
+    int initialPostIndex,
+    int selectedPostIndex,
+    PostItemVO post,
+    List<PostItemVO> replies,
+  ) {
     return SafeArea(
       child: Stack(
         children: <Widget>[
-          PhotoViewGallery.builder(
-            itemCount: state.mediaSources.length,
-            builder: (context, index) {
-              return _buildCarouselItem(context, state.mediaSources[index])!;
-            },
-            scrollPhysics: BouncingScrollPhysics(),
-            backgroundDecoration: BoxDecoration(color: Colors.transparent),
-            loadingBuilder: (context, index) => Constants.progressIndicator,
-            pageController: PageController(initialPage: state.selectedPostIndex, keepPage: false),
-            allowImplicitScrolling: false,
-            onPageChanged: ((newMediaIndex) {
-              if (newMediaIndex != state.selectedPostIndex) {
-                MediaSource item = state.mediaSources[newMediaIndex];
-                bloc.add(GalleryEventOnPostSelected(item.postId));
-                _panelController.close();
-              }
-            }),
-          ),
-          _buildBottomView(post),
-          Align(
-            alignment: Alignment.topLeft,
-            child: Padding(
-              padding: const EdgeInsets.all(4.0),
-              child: Text(
-                "${state.selectedPostIndex + 1}/${state.mediaSources.length} ${post.filename}${post.extension}",
-                style: Theme.of(context).textTheme.caption,
-              ),
-            ),
-          ),
+          _buildCarouselContent(context, mediaSources, initialPostIndex),
+          _buildBottomView(context, replies),
+          _buildCarouselOverlay(context, mediaSources, selectedPostIndex, post.fileName),
         ],
+      ),
+    );
+  }
+
+  Widget _buildCarouselContent(
+    BuildContext context,
+    List<MediaSource> mediaSources,
+    int initialPostIndex,
+  ) {
+    return PhotoViewGallery.builder(
+      itemCount: mediaSources.length,
+      builder: (context, index) {
+        return _buildCarouselItem(context, mediaSources[index])!;
+      },
+      scrollPhysics: BouncingScrollPhysics(),
+      backgroundDecoration: BoxDecoration(color: Colors.transparent),
+      loadingBuilder: (context, index) => Constants.progressIndicator,
+      pageController: PageController(initialPage: initialPostIndex, keepPage: false),
+      allowImplicitScrolling: false,
+      onPageChanged: ((newMediaIndex) {
+        if (newMediaIndex != initialPostIndex) {
+          MediaSource item = mediaSources[newMediaIndex];
+          bloc.add(GalleryEventOnPostSelected(item.postId));
+          _panelController.close();
+        }
+      }),
+    );
+  }
+
+  Widget _buildCarouselOverlay(
+    BuildContext context,
+    List<MediaSource> mediaSources,
+    int selectedPostIndex,
+    String? fileName,
+  ) {
+    return Align(
+      alignment: Alignment.topLeft,
+      child: Padding(
+        padding: const EdgeInsets.all(4.0),
+        child: Text(
+          "${selectedPostIndex + 1}/${mediaSources.length} ${fileName}",
+          style: Theme.of(context).textTheme.caption,
+        ),
       ),
     );
   }
@@ -191,15 +235,11 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
     late Widget child;
     switch (mediaSource) {
       case VideoSource _:
-        {
-          child = _buildVideoPlayer(mediaSource);
-          break;
-        }
+        child = _buildVideoPlayer(mediaSource);
+        break;
       case ImageSource _:
-        {
-          child = ChanCachedImage(imageSource: mediaSource, boxFit: BoxFit.contain);
-          break;
-        }
+        child = ChanCachedImage(imageSource: mediaSource, boxFit: BoxFit.contain);
+        break;
     }
     return PhotoViewGalleryPageOptions.customChild(
       child: child,
@@ -215,15 +255,13 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
 
   Widget _buildVideoPlayer(VideoSource videoSource) {
     if (ChanUtil.isMobile()) {
-      return ChanVideoPlayerNew(videoSource: videoSource);
+      return ChanVideoPlayer(videoSource: videoSource);
     } else {
       return ChanVideoPlayerVlc(videoSource: videoSource);
     }
   }
 
-  Widget _buildBottomView(PostItem post) {
-    List<PostItem> repliesPosts = [post, ...post.visibleReplies];
-
+  Widget _buildBottomView(BuildContext context, List<PostItemVO> replies) {
     return SlidingUpPanel(
       controller: _panelController,
       defaultPanelState: PanelState.CLOSED,
@@ -237,24 +275,24 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            _buildBottomViewHeader(repliesPosts[0]),
+            _buildBottomViewHeader(replies.length, replies.first.postId),
             Expanded(
               child: Material(
                 child: ListView.builder(
                   controller: sc,
                   shrinkWrap: true,
                   // physics: ClampingScrollPhysics(),
-                  itemCount: repliesPosts.length,
+                  itemCount: replies.length,
                   itemBuilder: (context, index) {
-                    PostItem replyPost = repliesPosts[index];
+                    PostItemVO replyPost = replies[index];
                     return Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 2.0),
                       child: PostListWidget(
-                        post: replyPost.toPostItemVO(),
+                        post: replyPost,
                         showHeroAnimation: false,
                         showImage: index != 0,
-                        onTap: () => index != 0 ? _onReplyPostClicked(context, replyPost) : null,
-                        onLongPress: () => _showReplyDetailDialog(context, replyPost),
+                        onTap: () => index != 0 ? _onReplyPostClicked(context, replyPost.postId) : null,
+                        onLongPress: () => _showReplyDetailDialog(context, replyPost.postId),
                         onLinkTap: (url) => _onLinkClicked(context, url),
                         selected: false,
                       ),
@@ -266,38 +304,10 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
           ],
         );
       },
-      // panel: Column(
-      //   crossAxisAlignment: CrossAxisAlignment.end,
-      //   children: [
-      //     _buildBottomViewHeader(repliesPosts[0]),
-      //     Material(
-      //       child: ListView.builder(
-      //         shrinkWrap: true,
-      //         physics: NeverScrollableScrollPhysics(),
-      //         itemCount: repliesPosts.length,
-      //         itemBuilder: (context, index) {
-      //           PostItem replyPost = repliesPosts[index];
-      //           return Padding(
-      //             padding: const EdgeInsets.symmetric(horizontal: 2.0),
-      //             child: PostListWidget(
-      //               post: replyPost,
-      //               showHeroAnimation: false,
-      //               showImage: index != 0,
-      //               onTap: () => index != 0 ? _onReplyPostClicked(context, replyPost) : null,
-      //               onLongPress: () => _showReplyDetailDialog(context, replyPost),
-      //               onLinkTap: (url) => _onLinkClicked(context, url),
-      //               selected: false,
-      //             ),
-      //           );
-      //         },
-      //       ),
-      //     ),
-      //   ],
-      // ),
     );
   }
 
-  Widget _buildBottomViewHeader(PostItem post) {
+  Widget _buildBottomViewHeader(int repliesCount, int postId) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 4.0, left: 2.0, right: 2.0),
       child: Column(
@@ -316,7 +326,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
               margin: EdgeInsets.zero,
               child: Padding(
                 padding: const EdgeInsets.all(4.0),
-                child: Text("${post.visibleReplies.length} replies", style: Theme.of(context).textTheme.caption),
+                child: Text("${repliesCount} replies", style: Theme.of(context).textTheme.caption),
               ),
             ),
           ),
@@ -333,8 +343,8 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                IconButton(icon: Icon(Icons.visibility_off), onPressed: () => _onHidePostClicked(context, post)),
-                IconButton(icon: Icon(Icons.add), onPressed: () => _onCollectionsClicked(context, post)),
+                IconButton(icon: Icon(Icons.visibility_off), onPressed: () => _onHidePostClicked(context, postId)),
+                IconButton(icon: Icon(Icons.add), onPressed: () => _onCollectionsClicked(context, postId)),
               ],
             ),
           ),
@@ -343,23 +353,16 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
     );
   }
 
-  void _onReplyPostClicked(BuildContext context, PostItem replyPost) {
-    Navigator.of(context).push(PageRouteBuilder(
-        opaque: false,
-        pageBuilder: (_, __, ___) {
-          return BlocProvider(
-            create: (context) => GalleryBloc(replyPost.boardId, replyPost.threadId, replyPost.postId),
-            child: GalleryPage(showAsReply: true),
-          );
-        }));
+  void _onReplyPostClicked(BuildContext context, int postId) {
+    bloc.add(GalleryEventOnReplyClicked(postId));
   }
 
   void _onLinkClicked(BuildContext context, String url) =>
       bloc.add(GalleryEventOnReplyClicked(ChanUtil.getPostIdFromUrl(url)));
 
-  void _onHidePostClicked(BuildContext context, PostItem post) => bloc.add(GalleryEventHidePost(post.postId));
+  void _onHidePostClicked(BuildContext context, int postId) => bloc.add(GalleryEventHidePost(postId));
 
-  void _onCollectionsClicked(BuildContext context, PostItem post) {
+  void _onCollectionsClicked(BuildContext context, int postId) {
     if (bloc.state is GalleryStateContent) {
       List<ThreadItemVO> threads = bloc.state.customThreads;
       DialogUtil.showCustomCollectionPickerDialog(
@@ -367,7 +370,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
         threads,
         _newCollectionTextController,
         (context, name) => {bloc.add(GalleryEventCreateNewCollection(name))},
-        (context, name) => {bloc.add(GalleryEventAddPostToCollection(name, post.postId))},
+        (context, name) => {bloc.add(GalleryEventAddPostToCollection(name, postId))},
       );
     }
   }
@@ -377,7 +380,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
-  void _showReplyDetailDialog(BuildContext context, PostItem replyPost) async {
+  void _showReplyDetailDialog(BuildContext context, int postId) async {
     showDialog(
       context: context,
       barrierDismissible: true,
@@ -387,7 +390,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
           children: <Widget>[
             SimpleDialogOption(
               onPressed: () {
-                bloc.add(GalleryEventHidePost(replyPost.postId));
+                bloc.add(GalleryEventHidePost(postId));
                 Navigator.of(context).pop();
               },
               child: const Text('Hide reply'),

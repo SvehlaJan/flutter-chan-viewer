@@ -12,13 +12,25 @@ class PostItemVO with EquatableMixin {
   final int timestamp;
   final String? subtitle;
   final String? htmlContent;
+  final String? fileName;
   final int downloadProgress;
   final MediaType mediaType;
 
-  PostItemVO(this.mediaSource, this.postId, this.replies, this.timestamp, this.subtitle, this.htmlContent, this.downloadProgress, this.mediaType);
+  PostItemVO(
+    this.mediaSource,
+    this.postId,
+    this.replies,
+    this.timestamp,
+    this.subtitle,
+    this.htmlContent,
+    this.fileName,
+    this.downloadProgress,
+    this.mediaType,
+  );
 
   @override
-  List<Object?> get props => [mediaSource, postId, replies, timestamp, subtitle, htmlContent, downloadProgress, mediaType];
+  List<Object?> get props =>
+      [mediaSource, postId, replies, timestamp, subtitle, htmlContent, downloadProgress, mediaType];
 
   bool isDownloaded() => downloadProgress == 100;
 }
@@ -32,6 +44,7 @@ extension PostItemVOExtension on PostItem {
       timestamp,
       subtitle,
       htmlContent,
+      filename != null ? "${filename}${extension}" : null,
       downloadProgress,
       mediaType,
     );

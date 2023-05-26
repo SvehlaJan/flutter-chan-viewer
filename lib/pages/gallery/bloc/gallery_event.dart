@@ -1,6 +1,8 @@
 import 'package:flutter_chan_viewer/bloc/chan_event.dart';
 
-class GalleryEventOnPostSelected extends ChanEvent {
+sealed class GalleryEvent extends ChanEvent {}
+
+class GalleryEventOnPostSelected extends GalleryEvent {
   final int postId;
 
   GalleryEventOnPostSelected(this.postId);
@@ -9,7 +11,7 @@ class GalleryEventOnPostSelected extends ChanEvent {
   List<Object?> get props => [postId];
 }
 
-class GalleryEventOnReplyClicked extends ChanEvent {
+class GalleryEventOnReplyClicked extends GalleryEvent {
   final int postId;
 
   GalleryEventOnReplyClicked(this.postId);
@@ -18,7 +20,7 @@ class GalleryEventOnReplyClicked extends ChanEvent {
   List<Object?> get props => [postId];
 }
 
-class GalleryEventOnLinkClicked extends ChanEvent {
+class GalleryEventOnLinkClicked extends GalleryEvent {
   final String url;
 
   GalleryEventOnLinkClicked(this.url);
@@ -27,7 +29,7 @@ class GalleryEventOnLinkClicked extends ChanEvent {
   List<Object> get props => [url];
 }
 
-class GalleryEventHidePost extends ChanEvent {
+class GalleryEventHidePost extends GalleryEvent {
   final int postId;
 
   GalleryEventHidePost(this.postId);
@@ -36,7 +38,7 @@ class GalleryEventHidePost extends ChanEvent {
   List<Object?> get props => [postId];
 }
 
-class GalleryEventCreateNewCollection extends ChanEvent {
+class GalleryEventCreateNewCollection extends GalleryEvent {
   final String name;
 
   GalleryEventCreateNewCollection(this.name);
@@ -45,7 +47,7 @@ class GalleryEventCreateNewCollection extends ChanEvent {
   List<Object> get props => [name];
 }
 
-class GalleryEventAddPostToCollection extends ChanEvent {
+class GalleryEventAddPostToCollection extends GalleryEvent {
   final String customThreadName;
   final int postId;
 

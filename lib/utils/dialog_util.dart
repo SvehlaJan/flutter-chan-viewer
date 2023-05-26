@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
+import 'package:flutter_chan_viewer/models/ui/thread_item_vo.dart';
 
 class DialogUtil {
   static void showCustomCollectionPickerDialog(
     BuildContext context,
-    List<ThreadItem> threads,
+    List<ThreadItemVO> threads,
     TextEditingController? textController,
     Function onCreateNewCollectionClicked,
     Function onAddPostToCollectionClicked,

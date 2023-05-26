@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/chan_event.dart';
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
-import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
+import 'package:flutter_chan_viewer/models/ui/thread_item_vo.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
 import 'package:flutter_chan_viewer/pages/thread_detail/thread_detail_page.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
@@ -73,7 +73,7 @@ class _FavoritesPageState extends BasePageState<FavoritesPage> {
               key: PageStorageKey<String>(KEY_LIST),
               itemBuilder: (BuildContext context, int index) {
                 FavoritesItemWrapper item = state.threads[index];
-                ThreadItem? thread = item.thread?.threadDetailModel.thread;
+                ThreadItemVO? thread = item.thread?.thread;
                 if (item.isHeader || thread == null) {
                   return Padding(
                       padding: const EdgeInsets.all(8.0),
@@ -101,7 +101,7 @@ class _FavoritesPageState extends BasePageState<FavoritesPage> {
 
   void _openThreadDetailPage(FavoritesThreadWrapper threadWrapper) async {
     bloc.add(ChanEventFetchData());
-    ThreadItem thread = threadWrapper.threadDetailModel.thread;
+    ThreadItemVO thread = threadWrapper.thread;
     await Navigator.of(context).push(
       NavigationHelper.getRoute(
         Constants.threadDetailRoute,

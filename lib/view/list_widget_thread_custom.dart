@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
+import 'package:flutter_chan_viewer/models/ui/thread_item_vo.dart';
 import 'package:flutter_chan_viewer/utils/extensions.dart';
 
 class CustomThreadListWidget extends StatelessWidget {
-  final ThreadItem thread;
+  final ThreadItemVO thread;
 
   const CustomThreadListWidget({
     required this.thread,

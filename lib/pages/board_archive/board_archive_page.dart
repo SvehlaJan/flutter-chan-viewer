@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/chan_event.dart';
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
-import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
+import 'package:flutter_chan_viewer/models/ui/thread_item_vo.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
 import 'package:flutter_chan_viewer/pages/thread_detail/thread_detail_page.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
@@ -16,7 +16,7 @@ import 'bloc/board_archive_state.dart';
 class BoardArchivePage extends StatefulWidget {
   static const String ARG_BOARD_ID = "ArchiveListPage.ARG_BOARD_ID";
 
-  final String? boardId;
+  final String boardId;
 
   BoardArchivePage(this.boardId);
 
@@ -78,7 +78,7 @@ class _BoardArchivePageState extends BasePageState<BoardArchivePage> {
     });
   }
 
-  Widget buildBody(BuildContext context, ChanState state, Function(ThreadItem) onItemClicked) {
+  Widget buildBody(BuildContext context, ChanState state, Function(ThreadItemVO) onItemClicked) {
     if (state is ChanStateLoading) {
       return Constants.centeredProgressIndicator;
     } else if (state is BoardArchiveStateContent) {
@@ -94,16 +94,16 @@ class _BoardArchivePageState extends BasePageState<BoardArchivePage> {
               controller: _listScrollController,
               itemCount: state.threads.length,
               itemBuilder: (context, index) {
-                ThreadItem? thread = state.threads[index].threadDetailModel.thread;
+                ArchiveThreadWrapper threadWrapper = state.threads[index];
                 if (state.threads[index].isLoading) {
                   return ArchiveThreadListWidget(
-                    thread: thread,
-                    isLoading: state.threads[index].isLoading,
+                    thread: threadWrapper.thread,
+                    isLoading: threadWrapper.isLoading,
                   );
                 } else {
                   return InkWell(
-                    child: ThreadListWidget(thread: thread),
-                    onTap: () => onItemClicked(thread),
+                    child: ThreadListWidget(thread: threadWrapper.thread),
+                    onTap: () => onItemClicked(threadWrapper.thread),
                   );
                 }
               },
@@ -117,11 +117,11 @@ class _BoardArchivePageState extends BasePageState<BoardArchivePage> {
     }
   }
 
-  void _openThreadDetailPage(ThreadItem thread) {
+  void _openThreadDetailPage(ThreadItemVO thread) {
     Navigator.of(context).push(
       NavigationHelper.getRoute(
         Constants.threadDetailRoute,
-        ThreadDetailPage.createArguments(thread.boardId, thread.threadId),
+        ThreadDetailPage.createArguments(widget.boardId, thread.threadId),
       )!,
     );
   }

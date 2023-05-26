@@ -8,6 +8,7 @@ import 'package:flutter_chan_viewer/models/archive_list_model.dart';
 import 'package:flutter_chan_viewer/models/helper/online_state.dart';
 import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
 import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
+import 'package:flutter_chan_viewer/models/ui/thread_item_vo.dart';
 import 'package:flutter_chan_viewer/pages/base/base_bloc.dart';
 import 'package:flutter_chan_viewer/pages/board_archive/bloc/board_archive_event.dart';
 import 'package:flutter_chan_viewer/pages/board_archive/bloc/board_archive_state.dart';
@@ -52,14 +53,13 @@ class BoardArchiveBloc extends BaseBloc<ChanEvent, ChanState> {
       if (cachedThreadsMap.containsKey(threadId)) {
         int batchInsertIndex = event.index;
         while (cachedThreadsMap.containsKey(threadId)) {
-          archiveThreads
-              .add(ArchiveThreadWrapper(ThreadDetailModel.fromThreadAndPosts(cachedThreadsMap[threadId]!, []), false));
+          archiveThreads.add(ArchiveThreadWrapper(cachedThreadsMap[threadId]!.toThreadItemVO(), false));
           batchInsertIndex++;
           threadId = batchInsertIndex < archiveThreadIds.length ? archiveThreadIds[batchInsertIndex] : null;
         }
       } else {
-        archiveThreads
-            .add(ArchiveThreadWrapper(ThreadDetailModel.fromCacheDirective(CacheDirective(boardId, threadId)), true));
+        ThreadItem threadItem = ThreadItem.fromCacheDirective(CacheDirective(boardId, threadId));
+        archiveThreads.add(ArchiveThreadWrapper(threadItem.toThreadItemVO(), true));
         emit(buildContentState(lazyLoading: true));
 
         try {
@@ -67,9 +67,11 @@ class BoardArchiveBloc extends BaseBloc<ChanEvent, ChanState> {
           if (threadDetailModel == null) {
             threadDetailModel = await _threadsRepository.fetchRemoteThreadDetail(boardId, threadId, true);
           } else if (threadDetailModel.thread.onlineStatus != OnlineState.ARCHIVED.index) {
-            await _threadsRepository.updateThread(threadDetailModel.thread.copyWith(onlineStatus: OnlineState.ARCHIVED.index));
+            await _threadsRepository
+                .updateThread(threadDetailModel.thread.copyWith(onlineStatus: OnlineState.ARCHIVED.index));
           }
-          archiveThreads[archiveThreads.length - 1] = ArchiveThreadWrapper(threadDetailModel, false);
+          archiveThreads[archiveThreads.length - 1] =
+              ArchiveThreadWrapper(threadDetailModel.thread.toThreadItemVO(), false);
         } catch (e) {
           logger.e("Failed to load archived thread", e);
         }
@@ -88,12 +90,10 @@ class BoardArchiveBloc extends BaseBloc<ChanEvent, ChanState> {
   BoardArchiveStateContent buildContentState({bool lazyLoading = false, ChanSingleEvent? event}) {
     List<ArchiveThreadWrapper> threads;
     if (searchQuery.isNotNullNorEmpty) {
-      List<ArchiveThreadWrapper> titleMatchThreads = archiveThreads
-          .where((thread) => (thread.threadDetailModel.thread.subtitle ?? "").containsIgnoreCase(searchQuery))
-          .toList();
-      List<ArchiveThreadWrapper> bodyMatchThreads = archiveThreads
-          .where((thread) => (thread.threadDetailModel.thread.content ?? "").containsIgnoreCase(searchQuery))
-          .toList();
+      List<ArchiveThreadWrapper> titleMatchThreads =
+          archiveThreads.where((thread) => (thread.thread.subtitle ?? "").containsIgnoreCase(searchQuery)).toList();
+      List<ArchiveThreadWrapper> bodyMatchThreads =
+          archiveThreads.where((thread) => (thread.thread.content ?? "").containsIgnoreCase(searchQuery)).toList();
       threads = LinkedHashSet<ArchiveThreadWrapper>.from(titleMatchThreads + bodyMatchThreads).toList();
     } else {
       threads = archiveThreads;

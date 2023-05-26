@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
+import 'package:flutter_chan_viewer/models/ui/thread_item_vo.dart';
 
 class ArchiveThreadListWidget extends StatelessWidget {
-  final ThreadItem thread;
+  final ThreadItemVO thread;
   final bool isLoading;
 
   const ArchiveThreadListWidget({

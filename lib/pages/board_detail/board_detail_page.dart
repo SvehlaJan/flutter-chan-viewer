@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/chan_event.dart';
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
-import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
+import 'package:flutter_chan_viewer/models/ui/thread_item_vo.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
 import 'package:flutter_chan_viewer/pages/board_archive/board_archive_page.dart';
 import 'package:flutter_chan_viewer/pages/thread_detail/thread_detail_page.dart';
@@ -22,7 +22,7 @@ class BoardDetailPage extends StatefulWidget {
     return arguments;
   }
 
-  final String? boardId;
+  final String boardId;
 
   BoardDetailPage(this.boardId);
 
@@ -102,7 +102,7 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
     });
   }
 
-  Widget buildBody(BuildContext context, ChanState state, Function(ThreadItem) onItemClicked) {
+  Widget buildBody(BuildContext context, ChanState state, Function(ThreadItemVO) onItemClicked) {
     if (state is ChanStateLoading) {
       return Constants.centeredProgressIndicator;
     } else if (state is BoardDetailStateContent) {
@@ -121,7 +121,7 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
     }
   }
 
-  Widget _buildListView(BuildContext context, BoardDetailStateContent state, Function(ThreadItem) onItemClicked) {
+  Widget _buildListView(BuildContext context, BoardDetailStateContent state, Function(ThreadItemVO) onItemClicked) {
     return Scrollbar(
       controller: _scrollController!,
       child: ListView.builder(
@@ -138,11 +138,11 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
     );
   }
 
-  void _openThreadDetailPage(ThreadItem thread) {
+  void _openThreadDetailPage(ThreadItemVO thread) {
     Navigator.of(context).push(
       NavigationHelper.getRoute(
         Constants.threadDetailRoute,
-        ThreadDetailPage.createArguments(thread.boardId, thread.threadId),
+        ThreadDetailPage.createArguments(widget.boardId, thread.threadId),
       )!,
     );
   }

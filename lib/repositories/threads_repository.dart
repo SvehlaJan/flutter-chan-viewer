@@ -82,8 +82,7 @@ class ThreadsRepository {
 
             controller.addStream(_localDataSource.getThreadByIdStream(boardId, threadId).combineLatest(
                 _localDataSource.getPostsByThreadIdStream(boardId, threadId),
-                    (thread, dynamic posts) =>
-                    DataResult.success(ThreadDetailModel.fromThreadAndPosts(thread, posts))));
+                (thread, dynamic posts) => DataResult.success(ThreadDetailModel.fromThreadAndPosts(thread, posts))));
           });
         } catch (e) {
           if (e is HttpException && e.errorCode == 404) {
@@ -145,15 +144,14 @@ class ThreadsRepository {
     return newThread;
   }
 
-  Future<void> addPostToCustomThread(PostItem originalPost, ThreadItem newThread) async {
+  Future<void> addPostToCustomThread(PostItem originalPost, int threadId) async {
     PostItem newPost = originalPost.copyWith(
       postId: DatabaseHelper.nextPostId(),
-      threadId: newThread.threadId,
+      threadId: threadId,
       boardId: Constants.customBoardId,
-      thread: newThread,
     );
 
-    await _localDataSource.addPostToThread(newPost, newThread);
+    await _localDataSource.addPostToThread(newPost);
     _chanStorage.copyMediaFile(newPost.getMediaUrl()!, originalPost.getCacheDirective(), newPost.getCacheDirective());
 
     return;

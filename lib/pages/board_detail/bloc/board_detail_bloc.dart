@@ -7,6 +7,7 @@ import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/models/board_detail_model.dart';
 import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
+import 'package:flutter_chan_viewer/models/ui/thread_item_vo.dart';
 import 'package:flutter_chan_viewer/pages/base/base_bloc.dart';
 import 'package:flutter_chan_viewer/pages/board_detail/bloc/board_detail_event.dart';
 import 'package:flutter_chan_viewer/pages/board_detail/bloc/board_detail_state.dart';
@@ -85,16 +86,16 @@ class BoardDetailBloc extends BaseBloc<ChanEvent, ChanState> {
 
   @override
   BoardDetailStateContent buildContentState({bool lazyLoading = false, ChanSingleEvent? event}) {
-    List<ThreadItem> threads;
+    List<ThreadItemVO> threads;
     if (searchQuery.isNotNullNorEmpty) {
       List<ThreadItem> titleMatchThreads = _boardDetailModel!.threads
           .where((thread) => (thread.subtitle ?? "").containsIgnoreCase(searchQuery))
           .toList();
       List<ThreadItem> bodyMatchThreads =
           _boardDetailModel!.threads.where((thread) => (thread.content ?? "").containsIgnoreCase(searchQuery)).toList();
-      threads = LinkedHashSet<ThreadItem>.from(titleMatchThreads + bodyMatchThreads).toList();
+      threads = LinkedHashSet<ThreadItemVO>.from(titleMatchThreads + bodyMatchThreads).toList();
     } else {
-      threads = _boardDetailModel!.threads;
+      threads = _boardDetailModel!.threads.map((thread) => thread.toThreadItemVO()).toList();
     }
 
     return BoardDetailStateContent(

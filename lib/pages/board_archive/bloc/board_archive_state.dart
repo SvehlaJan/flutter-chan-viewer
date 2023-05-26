@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
-import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
+import 'package:flutter_chan_viewer/models/ui/thread_item_vo.dart';
 
 class BoardArchiveStateContent extends ChanStateContent {
   final List<ArchiveThreadWrapper> threads;
@@ -21,11 +21,11 @@ class BoardArchiveStateContent extends ChanStateContent {
 }
 
 class ArchiveThreadWrapper extends Equatable {
-  final ThreadDetailModel threadDetailModel;
+  final ThreadItemVO thread;
   final bool isLoading;
 
-  ArchiveThreadWrapper(this.threadDetailModel, this.isLoading);
+  ArchiveThreadWrapper(this.thread, this.isLoading);
 
   @override
-  List<Object> get props => [threadDetailModel, isLoading];
+  List<Object> get props => [thread, isLoading];
 }

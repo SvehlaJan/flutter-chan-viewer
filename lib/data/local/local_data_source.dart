@@ -135,7 +135,7 @@ class LocalDataSource {
     return null;
   }
 
-  Future<void> addPostToThread(PostItem post, ThreadItem thread) async {
+  Future<void> addPostToThread(PostItem post) async {
     await _postsDao.insertPost(post.toTableData());
     return;
   }

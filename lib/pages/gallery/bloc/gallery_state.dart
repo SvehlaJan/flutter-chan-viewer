@@ -1,13 +1,13 @@
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/models/ui/post_item.dart';
-import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
+import 'package:flutter_chan_viewer/models/ui/thread_item_vo.dart';
 import 'package:flutter_chan_viewer/utils/media_helper.dart';
 
 class GalleryStateContent extends ChanStateContent {
   final List<MediaSource> mediaSources;
   final PostItem selectedPost;
   final int selectedPostIndex;
-  final List<ThreadItem> customThreads;
+  final List<ThreadItemVO> customThreads;
 
   const GalleryStateContent({
     required showSearchBar,

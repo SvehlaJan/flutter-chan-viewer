@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
-import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
+import 'package:flutter_chan_viewer/models/ui/thread_item_vo.dart';
 
 class FavoritesStateContent extends ChanStateContent {
   final List<FavoritesItemWrapper> threads;
@@ -28,12 +28,12 @@ class FavoritesItemWrapper extends Equatable {
 }
 
 class FavoritesThreadWrapper extends Equatable {
-  final ThreadDetailModel threadDetailModel;
+  final ThreadItemVO thread;
   final bool isLoading;
   final bool isCustom;
 
-  FavoritesThreadWrapper(this.threadDetailModel, {this.isCustom = false, this.isLoading = false});
+  FavoritesThreadWrapper(this.thread, {this.isCustom = false, this.isLoading = false});
 
   @override
-  List<Object> get props => [threadDetailModel, isCustom, isLoading];
+  List<Object> get props => [thread, isCustom, isLoading];
 }

@@ -7,6 +7,7 @@ import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/models/helper/online_state.dart';
 import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
+import 'package:flutter_chan_viewer/models/ui/thread_item_vo.dart';
 import 'package:flutter_chan_viewer/pages/base/base_bloc.dart';
 import 'package:flutter_chan_viewer/pages/favorites/bloc/favorites_event.dart';
 import 'package:flutter_chan_viewer/repositories/boards_repository.dart';
@@ -50,10 +51,10 @@ class FavoritesBloc extends BaseBloc<ChanEvent, ChanState> {
         List<String?> sfwBoardIds = (await _boardsRepository.fetchCachedBoardList(false))!.boards.map((board) => board.boardId).toList();
         threads.removeWhere((model) => !sfwBoardIds.contains(model.thread.boardId));
       }
-      _favoriteThreads = threads.map((e) => FavoritesThreadWrapper(e)).toList();
+      _favoriteThreads = threads.map((e) => FavoritesThreadWrapper(e.thread.toThreadItemVO())).toList();
       _customThreads = (await _threadsRepository.getCustomThreads())
           .map((thread) => FavoritesThreadWrapper(
-                ThreadDetailModel.fromThreadAndPosts(thread, []),
+                thread.toThreadItemVO(),
                 isCustom: true,
               ))
           .toList();
@@ -70,15 +71,15 @@ class FavoritesBloc extends BaseBloc<ChanEvent, ChanState> {
 
     on<FavoritesEventFetchDetail>((event, emit) async {
       int refreshIndex = event.index;
-      ThreadDetailModel cachedThread = _favoriteThreads[refreshIndex].threadDetailModel;
+      ThreadItemVO cachedThread = _favoriteThreads[refreshIndex].thread;
       ThreadDetailModel? refreshedThread;
 
-      if ([OnlineState.ONLINE.index, OnlineState.UNKNOWN.index].contains(cachedThread.thread.onlineStatus)) {
+      if ([OnlineState.ONLINE.index, OnlineState.UNKNOWN.index].contains(cachedThread.onlineStatus)) {
         _favoriteThreads[refreshIndex] = FavoritesThreadWrapper(cachedThread, isLoading: true);
         emit(buildContentState(lazyLoading: true));
 
         try {
-          refreshedThread = await _threadsRepository.fetchRemoteThreadDetail(cachedThread.thread.boardId, cachedThread.thread.threadId, false);
+          refreshedThread = await _threadsRepository.fetchRemoteThreadDetail(cachedThread.boardId, cachedThread.threadId, false);
 
           var connectivityResult = await (Connectivity().checkConnectivity());
           if (connectivityResult == ConnectivityResult.wifi) {
@@ -93,7 +94,7 @@ class FavoritesBloc extends BaseBloc<ChanEvent, ChanState> {
         print("Favorite thread is already archived or dead. Not refreshing.");
       }
 
-      _favoriteThreads[refreshIndex] = FavoritesThreadWrapper(refreshedThread ?? cachedThread);
+      _favoriteThreads[refreshIndex] = FavoritesThreadWrapper(refreshedThread?.thread.toThreadItemVO() ?? cachedThread);
       if (refreshIndex + 1 < _favoriteThreads.length) {
         emit(buildContentState(lazyLoading: true));
         add(FavoritesEventFetchDetail(refreshIndex + 1));
@@ -109,10 +110,10 @@ class FavoritesBloc extends BaseBloc<ChanEvent, ChanState> {
     List<FavoritesThreadWrapper> favoriteThreads;
     if (searchQuery.isNotNullNorEmpty) {
       List<FavoritesThreadWrapper> titleMatchThreads = _favoriteThreads.where((thread) {
-        return (thread.threadDetailModel.thread.subtitle ?? "").containsIgnoreCase(searchQuery);
+        return (thread.thread.subtitle ?? "").containsIgnoreCase(searchQuery);
       }).toList();
       List<FavoritesThreadWrapper> bodyMatchThreads = _favoriteThreads.where((thread) {
-        return (thread.threadDetailModel.thread.content ?? "").containsIgnoreCase(searchQuery);
+        return (thread.thread.content ?? "").containsIgnoreCase(searchQuery);
       }).toList();
       favoriteThreads = LinkedHashSet<FavoritesThreadWrapper>.from(titleMatchThreads + bodyMatchThreads).toList();
     } else {
@@ -126,10 +127,10 @@ class FavoritesBloc extends BaseBloc<ChanEvent, ChanState> {
     List<FavoritesThreadWrapper> customThreads;
     if (searchQuery.isNotNullNorEmpty) {
       List<FavoritesThreadWrapper> titleMatchThreads = _customThreads.where((thread) {
-        return (thread.threadDetailModel.thread.subtitle ?? "").containsIgnoreCase(searchQuery);
+        return (thread.thread.subtitle ?? "").containsIgnoreCase(searchQuery);
       }).toList();
       List<FavoritesThreadWrapper> bodyMatchThreads = _customThreads.where((thread) {
-        return (thread.threadDetailModel.thread.content ?? "").containsIgnoreCase(searchQuery);
+        return (thread.thread.content ?? "").containsIgnoreCase(searchQuery);
       }).toList();
       customThreads = LinkedHashSet<FavoritesThreadWrapper>.from(titleMatchThreads + bodyMatchThreads).toList();
     } else {

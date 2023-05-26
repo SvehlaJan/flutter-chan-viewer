@@ -4,7 +4,7 @@ import 'package:flutter_chan_viewer/bloc/chan_event.dart';
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/models/ui/post_item.dart';
 import 'package:flutter_chan_viewer/models/ui/post_item_vo.dart';
-import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
+import 'package:flutter_chan_viewer/models/ui/thread_item_vo.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
 import 'package:flutter_chan_viewer/pages/gallery/bloc/gallery_bloc.dart';
 import 'package:flutter_chan_viewer/pages/gallery/bloc/gallery_event.dart';
@@ -78,7 +78,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
           if (state is GalleryStateContent && state.event != null) {
             switch (state.event) {
               case GallerySingleEvent.SHOW_COLLECTIONS_DIALOG:
-                List<ThreadItem> threads = state.customThreads;
+                List<ThreadItemVO> threads = state.customThreads;
                 DialogUtil.showCustomCollectionPickerDialog(
                   context,
                   threads,
@@ -357,7 +357,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
 
   void _onCollectionsClicked(BuildContext context, PostItem post) {
     if (bloc.state is GalleryStateContent) {
-      List<ThreadItem> threads = bloc.state._customThreads;
+      List<ThreadItemVO> threads = bloc.state.customThreads;
       DialogUtil.showCustomCollectionPickerDialog(
         context,
         threads,

@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_chan_viewer/data/local/moor_db.dart';
 import 'package:flutter_chan_viewer/models/helper/chan_post_base.dart';
 import 'package:flutter_chan_viewer/models/helper/online_state.dart';
@@ -6,8 +7,9 @@ import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
 import 'package:flutter_chan_viewer/utils/chan_util.dart';
 import 'package:flutter_chan_viewer/utils/media_helper.dart';
 
+@immutable
 class ThreadItem extends ChanPostBase with EquatableMixin {
-  final int? onlineStatus;
+  final int onlineStatus;
   final int? lastModified;
   final int replies;
   final int images;
@@ -104,7 +106,7 @@ class ThreadItem extends ChanPostBase with EquatableMixin {
         filename: entry.filename,
         imageId: entry.imageId,
         extension: entry.extension,
-        onlineStatus: entry.onlineState,
+        onlineStatus: entry.onlineState ?? 0,
         lastModified: entry.lastModified,
         selectedPostId: entry.selectedPostId ?? -1,
         isThreadFavorite: entry.isFavorite ?? false,

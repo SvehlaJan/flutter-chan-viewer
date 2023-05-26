@@ -1,6 +1,8 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_chan_viewer/data/local/moor_db.dart';
 
+@immutable
 class BoardItem extends Equatable {
   final String boardId;
   final String title;

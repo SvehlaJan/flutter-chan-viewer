@@ -1,8 +1,10 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_chan_viewer/models/helper/media_type.dart';
 import 'package:flutter_chan_viewer/models/ui/post_item.dart';
 import 'package:flutter_chan_viewer/utils/media_helper.dart';
 
+@immutable
 class PostItemVO with EquatableMixin {
   final MediaSource mediaSource;
   final int postId;

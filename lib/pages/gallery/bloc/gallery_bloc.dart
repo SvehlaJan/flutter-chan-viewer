@@ -8,7 +8,7 @@ import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
 import 'package:flutter_chan_viewer/models/ui/post_item.dart';
-import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
+import 'package:flutter_chan_viewer/models/ui/thread_item_vo.dart';
 import 'package:flutter_chan_viewer/pages/base/base_bloc.dart';
 import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
 import 'package:flutter_chan_viewer/repositories/chan_result.dart';
@@ -31,7 +31,7 @@ class GalleryBloc extends BaseBloc<ChanEvent, ChanState> {
   final int _threadId;
   final int _initialPostId;
   late ThreadDetailModel _threadDetailModel;
-  List<ThreadItem>? _customThreads = null;
+  List<ThreadItemVO>? _customThreads = null;
   late PostItem _selectedPost;
 
   bool _dataSuccessfullyFetched = false;
@@ -126,17 +126,17 @@ class GalleryBloc extends BaseBloc<ChanEvent, ChanState> {
 
     on<GalleryEventCreateNewCollection>((event, emit) async {
       await _threadsRepository.createCustomThread(event.name);
-      _customThreads = await _threadsRepository.getCustomThreads();
+      _customThreads = (await _threadsRepository.getCustomThreads()).map((e) => e.toThreadItemVO()).toList();
       emit(buildContentState(event: GallerySingleEvent.SHOW_COLLECTIONS_DIALOG));
     });
 
     on<GalleryEventAddPostToCollection>((event, emit) async {
       if (_customThreads == null) {
-        _customThreads = await _threadsRepository.getCustomThreads();
+        _customThreads = (await _threadsRepository.getCustomThreads()).map((e) => e.toThreadItemVO()).toList();
       }
-      ThreadItem thread = _customThreads!.where((element) => element.subtitle == event.name).firstOrNull!;
+      ThreadItemVO thread = _customThreads!.where((element) => element.subtitle == event.name).firstOrNull!;
       PostItem post = _threadDetailModel.findPostById(event.postId)!;
-      await _threadsRepository.addPostToCustomThread(post, thread);
+      await _threadsRepository.addPostToCustomThread(post, thread.threadId);
       emit(buildContentState(event: GallerySingleEvent.SHOW_POST_ADDED_TO_COLLECTION_SUCCESS));
     });
   }

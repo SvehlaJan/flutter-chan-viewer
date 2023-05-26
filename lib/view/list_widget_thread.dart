@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
+import 'package:flutter_chan_viewer/models/ui/thread_item_vo.dart';
 import 'package:flutter_chan_viewer/utils/chan_util.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/utils/extensions.dart';
@@ -9,7 +9,7 @@ import 'package:flutter_html/flutter_html.dart';
 
 class ThreadListWidget extends StatelessWidget {
   final logger = LogUtils.getLogger();
-  final ThreadItem thread;
+  final ThreadItemVO thread;
   final bool showProgress;
 
   ThreadListWidget({required this.thread, this.showProgress = false});
@@ -24,7 +24,7 @@ class ThreadListWidget extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          if (thread.hasMedia())
+          if (thread.mediaSource != null)
             ConstrainedBox(
                 constraints: BoxConstraints(
                   maxWidth: Constants.avatarImageSize,
@@ -32,7 +32,7 @@ class ThreadListWidget extends StatelessWidget {
                   minHeight: Constants.avatarImageSize,
 //                  maxHeight: Constants.avatarImageMaxHeight,
                 ),
-                child: ChanCachedImage(imageSource: thread.getThumbnailImageSource(), boxFit: BoxFit.fitWidth)),
+                child: ChanCachedImage(imageSource: thread.mediaSource!.asImageSource(), boxFit: BoxFit.fitWidth)),
           Flexible(
             child: Stack(
               alignment: Alignment.bottomCenter,
@@ -44,7 +44,7 @@ class ThreadListWidget extends StatelessWidget {
                     children: <Widget>[
                       Row(
                         children: <Widget>[
-                          if (thread.isFavorite())
+                          if (thread.isFavorite)
                             Padding(
                                 padding: const EdgeInsets.all(1.0),
                                 child: Icon(Icons.star, color: Colors.yellow, size: Constants.favoriteIconSize)),

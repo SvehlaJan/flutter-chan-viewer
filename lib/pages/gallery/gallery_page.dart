@@ -15,7 +15,7 @@ import 'package:flutter_chan_viewer/utils/dialog_util.dart';
 import 'package:flutter_chan_viewer/utils/media_helper.dart';
 import 'package:flutter_chan_viewer/view/list_widget_post.dart';
 import 'package:flutter_chan_viewer/view/view_cached_image.dart';
-import 'package:flutter_chan_viewer/view/view_video_player.dart';
+import 'package:flutter_chan_viewer/view/view_video_player_new.dart';
 import 'package:flutter_chan_viewer/view/view_video_player_vlc.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
@@ -78,14 +78,16 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
           if (state is GalleryStateContent && state.event != null) {
             switch (state.event) {
               case GallerySingleEvent.SHOW_COLLECTIONS_DIALOG:
-                List<ThreadItemVO> threads = state.customThreads;
+                final List<ThreadItemVO> threads = state.customThreads;
+                final PostItem post = state.selectedPost;
+
                 DialogUtil.showCustomCollectionPickerDialog(
                   context,
                   threads,
                   _newCollectionTextController,
                   (context, name) => {bloc.add(GalleryEventCreateNewCollection(name))},
                   (context, name) {
-                    bloc.add(GalleryEventAddPostToCollection(name, state.selectedPost.postId));
+                    bloc.add(GalleryEventAddPostToCollection(name, post.postId));
                   },
                 );
                 break;
@@ -136,12 +138,14 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
     );
   }
 
-  Widget _buildSinglePostItem(BuildContext context, MediaSource mediaSource) {
+  Widget _buildSinglePostItem(BuildContext context, MediaSource? mediaSource) {
     switch (mediaSource) {
       case VideoSource _:
         return _buildVideoPlayer(mediaSource);
       case ImageSource _:
         return Center(child: ChanCachedImage(imageSource: mediaSource, boxFit: BoxFit.fitWidth));
+      default:
+        return Container();
     }
   }
 
@@ -211,7 +215,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
 
   Widget _buildVideoPlayer(VideoSource videoSource) {
     if (ChanUtil.isMobile()) {
-      return ChanVideoPlayer(videoSource: videoSource);
+      return ChanVideoPlayerNew(videoSource: videoSource);
     } else {
       return ChanVideoPlayerVlc(videoSource: videoSource);
     }

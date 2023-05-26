@@ -46,11 +46,11 @@ class GalleryEventCreateNewCollection extends ChanEvent {
 }
 
 class GalleryEventAddPostToCollection extends ChanEvent {
-  final String name;
+  final String customThreadName;
   final int postId;
 
-  GalleryEventAddPostToCollection(this.name, this.postId);
+  GalleryEventAddPostToCollection(this.customThreadName, this.postId);
 
   @override
-  List<Object> get props => [name, postId];
+  List<Object> get props => [customThreadName, postId];
 }

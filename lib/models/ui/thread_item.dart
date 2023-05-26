@@ -5,7 +5,6 @@ import 'package:flutter_chan_viewer/models/helper/chan_post_base.dart';
 import 'package:flutter_chan_viewer/models/helper/online_state.dart';
 import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
 import 'package:flutter_chan_viewer/utils/chan_util.dart';
-import 'package:flutter_chan_viewer/utils/media_helper.dart';
 
 @immutable
 class ThreadItem extends ChanPostBase with EquatableMixin {
@@ -19,8 +18,6 @@ class ThreadItem extends ChanPostBase with EquatableMixin {
 
   @override
   bool isFavorite() => isThreadFavorite;
-
-  ImageSource getThumbnailImageSource() => MediaHelper.getThreadThumbnailSource(this);
 
   ThreadItem({
     required boardId,

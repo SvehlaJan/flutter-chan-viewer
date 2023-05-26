@@ -6,7 +6,7 @@ import 'package:flutter_chan_viewer/utils/media_helper.dart';
 
 @immutable
 class PostItemVO with EquatableMixin {
-  final MediaSource mediaSource;
+  final MediaSource? mediaSource;
   final int postId;
   final int replies;
   final int timestamp;

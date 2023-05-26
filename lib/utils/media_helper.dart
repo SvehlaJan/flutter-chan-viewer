@@ -30,13 +30,13 @@ class MediaHelper {
     }
   }
 
-  static MediaSource getMediaSource(PostItem post) {
+  static MediaSource? getMediaSource(PostItem post) {
     if (post.mediaType.isImageOrGif()) {
       return getImageSource(post, false);
     } else if (post.mediaType.isWebm()) {
       return getVideoSource(post);
     } else {
-      throw Exception("Unknown media type");
+      return null;
     }
   }
 
@@ -132,4 +132,14 @@ class FileVideoSource extends VideoSource {
   final String filePath;
 
   FileVideoSource(this.filePath, int postId, ImageSource placeholderImage) : super(placeholderImage, postId);
+}
+
+extension PostItemMediaExtension on PostItem {
+  MediaSource? getMediaSource() => MediaHelper.getMediaSource(this);
+
+  ImageSource getThumbnailImageSource() => MediaHelper.getImageSource(this, true);
+}
+
+extension ThreadItemMediaExtension on ThreadItem {
+  ImageSource getThumbnailImageSource() => MediaHelper.getThreadThumbnailSource(this);
 }

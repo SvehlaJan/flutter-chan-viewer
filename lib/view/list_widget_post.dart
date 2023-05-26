@@ -81,7 +81,7 @@ class _PostListWidgetState extends State<PostListWidget> with SingleTickerProvid
 
   Widget buildContent(
     BuildContext context,
-    MediaSource mediaSource,
+    MediaSource? mediaSource,
     int postId,
     int replies,
     int timestamp,
@@ -95,7 +95,7 @@ class _PostListWidgetState extends State<PostListWidget> with SingleTickerProvid
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          if (widget.showImage)
+          if (widget.showImage && mediaSource != null)
             ConstrainedBox(
                 constraints: BoxConstraints(
                   maxWidth: Constants.avatarImageSize,

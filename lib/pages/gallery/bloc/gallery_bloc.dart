@@ -18,6 +18,7 @@ import 'package:flutter_chan_viewer/utils/chan_util.dart';
 import 'package:flutter_chan_viewer/utils/exceptions.dart';
 import 'package:flutter_chan_viewer/utils/extensions.dart';
 import 'package:flutter_chan_viewer/utils/log_utils.dart';
+import 'package:flutter_chan_viewer/utils/media_helper.dart';
 
 import 'gallery_event.dart';
 import 'gallery_state.dart';
@@ -134,8 +135,8 @@ class GalleryBloc extends BaseBloc<ChanEvent, ChanState> {
       if (_customThreads == null) {
         _customThreads = (await _threadsRepository.getCustomThreads()).map((e) => e.toThreadItemVO()).toList();
       }
-      ThreadItemVO thread = _customThreads!.where((element) => element.subtitle == event.name).firstOrNull!;
-      PostItem post = _threadDetailModel.findPostById(event.postId)!;
+      ThreadItemVO thread = _customThreads!.where((element) => element.subtitle == event.customThreadName).firstOrNull!;
+      PostItem post = _threadDetailModel.findPostById(_selectedPost.postId)!;
       await _threadsRepository.addPostToCustomThread(post, thread.threadId);
       emit(buildContentState(event: GallerySingleEvent.SHOW_POST_ADDED_TO_COLLECTION_SUCCESS));
     });
@@ -165,7 +166,7 @@ class GalleryBloc extends BaseBloc<ChanEvent, ChanState> {
     }
 
     return GalleryStateContent(
-      mediaSources: threadDetailModel.visibleMediaPosts.map((post) => post.getMediaSource()).toList(),
+      mediaSources: threadDetailModel.visibleMediaPosts.map((post) => post.getMediaSource()!).toList(),
       selectedPostIndex: threadDetailModel.selectedMediaIndex,
       selectedPost: _selectedPost,
       event: event,

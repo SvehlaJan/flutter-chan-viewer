@@ -87,7 +87,7 @@ class ChanDownloaderImpl extends ChanDownloader {
     }
   }
 
-  static void downloadCallback(String id, DownloadTaskStatus status, int progress) {
+  static void downloadCallback(String id, int status, int progress) {
     _TaskInfo? task = taskList.firstWhereOrNull((element) => element.taskId == id);
     if (task != null) {
       final SendPort port = IsolateNameServer.lookupPortByName(Constants.downloaderPortName)!;

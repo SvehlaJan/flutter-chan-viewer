@@ -48,8 +48,6 @@ class PostItem extends ChanPostBase with EquatableMixin {
   @override
   bool isFavorite() => thread?.isFavorite() ?? false;
 
-  MediaSource getMediaSource() => MediaHelper.getMediaSource(this);
-
   ImageSource getThumbnailImageSource() => MediaHelper.getImageSource(this, true);
 
   factory PostItem.fromMappedJson(ThreadItem thread, Map<String, dynamic> json) {

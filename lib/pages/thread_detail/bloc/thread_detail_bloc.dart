@@ -184,7 +184,7 @@ class ThreadDetailBloc extends Bloc<ChanEvent, ThreadDetailState> {
 
   ThreadDetailState buildContentState({bool lazyLoading = false, ThreadDetailSingleEvent? event}) {
     late ThreadDetailModel threadDetailModel;
-    if (searchQuery.isNotNullNorEmpty) {
+    if (searchQuery.isNotEmpty) {
       List<PostItem> posts;
       List<PostItem> titleMatchThreads = _threadDetailModel.visiblePosts
           .where((post) => (post.subtitle ?? "").containsIgnoreCase(searchQuery))

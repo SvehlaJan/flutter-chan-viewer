@@ -108,7 +108,7 @@ class FavoritesBloc extends BaseBloc<ChanEvent, ChanState> {
   FavoritesStateContent buildContentState({bool lazyLoading = false, ChanSingleEvent? event}) {
     List<FavoritesItemWrapper> threads = [];
     List<FavoritesThreadWrapper> favoriteThreads;
-    if (searchQuery.isNotNullNorEmpty) {
+    if (searchQuery.isNotEmpty) {
       List<FavoritesThreadWrapper> titleMatchThreads = _favoriteThreads.where((thread) {
         return (thread.thread.subtitle ?? "").containsIgnoreCase(searchQuery);
       }).toList();
@@ -125,7 +125,7 @@ class FavoritesBloc extends BaseBloc<ChanEvent, ChanState> {
     }
 
     List<FavoritesThreadWrapper> customThreads;
-    if (searchQuery.isNotNullNorEmpty) {
+    if (searchQuery.isNotEmpty) {
       List<FavoritesThreadWrapper> titleMatchThreads = _customThreads.where((thread) {
         return (thread.thread.subtitle ?? "").containsIgnoreCase(searchQuery);
       }).toList();

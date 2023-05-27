@@ -4,6 +4,7 @@ import 'package:flutter_chan_viewer/bloc/chan_event.dart';
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/models/ui/thread_item_vo.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
+import 'package:flutter_chan_viewer/pages/board_archive/bloc/board_archive_event.dart';
 import 'package:flutter_chan_viewer/pages/thread_detail/thread_detail_page.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/utils/navigation_helper.dart';
@@ -25,21 +26,21 @@ class BoardArchivePage extends StatefulWidget {
 }
 
 class _BoardArchivePageState extends BasePageState<BoardArchivePage> {
-  ScrollController? _listScrollController;
+  late ScrollController _listScrollController;
 
   @override
   void initState() {
     super.initState();
+    _listScrollController = ScrollController();
+
     bloc = BlocProvider.of<BoardArchiveBloc>(context);
     bloc.add(ChanEventFetchData());
-
-    _listScrollController = ScrollController();
   }
 
   @override
   String getPageTitle() => "/${widget.boardId} Archive";
 
-  List<PageAction> getPageActions(BuildContext context, ChanState state) {
+  List<PageAction> getPageActions(BuildContext context, BoardArchiveState state) {
     bool showSearchButton = state is ChanStateContent && !state.showSearchBar;
     return [
       if (showSearchButton) PageAction("Search", Icons.search, _onSearchClick),
@@ -53,24 +54,28 @@ class _BoardArchivePageState extends BasePageState<BoardArchivePage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<BoardArchiveBloc, ChanState>(listener: (context, state) {
+    return BlocConsumer<BoardArchiveBloc, BoardArchiveState>(listener: (context, state) {
       switch (state.event) {
-        case ChanSingleEvent.CLOSE_PAGE:
-          Navigator.of(context).pop();
-          break;
-        case ChanSingleEvent.SHOW_OFFLINE:
+        case BoardArchiveSingleEventShowOffline _:
           showOfflineSnackbar(context);
+          break;
+        case BoardArchiveSingleEventNavigateToThread _:
+          var event = state.event as BoardArchiveSingleEventNavigateToThread;
+          Navigator.of(context).push(NavigationHelper.getRoute(
+            Constants.threadDetailRoute,
+            ThreadDetailPage.createArguments(event.boardId, event.threadId),
+          ));
           break;
         default:
           break;
       }
     }, builder: (context, state) {
-      return BlocBuilder<BoardArchiveBloc, ChanState>(
+      return BlocBuilder<BoardArchiveBloc, BoardArchiveState>(
           bloc: bloc as BoardArchiveBloc?,
           builder: (context, state) {
             return buildScaffold(
               context,
-              buildBody(context, state, ((thread) => _openThreadDetailPage(thread))),
+              buildBody(context, state),
               pageActions: getPageActions(context, state),
               showSearchBar: state.showSearchBar,
             );
@@ -78,51 +83,46 @@ class _BoardArchivePageState extends BasePageState<BoardArchivePage> {
     });
   }
 
-  Widget buildBody(BuildContext context, ChanState state, Function(ThreadItemVO) onItemClicked) {
-    if (state is ChanStateLoading) {
-      return Constants.centeredProgressIndicator;
-    } else if (state is BoardArchiveStateContent) {
-      if (state.threads.isEmpty) {
-        return Constants.noDataPlaceholder;
-      }
-
-      return Stack(
-        children: [
-          Scrollbar(
-            controller: _listScrollController!,
-            child: ListView.builder(
-              controller: _listScrollController,
-              itemCount: state.threads.length,
-              itemBuilder: (context, index) {
-                ArchiveThreadWrapper threadWrapper = state.threads[index];
-                if (state.threads[index].isLoading) {
-                  return ArchiveThreadListWidget(
-                    thread: threadWrapper.thread,
-                    isLoading: threadWrapper.isLoading,
-                  );
-                } else {
-                  return InkWell(
-                    child: ThreadListWidget(thread: threadWrapper.thread),
-                    onTap: () => onItemClicked(threadWrapper.thread),
-                  );
-                }
-              },
-            ),
-          ),
-          if (state.showLazyLoading) LinearProgressIndicator(),
-        ],
-      );
-    } else {
-      return BasePageState.buildErrorScreen(context, (state as ChanStateError).message);
+  Widget buildBody(BuildContext context, BoardArchiveState state) {
+    switch (state) {
+      case BoardArchiveStateLoading _:
+        return Constants.centeredProgressIndicator;
+      case BoardArchiveStateContent _:
+        return _buildContent(context, state);
+      case BoardArchiveStateError _:
+        return BasePageState.buildErrorScreen(context, state.message);
+      default:
+        throw Exception("Unknown state: $state");
     }
   }
 
-  void _openThreadDetailPage(ThreadItemVO thread) {
-    Navigator.of(context).push(
-      NavigationHelper.getRoute(
-        Constants.threadDetailRoute,
-        ThreadDetailPage.createArguments(widget.boardId, thread.threadId),
-      ),
+  Widget _buildContent(BuildContext context, BoardArchiveStateContent state) {
+    return Stack(
+      children: [
+        Scrollbar(
+          controller: _listScrollController,
+          child: ListView.builder(
+            controller: _listScrollController,
+            itemCount: state.threads.length,
+            itemBuilder: (context, index) {
+              ArchiveThreadWrapper threadWrapper = state.threads[index];
+              ThreadItemVO thread = threadWrapper.thread;
+              if (state.threads[index].isLoading) {
+                return ArchiveThreadListWidget(
+                  thread: threadWrapper.thread,
+                  isLoading: threadWrapper.isLoading,
+                );
+              } else {
+                return InkWell(
+                  child: ThreadListWidget(thread: threadWrapper.thread),
+                  onTap: () => bloc.add(BoardArchiveEventOnThreadClicked(thread.threadId)),
+                );
+              }
+            },
+          ),
+        ),
+        if (state.showLazyLoading) LinearProgressIndicator(),
+      ],
     );
   }
 }

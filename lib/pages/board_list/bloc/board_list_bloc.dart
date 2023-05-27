@@ -83,6 +83,22 @@ class BoardListBloc extends Bloc<ChanEvent, BoardListState> {
     on<BoardListEventOnItemClicked>((event, emit) async {
       emit(buildContentState(event: BoardListSingleEventNavigateToBoard(event.boardId)));
     });
+
+    on<ChanEventSearch>((event, emit) {
+      searchQuery = event.query;
+      emit(buildContentState());
+    });
+
+    on<ChanEventShowSearch>((event, emit) {
+      _showSearchBar = true;
+      emit(buildContentState());
+    });
+
+    on<ChanEventCloseSearch>((event, emit) {
+      searchQuery = "";
+      _showSearchBar = false;
+      emit(buildContentState());
+    });
   }
 
   @override

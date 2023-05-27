@@ -1,15 +1,14 @@
 import 'dart:collection';
 import 'dart:io';
 
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/chan_event.dart';
-import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/models/archive_list_model.dart';
 import 'package:flutter_chan_viewer/models/helper/online_state.dart';
 import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
 import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
 import 'package:flutter_chan_viewer/models/ui/thread_item_vo.dart';
-import 'package:flutter_chan_viewer/pages/base/base_bloc.dart';
 import 'package:flutter_chan_viewer/pages/board_archive/bloc/board_archive_event.dart';
 import 'package:flutter_chan_viewer/pages/board_archive/bloc/board_archive_state.dart';
 import 'package:flutter_chan_viewer/repositories/boards_repository.dart';
@@ -19,18 +18,21 @@ import 'package:flutter_chan_viewer/utils/exceptions.dart';
 import 'package:flutter_chan_viewer/utils/extensions.dart';
 import 'package:flutter_chan_viewer/utils/log_utils.dart';
 
-class BoardArchiveBloc extends BaseBloc<ChanEvent, ChanState> {
+class BoardArchiveBloc extends Bloc<ChanEvent, BoardArchiveState> {
   final logger = LogUtils.getLogger();
   final BoardsRepository _boardsRepository = getIt<BoardsRepository>();
   final ThreadsRepository _threadsRepository = getIt<ThreadsRepository>();
   final String boardId;
+  bool _showSearchBar = false;
+  String searchQuery = "";
+
   List<int> archiveThreadIds = [];
   List<ArchiveThreadWrapper> archiveThreads = <ArchiveThreadWrapper>[];
   Map<int?, ThreadItem?> cachedThreadsMap = HashMap<int, ThreadItem>();
 
-  BoardArchiveBloc(this.boardId) : super(ChanStateLoading()) {
+  BoardArchiveBloc(this.boardId) : super(BoardArchiveStateLoading()) {
     on<ChanEventFetchData>((event, emit) async {
-      emit(ChanStateLoading());
+      emit(BoardArchiveStateLoading());
       try {
         ArchiveListModel boardDetailModel = await _boardsRepository.fetchRemoteArchiveList(boardId);
         archiveThreads.clear();
@@ -40,7 +42,7 @@ class BoardArchiveBloc extends BaseBloc<ChanEvent, ChanState> {
         add(BoardArchiveEventFetchDetail(archiveThreads.length));
       } catch (e) {
         if (e is HttpException || e is SocketException) {
-          emit(buildContentState(event: ChanSingleEvent.SHOW_OFFLINE));
+          emit(buildContentState(event: BoardArchiveSingleEventShowOffline()));
         } else {
           rethrow;
         }
@@ -84,12 +86,31 @@ class BoardArchiveBloc extends BaseBloc<ChanEvent, ChanState> {
         emit(buildContentState(lazyLoading: false));
       }
     });
+
+    on<BoardArchiveEventOnThreadClicked>((event, emit) async {
+      emit(buildContentState(event: BoardArchiveSingleEventNavigateToThread(boardId, event.threadId)));
+    });
+
+    on<ChanEventSearch>((event, emit) {
+      searchQuery = event.query;
+      emit(buildContentState());
+    });
+
+    on<ChanEventShowSearch>((event, emit) {
+      _showSearchBar = true;
+      emit(buildContentState());
+    });
+
+    on<ChanEventCloseSearch>((event, emit) {
+      searchQuery = "";
+      _showSearchBar = false;
+      emit(buildContentState());
+    });
   }
 
-  @override
-  BoardArchiveStateContent buildContentState({bool lazyLoading = false, ChanSingleEvent? event}) {
+  BoardArchiveState buildContentState({bool lazyLoading = false, BoardArchiveSingleEvent? event}) {
     List<ArchiveThreadWrapper> threads;
-    if (searchQuery.isNotNullNorEmpty) {
+    if (searchQuery.isNotEmpty) {
       List<ArchiveThreadWrapper> titleMatchThreads =
           archiveThreads.where((thread) => (thread.thread.subtitle ?? "").containsIgnoreCase(searchQuery)).toList();
       List<ArchiveThreadWrapper> bodyMatchThreads =
@@ -101,7 +122,7 @@ class BoardArchiveBloc extends BaseBloc<ChanEvent, ChanState> {
     return BoardArchiveStateContent(
       threads: threads,
       showLazyLoading: lazyLoading,
-      showSearchBar: showSearchBar,
+      showSearchBar: _showSearchBar,
       event: event,
     );
   }

@@ -116,7 +116,7 @@ class BoardDetailBloc extends Bloc<ChanEvent, BoardDetailState> {
 
   BoardDetailStateContent buildContentState({bool lazyLoading = false, BoardDetailSingleEvent? event}) {
     List<ThreadItemVO> threads;
-    if (searchQuery.isNotNullNorEmpty) {
+    if (searchQuery.isNotEmpty) {
       List<ThreadItem> titleMatchThreads = _boardDetailModel!.threads
           .where((thread) => (thread.subtitle ?? "").containsIgnoreCase(searchQuery))
           .toList();

@@ -8,3 +8,12 @@ class BoardArchiveEventFetchDetail extends ChanEvent {
   @override
   List<Object> get props => [index];
 }
+
+class BoardArchiveEventOnThreadClicked extends ChanEvent {
+  final int threadId;
+
+  BoardArchiveEventOnThreadClicked(this.threadId);
+
+  @override
+  List<Object> get props => [threadId];
+}

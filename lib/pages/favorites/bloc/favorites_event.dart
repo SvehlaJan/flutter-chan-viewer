@@ -10,3 +10,13 @@ class FavoritesEventFetchDetail extends ChanEvent {
   @override
   List<Object> get props => [index];
 }
+
+class FavoritesEventOnThreadClicked extends ChanEvent {
+  final String boardId;
+  final int threadId;
+
+  FavoritesEventOnThreadClicked(this.boardId, this.threadId);
+
+  @override
+  List<Object> get props => [boardId, threadId];
+}

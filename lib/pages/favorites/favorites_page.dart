@@ -4,6 +4,7 @@ import 'package:flutter_chan_viewer/bloc/chan_event.dart';
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/models/ui/thread_item_vo.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
+import 'package:flutter_chan_viewer/pages/favorites/bloc/favorites_event.dart';
 import 'package:flutter_chan_viewer/pages/thread_detail/thread_detail_page.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/utils/navigation_helper.dart';
@@ -20,10 +21,13 @@ class FavoritesPage extends StatefulWidget {
 
 class _FavoritesPageState extends BasePageState<FavoritesPage> {
   static const String KEY_LIST = "_FavoritesPageState.KEY_LIST";
+  late ScrollController _scrollController;
 
   @override
   void initState() {
     super.initState();
+    _scrollController = ScrollController();
+
     bloc = BlocProvider.of<FavoritesBloc>(context);
     bloc.add(ChanEventFetchData());
   }
@@ -31,7 +35,7 @@ class _FavoritesPageState extends BasePageState<FavoritesPage> {
   @override
   String getPageTitle() => "Favorites";
 
-  List<PageAction> getPageActions(BuildContext context, ChanState state) {
+  List<PageAction> getPageActions(BuildContext context, FavoritesState state) {
     bool showSearchButton = state is ChanStateContent && !state.showSearchBar;
     return [
       if (showSearchButton) PageAction("Search", Icons.search, _onSearchClick),
@@ -45,69 +49,80 @@ class _FavoritesPageState extends BasePageState<FavoritesPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<FavoritesBloc, ChanState>(
-      bloc: bloc as FavoritesBloc?,
-      builder: (context, state) {
-        return buildScaffold(
-          context,
-          buildBody(context, state),
-          pageActions: getPageActions(context, state),
-          showSearchBar: state.showSearchBar,
+    return BlocConsumer<FavoritesBloc, FavoritesState>(
+      listener: (BuildContext context, state) async {
+        switch (state.event) {
+          case FavoritesSingleEventNavigateToThread _:
+            var event = state.event as FavoritesSingleEventNavigateToThread;
+            await Navigator.of(context).push(NavigationHelper.getRoute(
+              Constants.threadDetailRoute,
+              ThreadDetailPage.createArguments(event.boardId, event.threadId),
+            ));
+            bloc.add(ChanEventFetchData()); // Refresh data after returning from thread detail
+            break;
+          default:
+            break;
+        }
+      },
+      builder: (BuildContext context, Object? state) {
+        return BlocBuilder<FavoritesBloc, FavoritesState>(
+          bloc: bloc as FavoritesBloc?,
+          builder: (context, state) {
+            return buildScaffold(
+              context,
+              buildBody(context, state),
+              pageActions: getPageActions(context, state),
+              showSearchBar: state.showSearchBar,
+            );
+          },
         );
       },
     );
   }
 
-  Widget buildBody(BuildContext context, ChanState state) {
-    if (state is ChanStateLoading) {
-      return Constants.centeredProgressIndicator;
-    } else if (state is FavoritesStateContent) {
-      if (state.threads.isEmpty) {
-        return Constants.noDataPlaceholder;
-      }
-
-      return Stack(
-        children: [
-          Scrollbar(
-            child: ListView.builder(
-              key: PageStorageKey<String>(KEY_LIST),
-              itemBuilder: (BuildContext context, int index) {
-                FavoritesItemWrapper item = state.threads[index];
-                ThreadItemVO? thread = item.thread?.thread;
-                if (item.isHeader || thread == null) {
-                  return Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(item.headerTitle!, style: Theme.of(context).textTheme.subtitle1));
-                } else {
-                  Widget threadWidget = item.thread?.isCustom ?? false
-                      ? CustomThreadListWidget(thread: thread)
-                      : ThreadListWidget(thread: thread, showProgress: item.thread?.isLoading ?? false);
-                  return InkWell(
-                    child: threadWidget,
-                    onTap: () => _openThreadDetailPage(item.thread!),
-                  );
-                }
-              },
-              itemCount: state.threads.length,
-            ),
-          ),
-          if (state.showLazyLoading) LinearProgressIndicator(),
-        ],
-      );
-    } else {
-      return BasePageState.buildErrorScreen(context, (state as ChanStateError).message);
+  Widget buildBody(BuildContext context, FavoritesState state) {
+    switch (state) {
+      case FavoritesStateLoading _:
+        return Constants.centeredProgressIndicator;
+      case FavoritesStateContent _:
+        return _buildContent(context, state);
+      case FavoritesStateError _:
+        return BasePageState.buildErrorScreen(context, state.message);
+      default:
+        throw Exception("Unknown state: $state");
     }
   }
 
-  void _openThreadDetailPage(FavoritesThreadWrapper threadWrapper) async {
-    bloc.add(ChanEventFetchData());
-    ThreadItemVO thread = threadWrapper.thread;
-    await Navigator.of(context).push(
-      NavigationHelper.getRoute(
-        Constants.threadDetailRoute,
-        ThreadDetailPage.createArguments(thread.boardId, thread.threadId),
-      )!,
+  Widget _buildContent(BuildContext context, FavoritesStateContent state) {
+    return Stack(
+      children: [
+        Scrollbar(
+          controller: _scrollController,
+          child: ListView.builder(
+            key: PageStorageKey<String>(KEY_LIST),
+            controller: _scrollController,
+            itemBuilder: (BuildContext context, int index) {
+              FavoritesItemWrapper item = state.threads[index];
+              ThreadItemVO? thread = item.thread?.thread;
+              if (item.isHeader || thread == null) {
+                return Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(item.headerTitle!, style: Theme.of(context).textTheme.subtitle1));
+              } else {
+                Widget threadWidget = item.thread?.isCustom ?? false
+                    ? CustomThreadListWidget(thread: thread)
+                    : ThreadListWidget(thread: thread, showProgress: item.thread?.isLoading ?? false);
+                return InkWell(
+                  child: threadWidget,
+                  onTap: () => bloc.add(FavoritesEventOnThreadClicked(thread.boardId, thread.threadId)),
+                );
+              }
+            },
+            itemCount: state.threads.length,
+          ),
+        ),
+        if (state.showLazyLoading) LinearProgressIndicator(),
+      ],
     );
-    bloc.add(ChanEventFetchData());
   }
 }

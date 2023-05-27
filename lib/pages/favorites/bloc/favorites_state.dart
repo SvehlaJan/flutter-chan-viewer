@@ -1,19 +1,57 @@
 import 'package:equatable/equatable.dart';
-import 'package:flutter_chan_viewer/bloc/chan_state.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_chan_viewer/models/ui/thread_item_vo.dart';
 
-class FavoritesStateContent extends ChanStateContent {
-  final List<FavoritesItemWrapper> threads;
+@immutable
+sealed class FavoritesState extends Equatable {
+  final FavoritesSingleEvent? event;
+  final bool showSearchBar;
 
-  const FavoritesStateContent({
-    required showSearchBar,
-    required showLazyLoading,
-    required event,
-    required this.threads,
-  }) : super(showSearchBar: showSearchBar, showLazyLoading: showLazyLoading, event: event);
+  FavoritesState({
+    required this.event,
+    required this.showSearchBar,
+  });
 
   @override
-  List<Object?> get props => super.props..addAll([threads]);
+  List<Object?> get props => [event, showSearchBar];
+}
+
+@immutable
+class FavoritesStateLoading extends FavoritesState {
+  FavoritesStateLoading({
+    FavoritesSingleEvent? event,
+    showSearchBar = false,
+  }) : super(event: event, showSearchBar: showSearchBar);
+}
+
+@immutable
+class FavoritesStateError extends FavoritesState {
+  final String message;
+
+  FavoritesStateError(
+    this.message, {
+    FavoritesSingleEvent? event,
+    showSearchBar = false,
+  }) : super(event: event, showSearchBar: showSearchBar);
+
+  @override
+  List<Object?> get props => super.props..addAll([message]);
+}
+
+@immutable
+class FavoritesStateContent extends FavoritesState {
+  final List<FavoritesItemWrapper> threads;
+  final bool showLazyLoading;
+
+  FavoritesStateContent({
+    required this.threads,
+    required this.showLazyLoading,
+    required showSearchBar,
+    required event,
+  }) : super(showSearchBar: showSearchBar, event: event);
+
+  @override
+  List<Object?> get props => super.props..addAll([threads, showLazyLoading]);
 }
 
 class FavoritesItemWrapper extends Equatable {
@@ -36,4 +74,26 @@ class FavoritesThreadWrapper extends Equatable {
 
   @override
   List<Object> get props => [thread, isCustom, isLoading];
+}
+
+@immutable
+abstract class FavoritesSingleEvent extends Equatable {
+  final int uuid = DateTime.now().millisecondsSinceEpoch;
+
+  @override
+  List<Object?> get props => [uuid];
+}
+
+@immutable
+class FavoritesSingleEventShowOffline extends FavoritesSingleEvent {}
+
+@immutable
+class FavoritesSingleEventNavigateToThread extends FavoritesSingleEvent {
+  final String boardId;
+  final int threadId;
+
+  FavoritesSingleEventNavigateToThread(this.boardId, this.threadId);
+
+  @override
+  List<Object?> get props => super.props..addAll([boardId, threadId]);
 }

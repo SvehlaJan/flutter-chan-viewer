@@ -12,13 +12,8 @@ import 'package:path/path.dart';
 class PostItem extends ChanPostBase with EquatableMixin {
   final int postId;
   final List<int> repliesTo;
-  final List<PostItem> repliesFrom;
   final bool isHidden;
   final ThreadItem? thread;
-
-  bool get hasReplies => repliesFrom.isNotEmpty;
-
-  List<PostItem> get visibleReplies => repliesFrom.where((element) => element.isHidden == false).toList();
 
   PostItem({
     required boardId,
@@ -31,7 +26,6 @@ class PostItem extends ChanPostBase with EquatableMixin {
     required extension,
     required this.postId,
     required this.repliesTo,
-    required this.repliesFrom,
     this.isHidden = false,
     this.thread,
   }) : super(
@@ -65,7 +59,6 @@ class PostItem extends ChanPostBase with EquatableMixin {
       imageId: json['tim'].toString(),
       extension: json['ext'],
       repliesTo: ChanUtil.getPostReferences(json['com']),
-      repliesFrom: [],
       thread: thread,
     );
   }
@@ -84,7 +77,6 @@ class PostItem extends ChanPostBase with EquatableMixin {
       imageId: imageId,
       extension: extensionStr,
       repliesTo: [],
-      repliesFrom: [],
       thread: null,
     );
   }
@@ -115,14 +107,12 @@ class PostItem extends ChanPostBase with EquatableMixin {
         extension: entry.extension,
         repliesTo: ChanUtil.getPostReferences(entry.content),
         isHidden: entry.isHidden ?? false,
-        repliesFrom: [],
         thread: thread,
       );
 
   PostItem copyWith({
     int? postId,
     List<int>? repliesTo,
-    List<PostItem>? repliesFrom,
     bool? isHidden,
     int? progress,
     ThreadItem? thread,
@@ -138,7 +128,6 @@ class PostItem extends ChanPostBase with EquatableMixin {
     return new PostItem(
       postId: postId ?? this.postId,
       repliesTo: repliesTo ?? this.repliesTo,
-      repliesFrom: repliesFrom ?? this.repliesFrom,
       isHidden: isHidden ?? this.isHidden,
       thread: thread ?? this.thread,
       boardId: boardId ?? this.boardId,
@@ -153,5 +142,5 @@ class PostItem extends ChanPostBase with EquatableMixin {
   }
 
   @override
-  List<Object?> get props => super.props + [postId, repliesTo, repliesFrom, thread, isHidden];
+  List<Object?> get props => super.props + [postId, repliesTo, thread, isHidden];
 }

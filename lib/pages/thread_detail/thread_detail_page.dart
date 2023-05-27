@@ -290,10 +290,8 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
             // TODO - dirty, move to bloc
             return BlocProvider(
               // value: BlocProvider.of<ThreadDetailBloc>(context),
-              create: (context) => GalleryBloc(widget.boardId, widget.threadId, postId),
-              child: GalleryPage(
-                showAsReply: false,
-              ),
+              create: (context) => GalleryBloc(widget.boardId, widget.threadId, postId, false),
+              child: GalleryPage(),
             );
           }),
     );

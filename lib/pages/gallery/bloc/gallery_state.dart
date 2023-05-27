@@ -25,29 +25,29 @@ class GalleryStateError extends GalleryState {
 }
 
 class GalleryStateContent extends GalleryState {
+  final bool showAsCarousel;
   final List<MediaSource> mediaSources;
-  final PostItemVO selectedPost;
   final List<PostItemVO> replies;
-  final int initialPostIndex;
-  final int selectedPostIndex;
+  final int initialMediaIndex;
+  final String? overlayMetadataText;
 
   GalleryStateContent({
+    required this.showAsCarousel,
     required this.mediaSources,
-    required this.selectedPost,
     required this.replies,
-    required this.initialPostIndex,
-    required this.selectedPostIndex,
+    required this.initialMediaIndex,
+    this.overlayMetadataText,
     required GallerySingleEventNew? event,
   }) : super(galleryEvent: event);
 
   @override
   List<Object?> get props => super.props
     ..addAll([
+      showAsCarousel,
       mediaSources,
-      selectedPost,
       replies,
-      initialPostIndex,
-      selectedPostIndex,
+      initialMediaIndex,
+      overlayMetadataText
     ]);
 }
 
@@ -62,12 +62,12 @@ class GallerySingleEventShowOffline extends GallerySingleEventNew {}
 
 class GallerySingleEventShowCollectionsDialog extends GallerySingleEventNew {
   final List<ThreadItemVO> customThreads;
-  final int selectedPostId;
+  final int postId;
 
-  GallerySingleEventShowCollectionsDialog(this.customThreads, this.selectedPostId);
+  GallerySingleEventShowCollectionsDialog(this.customThreads, this.postId);
 
   @override
-  List<Object?> get props => super.props..addAll([customThreads, selectedPostId]);
+  List<Object?> get props => super.props..addAll([customThreads, postId]);
 }
 
 class GallerySingleEventShowPostAddedToCollectionSuccess extends GallerySingleEventNew {}

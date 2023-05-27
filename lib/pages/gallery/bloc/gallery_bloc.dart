@@ -9,12 +9,12 @@ import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
 import 'package:flutter_chan_viewer/models/ui/post_item.dart';
 import 'package:flutter_chan_viewer/models/ui/post_item_vo.dart';
 import 'package:flutter_chan_viewer/models/ui/thread_item_vo.dart';
-import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
 import 'package:flutter_chan_viewer/repositories/chan_result.dart';
 import 'package:flutter_chan_viewer/repositories/posts_repository.dart';
 import 'package:flutter_chan_viewer/repositories/threads_repository.dart';
 import 'package:flutter_chan_viewer/utils/chan_util.dart';
 import 'package:flutter_chan_viewer/utils/exceptions.dart';
+import 'package:flutter_chan_viewer/utils/extensions.dart';
 import 'package:flutter_chan_viewer/utils/log_utils.dart';
 import 'package:flutter_chan_viewer/utils/media_helper.dart';
 
@@ -25,20 +25,22 @@ class GalleryBloc extends Bloc<ChanEvent, GalleryState> {
   final logger = LogUtils.getLogger();
   final ThreadsRepository _threadsRepository = getIt<ThreadsRepository>();
   final PostsRepository _postsRepository = getIt<PostsRepository>();
+  late final StreamSubscription _subscription;
 
   final String _boardId;
   final int _threadId;
   final int _initialPostId;
-  late ThreadDetailModel _threadDetailModel;
-  List<ThreadItemVO>? _customThreads = null;
-  late PostItem _selectedPost;
+  final bool _showAsReply;
 
+  late ThreadDetailModel _threadDetailModel;
   bool _dataSuccessfullyFetched = false;
 
-  CacheDirective get cacheDirective => CacheDirective(_boardId, _threadId);
-  late final StreamSubscription _subscription;
-
-  GalleryBloc(this._boardId, this._threadId, this._initialPostId) : super(GalleryStateLoading()) {
+  GalleryBloc(
+    this._boardId,
+    this._threadId,
+    this._initialPostId,
+    this._showAsReply,
+  ) : super(GalleryStateLoading()) {
     _subscription = _threadsRepository.observeThreadDetail(_boardId, _threadId).listen((data) {
       add(ChanEventDataFetched(data));
     }, onError: (e) {
@@ -51,7 +53,6 @@ class GalleryBloc extends Bloc<ChanEvent, GalleryState> {
 
     on<ChanEventDataFetched>((event, emit) {
       if (!_dataSuccessfullyFetched && event.result.data != null) {
-        _selectedPost = event.result.data.findPostById(_initialPostId);
         _dataSuccessfullyFetched = true;
       }
 
@@ -118,22 +119,32 @@ class GalleryBloc extends Bloc<ChanEvent, GalleryState> {
       }
     });
 
-    on<GalleryEventCreateNewCollection>((event, emit) async {
-      await _threadsRepository.createCustomThread(event.name);
-      _customThreads = (await _threadsRepository.getCustomThreads()).map((e) => e.toThreadItemVO()).toList();
+    on<GalleryEventOnAddToCollectionClicked>((event, emit) async {
+      List<ThreadItemVO> _customThreads =
+      (await _threadsRepository.getCustomThreads()).mapToList((e) => e.toThreadItemVO());
       emit(buildContentState(
           event: GallerySingleEventShowCollectionsDialog(
-        _customThreads ?? [],
+            _customThreads,
+            _threadDetailModel.selectedPostId,
+          )));
+    });
+
+    on<GalleryEventCreateNewCollection>((event, emit) async {
+      await _threadsRepository.createCustomThread(event.name);
+      List<ThreadItemVO> _customThreads =
+          (await _threadsRepository.getCustomThreads()).mapToList((e) => e.toThreadItemVO());
+      emit(buildContentState(
+          event: GallerySingleEventShowCollectionsDialog(
+        _customThreads,
         _threadDetailModel.selectedPostId,
       )));
     });
 
     on<GalleryEventAddPostToCollection>((event, emit) async {
-      if (_customThreads == null) {
-        _customThreads = (await _threadsRepository.getCustomThreads()).map((e) => e.toThreadItemVO()).toList();
-      }
-      ThreadItemVO thread = _customThreads!.where((element) => element.subtitle == event.customThreadName).firstOrNull!;
-      PostItem post = _threadDetailModel.findPostById(_selectedPost.postId)!;
+      List<ThreadItemVO> _customThreads =
+          (await _threadsRepository.getCustomThreads()).mapToList((e) => e.toThreadItemVO());
+      ThreadItemVO thread = _customThreads.where((element) => element.subtitle == event.customThreadName).firstOrNull!;
+      PostItem post = _threadDetailModel.findPostById(event.postId)!;
       await _threadsRepository.addPostToCustomThread(post, thread.threadId);
       emit(buildContentState(event: GallerySingleEventShowPostAddedToCollectionSuccess()));
     });
@@ -146,14 +157,30 @@ class GalleryBloc extends Bloc<ChanEvent, GalleryState> {
   }
 
   GalleryStateContent buildContentState({GallerySingleEventNew? event}) {
-    List<PostItemVO> replies =
-        _threadDetailModel.selectedPost?.visibleReplies.map((e) => e.toPostItemVO()).toList() ?? [];
+    late PostItem selectedPost;
+    String? overlayMetadataText = null;
+
+    bool showAsCarousel = !_showAsReply && _threadDetailModel.selectedPost?.hasMedia() == true;
+    int initialCarouselIndex = _threadDetailModel.findPostsMediaIndex(_initialPostId);
+
+    if (showAsCarousel) {
+      selectedPost = _threadDetailModel.selectedPost!;
+
+      String order = "${_threadDetailModel.selectedMediaIndex + 1}/${_threadDetailModel.visibleMediaPosts.length}";
+      String fileName = "${_threadDetailModel.selectedPost!.filename}${_threadDetailModel.selectedPost!.extension}";
+      overlayMetadataText = "$order - $fileName";
+    } else {
+      selectedPost = _threadDetailModel.findPostById(_initialPostId)!;
+    }
+    List<PostItemVO> repliesForSelectedPost =
+        _threadDetailModel.findVisibleRepliesForPost(selectedPost.postId).map((e) => e.toPostItemVO()).toList();
+
     return GalleryStateContent(
+      showAsCarousel: showAsCarousel,
       mediaSources: _threadDetailModel.visibleMediaPosts.map((post) => post.getMediaSource()!).toList(),
-      initialPostIndex: _threadDetailModel.findPostsMediaIndex(_initialPostId),
-      selectedPostIndex: _threadDetailModel.selectedMediaIndex,
-      selectedPost: _selectedPost.toPostItemVO(),
-      replies: [_threadDetailModel.selectedPost!.toPostItemVO(), ...replies],
+      initialMediaIndex: initialCarouselIndex,
+      overlayMetadataText: overlayMetadataText,
+      replies: [selectedPost.toPostItemVO(), ...repliesForSelectedPost],
       event: event,
     );
   }

@@ -38,6 +38,15 @@ class GalleryEventHidePost extends GalleryEvent {
   List<Object?> get props => [postId];
 }
 
+class GalleryEventOnAddToCollectionClicked extends GalleryEvent {
+  final int postId;
+
+  GalleryEventOnAddToCollectionClicked(this.postId);
+
+  @override
+  List<Object?> get props => [postId];
+}
+
 class GalleryEventCreateNewCollection extends GalleryEvent {
   final String name;
 

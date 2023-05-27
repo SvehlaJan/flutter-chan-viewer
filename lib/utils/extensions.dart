@@ -9,6 +9,10 @@ extension StringExtension on String {
   }
 }
 
+extension CollectionExtension<E> on Iterable<E> {
+  List<T> mapToList<T>(T Function(E) transform) => map(transform).toList();
+}
+
 /// - [isNullOrEmpty], [isNullEmptyOrFalse] are from [this StackOverflow answer](https://stackoverflow.com/a/59826129/10830091)
 extension GeneralUtilsObjectExtension on Object? {
   /// Returns true if object is:

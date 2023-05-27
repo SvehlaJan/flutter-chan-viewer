@@ -11,8 +11,6 @@ import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
 class ThreadDetailModel extends Equatable {
   final ThreadItem thread;
   final List<PostItem> _posts;
-  final Map<int?, PostItem> _repliesTo = {};
-  final Map<int?, List<PostItem>> _repliesFrom = {};
 
   ThreadDetailModel({
     required ThreadItem thread,
@@ -41,8 +39,6 @@ class ThreadDetailModel extends Equatable {
       posts.add(PostItem.fromMappedJson(thread, postData));
     }
 
-    _calculateReplies(posts);
-
     return ThreadDetailModel(thread: thread, posts: posts);
   }
 
@@ -59,7 +55,6 @@ class ThreadDetailModel extends Equatable {
 
   factory ThreadDetailModel.fromThreadAndPosts(ThreadItem thread, List<PostItem> standalonePosts) {
     List<PostItem> posts = standalonePosts.map((e) => e.copyWith(thread: thread)).toList();
-    _calculateReplies(posts);
     return ThreadDetailModel(thread: thread, posts: posts);
   }
 
@@ -71,19 +66,6 @@ class ThreadDetailModel extends Equatable {
       thread: thread ?? this.thread,
       posts: posts ?? this._posts,
     );
-  }
-
-  static void _calculateReplies(List<PostItem> posts) {
-    Map<int?, PostItem> postMap = {};
-    for (PostItem post in posts) {
-      postMap[post.postId] = post;
-
-      for (int replyTo in post.repliesTo) {
-        if (postMap.containsKey(replyTo)) {
-          postMap[replyTo]!.repliesFrom.add(post);
-        }
-      }
-    }
   }
 
   CacheDirective get cacheDirective => thread.getCacheDirective();
@@ -122,6 +104,14 @@ class ThreadDetailModel extends Equatable {
 
   int findPostsMediaIndex(int postId) {
     return allMediaPosts.indexWhere((post) => post.postId == postId);
+  }
+
+  List<PostItem> findRepliesForPost(int postId) {
+    return _posts.where((post) => post.repliesTo.contains(postId)).toList();
+  }
+
+  List<PostItem> findVisibleRepliesForPost(int postId) {
+    return _posts.where((post) => post.repliesTo.contains(postId) && !post.isHidden).toList();
   }
 
   @override

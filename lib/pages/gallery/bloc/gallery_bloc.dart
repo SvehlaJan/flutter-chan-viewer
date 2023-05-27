@@ -156,7 +156,7 @@ class GalleryBloc extends Bloc<ChanEvent, GalleryState> {
     return super.close();
   }
 
-  GalleryStateContent buildContentState({GallerySingleEventNew? event}) {
+  GalleryStateContent buildContentState({GallerySingleEvent? event}) {
     late PostItem selectedPost;
     String? overlayMetadataText = null;
 

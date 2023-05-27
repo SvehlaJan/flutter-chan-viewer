@@ -20,10 +20,10 @@ class ThreadDetailEventOnLinkClicked extends ChanEvent {
   List<Object> get props => [url];
 }
 
-class ThreadDetailEventOnPostSelected extends ChanEvent {
+class ThreadDetailEventOnPostClicked extends ChanEvent {
   final int postId;
 
-  ThreadDetailEventOnPostSelected(this.postId);
+  ThreadDetailEventOnPostClicked(this.postId);
 
   @override
   List<Object?> get props => [postId];

@@ -44,13 +44,9 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
   Future<bool> onBackPressed() {
     if (_panelController.isPanelOpen) {
       _panelController.close();
-      // if (widget.showAsReply) {
       return Future.delayed(const Duration(milliseconds: 100), () {
         return Future.value(true);
       });
-      // } else {
-      //   return Future.value(false);
-      // }
     } else {
       return Future.value(true);
     }

@@ -1,36 +1,94 @@
+import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/models/ui/post_item_vo.dart';
 
 @immutable
-class ThreadDetailStateContent extends ChanStateContent {
+sealed class ThreadDetailState extends Equatable {
+  final ThreadDetailSingleEvent? detailEvent;
+  final bool showSearchBar;
+
+  ThreadDetailState(this.detailEvent, this.showSearchBar);
+
+  @override
+  List<Object?> get props => [detailEvent, showSearchBar];
+}
+
+@immutable
+class ThreadDetailStateLoading extends ThreadDetailState {
+  ThreadDetailStateLoading({
+    ThreadDetailSingleEvent? detailEvent,
+    bool showSearchBar = false,
+  }) : super(detailEvent, showSearchBar);
+}
+
+@immutable
+class ThreadDetailStateError extends ThreadDetailState {
+  final String message;
+
+  ThreadDetailStateError(
+    this.message, {
+    ThreadDetailSingleEvent? detailEvent,
+    bool showSearchBar = false,
+  }) : super(detailEvent, showSearchBar);
+
+  @override
+  List<Object?> get props => super.props..addAll([message]);
+}
+
+@immutable
+class ThreadDetailStateContent extends ThreadDetailState {
+  final bool showLazyLoading;
   final List<PostItemVO> posts;
   final int selectedPostIndex;
   final bool isFavorite;
   final bool isCustomThread;
   final bool catalogMode;
 
-  const ThreadDetailStateContent({
-    required showSearchBar,
-    required showLazyLoading,
-    required event,
+  ThreadDetailStateContent({
+    required this.showLazyLoading,
     required this.posts,
     required this.selectedPostIndex,
     required this.isFavorite,
     required this.isCustomThread,
     required this.catalogMode,
-  }) : super(showSearchBar: showSearchBar, showLazyLoading: showLazyLoading, event: event);
+    ThreadDetailSingleEvent? event,
+    bool showSearchBar = false,
+  }) : super(event, showSearchBar);
 
   @override
-  List<Object?> get props => super.props..addAll([posts, selectedPostIndex, isFavorite, isCustomThread, catalogMode]);
+  List<Object?> get props => super.props
+    ..addAll([
+      showLazyLoading,
+      posts,
+      selectedPostIndex,
+      isFavorite,
+      isCustomThread,
+      catalogMode,
+    ]);
 }
 
-class ThreadDetailSingleEvent extends ChanSingleEvent {
-  const ThreadDetailSingleEvent(int val) : super(val);
+sealed class ThreadDetailSingleEvent extends Equatable {
+  final int uuid = DateTime.now().millisecondsSinceEpoch;
 
-  static const ChanSingleEvent SHOW_UNSTAR_WARNING = const ChanSingleEvent(10);
-  static const ChanSingleEvent SCROLL_TO_SELECTED = const ChanSingleEvent(11);
-  static const ChanSingleEvent SHOW_COLLECTIONS_DIALOG = const ChanSingleEvent(12);
-  static const ChanSingleEvent SHOW_POST_ADDED_TO_COLLECTION_SUCCESS = const ChanSingleEvent(13);
-  static const ChanSingleEvent SHOW_GALLERY = const ChanSingleEvent(14);
+  @override
+  List<Object?> get props => [uuid];
 }
+
+class ThreadDetailSingleEventShowUnstarWarning extends ThreadDetailSingleEvent {}
+
+class ThreadDetailSingleEventScrollToSelected extends ThreadDetailSingleEvent {}
+
+class ThreadDetailSingleEventOpenGallery extends ThreadDetailSingleEvent {
+  final int postId;
+  final int threadId;
+  final String boardId;
+
+  ThreadDetailSingleEventOpenGallery(this.postId, this.threadId, this.boardId);
+
+  @override
+  List<Object?> get props => super.props..addAll([postId, threadId, boardId]);
+}
+
+class ThreadDetailSingleEventClosePage extends ThreadDetailSingleEvent {}
+
+class ThreadDetailSingleEventShowOffline extends ThreadDetailSingleEvent {}

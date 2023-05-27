@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/chan_event.dart';
-import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/models/ui/post_item_vo.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
 import 'package:flutter_chan_viewer/pages/gallery/bloc/gallery_bloc.dart';
@@ -62,7 +61,7 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
   @override
   String getPageTitle() => "/${widget.boardId}/${widget.threadId}";
 
-  List<PageAction> getPageActions(BuildContext context, ChanState state) {
+  List<PageAction> getPageActions(BuildContext context, ThreadDetailState state) {
     bool showSearchButton = state is ThreadDetailStateContent && !state.showSearchBar;
     bool isFavorite = state is ThreadDetailStateContent && state.isFavorite;
     bool isCatalogMode = state is ThreadDetailStateContent && state.catalogMode;
@@ -94,29 +93,41 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<ThreadDetailBloc, ChanState>(
+    return BlocConsumer<ThreadDetailBloc, ThreadDetailState>(
       listener: (context, state) {
-        if (state is ThreadDetailStateContent && state.event != null) {
-          switch (state.event) {
-            case ThreadDetailSingleEvent.SHOW_UNSTAR_WARNING:
+        if (state is ThreadDetailStateContent && state.detailEvent != null) {
+          switch (state.detailEvent) {
+            case ThreadDetailSingleEventShowUnstarWarning _:
               showConfirmUnstarDialog();
               break;
-            case ThreadDetailSingleEvent.SCROLL_TO_SELECTED:
+            case ThreadDetailSingleEventScrollToSelected _:
               scrollToSelectedPost(state.selectedPostIndex, state.catalogMode);
               break;
-            case ChanSingleEvent.CLOSE_PAGE:
+            case ThreadDetailSingleEventClosePage _:
               Navigator.of(context).pop();
               break;
-            case ChanSingleEvent.SHOW_OFFLINE:
+            case ThreadDetailSingleEventShowOffline _:
               showOfflineSnackbar(context);
               break;
+            case ThreadDetailSingleEventOpenGallery _:
+              var event = state.detailEvent as ThreadDetailSingleEventOpenGallery;
+              Navigator.of(context).push(
+                PageRouteBuilder(
+                    opaque: false,
+                    pageBuilder: (_, __, ___) {
+                      return BlocProvider(
+                        create: (context) => GalleryBloc(event.boardId, event.threadId, event.postId, false),
+                        child: GalleryPage(),
+                      );
+                    }),
+              );
             default:
               break;
           }
         }
       },
       builder: (context, state) {
-        return BlocBuilder<ThreadDetailBloc, ChanState>(
+        return BlocBuilder<ThreadDetailBloc, ThreadDetailState>(
             bloc: bloc as ThreadDetailBloc?,
             builder: (context, state) {
               return buildScaffold(
@@ -130,25 +141,27 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
     );
   }
 
-  Widget buildBody(BuildContext context, ChanState state) {
-    if (state is ChanStateLoading) {
-      return Constants.centeredProgressIndicator;
-    }
-    if (state is ThreadDetailStateContent) {
-      if (state.posts.isEmpty) {
-        return Constants.noDataPlaceholder;
-      }
+  Widget buildBody(BuildContext context, ThreadDetailState state) {
+    switch (state) {
+      case ThreadDetailStateLoading _:
+        return Constants.centeredProgressIndicator;
+      case ThreadDetailStateContent _:
+        if (state.posts.isEmpty) {
+          return Constants.noDataPlaceholder;
+        }
 
-      return Stack(
-        children: <Widget>[
-          state.catalogMode
-              ? buildGrid(context, state.posts, state.selectedPostIndex)
-              : buildList(context, state.posts, state.selectedPostIndex),
-          if (state.showLazyLoading) LinearProgressIndicator(),
-        ],
-      );
-    } else {
-      return BasePageState.buildErrorScreen(context, (state as ChanStateError).message);
+        return Stack(
+          children: <Widget>[
+            state.catalogMode
+                ? buildGrid(context, state.posts, state.selectedPostIndex)
+                : buildList(context, state.posts, state.selectedPostIndex),
+            if (state.showLazyLoading) LinearProgressIndicator(),
+          ],
+        );
+      case ThreadDetailStateError _:
+        return BasePageState.buildErrorScreen(context, state.message);
+      default:
+        throw Exception("Unknown state: $state");
     }
   }
 
@@ -275,26 +288,7 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
   }
 
   void _onItemTap(BuildContext context, int postId) async {
-    bloc.add(ThreadDetailEventOnPostSelected(postId));
-    // // hack to wait for selected post to be propagated to state
-    // await bloc.stream.first;
-
-    Navigator.of(context).push(
-      PageRouteBuilder(
-          opaque: false,
-          pageBuilder: (_, __, ___) {
-            // return GalleryPage(
-            //   showAsReply: false,
-            //   initialPostId: post.postId,
-            // );
-            // TODO - dirty, move to bloc
-            return BlocProvider(
-              // value: BlocProvider.of<ThreadDetailBloc>(context),
-              create: (context) => GalleryBloc(widget.boardId, widget.threadId, postId, false),
-              child: GalleryPage(),
-            );
-          }),
-    );
+    bloc.add(ThreadDetailEventOnPostClicked(postId));
   }
 
   void _onItemLongPress(BuildContext context, int postId, Key itemKey) {

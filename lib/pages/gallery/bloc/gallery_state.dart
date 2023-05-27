@@ -1,11 +1,12 @@
 import 'package:equatable/equatable.dart';
-import 'package:flutter_chan_viewer/bloc/chan_state.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_chan_viewer/models/ui/post_item_vo.dart';
 import 'package:flutter_chan_viewer/models/ui/thread_item_vo.dart';
 import 'package:flutter_chan_viewer/utils/media_helper.dart';
 
-sealed class GalleryState extends ChanState {
-  final GallerySingleEventNew? galleryEvent;
+@immutable
+sealed class GalleryState extends Equatable {
+  final GallerySingleEvent? galleryEvent;
 
   GalleryState({this.galleryEvent = null});
 
@@ -13,8 +14,10 @@ sealed class GalleryState extends ChanState {
   List<Object?> get props => [galleryEvent];
 }
 
+@immutable
 class GalleryStateLoading extends GalleryState {}
 
+@immutable
 class GalleryStateError extends GalleryState {
   final String message;
 
@@ -24,6 +27,7 @@ class GalleryStateError extends GalleryState {
   List<Object?> get props => super.props..addAll([message]);
 }
 
+@immutable
 class GalleryStateContent extends GalleryState {
   final bool showAsCarousel;
   final List<MediaSource> mediaSources;
@@ -37,30 +41,27 @@ class GalleryStateContent extends GalleryState {
     required this.replies,
     required this.initialMediaIndex,
     this.overlayMetadataText,
-    required GallerySingleEventNew? event,
+    required GallerySingleEvent? event,
   }) : super(galleryEvent: event);
 
   @override
-  List<Object?> get props => super.props
-    ..addAll([
-      showAsCarousel,
-      mediaSources,
-      replies,
-      initialMediaIndex,
-      overlayMetadataText
-    ]);
+  List<Object?> get props =>
+      super.props..addAll([showAsCarousel, mediaSources, replies, initialMediaIndex, overlayMetadataText]);
 }
 
-sealed class GallerySingleEventNew extends Equatable {
+@immutable
+sealed class GallerySingleEvent extends Equatable {
   final int uuid = DateTime.now().millisecondsSinceEpoch;
 
   @override
   List<Object?> get props => [uuid];
 }
 
-class GallerySingleEventShowOffline extends GallerySingleEventNew {}
+@immutable
+class GallerySingleEventShowOffline extends GallerySingleEvent {}
 
-class GallerySingleEventShowCollectionsDialog extends GallerySingleEventNew {
+@immutable
+class GallerySingleEventShowCollectionsDialog extends GallerySingleEvent {
   final List<ThreadItemVO> customThreads;
   final int postId;
 
@@ -70,9 +71,11 @@ class GallerySingleEventShowCollectionsDialog extends GallerySingleEventNew {
   List<Object?> get props => super.props..addAll([customThreads, postId]);
 }
 
-class GallerySingleEventShowPostAddedToCollectionSuccess extends GallerySingleEventNew {}
+@immutable
+class GallerySingleEventShowPostAddedToCollectionSuccess extends GallerySingleEvent {}
 
-class GallerySingleEventShowReply extends GallerySingleEventNew {
+@immutable
+class GallerySingleEventShowReply extends GallerySingleEvent {
   final int postId;
   final int threadId;
   final String boardId;

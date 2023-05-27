@@ -4,15 +4,13 @@ import 'dart:io';
 import 'dart:isolate';
 import 'dart:ui';
 
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/chan_event.dart';
-import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/models/helper/online_state.dart';
 import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
 import 'package:flutter_chan_viewer/models/ui/post_item.dart';
 import 'package:flutter_chan_viewer/models/ui/post_item_vo.dart';
-import 'package:flutter_chan_viewer/pages/base/base_bloc.dart';
-import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
 import 'package:flutter_chan_viewer/repositories/chan_result.dart';
 import 'package:flutter_chan_viewer/repositories/threads_repository.dart';
 import 'package:flutter_chan_viewer/utils/chan_util.dart';
@@ -26,7 +24,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'thread_detail_event.dart';
 import 'thread_detail_state.dart';
 
-class ThreadDetailBloc extends BaseBloc<ChanEvent, ChanState> {
+class ThreadDetailBloc extends Bloc<ChanEvent, ThreadDetailState> {
   final logger = LogUtils.getLogger();
   final ThreadsRepository _threadsRepository = getIt<ThreadsRepository>();
   final Preferences _preferences = getIt<Preferences>();
@@ -36,12 +34,13 @@ class ThreadDetailBloc extends BaseBloc<ChanEvent, ChanState> {
   final bool? _showDownloadsOnly;
   late bool _catalogMode;
   late ThreadDetailModel _threadDetailModel;
+  bool _showSearchBar = false;
+  String searchQuery = "";
 
-  CacheDirective get cacheDirective => CacheDirective(_boardId, _threadId);
   ReceivePort _port = ReceivePort();
   late final StreamSubscription _subscription;
 
-  ThreadDetailBloc(this._boardId, this._threadId, this._showDownloadsOnly) : super(ChanStateLoading()) {
+  ThreadDetailBloc(this._boardId, this._threadId, this._showDownloadsOnly) : super(ThreadDetailStateLoading()) {
     _catalogMode = _preferences.getBool(Preferences.KEY_THREAD_CATALOG_MODE, def: false);
 
     IsolateNameServer.registerPortWithName(_port.sendPort, Constants.downloaderPortName);
@@ -58,7 +57,7 @@ class ThreadDetailBloc extends BaseBloc<ChanEvent, ChanState> {
     });
 
     on<ChanEventInitBloc>((event, emit) async {
-      emit(ChanStateLoading());
+      emit(ThreadDetailStateLoading());
     });
 
     on<ChanEventFetchData>((event, emit) async {
@@ -68,7 +67,7 @@ class ThreadDetailBloc extends BaseBloc<ChanEvent, ChanState> {
         await _threadsRepository.fetchRemoteThreadDetail(_boardId, _threadId, false, markAsSeen: true);
       } catch (e) {
         if (e is HttpException || e is SocketException) {
-          emit(buildContentState(event: ChanSingleEvent.SHOW_OFFLINE));
+          emit(buildContentState(event: ThreadDetailSingleEventShowOffline()));
         } else {
           rethrow;
         }
@@ -89,7 +88,7 @@ class ThreadDetailBloc extends BaseBloc<ChanEvent, ChanState> {
           _threadDetailModel = event.result.data;
           emit(buildContentState(lazyLoading: true));
         } else {
-          emit(ChanStateLoading());
+          emit(ThreadDetailStateLoading());
         }
       } else if (event.result is Success) {
         _threadDetailModel = event.result.data;
@@ -97,18 +96,18 @@ class ThreadDetailBloc extends BaseBloc<ChanEvent, ChanState> {
       } else if (event.result is Failure) {
         Exception exception = (event.result as Failure).exception;
         if (exception is HttpException || exception is SocketException) {
-          emit(buildContentState(event: ChanSingleEvent.SHOW_OFFLINE));
+          emit(buildContentState(event: ThreadDetailSingleEventShowOffline()));
         } else {
-          emit(ChanStateError(event.result.data.toString()));
+          emit(ThreadDetailStateError(exception.toString()));
         }
       }
     });
 
     on<ChanEventDataError>((event, emit) {
       if (event.error is HttpException || event.error is SocketException) {
-        emit(buildContentState(event: ChanSingleEvent.SHOW_OFFLINE));
+        emit(buildContentState(event: ThreadDetailSingleEventShowOffline()));
       } else {
-        emit(ChanStateError(event.error.toString()));
+        emit(ThreadDetailStateError(event.error.toString()));
       }
     });
 
@@ -117,45 +116,62 @@ class ThreadDetailBloc extends BaseBloc<ChanEvent, ChanState> {
         Permission.storage,
       ].request();
       if (statuses.values.any((status) => status.isGranted == false)) {
-        emit(ChanStateError("This feature requires permission to access storage"));
+        emit(ThreadDetailStateError("This feature requires permission to access storage"));
         return;
       }
 
       if (_threadDetailModel.isFavorite) {
         if (event.confirmed) {
           await _threadsRepository.removeThreadFromFavorites(_threadDetailModel);
-          emit(buildContentState(event: ChanSingleEvent.CLOSE_PAGE));
+          emit(buildContentState(event: ThreadDetailSingleEventClosePage()));
         } else {
-          emit(buildContentState(event: ThreadDetailSingleEvent.SHOW_UNSTAR_WARNING));
+          emit(buildContentState(event: ThreadDetailSingleEventShowUnstarWarning()));
         }
       } else {
-        emit(ChanStateLoading());
+        emit(ThreadDetailStateLoading());
 
         await _threadsRepository.addThreadToFavorites(_threadDetailModel);
       }
     });
 
     on<ThreadDetailEventToggleCatalogMode>((event, emit) {
-      emit(ChanStateLoading());
+      emit(ThreadDetailStateLoading());
       _catalogMode = !_catalogMode;
       _preferences.setBool(Preferences.KEY_THREAD_CATALOG_MODE, _catalogMode);
-      emit(buildContentState(event: ThreadDetailSingleEvent.SCROLL_TO_SELECTED));
+      emit(buildContentState(event: ThreadDetailSingleEventScrollToSelected()));
     });
 
-    on<ThreadDetailEventOnPostSelected>((event, emit) async {
+    on<ThreadDetailEventOnPostClicked>((event, emit) async {
       await _threadsRepository.updateThread(_threadDetailModel.thread.copyWith(selectedPostId: event.postId));
+      emit(buildContentState(event: ThreadDetailSingleEventOpenGallery(event.postId, _threadId, _boardId)));
     });
 
     on<ThreadDetailEventOnLinkClicked>((event, emit) async {
       int postId = ChanUtil.getPostIdFromUrl(event.url);
       if (postId > 0) {
-        add(ThreadDetailEventOnPostSelected(postId));
+        add(ThreadDetailEventOnPostClicked(postId));
       }
     });
 
     on<ThreadDetailEventDeleteThread>((event, emit) async {
       await _threadsRepository.deleteCustomThread(_threadDetailModel);
-      emit(buildContentState(event: ChanSingleEvent.CLOSE_PAGE));
+      emit(buildContentState(event: ThreadDetailSingleEventClosePage()));
+    });
+
+    on<ChanEventSearch>((event, emit) {
+      searchQuery = event.query;
+      emit(buildContentState());
+    });
+
+    on<ChanEventShowSearch>((event, emit) {
+      _showSearchBar = true;
+      emit(buildContentState());
+    });
+
+    on<ChanEventCloseSearch>((event, emit) {
+      searchQuery = "";
+      _showSearchBar = false;
+      emit(buildContentState());
     });
   }
 
@@ -166,8 +182,7 @@ class ThreadDetailBloc extends BaseBloc<ChanEvent, ChanState> {
     return super.close();
   }
 
-  @override
-  ThreadDetailStateContent buildContentState({bool lazyLoading = false, ChanSingleEvent? event}) {
+  ThreadDetailState buildContentState({bool lazyLoading = false, ThreadDetailSingleEvent? event}) {
     late ThreadDetailModel threadDetailModel;
     if (searchQuery.isNotNullNorEmpty) {
       List<PostItem> posts;
@@ -192,7 +207,7 @@ class ThreadDetailBloc extends BaseBloc<ChanEvent, ChanState> {
       catalogMode: _catalogMode,
       event: event,
       showLazyLoading: lazyLoading,
-      showSearchBar: showSearchBar,
+      showSearchBar: _showSearchBar,
     );
   }
 }

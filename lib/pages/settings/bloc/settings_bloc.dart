@@ -1,6 +1,5 @@
 import 'package:bloc/bloc.dart';
 import 'package:flutter_chan_viewer/bloc/chan_event.dart';
-import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/data/local/local_data_source.dart';
 import 'package:flutter_chan_viewer/data/local/moor_db.dart';
 import 'package:flutter_chan_viewer/locator.dart';
@@ -16,7 +15,7 @@ import 'package:flutter_chan_viewer/utils/preferences.dart';
 import 'settings_event.dart';
 import 'settings_state.dart';
 
-class SettingsBloc extends Bloc<ChanEvent, ChanState> {
+class SettingsBloc extends Bloc<ChanEvent, SettingsState> {
   final ChanDownloader _downloader = getIt<ChanDownloader>();
   final ChanStorage _chanStorage = getIt<ChanStorage>();
   final LocalDataSource _localDataSource = getIt<LocalDataSource>();
@@ -26,7 +25,7 @@ class SettingsBloc extends Bloc<ChanEvent, ChanState> {
   List<DownloadFolderInfo>? _downloads = <DownloadFolderInfo>[];
   MoorDbOverview _dbOverview = MoorDbOverview();
 
-  SettingsBloc() : super(ChanStateLoading()) {
+  SettingsBloc() : super(SettingsStateLoading()) {
     on<SettingsEventSetTheme>((event, emit) {
       _appTheme = event.theme;
       emit(_contentState);
@@ -40,7 +39,7 @@ class SettingsBloc extends Bloc<ChanEvent, ChanState> {
     });
 
     on<SettingsEventExperiment>((event, emit) async {
-      emit(ChanStateLoading());
+      emit(SettingsStateLoading());
       _dbOverview.boards.clear();
       List<BoardItem> boards = await _localDataSource.getBoards(true);
       for (BoardItem board in boards) {
@@ -62,26 +61,26 @@ class SettingsBloc extends Bloc<ChanEvent, ChanState> {
     });
 
     on<SettingsEventToggleShowNsfw>((event, emit) {
-      emit(ChanStateLoading());
+      emit(SettingsStateLoading());
       _preferences.setBool(Preferences.KEY_SETTINGS_SHOW_NSFW, event.showNsfw);
       emit(_contentState);
     });
 
     on<SettingsEventCancelDownloads>((event, emit) {
-      emit(ChanStateLoading());
+      emit(SettingsStateLoading());
       _downloader.cancelAllDownloads();
       emit(_contentState);
     });
 
     on<SettingsEventPurgeDatabase>((event, emit) async {
-      emit(ChanStateLoading());
+      emit(SettingsStateLoading());
       await getIt<ChanDB>()
         ..purgeDatabase();
       emit(_contentState);
     });
 
     on<SettingsEventDeleteFolder>((event, emit) async {
-      emit(ChanStateLoading());
+      emit(SettingsStateLoading());
       await _chanStorage.deleteMediaDirectory(event.cacheDirective);
       _downloads = _chanStorage.getAllDownloadFoldersInfo();
       emit(_contentState);
@@ -89,5 +88,9 @@ class SettingsBloc extends Bloc<ChanEvent, ChanState> {
   }
 
   SettingsStateContent get _contentState => SettingsStateContent(
-      _appTheme, _downloads, _preferences.getBool(Preferences.KEY_SETTINGS_SHOW_NSFW, def: false), _dbOverview);
+        _appTheme,
+        _downloads,
+        _preferences.getBool(Preferences.KEY_SETTINGS_SHOW_NSFW, def: false),
+        _dbOverview,
+      );
 }

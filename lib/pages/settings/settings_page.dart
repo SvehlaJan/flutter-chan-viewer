@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/app_bloc/app_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/app_bloc/app_event.dart';
 import 'package:flutter_chan_viewer/bloc/chan_event.dart';
-import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/models/helper/moor_db_overview.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
 import 'package:flutter_chan_viewer/pages/board_detail/board_detail_page.dart';
@@ -35,146 +34,149 @@ class _SettingsPageState extends BasePageState<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<SettingsBloc, ChanState>(
+    return BlocBuilder<SettingsBloc, SettingsState>(
       bloc: bloc as SettingsBloc,
       builder: (context, state) => buildScaffold(context, buildBody(context, state)),
     );
   }
 
-  Widget buildBody(BuildContext context, ChanState state) {
-    if (state is ChanStateLoading) {
-      return Constants.centeredProgressIndicator;
-    } else if (state is SettingsStateContent) {
-      return SingleChildScrollView(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
+  Widget buildBody(BuildContext context, SettingsState state) {
+    switch (state) {
+      case SettingsStateLoading _:
+        return Constants.centeredProgressIndicator;
+      case SettingsStateContent _:
+        return _buildContent(context, state);
+      case SettingsStateError _:
+        return Center(child: Text("Error"));
+      default:
+        throw Exception("Unknown state: $state");
+    }
+  }
+
+  Widget _buildContent(BuildContext context, SettingsStateContent state) {
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text("Visual", style: Theme.of(context).textTheme.subtitle1),
+          ),
+          Card(
+            elevation: 2.0,
+            child: Column(
+              children: <Widget>[
+                ListTile(
+                  leading: Icon(
+                    Icons.format_paint,
+                  ),
+                  title: Text("Dark theme"),
+                  trailing: CommonSwitch(
+                    onChanged: _onThemeSwitchClicked,
+                    defValue: (state.theme == AppTheme.dark) ? true : false,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text("Others", style: Theme.of(context).textTheme.subtitle1),
+          ),
+          Card(
+            elevation: 2.0,
+            child: Column(
+              children: <Widget>[
+                ListTile(
+                  leading: Icon(Icons.block),
+                  title: Text("Experiment"),
+                  onTap: _onExperimentClicked,
+                ),
+                ListTile(
+                  leading: Icon(Icons.priority_high),
+                  title: Text("Show NSFW"),
+                  trailing: CommonSwitch(
+                    onChanged: _onToggleShowSfwOnlyClicked,
+                    defValue: state.showNsfw,
+                  ),
+                ),
+                ListTile(
+                  leading: Icon(Icons.cancel),
+                  title: Text("Cancel downloads"),
+                  onTap: _onCancelDownloadsClicked,
+                ),
+                ListTile(
+                  leading: Icon(Icons.delete),
+                  title: Text("Purge database"),
+                  onTap: _onPurgeDatabaseClicked,
+                ),
+              ],
+            ),
+          ),
+          if (state.moorDbOverview.boards.isNotEmpty)
             Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Text("Visual", style: Theme.of(context).textTheme.subtitle1),
+              child: Text("Db overview", style: Theme.of(context).textTheme.subtitle1),
             ),
-            Card(
-              elevation: 2.0,
-              child: Column(
-                children: <Widget>[
-                  ListTile(
-                    leading: Icon(
-                      Icons.format_paint,
-                    ),
-                    title: Text("Dark theme"),
-                    trailing: CommonSwitch(
-                      onChanged: _onThemeSwitchClicked,
-                      defValue: (state.theme == AppTheme.dark) ? true : false,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text("Others", style: Theme.of(context).textTheme.subtitle1),
-            ),
-            Card(
-              elevation: 2.0,
-              child: Column(
-                children: <Widget>[
-                  ListTile(
-                    leading: Icon(Icons.block),
-                    title: Text("Experiment"),
-                    onTap: _onExperimentClicked,
-                  ),
-                  ListTile(
-                    leading: Icon(Icons.priority_high),
-                    title: Text("Show NSFW"),
-                    trailing: CommonSwitch(
-                      onChanged: _onToggleShowSfwOnlyClicked,
-                      defValue: state.showNsfw,
-                    ),
-                  ),
-                  ListTile(
-                    leading: Icon(Icons.cancel),
-                    title: Text("Cancel downloads"),
-                    onTap: _onCancelDownloadsClicked,
-                  ),
-                  ListTile(
-                    leading: Icon(Icons.delete),
-                    title: Text("Purge database"),
-                    onTap: _onPurgeDatabaseClicked,
-                  ),
-                ],
-              ),
-            ),
-            if (state.moorDbOverview.boards.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Text("Db overview", style: Theme.of(context).textTheme.subtitle1),
-              ),
-            if (state.moorDbOverview.boards.isNotEmpty)
-              ListView.builder(
-                itemCount: state.moorDbOverview.boards.length,
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                itemBuilder: (context, index) {
-                  MoorBoardOverview boardOverview = state.moorDbOverview.boards[index];
-                  return Card(
-                    elevation: 2.0,
-                    child: ListTile(
-                      title: Text(boardOverview.boardId!),
-                      subtitle: Text(
-                          "Online: ${boardOverview.onlineCount}\nArchived: ${boardOverview.archivedCount}\nNot found: ${boardOverview.notFoundCount}\nUnknown: ${boardOverview.unknownCount}"),
-                      onTap: () => _onMoorBoardOverviewClicked(boardOverview),
-                    ),
-                  );
-                },
-              ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text("Downloads", style: Theme.of(context).textTheme.subtitle1),
-            ),
+          if (state.moorDbOverview.boards.isNotEmpty)
             ListView.builder(
-              itemCount: state.downloads!.length,
+              itemCount: state.moorDbOverview.boards.length,
               shrinkWrap: true,
               physics: NeverScrollableScrollPhysics(),
               itemBuilder: (context, index) {
-                DownloadFolderInfo folderInfo = state.downloads![index];
+                MoorBoardOverview boardOverview = state.moorDbOverview.boards[index];
                 return Card(
                   elevation: 2.0,
                   child: ListTile(
-                    title: Text(folderInfo.cacheDirective.toPath()),
-                    subtitle: Text("Size: ${folderInfo.filesSize} Files ${folderInfo.filesCount}"),
-                    trailing: IconButton(
-                        icon: Icon(Icons.delete), onPressed: () => _onDeleteFolderClicked(folderInfo.cacheDirective)),
-                    onTap: () => _onFolderTileClicked(folderInfo),
+                    title: Text(boardOverview.boardId!),
+                    subtitle: Text(
+                        "Online: ${boardOverview.onlineCount}\nArchived: ${boardOverview.archivedCount}\nNot found: ${boardOverview.notFoundCount}\nUnknown: ${boardOverview.unknownCount}"),
+                    onTap: () => _onMoorBoardOverviewClicked(boardOverview),
                   ),
                 );
               },
             ),
-          ],
-        ),
-      );
-    } else {
-      return BasePageState.buildErrorScreen(context, (state as ChanStateError).message);
-    }
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text("Downloads", style: Theme.of(context).textTheme.subtitle1),
+          ),
+          ListView.builder(
+            itemCount: state.downloads!.length,
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
+            itemBuilder: (context, index) {
+              DownloadFolderInfo folderInfo = state.downloads![index];
+              return Card(
+                elevation: 2.0,
+                child: ListTile(
+                  title: Text(folderInfo.cacheDirective.toPath()),
+                  subtitle: Text("Size: ${folderInfo.filesSize} Files ${folderInfo.filesCount}"),
+                  trailing: IconButton(
+                      icon: Icon(Icons.delete), onPressed: () => _onDeleteFolderClicked(folderInfo.cacheDirective)),
+                  onTap: () => _onFolderTileClicked(folderInfo),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
   }
 
   void _onFolderTileClicked(DownloadFolderInfo folderInfo) {
-    Navigator.of(context).push(
-      NavigationHelper.getRoute(
-        Constants.threadDetailRoute,
-        ThreadDetailPage.createArguments(folderInfo.cacheDirective.boardId, folderInfo.cacheDirective.threadId,
-            showDownloadsOnly: true),
-      )!,
-    );
+    Navigator.of(context).push(NavigationHelper.getRoute(
+      Constants.threadDetailRoute,
+      ThreadDetailPage.createArguments(folderInfo.cacheDirective.boardId, folderInfo.cacheDirective.threadId,
+          showDownloadsOnly: true),
+    ));
   }
 
   void _onMoorBoardOverviewClicked(MoorBoardOverview boardOverview) {
-    Navigator.of(context).push(
-      NavigationHelper.getRoute(
-        Constants.boardDetailRoute,
-        BoardDetailPage.createArguments(boardOverview.boardId),
-      )!,
-    );
+    Navigator.of(context).push(NavigationHelper.getRoute(
+      Constants.boardDetailRoute,
+      BoardDetailPage.createArguments(boardOverview.boardId),
+    ));
   }
 
   void _onThemeSwitchClicked(bool enabled) {

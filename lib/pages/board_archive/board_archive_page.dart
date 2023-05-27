@@ -122,7 +122,7 @@ class _BoardArchivePageState extends BasePageState<BoardArchivePage> {
       NavigationHelper.getRoute(
         Constants.threadDetailRoute,
         ThreadDetailPage.createArguments(widget.boardId, thread.threadId),
-      )!,
+      ),
     );
   }
 }

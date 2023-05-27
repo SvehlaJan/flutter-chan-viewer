@@ -59,7 +59,7 @@ class NavigationHelper {
     }
   }
 
-  static Route<dynamic>? getRoute(String name, Map<String, dynamic>? arguments) {
+  static Route<dynamic> getRoute(String name, Map<String, dynamic>? arguments) {
     switch (name) {
       case Constants.boardDetailRoute:
         if (arguments != null && arguments.containsKey(BoardDetailPage.ARG_BOARD_ID)) {
@@ -71,7 +71,7 @@ class NavigationHelper {
             ),
           );
         }
-        return null;
+        throw Exception("Board ID not provided");
       case Constants.boardArchiveRoute:
         if (arguments != null && arguments.containsKey(BoardArchivePage.ARG_BOARD_ID)) {
           String boardId = arguments[BoardArchivePage.ARG_BOARD_ID];
@@ -82,7 +82,7 @@ class NavigationHelper {
             ),
           );
         }
-        return null;
+        throw Exception("Board ID not provided");
       case Constants.threadDetailRoute:
         if (arguments != null &&
             arguments.containsKey(ThreadDetailPage.ARG_BOARD_ID) &&
@@ -99,7 +99,7 @@ class NavigationHelper {
             ),
           );
         }
-        return null;
+        throw Exception("Board ID or Thread ID not provided");
     }
 
     // The other paths we support are in the routes table.

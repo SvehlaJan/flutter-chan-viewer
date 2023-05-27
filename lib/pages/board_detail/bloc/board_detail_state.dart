@@ -4,13 +4,13 @@ import 'package:flutter_chan_viewer/models/ui/thread_item_vo.dart';
 
 @immutable
 sealed class BoardDetailState extends Equatable {
-  final BoardDetailSingleEvent? boardEvent;
+  final BoardDetailSingleEvent? event;
   final bool showSearchBar;
 
-  BoardDetailState(this.boardEvent, this.showSearchBar);
+  BoardDetailState(this.event, this.showSearchBar);
 
   @override
-  List<Object?> get props => [boardEvent, showSearchBar];
+  List<Object?> get props => [event, showSearchBar];
 }
 
 @immutable

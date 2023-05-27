@@ -67,7 +67,7 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
     await Navigator.of(context).push(NavigationHelper.getRoute(
       Constants.boardArchiveRoute,
       {BoardArchivePage.ARG_BOARD_ID: widget.boardId},
-    )!);
+    ));
 
     bloc.add(ChanEventFetchData());
   }
@@ -76,38 +76,39 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<BoardDetailBloc, BoardDetailState>(listener: (context, state) {
-      switch (state.boardEvent) {
-        case BoardDetailEventClosePage _:
-          Navigator.of(context).pop();
-          break;
-        case BoardDetailEventShowOffline _:
-          showOfflineSnackbar(context);
-          break;
-        case BoardDetailEventOpenThreadDetail _:
-          var event = state.boardEvent as BoardDetailEventOpenThreadDetail;
-          Navigator.of(context).push(
-            NavigationHelper.getRoute(
+    return BlocConsumer<BoardDetailBloc, BoardDetailState>(
+      listener: (context, state) {
+        switch (state.event) {
+          case BoardDetailEventClosePage _:
+            Navigator.of(context).pop();
+            break;
+          case BoardDetailEventShowOffline _:
+            showOfflineSnackbar(context);
+            break;
+          case BoardDetailEventOpenThreadDetail _:
+            var event = state.event as BoardDetailEventOpenThreadDetail;
+            Navigator.of(context).push(NavigationHelper.getRoute(
               Constants.threadDetailRoute,
               ThreadDetailPage.createArguments(event.boardId, event.threadId),
-            )!,
-          );
-          break;
-        default:
-          break;
-      }
-    }, builder: (context, state) {
-      return BlocBuilder<BoardDetailBloc, BoardDetailState>(
-          bloc: bloc as BoardDetailBloc?,
-          builder: (context, state) {
-            return buildScaffold(
-              context,
-              buildBody(context, state),
-              pageActions: getPageActions(context, state),
-              showSearchBar: state.showSearchBar,
-            );
-          });
-    });
+            ));
+            break;
+          default:
+            break;
+        }
+      },
+      builder: (context, state) {
+        return BlocBuilder<BoardDetailBloc, BoardDetailState>(
+            bloc: bloc as BoardDetailBloc?,
+            builder: (context, state) {
+              return buildScaffold(
+                context,
+                buildBody(context, state),
+                pageActions: getPageActions(context, state),
+                showSearchBar: state.showSearchBar,
+              );
+            });
+      },
+    );
   }
 
   Widget buildBody(BuildContext context, BoardDetailState state) {

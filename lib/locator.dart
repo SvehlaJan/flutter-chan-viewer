@@ -18,7 +18,6 @@ import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
 import 'package:flutter_chan_viewer/repositories/posts_repository.dart';
 import 'package:flutter_chan_viewer/repositories/threads_repository.dart';
 import 'package:flutter_chan_viewer/utils/chan_cache_manager.dart';
-import 'package:flutter_chan_viewer/utils/navigation_service.dart';
 import 'package:flutter_chan_viewer/utils/preferences.dart';
 import 'package:get_it/get_it.dart';
 
@@ -27,7 +26,6 @@ GetIt getIt = GetIt.instance;
 void setupLocator() {
   bool isMobile = Platform.isAndroid || Platform.isIOS;
 
-  getIt.registerLazySingleton<NavigationService>(() => NavigationService());
   getIt.registerLazySingleton<CacheManager>(() => ChanCacheManager.createCacheManager());
   getIt.registerLazySingleton<RemoteDataSource>(() => RemoteDataSource());
   getIt.registerLazySingleton<ChanDB>(() => ChanDB.connect(ChanDB.createDriftIsolateAndConnect()));

@@ -62,7 +62,7 @@ extension ThreadItemVOExtension on ThreadItem {
       subtitle,
       htmlContent,
       onlineStatus,
-      MediaHelper.getThreadThumbnailSource(this),
+      getThumbnailImageSource(),
       replies,
       images,
       selectedPostId,

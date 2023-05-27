@@ -2,13 +2,12 @@ import 'dart:async';
 import 'dart:collection';
 import 'dart:io';
 
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/chan_event.dart';
-import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/models/board_detail_model.dart';
 import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
 import 'package:flutter_chan_viewer/models/ui/thread_item_vo.dart';
-import 'package:flutter_chan_viewer/pages/base/base_bloc.dart';
 import 'package:flutter_chan_viewer/pages/board_detail/bloc/board_detail_event.dart';
 import 'package:flutter_chan_viewer/pages/board_detail/bloc/board_detail_state.dart';
 import 'package:flutter_chan_viewer/repositories/boards_repository.dart';
@@ -17,17 +16,19 @@ import 'package:flutter_chan_viewer/utils/exceptions.dart';
 import 'package:flutter_chan_viewer/utils/extensions.dart';
 import 'package:flutter_chan_viewer/utils/preferences.dart';
 
-class BoardDetailBloc extends BaseBloc<ChanEvent, ChanState> {
+class BoardDetailBloc extends Bloc<ChanEvent, BoardDetailState> {
   final BoardsRepository _repository = getIt<BoardsRepository>();
   final Preferences _preferences = getIt<Preferences>();
 
   final String boardId;
   BoardDetailModel? _boardDetailModel;
   bool _isFavorite = false;
+  bool _showSearchBar = false;
+  String searchQuery = "";
 
   late final StreamSubscription _subscription;
 
-  BoardDetailBloc(this.boardId) : super(ChanStateLoading()) {
+  BoardDetailBloc(this.boardId) : super(BoardDetailStateLoading()) {
     List<String> favoriteBoards = _preferences.getStringList(Preferences.KEY_FAVORITE_BOARDS);
     _isFavorite = favoriteBoards.contains(boardId);
 
@@ -38,13 +39,13 @@ class BoardDetailBloc extends BaseBloc<ChanEvent, ChanState> {
     });
 
     on<ChanEventInitBloc>((event, emit) async {
-      emit(ChanStateLoading());
+      emit(BoardDetailStateLoading());
     });
 
     on<ChanEventDataFetched>((event, emit) async {
       if (event.result is Loading<BoardDetailModel>) {
         if (event.result.data == null) {
-          emit(ChanStateLoading());
+          emit(BoardDetailStateLoading());
         } else {
           _boardDetailModel = event.result.data;
           emit(buildContentState(lazyLoading: true));
@@ -52,18 +53,31 @@ class BoardDetailBloc extends BaseBloc<ChanEvent, ChanState> {
       } else if (event.result is Success<BoardDetailModel>) {
         _boardDetailModel = event.result.data;
         emit(buildContentState());
+      } else if (event.result is Failure<BoardDetailModel>) {
+        Exception exception = (event.result as Failure).exception;
+        if (exception is HttpException || exception is SocketException) {
+          emit(buildContentState(event: BoardDetailEventShowOffline()));
+        } else {
+          emit(BoardDetailStateError(exception.toString()));
+        }
       }
     });
 
     on<ChanEventDataError>((event, emit) async {
       if (event.error is HttpException || event.error is SocketException) {
-        emit(buildContentState(event: ChanSingleEvent.SHOW_OFFLINE));
+        emit(buildContentState(event: BoardDetailEventShowOffline()));
+      } else {
+        emit(BoardDetailStateError(event.error.toString()));
       }
     });
 
     on<ChanEventFetchData>((event, emit) async {
-      emit(ChanStateLoading());
+      emit(BoardDetailStateLoading());
       _repository.fetchRemoteBoardDetail(boardId);
+    });
+
+    on<BoardDetailEventOnItemClicked>((event, emit) async {
+      emit(buildContentState(event: BoardDetailEventOpenThreadDetail(boardId, event.threadId)));
     });
 
     on<BoardDetailEventToggleFavorite>((event, emit) async {
@@ -76,6 +90,22 @@ class BoardDetailBloc extends BaseBloc<ChanEvent, ChanState> {
       _preferences.setStringList(Preferences.KEY_FAVORITE_BOARDS, favoriteBoards);
       emit(buildContentState());
     });
+
+    on<ChanEventSearch>((event, emit) {
+      searchQuery = event.query;
+      emit(buildContentState());
+    });
+
+    on<ChanEventShowSearch>((event, emit) {
+      _showSearchBar = true;
+      emit(buildContentState());
+    });
+
+    on<ChanEventCloseSearch>((event, emit) {
+      searchQuery = "";
+      _showSearchBar = false;
+      emit(buildContentState());
+    });
   }
 
   @override
@@ -84,8 +114,7 @@ class BoardDetailBloc extends BaseBloc<ChanEvent, ChanState> {
     return super.close();
   }
 
-  @override
-  BoardDetailStateContent buildContentState({bool lazyLoading = false, ChanSingleEvent? event}) {
+  BoardDetailStateContent buildContentState({bool lazyLoading = false, BoardDetailSingleEvent? event}) {
     List<ThreadItemVO> threads;
     if (searchQuery.isNotNullNorEmpty) {
       List<ThreadItem> titleMatchThreads = _boardDetailModel!.threads
@@ -101,9 +130,9 @@ class BoardDetailBloc extends BaseBloc<ChanEvent, ChanState> {
     return BoardDetailStateContent(
       threads: threads,
       showLazyLoading: lazyLoading,
-      event: event,
+      boardEvent: event,
       isFavorite: _isFavorite,
-      showSearchBar: showSearchBar,
+      showSearchBar: _showSearchBar,
     );
   }
 }

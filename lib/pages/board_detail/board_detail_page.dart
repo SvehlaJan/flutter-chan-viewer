@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/chan_event.dart';
 import 'package:flutter_chan_viewer/bloc/chan_state.dart';
-import 'package:flutter_chan_viewer/models/ui/thread_item_vo.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
 import 'package:flutter_chan_viewer/pages/board_archive/board_archive_page.dart';
 import 'package:flutter_chan_viewer/pages/thread_detail/thread_detail_page.dart';
@@ -47,7 +46,7 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
   @override
   String getPageTitle() => "/${widget.boardId}";
 
-  List<PageAction> getPageActions(BuildContext context, ChanState state) {
+  List<PageAction> getPageActions(BuildContext context, BoardDetailState state) {
     bool showSearchButton = state is ChanStateContent && !state.showSearchBar;
     bool isFavorite = state is BoardDetailStateContent && state.isFavorite;
     return [
@@ -77,24 +76,33 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<BoardDetailBloc, ChanState>(listener: (context, state) {
-      switch (state.event) {
-        case ChanSingleEvent.CLOSE_PAGE:
+    return BlocConsumer<BoardDetailBloc, BoardDetailState>(listener: (context, state) {
+      switch (state.boardEvent) {
+        case BoardDetailEventClosePage _:
           Navigator.of(context).pop();
           break;
-        case ChanSingleEvent.SHOW_OFFLINE:
+        case BoardDetailEventShowOffline _:
           showOfflineSnackbar(context);
+          break;
+        case BoardDetailEventOpenThreadDetail _:
+          var event = state.boardEvent as BoardDetailEventOpenThreadDetail;
+          Navigator.of(context).push(
+            NavigationHelper.getRoute(
+              Constants.threadDetailRoute,
+              ThreadDetailPage.createArguments(event.boardId, event.threadId),
+            )!,
+          );
           break;
         default:
           break;
       }
     }, builder: (context, state) {
-      return BlocBuilder<BoardDetailBloc, ChanState>(
+      return BlocBuilder<BoardDetailBloc, BoardDetailState>(
           bloc: bloc as BoardDetailBloc?,
           builder: (context, state) {
             return buildScaffold(
               context,
-              buildBody(context, state, ((thread) => _openThreadDetailPage(thread))),
+              buildBody(context, state),
               pageActions: getPageActions(context, state),
               showSearchBar: state.showSearchBar,
             );
@@ -102,26 +110,29 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
     });
   }
 
-  Widget buildBody(BuildContext context, ChanState state, Function(ThreadItemVO) onItemClicked) {
-    if (state is ChanStateLoading) {
-      return Constants.centeredProgressIndicator;
-    } else if (state is BoardDetailStateContent) {
-      if (state.threads.isEmpty) {
-        return Constants.noDataPlaceholder;
-      }
+  Widget buildBody(BuildContext context, BoardDetailState state) {
+    switch (state) {
+      case BoardDetailStateLoading _:
+        return Constants.centeredProgressIndicator;
+      case BoardDetailStateContent _:
+        if (state.threads.isEmpty) {
+          return Constants.noDataPlaceholder;
+        }
 
-      return Stack(
-        children: <Widget>[
-          _buildListView(context, state, onItemClicked),
-          if (state.showLazyLoading) LinearProgressIndicator(),
-        ],
-      );
-    } else {
-      return BasePageState.buildErrorScreen(context, (state as ChanStateError).message);
+        return Stack(
+          children: <Widget>[
+            _buildListView(context, state),
+            if (state.showLazyLoading) LinearProgressIndicator(),
+          ],
+        );
+      case BoardDetailStateError _:
+        return BasePageState.buildErrorScreen(context, state.message);
+      default:
+        throw Exception("Unknown state: $state");
     }
   }
 
-  Widget _buildListView(BuildContext context, BoardDetailStateContent state, Function(ThreadItemVO) onItemClicked) {
+  Widget _buildListView(BuildContext context, BoardDetailStateContent state) {
     return Scrollbar(
       controller: _scrollController!,
       child: ListView.builder(
@@ -131,19 +142,12 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
         itemBuilder: (context, index) {
           return InkWell(
             child: ThreadListWidget(thread: state.threads[index]),
-            onTap: () => onItemClicked(state.threads[index]),
+            onTap: () {
+              bloc.add(BoardDetailEventOnItemClicked(state.threads[index].threadId));
+            },
           );
         },
       ),
-    );
-  }
-
-  void _openThreadDetailPage(ThreadItemVO thread) {
-    Navigator.of(context).push(
-      NavigationHelper.getRoute(
-        Constants.threadDetailRoute,
-        ThreadDetailPage.createArguments(widget.boardId, thread.threadId),
-      )!,
     );
   }
 }

@@ -9,7 +9,11 @@ import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
 import 'package:flutter_chan_viewer/repositories/thumbnail_helper.dart';
 
 class MediaHelper {
-  static ImageSource getThreadThumbnailSource(ThreadItem thread) {
+  static ImageSource? getThreadThumbnailSource(ThreadItem thread) {
+    if (!thread.hasMedia()) {
+      return null;
+    }
+
     bool isDownloaded = getIt<ChanRepository>().isMediaDownloaded(thread);
     if (isDownloaded && thread.mediaType.isImageOrGif()) {
       String filePath = getIt<ChanStorage>().getMediaFile(thread.getMediaUrl()!, thread.getCacheDirective())!.path;
@@ -141,5 +145,5 @@ extension PostItemMediaExtension on PostItem {
 }
 
 extension ThreadItemMediaExtension on ThreadItem {
-  ImageSource getThumbnailImageSource() => MediaHelper.getThreadThumbnailSource(this);
+  ImageSource? getThumbnailImageSource() => MediaHelper.getThreadThumbnailSource(this);
 }

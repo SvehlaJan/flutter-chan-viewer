@@ -23,6 +23,7 @@ class SettingsStateError extends SettingsState {
   List<Object?> get props => [message];
 }
 
+@immutable
 class SettingsStateContent extends SettingsState {
   final AppTheme? theme;
   final List<DownloadFolderInfo>? downloads;

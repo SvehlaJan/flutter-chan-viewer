@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:ui';
 
 import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_chan_viewer/bloc/chan_state.dart';
+import 'package:flutter_chan_viewer/bloc/app_bloc/app_event.dart';
+import 'package:flutter_chan_viewer/bloc/app_bloc/app_state.dart';
 import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/repositories/boards_repository.dart';
 import 'package:flutter_chan_viewer/repositories/chan_downloader.dart';
@@ -21,11 +21,7 @@ import 'package:json_theme/json_theme.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-import 'app_event.dart';
-import 'app_state.dart';
-
-class AppBloc extends Bloc<AppEvent, ChanState> {
-
+class AppBloc extends Bloc<AppEvent, AppState> {
   late Preferences preferences;
   late ThemeData appTheme;
   LocalAuthentication auth = LocalAuthentication();
@@ -140,7 +136,7 @@ class AppBloc extends Bloc<AppEvent, ChanState> {
     }
   }
 
-  AppStateContent _buildContentState({ThemeData? appTheme, AuthState? authState, ChanSingleEvent? event}) {
+  AppState _buildContentState({ThemeData? appTheme, AuthState? authState, AppSingleEvent? event}) {
     return AppStateContent(
       appTheme: appTheme ?? this.appTheme,
       authState: authState ?? this.authState,

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/chan_event.dart';
-import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/models/helper/chan_board_item_wrapper.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
 import 'package:flutter_chan_viewer/pages/board_detail/board_detail_page.dart';
@@ -35,7 +34,7 @@ class _BoardListPageState extends BasePageState<BoardListPage> {
   String getPageTitle() => "Boards";
 
   List<PageAction> getPageActions(BuildContext context, BoardListState state) {
-    bool showSearchButton = state is ChanStateContent && !state.showSearchBar;
+    bool showSearchButton = !state.showSearchBar;
     return [
       if (showSearchButton) PageAction("Search", Icons.search, _onSearchClick),
       PageAction("Refresh", Icons.refresh, _onRefreshClick),

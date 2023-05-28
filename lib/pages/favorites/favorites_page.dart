@@ -1,18 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/chan_event.dart';
-import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/models/ui/thread_item_vo.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
+import 'package:flutter_chan_viewer/pages/favorites/bloc/favorites_bloc.dart';
 import 'package:flutter_chan_viewer/pages/favorites/bloc/favorites_event.dart';
+import 'package:flutter_chan_viewer/pages/favorites/bloc/favorites_state.dart';
 import 'package:flutter_chan_viewer/pages/thread_detail/thread_detail_page.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/utils/navigation_helper.dart';
 import 'package:flutter_chan_viewer/view/list_widget_thread.dart';
 import 'package:flutter_chan_viewer/view/list_widget_thread_custom.dart';
-
-import 'bloc/favorites_bloc.dart';
-import 'bloc/favorites_state.dart';
 
 class FavoritesPage extends StatefulWidget {
   @override
@@ -36,7 +34,7 @@ class _FavoritesPageState extends BasePageState<FavoritesPage> {
   String getPageTitle() => "Favorites";
 
   List<PageAction> getPageActions(BuildContext context, FavoritesState state) {
-    bool showSearchButton = state is ChanStateContent && !state.showSearchBar;
+    bool showSearchButton = !state.showSearchBar;
     return [
       if (showSearchButton) PageAction("Search", Icons.search, _onSearchClick),
       PageAction("Refresh", Icons.refresh, _onRefreshClick),

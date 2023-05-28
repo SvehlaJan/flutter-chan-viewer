@@ -1,17 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chan_viewer/bloc/chan_event.dart';
-import 'package:flutter_chan_viewer/bloc/chan_state.dart';
 import 'package:flutter_chan_viewer/pages/base/base_page.dart';
 import 'package:flutter_chan_viewer/pages/board_archive/board_archive_page.dart';
+import 'package:flutter_chan_viewer/pages/board_detail/bloc/board_detail_bloc.dart';
+import 'package:flutter_chan_viewer/pages/board_detail/bloc/board_detail_event.dart';
+import 'package:flutter_chan_viewer/pages/board_detail/bloc/board_detail_state.dart';
 import 'package:flutter_chan_viewer/pages/thread_detail/thread_detail_page.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/utils/navigation_helper.dart';
 import 'package:flutter_chan_viewer/view/list_widget_thread.dart';
-
-import 'bloc/board_detail_bloc.dart';
-import 'bloc/board_detail_event.dart';
-import 'bloc/board_detail_state.dart';
 
 class BoardDetailPage extends StatefulWidget {
   static const String ARG_BOARD_ID = "ChanBoardsPage.ARG_BOARD_ID";
@@ -47,7 +45,7 @@ class _BoardDetailPageState extends BasePageState<BoardDetailPage> {
   String getPageTitle() => "/${widget.boardId}";
 
   List<PageAction> getPageActions(BuildContext context, BoardDetailState state) {
-    bool showSearchButton = state is ChanStateContent && !state.showSearchBar;
+    bool showSearchButton = !state.showSearchBar;
     bool isFavorite = state is BoardDetailStateContent && state.isFavorite;
     return [
       if (showSearchButton) PageAction("Search", Icons.search, _onSearchClick),

@@ -39,7 +39,7 @@ class PostsDao extends DatabaseAccessor<ChanDB> with _$PostsDaoMixin {
           entries,
           onConflict: DoUpdate(
             (dynamic old) {
-              return PostsTableCompanion.custom(isHidden: old.isHidden);
+              return PostsTableCompanion.custom(isHidden: old.isHidden, downloadProgress: old.downloadProgress);
             },
             target: [postsTable.boardId, postsTable.threadId, postsTable.postId],
           ),

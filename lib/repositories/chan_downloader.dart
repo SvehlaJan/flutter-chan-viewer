@@ -10,5 +10,5 @@ abstract class ChanDownloader {
 
   Future<void> cancelThreadDownload(ThreadDetailModel model);
 
-  bool isPostMediaDownloaded(ChanPostBase post);
+  bool isMediaDownloaded(ChanPostBase post);
 }

@@ -8,7 +8,7 @@ import 'package:video_thumbnail/video_thumbnail.dart';
 
 class ThumbnailHelper {
   static File? getVideoThumbnail(ChanPostBase post) {
-    String thumbnailUrl = post.getMediaUrl2(type: ChanPostMediaType.VIDEO_THUMBNAIL);
+    String thumbnailUrl = post.getMediaUrl(ChanPostMediaType.VIDEO_THUMBNAIL);
     File? imageFile = getIt<ChanStorage>().getMediaFile(thumbnailUrl, post.getCacheDirective());
     if (imageFile != null && imageFile.existsSync()) {
       return imageFile;
@@ -30,8 +30,8 @@ class ThumbnailHelper {
   }
 
   static Future<File?> createVideoThumbnail(ChanPostBase post) async {
-    String videoUrl = post.getMediaUrl2();
-    String thumbnailUrl = post.getMediaUrl2(type: ChanPostMediaType.VIDEO_THUMBNAIL);
+    String videoUrl = post.getMediaUrl(ChanPostMediaType.MAIN);
+    String thumbnailUrl = post.getMediaUrl(ChanPostMediaType.VIDEO_THUMBNAIL);
     String videoPath = getIt<ChanStorage>().getFileAbsolutePath(videoUrl, post.getCacheDirective());
     String thumbnailPath = getIt<ChanStorage>().getFileAbsolutePath(thumbnailUrl, post.getCacheDirective());
     return await _createVideoThumbnail(KtPair(videoPath, thumbnailPath));

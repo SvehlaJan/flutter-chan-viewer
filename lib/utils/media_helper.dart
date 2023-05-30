@@ -1,10 +1,11 @@
 import 'dart:io';
 
 import 'package:flutter_chan_viewer/locator.dart';
+import 'package:flutter_chan_viewer/models/helper/chan_post_base.dart';
 import 'package:flutter_chan_viewer/models/helper/media_type.dart';
 import 'package:flutter_chan_viewer/models/ui/post_item.dart';
 import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
-import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
+import 'package:flutter_chan_viewer/repositories/chan_downloader.dart';
 import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
 import 'package:flutter_chan_viewer/repositories/thumbnail_helper.dart';
 
@@ -14,9 +15,14 @@ class MediaHelper {
       return null;
     }
 
-    bool isDownloaded = getIt<ChanRepository>().isMediaDownloaded(thread);
+    bool isDownloaded = getIt<ChanDownloader>().isMediaDownloaded(thread);
     if (isDownloaded && thread.mediaType.isImageOrGif()) {
-      String filePath = getIt<ChanStorage>().getMediaFile(thread.getMediaUrl()!, thread.getCacheDirective())!.path;
+      String filePath = getIt<ChanStorage>()
+          .getMediaFile(
+            thread.getMediaUrl(ChanPostMediaType.MAIN),
+            thread.getCacheDirective(),
+          )!
+          .path;
       return FileImageSource(filePath, thread.threadId);
     }
 
@@ -28,9 +34,17 @@ class MediaHelper {
     }
 
     if (thread.mediaType.isWebm()) {
-      return NetworkImageSource(thread.getThumbnailUrl()!, null, thread.threadId);
+      return NetworkImageSource(
+        thread.getMediaUrl(ChanPostMediaType.THUMBNAIL),
+        null,
+        thread.threadId,
+      );
     } else {
-      return NetworkImageSource(thread.getMediaUrl()!, thread.getThumbnailUrl(), thread.threadId);
+      return NetworkImageSource(
+        thread.getMediaUrl(ChanPostMediaType.MAIN),
+        thread.getMediaUrl(ChanPostMediaType.THUMBNAIL),
+        thread.threadId,
+      );
     }
   }
 
@@ -45,14 +59,17 @@ class MediaHelper {
   }
 
   static ImageSource getImageSource(PostItem post, bool forceThumbnail) {
-    bool isDownloaded = getIt<ChanRepository>().isMediaDownloaded(post);
-
-    if (isDownloaded && post.mediaType.isImageOrGif()) {
-      String filePath = getIt<ChanStorage>().getMediaFile(post.getMediaUrl()!, post.getCacheDirective())!.path;
+    if (post.isMediaDownloaded && post.mediaType.isImageOrGif()) {
+      String filePath = getIt<ChanStorage>()
+          .getMediaFile(
+            post.getMediaUrl(ChanPostMediaType.MAIN),
+            post.getCacheDirective(),
+          )!
+          .path;
       return FileImageSource(filePath, post.postId);
     }
 
-    if (post.isFavorite() && post.mediaType.isWebm() && isDownloaded) {
+    if (post.isFavorite() && post.mediaType.isWebm() && post.isMediaDownloaded) {
       File? thumbnailFile = ThumbnailHelper.getVideoThumbnail(post);
       if (thumbnailFile != null) {
         return FileImageSource(thumbnailFile.path, post.postId);
@@ -60,22 +77,34 @@ class MediaHelper {
     }
 
     if (forceThumbnail || post.mediaType.isWebm()) {
-      return NetworkImageSource(post.getThumbnailUrl()!, null, post.postId);
+      return NetworkImageSource(
+        post.getMediaUrl(ChanPostMediaType.THUMBNAIL),
+        null,
+        post.postId,
+      );
     } else {
-      return NetworkImageSource(post.getMediaUrl()!, post.getThumbnailUrl(), post.postId);
+      return NetworkImageSource(
+        post.getMediaUrl(ChanPostMediaType.MAIN),
+        post.getMediaUrl(ChanPostMediaType.THUMBNAIL),
+        post.postId,
+      );
     }
   }
 
   static VideoSource getVideoSource(PostItem post) {
-    bool isDownloaded = getIt<ChanRepository>().isMediaDownloaded(post);
     ImageSource placeholderImage = getImageSource(post, false);
 
-    if (isDownloaded) {
-      String filePath = getIt<ChanStorage>().getMediaFile(post.getMediaUrl()!, post.getCacheDirective())!.path;
+    if (post.isMediaDownloaded) {
+      String filePath = getIt<ChanStorage>()
+          .getMediaFile(
+            post.getMediaUrl(ChanPostMediaType.MAIN),
+            post.getCacheDirective(),
+          )!
+          .path;
       return FileVideoSource(filePath, post.postId, placeholderImage);
     }
 
-    return NetworkVideoSource(post.getMediaUrl()!, post.postId, placeholderImage);
+    return NetworkVideoSource(post.getMediaUrl(ChanPostMediaType.MAIN), post.postId, placeholderImage);
   }
 }
 

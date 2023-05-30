@@ -233,7 +233,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            _buildBottomViewHeader(replies.length, replies.first.postId),
+            _buildBottomViewHeader(replies.length - 1, replies.first.postId),
             Expanded(
               child: Material(
                 child: ListView.builder(

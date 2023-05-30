@@ -13,7 +13,6 @@ import 'package:flutter_chan_viewer/repositories/boards_repository.dart';
 import 'package:flutter_chan_viewer/repositories/chan_downloader.dart';
 import 'package:flutter_chan_viewer/repositories/chan_downloader_impl.dart';
 import 'package:flutter_chan_viewer/repositories/chan_downloader_mock.dart';
-import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
 import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
 import 'package:flutter_chan_viewer/repositories/posts_repository.dart';
 import 'package:flutter_chan_viewer/repositories/threads_repository.dart';
@@ -40,12 +39,6 @@ void setupLocator() {
     Preferences preferences = new Preferences();
     preferences.initializeAsync();
     return preferences;
-  });
-
-  getIt.registerLazySingletonAsync<ChanRepository>(() async {
-    ChanRepository repository = new ChanRepository();
-    await repository.initializeAsync();
-    return repository;
   });
 
   getIt.registerLazySingletonAsync<BoardsRepository>(() async {

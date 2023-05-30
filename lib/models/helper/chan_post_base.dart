@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_chan_viewer/models/helper/media_type.dart';
 import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
 import 'package:flutter_chan_viewer/utils/chan_util.dart';
+import 'package:flutter_chan_viewer/utils/download_helper.dart';
 import 'package:flutter_chan_viewer/utils/flavor_config.dart';
 
 enum ChanPostMediaType { MAIN, THUMBNAIL, VIDEO_THUMBNAIL }
@@ -34,13 +35,11 @@ abstract class ChanPostBase {
 
   bool hasMedia() => filename?.isNotEmpty ?? false;
 
-  String filenameWithExtension() => "${filename}${extension}";
+  String? get filenameWithExtension => filename != null && extension != null ? "${filename}${extension}" : null;
 
   String? get content => ChanUtil.getPlainString(htmlContent);
 
-  String? getTextContent({bool truncate = false}) {
-    return ChanUtil.getReadableHtml(htmlContent, truncate);
-  }
+  bool get isMediaDownloaded => downloadProgress == ChanDownloadProgress.FINISHED.value;
 
   MediaType get mediaType {
     if ([".jpg", ".png", ".webp"].contains(extension)) {
@@ -54,24 +53,7 @@ abstract class ChanPostBase {
     }
   }
 
-  // TODO - unify and move to MediaHelper
-
-  String? getMediaUrl() => _getMediaUrl(this.boardId, this.imageId, this.extension, false);
-
-  String? getThumbnailUrl() => _getMediaUrl(this.boardId, this.imageId, this.extension, true);
-
-  String? _getMediaUrl(String? boardId, String? imageId, String? extension, bool thumbnail) {
-    if (boardId != null && imageId != null && extension != null) {
-      String targetImageId = thumbnail ? "${imageId}s" : imageId;
-      String targetExtension = thumbnail ? ".jpg" : extension;
-      String fileName = "$targetImageId$targetExtension";
-      return "${FlavorConfig.values().baseImgUrl}/$boardId/$fileName";
-    } else {
-      return null;
-    }
-  }
-
-  String getMediaUrl2({ChanPostMediaType type = ChanPostMediaType.MAIN}) {
+  String getMediaUrl(ChanPostMediaType type) {
     if (this.imageId != null && this.extension != null) {
       String targetImageId = "";
       String targetExtension = "";

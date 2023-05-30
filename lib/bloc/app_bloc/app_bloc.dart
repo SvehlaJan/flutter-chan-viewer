@@ -10,7 +10,6 @@ import 'package:flutter_chan_viewer/bloc/app_bloc/app_state.dart';
 import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/repositories/boards_repository.dart';
 import 'package:flutter_chan_viewer/repositories/chan_downloader.dart';
-import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
 import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
 import 'package:flutter_chan_viewer/repositories/posts_repository.dart';
 import 'package:flutter_chan_viewer/repositories/threads_repository.dart';
@@ -34,7 +33,6 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     await getIt.getAsync<Preferences>();
     await getIt.getAsync<ChanDownloader>();
     await getIt.getAsync<ChanStorage>();
-    await getIt.getAsync<ChanRepository>();
     await getIt.getAsync<BoardsRepository>();
     await getIt.getAsync<ThreadsRepository>();
     await getIt.getAsync<PostsRepository>();

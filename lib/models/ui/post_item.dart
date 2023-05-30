@@ -5,6 +5,7 @@ import 'package:flutter_chan_viewer/models/helper/chan_post_base.dart';
 import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
 import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
 import 'package:flutter_chan_viewer/utils/chan_util.dart';
+import 'package:flutter_chan_viewer/utils/download_helper.dart';
 import 'package:flutter_chan_viewer/utils/media_helper.dart';
 import 'package:path/path.dart';
 
@@ -24,6 +25,7 @@ class PostItem extends ChanPostBase with EquatableMixin {
     required filename,
     required imageId,
     required extension,
+    required downloadProgress,
     required this.postId,
     required this.repliesTo,
     this.isHidden = false,
@@ -37,6 +39,7 @@ class PostItem extends ChanPostBase with EquatableMixin {
           filename: filename,
           imageId: imageId,
           extension: extension,
+          downloadProgress: downloadProgress,
         );
 
   @override
@@ -58,6 +61,7 @@ class PostItem extends ChanPostBase with EquatableMixin {
       filename: json['filename'],
       imageId: json['tim'].toString(),
       extension: json['ext'],
+      downloadProgress: ChanDownloadProgress.NOT_STARTED.value,
       repliesTo: ChanUtil.getPostReferences(json['com']),
       thread: thread,
     );
@@ -76,6 +80,7 @@ class PostItem extends ChanPostBase with EquatableMixin {
       filename: fileName,
       imageId: imageId,
       extension: extensionStr,
+      downloadProgress: ChanDownloadProgress.FINISHED.value,
       repliesTo: [],
       thread: null,
     );
@@ -105,6 +110,7 @@ class PostItem extends ChanPostBase with EquatableMixin {
         filename: entry.filename,
         imageId: entry.imageId,
         extension: entry.extension,
+        downloadProgress: entry.downloadProgress,
         repliesTo: ChanUtil.getPostReferences(entry.content),
         isHidden: entry.isHidden ?? false,
         thread: thread,
@@ -124,6 +130,7 @@ class PostItem extends ChanPostBase with EquatableMixin {
     String? filename,
     String? imageId,
     String? extension,
+    int? downloadProgress,
   }) {
     return new PostItem(
       postId: postId ?? this.postId,
@@ -138,6 +145,7 @@ class PostItem extends ChanPostBase with EquatableMixin {
       filename: filename ?? this.filename,
       imageId: imageId ?? this.imageId,
       extension: extension ?? this.extension,
+      downloadProgress: downloadProgress ?? this.downloadProgress,
     );
   }
 

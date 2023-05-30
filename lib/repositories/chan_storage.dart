@@ -22,13 +22,15 @@ class ChanStorage {
     await dir.create(recursive: true);
   }
 
-  bool mediaFileExists(String url, CacheDirective cacheDirective) {
-    return File(join(_permanentDirectory.path, _getFileRelativePath(url, cacheDirective))).existsSync();
-  }
+  Future<bool> mediaFileExists(String url, CacheDirective cacheDirective) async =>
+      await File(join(_permanentDirectory.path, _getFileRelativePath(url, cacheDirective))).exists();
 
-  List<String> listDirectory(CacheDirective cacheDirective) =>
-      Directory(getFolderAbsolutePath(cacheDirective)).listSync(recursive: true).map((file) => file.path)
-          as List<String>;
+  @Deprecated("Use mediaFileExists instead")
+  bool mediaFileExistsSync(String url, CacheDirective cacheDirective) =>
+      File(join(_permanentDirectory.path, _getFileRelativePath(url, cacheDirective))).existsSync();
+
+  Future<List<String>> listDirectory(CacheDirective cacheDirective) async =>
+      (await Directory(getFolderAbsolutePath(cacheDirective)).list(recursive: true).map((file) => file.path)).toList();
 
   String getFolderAbsolutePath(CacheDirective cacheDirective) =>
       join(_permanentDirectory.path, _getFolderRelativePath(cacheDirective));
@@ -140,8 +142,6 @@ class ChanStorage {
       return null;
     }
   }
-
-
 
   DownloadFolderInfo getThreadDownloadFolderInfo(CacheDirective cacheDirective) {
     Directory threadDirectory = Directory(getFolderAbsolutePath(cacheDirective));

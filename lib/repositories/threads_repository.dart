@@ -5,6 +5,7 @@ import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_chan_viewer/data/local/local_data_source.dart';
 import 'package:flutter_chan_viewer/data/remote/remote_data_source.dart';
 import 'package:flutter_chan_viewer/locator.dart';
+import 'package:flutter_chan_viewer/models/helper/chan_post_base.dart';
 import 'package:flutter_chan_viewer/models/helper/online_state.dart';
 import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
 import 'package:flutter_chan_viewer/models/ui/post_item.dart';
@@ -152,7 +153,11 @@ class ThreadsRepository {
     );
 
     await _localDataSource.addPostToThread(newPost);
-    _chanStorage.copyMediaFile(newPost.getMediaUrl()!, originalPost.getCacheDirective(), newPost.getCacheDirective());
+    _chanStorage.copyMediaFile(
+      newPost.getMediaUrl(ChanPostMediaType.MAIN),
+      originalPost.getCacheDirective(),
+      newPost.getCacheDirective(),
+    );
 
     return;
   }
@@ -171,12 +176,16 @@ class ThreadsRepository {
 
   ///////////////////////////////////////////////////////////////////////
 
+  Future<void> downloadAllMedia(ThreadDetailModel model) async {
+    _chanDownloader.downloadThreadMedia(model);
+  }
+
   Future<void> moveMediaToPermanentCache(ThreadDetailModel model) async {
     model.allMediaPosts.forEach((post) async {
-      FileInfo? fileInfo = await getIt<CacheManager>().getFileFromCache(post.getMediaUrl()!);
+      FileInfo? fileInfo = await getIt<CacheManager>().getFileFromCache(post.getMediaUrl(ChanPostMediaType.MAIN));
       if (fileInfo != null) {
         Uint8List fileData = await fileInfo.file.readAsBytes();
-        await _chanStorage.writeMediaFile(post.getMediaUrl()!, post.getCacheDirective(), fileData);
+        await _chanStorage.writeMediaFile(post.getMediaUrl(ChanPostMediaType.MAIN), post.getCacheDirective(), fileData);
       }
     });
   }

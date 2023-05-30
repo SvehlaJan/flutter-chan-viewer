@@ -4,8 +4,7 @@ import 'package:flutter_chan_viewer/data/local/local_data_source.dart';
 import 'package:flutter_chan_viewer/data/local/moor_db.dart';
 import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/models/helper/moor_db_overview.dart';
-import 'package:flutter_chan_viewer/models/helper/online_state.dart';
-import 'package:flutter_chan_viewer/models/ui/board_item.dart';
+import 'package:flutter_chan_viewer/models/ui/post_item.dart';
 import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
 import 'package:flutter_chan_viewer/repositories/chan_downloader.dart';
 import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
@@ -40,23 +39,39 @@ class SettingsBloc extends Bloc<ChanEvent, SettingsState> {
 
     on<SettingsEventExperiment>((event, emit) async {
       emit(SettingsStateLoading());
-      _dbOverview.boards.clear();
-      List<BoardItem> boards = await _localDataSource.getBoards(true);
-      for (BoardItem board in boards) {
-        List<ThreadItem> threads = await _localDataSource.getThreadsByBoardId(board.boardId);
-        if (threads.isEmpty) {
-          continue;
-        }
 
-        MoorBoardOverview boardsOverview = new MoorBoardOverview(
-          board.boardId,
-          threads.where((thread) => thread.onlineStatus == OnlineState.ONLINE.index).length,
-          threads.where((thread) => thread.onlineStatus == OnlineState.ARCHIVED.index).length,
-          threads.where((thread) => thread.onlineStatus == OnlineState.NOT_FOUND.index).length,
-          threads.where((thread) => thread.onlineStatus == OnlineState.UNKNOWN.index).length,
-        );
-        _dbOverview.boards.add(boardsOverview);
+      // _dbOverview.boards.clear();
+      // List<BoardItem> boards = await _localDataSource.getBoards(true);
+      // for (BoardItem board in boards) {
+      //   List<ThreadItem> threads = await _localDataSource.getThreadsByBoardId(board.boardId);
+      //   if (threads.isEmpty) {
+      //     continue;
+      //   }
+      //
+      //   MoorBoardOverview boardsOverview = new MoorBoardOverview(
+      //     board.boardId,
+      //     threads.where((thread) => thread.onlineStatus == OnlineState.ONLINE.index).length,
+      //     threads.where((thread) => thread.onlineStatus == OnlineState.ARCHIVED.index).length,
+      //     threads.where((thread) => thread.onlineStatus == OnlineState.NOT_FOUND.index).length,
+      //     threads.where((thread) => thread.onlineStatus == OnlineState.UNKNOWN.index).length,
+      //   );
+      //   _dbOverview.boards.add(boardsOverview);
+      // }
+
+      List<ThreadItem> favorites = await _localDataSource.getFavoriteThreads();
+      for (ThreadItem thread in favorites) {
+        List<PostItem> posts = await _localDataSource.getPostsFromThread(thread);
+        for (PostItem post in posts) {
+          if (post.hasMedia() && post.isMediaDownloaded) {
+            print("Post ${post.postId} is downloaded");
+            // await _localDataSource.updatePost(post.copyWith(downloadProgress: ChanDownloadProgress.FINISHED.value));
+          } else {
+            print("Post ${post.postId} is NOT downloaded");
+            // await _localDataSource.updatePost(post.copyWith(downloadProgress: ChanDownloadProgress.NOT_STARTED.value));
+          }
+        }
       }
+
       emit(_contentState);
     });
 

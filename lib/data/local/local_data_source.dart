@@ -34,8 +34,6 @@ class LocalDataSource {
 
   Future<void> saveThread(ThreadItem thread) async {
     return _threadsDao.insertThread(thread.toTableData());
-    // return _threadsDao.insertThread(thread.toInsertTableData());
-    // return _threadsDao.insertThread(thread);
   }
 
   Future<void> saveThreads(List<ThreadItem> threads) async {

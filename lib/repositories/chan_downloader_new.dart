@@ -38,7 +38,8 @@ class ChanDownloaderNew extends ChanDownloader {
   }
 
   Future<void> downloadPostMedia(PostItem post) async {
-    bool fileExists = _chanStorage.mediaFileExists(post.getMediaUrl()!, post.getCacheDirective());
+    String url = post.getMediaUrl(ChanPostMediaType.MAIN);
+    bool fileExists = await _chanStorage.mediaFileExists(url, post.getCacheDirective());
     DownloadItem? existingTask = (await _downloadsDao.getDownloadById(post.imageId!)).toDownloadsItem();
 
     if (existingTask == null) {
@@ -62,9 +63,9 @@ class ChanDownloaderNew extends ChanDownloader {
     String path = _chanStorage.getFolderAbsolutePath(post.getCacheDirective());
     DownloadItem item = new DownloadItem(
       post.imageId!,
-      post.getMediaUrl2(),
+      post.getMediaUrl(ChanPostMediaType.MAIN),
       path,
-      post.filenameWithExtension(),
+      post.filenameWithExtension!,
       DownloadStatus.ENQUEUED,
       0,
       DateTime.now().millisecondsSinceEpoch,
@@ -99,7 +100,8 @@ class ChanDownloaderNew extends ChanDownloader {
   }
 
   @override
-  bool isPostMediaDownloaded(ChanPostBase post) {
-    return _chanStorage.mediaFileExists(post.getMediaUrl()!, post.getCacheDirective());
+  bool isMediaDownloaded(ChanPostBase post) {
+    String url = post.getMediaUrl(ChanPostMediaType.MAIN);
+    return _chanStorage.mediaFileExistsSync(url, post.getCacheDirective());
   }
 }

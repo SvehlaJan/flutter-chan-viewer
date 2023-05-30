@@ -10,7 +10,6 @@ import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
 import 'package:flutter_chan_viewer/models/ui/thread_item_vo.dart';
 import 'package:flutter_chan_viewer/pages/favorites/bloc/favorites_event.dart';
 import 'package:flutter_chan_viewer/repositories/boards_repository.dart';
-import 'package:flutter_chan_viewer/repositories/chan_repository.dart';
 import 'package:flutter_chan_viewer/repositories/threads_repository.dart';
 import 'package:flutter_chan_viewer/utils/chan_util.dart';
 import 'package:flutter_chan_viewer/utils/exceptions.dart';
@@ -25,7 +24,6 @@ class FavoritesBloc extends Bloc<ChanEvent, FavoritesState> {
   final logger = LogUtils.getLogger();
   final BoardsRepository _boardsRepository = getIt<BoardsRepository>();
   final ThreadsRepository _threadsRepository = getIt<ThreadsRepository>();
-  final ChanRepository _repository = getIt<ChanRepository>();
   final Preferences _preferences = getIt<Preferences>();
   static const int DETAIL_REFRESH_TIMEOUT = 60 * 1000; // 60 seconds
   List<FavoritesThreadWrapper> _favoriteThreads = <FavoritesThreadWrapper>[];
@@ -86,8 +84,9 @@ class FavoritesBloc extends Bloc<ChanEvent, FavoritesState> {
               await _threadsRepository.fetchRemoteThreadDetail(cachedThread.boardId, cachedThread.threadId, false);
 
           var connectivityResult = await (Connectivity().checkConnectivity());
-          if (connectivityResult == ConnectivityResult.wifi) {
-            _repository.downloadAllMedia(refreshedThread);
+          if (connectivityResult == ConnectivityResult.wifi &&
+              refreshedThread.thread.onlineStatus != OnlineState.NOT_FOUND.index) {
+            _threadsRepository.downloadAllMedia(refreshedThread);
           }
         } on HttpException {
           logger.v("Thread not found. Probably offline. Ignoring");

@@ -44,7 +44,7 @@ extension PostItemVOExtension on PostItem {
       timestamp,
       subtitle,
       htmlContent,
-      filename != null ? "${filename}${extension}" : null,
+      filenameWithExtension,
       downloadProgress,
       mediaType,
     );

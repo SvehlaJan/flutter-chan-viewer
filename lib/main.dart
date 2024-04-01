@@ -21,6 +21,7 @@ void main() async {
   BackgroundIsolateBinaryMessenger.ensureInitialized(ServicesBinding.rootIsolateToken!);
   setupLocator();
   DartVLC.initialize();
+  FlavorConfig.defaults(values: Constants.flavorDev);
 
   getIt.allReady().then((value) {
     runApp(
@@ -37,11 +38,6 @@ class MainApp extends StatelessWidget with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    FlavorConfig(
-      flavor: Flavor.dev,
-      values: Constants.flavorDev,
-    );
-
     return BlocBuilder<AppBloc, AppState>(builder: (context, state) {
       switch (state) {
         case AppStateLoading _:

@@ -1,22 +1,22 @@
-import 'package:flutter_chan_viewer/models/helper/chan_post_base.dart';
-import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
+import 'package:flutter_chan_viewer/data/local/download_item.dart';
 import 'package:flutter_chan_viewer/repositories/chan_downloader.dart';
+import 'package:flutter_chan_viewer/utils/media_helper.dart';
 
 class ChanDownloaderMock extends ChanDownloader {
   @override
-  Future<void> downloadThreadMedia(ThreadDetailModel model) async {}
+  Future<void> downloadMedia(MediaMetadata model, {DownloadStatusCallback? statusCallback}) async {}
 
   @override
-  Future<void> initializeAsync() async {}
+  Future<void> downloadItem(DownloadItem item, {DownloadStatusCallback? statusCallback}) async {}
 
   @override
-  Future<void> cancelThreadDownload(ThreadDetailModel model) async {}
+  Future<void> cancelMediaDownload(MediaMetadata model) async {}
 
   @override
   Future<void> cancelAllDownloads() async {}
 
   @override
-  bool isMediaDownloaded(ChanPostBase post) {
-    return false;
+  Future<bool> isMediaDownloaded(MediaMetadata metadata) {
+    return Future.value(false);
   }
 }

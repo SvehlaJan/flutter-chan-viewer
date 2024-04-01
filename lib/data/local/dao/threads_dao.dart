@@ -105,7 +105,6 @@ class ThreadsDao extends DatabaseAccessor<ChanDB> with _$ThreadsDaoMixin {
 
   Future<bool> updateThread(ThreadsTableData entry) {
     return (update(threadsTable).replace(entry)).then((value) {
-      print(value ? "Update goal row success" : "Update goal row failed");
       return value;
     });
   }
@@ -136,13 +135,11 @@ class ThreadsDao extends DatabaseAccessor<ChanDB> with _$ThreadsDaoMixin {
             ))
           .go()
           .then((value) {
-        print("Rows affected: $value");
         return value;
       });
 
   Future<int> deleteThreadsByIds(List<int> threadIds) =>
       (delete(threadsTable)..where((thread) => thread.threadId.isIn(threadIds))).go().then((value) {
-        print("Rows affected: $value");
         return value;
       });
 
@@ -150,7 +147,6 @@ class ThreadsDao extends DatabaseAccessor<ChanDB> with _$ThreadsDaoMixin {
       (delete(threadsTable)..where((thread) => thread.threadId.equals(threadId) & thread.boardId.equals(boardId)))
           .go()
           .then((value) {
-        print("Rows affected: $value");
         return value;
       });
 
@@ -166,7 +162,6 @@ class ThreadsDao extends DatabaseAccessor<ChanDB> with _$ThreadsDaoMixin {
           ))
         .go()
         .then((value) {
-      print("Rows affected: $value");
       return value;
     });
   }

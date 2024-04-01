@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:collection';
 import 'dart:io';
 
@@ -7,6 +8,7 @@ import 'package:flutter_chan_viewer/bloc/chan_event.dart';
 import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/models/helper/online_state.dart';
 import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
+import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
 import 'package:flutter_chan_viewer/models/ui/thread_item_vo.dart';
 import 'package:flutter_chan_viewer/pages/favorites/bloc/favorites_event.dart';
 import 'package:flutter_chan_viewer/repositories/boards_repository.dart';
@@ -15,16 +17,17 @@ import 'package:flutter_chan_viewer/utils/chan_util.dart';
 import 'package:flutter_chan_viewer/utils/exceptions.dart';
 import 'package:flutter_chan_viewer/utils/extensions.dart';
 import 'package:flutter_chan_viewer/utils/log_utils.dart';
+import 'package:flutter_chan_viewer/utils/media_helper.dart';
 import 'package:flutter_chan_viewer/utils/preferences.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import 'favorites_state.dart';
 
-class FavoritesBloc extends Bloc<ChanEvent, FavoritesState> {
-  final logger = LogUtils.getLogger();
+class FavoritesBloc extends Bloc<ChanEvent, FavoritesState> with ChanLogger {
   final BoardsRepository _boardsRepository = getIt<BoardsRepository>();
   final ThreadsRepository _threadsRepository = getIt<ThreadsRepository>();
   final Preferences _preferences = getIt<Preferences>();
+  final MediaHelper _mediaHelper = getIt<MediaHelper>();
   static const int DETAIL_REFRESH_TIMEOUT = 60 * 1000; // 60 seconds
   List<FavoritesThreadWrapper> _favoriteThreads = <FavoritesThreadWrapper>[];
   List<FavoritesThreadWrapper> _customThreads = <FavoritesThreadWrapper>[];
@@ -37,27 +40,25 @@ class FavoritesBloc extends Bloc<ChanEvent, FavoritesState> {
       emit(FavoritesStateLoading());
 
       Map<Permission, PermissionStatus> statuses = await [
-        Permission.storage,
+        Permission.manageExternalStorage,
       ].request();
       if (statuses.values.any((status) => status.isGranted == false)) {
         emit(FavoritesStateError("This feature requires permission to access storage"));
         return;
       }
 
-      List<ThreadDetailModel> threads = await _threadsRepository.getFavoriteThreads();
+      List<ThreadItem> threads = (await _threadsRepository.getFavoriteThreads()).map((e) => e.thread).toList();
+      List<ThreadItemVO> threadVOs = await threads.toThreadItemVOList(_mediaHelper);
       bool showNsfw = _preferences.getBool(Preferences.KEY_SETTINGS_SHOW_NSFW, def: false);
       if (!showNsfw) {
         List<String?> sfwBoardIds =
             (await _boardsRepository.fetchCachedBoardList(false))!.boards.map((board) => board.boardId).toList();
-        threads.removeWhere((model) => !sfwBoardIds.contains(model.thread.boardId));
+        threadVOs.removeWhere((thread) => !sfwBoardIds.contains(thread.boardId));
       }
-      _favoriteThreads = threads.map((e) => FavoritesThreadWrapper(e.thread.toThreadItemVO())).toList();
-      _customThreads = (await _threadsRepository.getCustomThreads())
-          .map((thread) => FavoritesThreadWrapper(
-                thread.toThreadItemVO(),
-                isCustom: true,
-              ))
-          .toList();
+      _favoriteThreads = threadVOs.toFavoritesThreadWrapperList();
+
+      final customThreads = await _threadsRepository.getCustomThreads();
+      _customThreads = (await customThreads.toThreadItemVOList(_mediaHelper)).toFavoritesThreadWrapperList();
 
       int currentTimestamp = ChanUtil.getNowTimestamp();
       bool shouldRefreshDetails =
@@ -84,20 +85,23 @@ class FavoritesBloc extends Bloc<ChanEvent, FavoritesState> {
               await _threadsRepository.fetchRemoteThreadDetail(cachedThread.boardId, cachedThread.threadId, false);
 
           var connectivityResult = await (Connectivity().checkConnectivity());
-          if (connectivityResult == ConnectivityResult.wifi &&
-              refreshedThread.thread.onlineStatus != OnlineState.NOT_FOUND.index) {
-            _threadsRepository.downloadAllMedia(refreshedThread);
-          }
+
+          // TODO: Uncomment
+          // if (connectivityResult == ConnectivityResult.wifi &&
+          //     refreshedThread.thread.onlineStatus != OnlineState.NOT_FOUND.index) {
+          //   unawaited(_threadsRepository.downloadAllMedia(refreshedThread));
+          // }
         } on HttpException {
-          logger.v("Thread not found. Probably offline. Ignoring");
+          logDebug("Thread not found. Probably offline. Ignoring");
         } on SocketException {
           emit(buildContentState(event: FavoritesSingleEventShowOffline()));
         }
       } else {
-        print("Favorite thread is already archived or dead. Not refreshing.");
+        logDebug("Favorite thread is already archived or dead. Not refreshing.");
       }
 
-      _favoriteThreads[refreshIndex] = FavoritesThreadWrapper(refreshedThread?.thread.toThreadItemVO() ?? cachedThread);
+      _favoriteThreads[refreshIndex] =
+          FavoritesThreadWrapper(await refreshedThread?.thread.toThreadItemVO(_mediaHelper) ?? cachedThread);
       if (refreshIndex + 1 < _favoriteThreads.length) {
         emit(buildContentState(lazyLoading: true));
         add(FavoritesEventFetchDetail(refreshIndex + 1));
@@ -153,5 +157,11 @@ class FavoritesBloc extends Bloc<ChanEvent, FavoritesState> {
       event: event,
       showSearchBar: _showSearchBar,
     );
+  }
+}
+
+extension ThreadItemVOListExtension on List<ThreadItemVO> {
+  List<FavoritesThreadWrapper> toFavoritesThreadWrapperList() {
+    return map((thread) => FavoritesThreadWrapper(thread)).toList();
   }
 }

@@ -166,7 +166,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
       onPageChanged: ((newMediaIndex) {
         if (newMediaIndex != initialPostIndex) {
           MediaSource item = mediaSources[newMediaIndex];
-          bloc.add(GalleryEventOnPostSelected(item.postId));
+          bloc.add(GalleryEventOnPostSelected(item.mediaId));
           _panelController.close();
         }
       }),
@@ -183,7 +183,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
         padding: const EdgeInsets.all(4.0),
         child: Text(
           overlayMetadataText,
-          style: Theme.of(context).textTheme.caption,
+          style: Theme.of(context).textTheme.bodySmall,
         ),
       ),
     );
@@ -201,7 +201,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
     }
     return PhotoViewGalleryPageOptions.customChild(
       child: child,
-      heroAttributes: PhotoViewHeroAttributes(tag: mediaSource.postId),
+      heroAttributes: PhotoViewHeroAttributes(tag: mediaSource.mediaId),
       controller: _photoViewController,
       initialScale: PhotoViewComputedScale.contained,
       minScale: PhotoViewComputedScale.contained,
@@ -284,7 +284,7 @@ class _GalleryPageState extends BasePageState<GalleryPage> {
               margin: EdgeInsets.zero,
               child: Padding(
                 padding: const EdgeInsets.all(4.0),
-                child: Text("${repliesCount} replies", style: Theme.of(context).textTheme.caption),
+                child: Text("${repliesCount} replies", style: Theme.of(context).textTheme.bodySmall),
               ),
             ),
           ),

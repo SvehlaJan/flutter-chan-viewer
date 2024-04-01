@@ -4,16 +4,14 @@ import 'package:flutter_chan_viewer/models/ui/post_item.dart';
 import 'package:flutter_chan_viewer/utils/log_utils.dart';
 import 'package:path_provider/path_provider.dart';
 
-class PostsRepository {
-  final logger = LogUtils.getLogger();
+class PostsRepository with ChanLogger {
+  final LocalDataSource _localDataSource;
 
-  late LocalDataSource _localDataSource;
+  PostsRepository._(this._localDataSource);
 
-  Future<void> initializeAsync() async {
-    _localDataSource = getIt<LocalDataSource>();
-
-    var dir = await getApplicationDocumentsDirectory();
-    await dir.create(recursive: true);
+  static Future<PostsRepository> create(LocalDataSource localDataSource) async {
+    final repository = PostsRepository._(localDataSource);
+    return repository;
   }
 
   Future<void> updatePost(PostItem post) async {

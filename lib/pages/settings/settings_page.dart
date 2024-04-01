@@ -61,7 +61,7 @@ class _SettingsPageState extends BasePageState<SettingsPage> {
         children: <Widget>[
           Padding(
             padding: const EdgeInsets.all(16.0),
-            child: Text("Visual", style: Theme.of(context).textTheme.subtitle1),
+            child: Text("Visual", style: Theme.of(context).textTheme.titleMedium),
           ),
           Card(
             elevation: 2.0,
@@ -82,7 +82,7 @@ class _SettingsPageState extends BasePageState<SettingsPage> {
           ),
           Padding(
             padding: const EdgeInsets.all(16.0),
-            child: Text("Others", style: Theme.of(context).textTheme.subtitle1),
+            child: Text("Others", style: Theme.of(context).textTheme.titleMedium),
           ),
           Card(
             elevation: 2.0,
@@ -102,6 +102,14 @@ class _SettingsPageState extends BasePageState<SettingsPage> {
                   ),
                 ),
                 ListTile(
+                  leading: Icon(Icons.priority_high),
+                  title: Text("Biometric lock"),
+                  trailing: CommonSwitch(
+                    onChanged: _onToggleBiometricLockClicked,
+                    defValue: state.showNsfw,
+                  ),
+                ),
+                ListTile(
                   leading: Icon(Icons.cancel),
                   title: Text("Cancel downloads"),
                   onTap: _onCancelDownloadsClicked,
@@ -117,7 +125,7 @@ class _SettingsPageState extends BasePageState<SettingsPage> {
           if (state.moorDbOverview.boards.isNotEmpty)
             Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Text("Db overview", style: Theme.of(context).textTheme.subtitle1),
+              child: Text("Db overview", style: Theme.of(context).textTheme.titleMedium),
             ),
           if (state.moorDbOverview.boards.isNotEmpty)
             ListView.builder(
@@ -139,7 +147,7 @@ class _SettingsPageState extends BasePageState<SettingsPage> {
             ),
           Padding(
             padding: const EdgeInsets.all(16.0),
-            child: Text("Downloads", style: Theme.of(context).textTheme.subtitle1),
+            child: Text("Downloads", style: Theme.of(context).textTheme.titleMedium),
           ),
           ListView.builder(
             itemCount: state.downloads!.length,
@@ -188,6 +196,8 @@ class _SettingsPageState extends BasePageState<SettingsPage> {
   void _onExperimentClicked() => bloc.add(SettingsEventExperiment());
 
   void _onToggleShowSfwOnlyClicked(bool enabled) => bloc.add(SettingsEventToggleShowNsfw(enabled));
+
+  void _onToggleBiometricLockClicked(bool enabled) => bloc.add(SettingsEventToggleBiometricLock(enabled));
 
   void _onCancelDownloadsClicked() => bloc.add(SettingsEventCancelDownloads());
 

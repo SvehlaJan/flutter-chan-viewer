@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter_chan_viewer/models/helper/media_type.dart';
+import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/models/ui/post_item.dart';
 import 'package:flutter_chan_viewer/utils/media_helper.dart';
 
@@ -12,9 +12,7 @@ class PostItemVO with EquatableMixin {
   final int timestamp;
   final String? subtitle;
   final String? htmlContent;
-  final String? fileName;
   final int downloadProgress;
-  final MediaType mediaType;
 
   PostItemVO(
     this.mediaSource,
@@ -23,30 +21,29 @@ class PostItemVO with EquatableMixin {
     this.timestamp,
     this.subtitle,
     this.htmlContent,
-    this.fileName,
     this.downloadProgress,
-    this.mediaType,
   );
 
   @override
-  List<Object?> get props =>
-      [mediaSource, postId, replies, timestamp, subtitle, htmlContent, downloadProgress, mediaType];
-
-  bool isDownloaded() => downloadProgress == 100;
+  List<Object?> get props => [mediaSource, postId, replies, timestamp, subtitle, htmlContent, downloadProgress];
 }
 
-extension PostItemVOExtension on PostItem {
-  PostItemVO toPostItemVO() {
+extension PostItemExtension on PostItem {
+  Future<PostItemVO> toPostItemVO(MediaHelper mediaHelper) async {
     return PostItemVO(
-      MediaHelper.getMediaSource(this),
+      await mediaHelper.getMediaSource(this),
       postId,
       repliesTo.length,
       timestamp,
       subtitle,
       htmlContent,
-      filenameWithExtension,
       downloadProgress,
-      mediaType,
     );
+  }
+}
+
+extension PostItemListExtension on List<PostItem> {
+  Future<List<PostItemVO>> toPostItemVOList(MediaHelper mediaHelper) async {
+    return Future.wait(map((e) => e.toPostItemVO(mediaHelper)));
   }
 }

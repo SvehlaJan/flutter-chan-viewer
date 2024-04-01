@@ -6,7 +6,7 @@ import 'package:flutter_chan_viewer/pages/base/base_page.dart';
 import 'package:flutter_chan_viewer/pages/gallery/bloc/gallery_bloc.dart';
 import 'package:flutter_chan_viewer/pages/gallery/gallery_page.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
-import 'package:flutter_chan_viewer/view/grid_widget_post.dart';
+import 'package:flutter_chan_viewer/view/grid_widget_media.dart';
 import 'package:flutter_chan_viewer/view/list_widget_post.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
@@ -203,16 +203,38 @@ class _ThreadDetailPageState extends BasePageState<ThreadDetailPage> {
         itemCount: mediaPosts.length,
         itemBuilder: (BuildContext context, int index) {
           PostItemVO post = mediaPosts[index];
-          Key itemKey = ValueKey(post.postId);
-          return PostGridWidget(
-            key: itemKey,
-            post: post,
-            selected: index == selectedMediaIndex,
-            onTap: () => _onItemTap(context, post.postId),
-            onLongPress: () => _onItemLongPress(context, post.postId, itemKey),
-          );
+          return _gridWidgetMedia(context, post, selectedMediaIndex);
         },
       ),
+    );
+  }
+
+  Widget _gridWidgetMedia(BuildContext context, PostItemVO post, int selectedMediaIndex) {
+    final mediaSource = post.mediaSource!;
+    Icon? downloadIcon;
+    if (post.downloadProgress < 0) {
+      downloadIcon = null;
+    } else if (post.downloadProgress == 0) {
+      downloadIcon = Icon(Icons.cloud_download_outlined);
+    } else if (post.downloadProgress == 100) {
+      downloadIcon = Icon(Icons.sd_storage);
+    } else {
+      downloadIcon = Icon(Icons.cloud_download);
+    }
+    return Stack(
+      fit: StackFit.passthrough,
+      children: [
+        GridWidgetMedia(
+          key: ValueKey(post.postId),
+          mediaSource: mediaSource,
+          selected: post.postId == selectedMediaIndex,
+          onTap: () => _onItemTap(context, post.postId),
+          onLongPress: () => _onItemLongPress(context, post.postId, ValueKey(post.postId)),
+        ),
+        if (mediaSource.metadata.isGif) Align(alignment: Alignment.bottomLeft, child: Icon(Icons.gif)),
+        if (mediaSource.metadata.isWebm) Align(alignment: Alignment.bottomRight, child: Icon(Icons.play_arrow)),
+        if (downloadIcon != null) Align(alignment: Alignment.topRight, child: downloadIcon),
+      ],
     );
   }
 

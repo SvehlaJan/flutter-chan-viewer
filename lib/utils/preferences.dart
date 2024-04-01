@@ -4,20 +4,24 @@ import 'package:shared_preferences/shared_preferences.dart';
  * https://gist.github.com/faisalraja/9b628439978c67b2fb6515cf202a3992
  */
 class Preferences {
-  late SharedPreferences _prefs;
+  final SharedPreferences _prefs;
+
+  Preferences._(this._prefs);
+
+  static Future<Preferences> create(SharedPreferences sharedPreferences) async {
+    Preferences preferences = Preferences._(sharedPreferences);
+    return preferences;
+  }
   Map<String, dynamic> _memoryPrefs = Map<String, dynamic>();
 
   static const String KEY_SETTINGS_THEME = "settings_theme";
   static const String KEY_SETTINGS_SHOW_NSFW = "settings_show_nsfw";
+  static const String KEY_SETTINGS_BIOMETRIC_LOCK = "settings_biometric_lock";
   static const String KEY_FAVORITE_BOARDS = "favorite_boards";
   static const String KEY_THREAD_CATALOG_MODE = "thread_catalog_mode";
   static const String KEY_NEXT_POST_ID = "next_post_id";
   static const String KEY_NEXT_THREAD_ID = "next_thread_id";
   static const String KEY_PLAYER_VOLUME = "player_volume";
-
-  Future<void> initializeAsync() async {
-    _prefs = await SharedPreferences.getInstance();
-  }
 
   void onAppResumed() {
     setDouble(KEY_PLAYER_VOLUME, 0.0);

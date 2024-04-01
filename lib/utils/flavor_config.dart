@@ -20,6 +20,11 @@ class FlavorConfig {
     return _instance!;
   }
 
+  factory FlavorConfig.defaults({required FlavorValues values}) {
+    _instance ??= FlavorConfig._internal(Flavor.dev, Flavor.dev.toString().getNameFromEnum(), Colors.blue, values);
+    return _instance!;
+  }
+
   FlavorConfig._internal(this._flavor, this._name, this._color, this._values);
 
   static bool get isProduction => _instance!._flavor == Flavor.production;

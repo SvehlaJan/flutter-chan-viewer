@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
 import 'package:flutter_chan_viewer/utils/chan_util.dart';
 import 'package:flutter_chan_viewer/utils/media_helper.dart';
@@ -53,8 +54,8 @@ class ThreadItemVO with EquatableMixin {
       ];
 }
 
-extension ThreadItemVOExtension on ThreadItem {
-  ThreadItemVO toThreadItemVO() {
+extension ThreadItemExtension on ThreadItem {
+  Future<ThreadItemVO> toThreadItemVO(MediaHelper mediaHelper) async {
     return ThreadItemVO(
       threadId,
       boardId,
@@ -62,12 +63,18 @@ extension ThreadItemVOExtension on ThreadItem {
       subtitle,
       htmlContent,
       onlineStatus,
-      getThumbnailImageSource(),
+      await mediaHelper.getThreadThumbnailSource(this),
       replies,
       images,
       selectedPostId,
       lastSeenPostIndex,
       isThreadFavorite,
     );
+  }
+}
+
+extension ThreadItemListExtention on List<ThreadItem> {
+  Future<List<ThreadItemVO>> toThreadItemVOList(MediaHelper mediaHelper) async {
+    return Future.wait(map((e) => e.toThreadItemVO(mediaHelper)));
   }
 }

@@ -11,7 +11,7 @@ class NotFoundPage extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          Text("Page not found :-(", style: Theme.of(context).textTheme.headline6, textAlign: TextAlign.center),
+          Text("Page not found :-(", style: Theme.of(context).textTheme.titleLarge, textAlign: TextAlign.center),
           IconButton(icon: Icon(Icons.arrow_back), iconSize: 70.0, onPressed: () => Navigator.of(context).pop(false))
         ],
       ),

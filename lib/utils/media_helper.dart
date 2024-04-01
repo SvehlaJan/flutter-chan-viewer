@@ -1,117 +1,258 @@
+import 'dart:async';
 import 'dart:io';
 
-import 'package:flutter_chan_viewer/locator.dart';
+import 'package:equatable/equatable.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_chan_viewer/models/helper/chan_post_base.dart';
-import 'package:flutter_chan_viewer/models/helper/media_type.dart';
+import 'package:flutter_chan_viewer/models/helper/media_file_name.dart';
 import 'package:flutter_chan_viewer/models/ui/post_item.dart';
 import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
+import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
 import 'package:flutter_chan_viewer/repositories/chan_downloader.dart';
 import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
 import 'package:flutter_chan_viewer/repositories/thumbnail_helper.dart';
+import 'package:flutter_chan_viewer/utils/flavor_config.dart';
+
+@immutable
+class MediaMetadata extends Equatable {
+  final String? imageId;
+  final String? filename;
+  final String? extension;
+  final String boardId;
+  final int threadId;
+  final int mediaId;
+
+  bool get isGif => extension == ".gif";
+
+  bool get isWebm => extension == ".webm";
+
+  bool get isImageOrGif => [".jpg", ".png", ".webp", ".gif"].contains(extension);
+
+  CacheDirective get cacheDirective => CacheDirective(boardId, threadId);
+
+  MediaMetadata({
+    required this.imageId,
+    required this.filename,
+    required this.extension,
+    required this.boardId,
+    required this.threadId,
+    required this.mediaId,
+  });
+
+  MediaFileName getFileName(ChanPostMediaType type) {
+    if (imageId == null || extension == null || filename == null) {
+      throw Exception("Media file is not available");
+    }
+
+    switch (type) {
+      case ChanPostMediaType.MAIN:
+        return MediaFileName(filename!, extension!);
+      case ChanPostMediaType.THUMBNAIL:
+        return MediaFileName("${imageId}s", ".jpg");
+      case ChanPostMediaType.VIDEO_THUMBNAIL:
+        return MediaFileName("${imageId}t", ".jpg");
+    }
+  }
+
+  String getMediaUrl(ChanPostMediaType type) {
+    if (imageId == null || extension == null) {
+      throw Exception("Media URL is not available");
+    }
+
+    String targetImageId = "";
+    String targetExtension = "";
+    switch (type) {
+      case ChanPostMediaType.MAIN:
+        targetImageId = imageId!;
+        targetExtension = extension!;
+        break;
+      case ChanPostMediaType.THUMBNAIL:
+        targetImageId = "${imageId}s";
+        targetExtension = ".jpg";
+        break;
+      case ChanPostMediaType.VIDEO_THUMBNAIL:
+        targetImageId = "${imageId}t";
+        targetExtension = ".jpg";
+        break;
+    }
+    String fileName = "$targetImageId$targetExtension";
+    return "${FlavorConfig.values().baseImgUrl}/$boardId/$fileName";
+  }
+
+  @override
+  List<Object?> get props => [imageId, filename, extension, boardId, threadId, mediaId];
+}
 
 class MediaHelper {
-  static ImageSource? getThreadThumbnailSource(ThreadItem thread) {
+  final ChanDownloader _chanDownloader;
+  final ChanStorage _chanStorage;
+  final ThumbnailHelper _thumbnailHelper;
+
+  MediaHelper._(
+    this._chanDownloader,
+    this._chanStorage,
+    this._thumbnailHelper,
+  );
+
+  static Future<MediaHelper> create(
+    ChanStorage chanStorage,
+    ChanDownloader chanDownloader,
+    ThumbnailHelper thumbnailHelper,
+  ) async {
+    return MediaHelper._(chanDownloader, chanStorage, thumbnailHelper);
+  }
+
+  Future<ImageSource?> getThreadThumbnailSource(ThreadItem thread) async {
     if (!thread.hasMedia()) {
       return null;
     }
 
-    bool isDownloaded = getIt<ChanDownloader>().isMediaDownloaded(thread);
-    if (isDownloaded && thread.mediaType.isImageOrGif()) {
-      String filePath = getIt<ChanStorage>()
+    final metadata = thread.getMediaMetadata();
+    final mainUrl = metadata.getMediaUrl(ChanPostMediaType.MAIN);
+    bool isDownloaded = await _chanDownloader.isMediaDownloaded(metadata);
+    if (isDownloaded && metadata.isImageOrGif) {
+      String filePath = _chanStorage
           .getMediaFile(
-            thread.getMediaUrl(ChanPostMediaType.MAIN),
-            thread.getCacheDirective(),
+            metadata.getFileName(ChanPostMediaType.MAIN),
+            metadata.cacheDirective,
           )!
           .path;
-      return FileImageSource(filePath, thread.threadId);
+      return FileImageSource(mainUrl, filePath, metadata);
     }
 
-    if (thread.isFavorite() && thread.mediaType.isWebm() && isDownloaded) {
-      File? thumbnailFile = ThumbnailHelper.getVideoThumbnail(thread);
+    if (thread.isFavorite() && metadata.isWebm && isDownloaded) {
+      File? thumbnailFile = _thumbnailHelper.getVideoThumbnail(metadata);
       if (thumbnailFile != null) {
-        return FileImageSource(thumbnailFile.path, thread.threadId);
+        return FileImageSource(mainUrl, thumbnailFile.path, metadata);
       }
     }
 
-    if (thread.mediaType.isWebm()) {
+    if (metadata.isWebm) {
       return NetworkImageSource(
-        thread.getMediaUrl(ChanPostMediaType.THUMBNAIL),
+        metadata.getMediaUrl(ChanPostMediaType.THUMBNAIL),
         null,
-        thread.threadId,
+        metadata,
       );
     } else {
       return NetworkImageSource(
-        thread.getMediaUrl(ChanPostMediaType.MAIN),
-        thread.getMediaUrl(ChanPostMediaType.THUMBNAIL),
-        thread.threadId,
+        metadata.getMediaUrl(ChanPostMediaType.MAIN),
+        metadata.getMediaUrl(ChanPostMediaType.THUMBNAIL),
+        metadata,
       );
     }
   }
 
-  static MediaSource? getMediaSource(PostItem post) {
-    if (post.mediaType.isImageOrGif()) {
-      return getImageSource(post, false);
-    } else if (post.mediaType.isWebm()) {
-      return getVideoSource(post);
+  Future<MediaSource?> getMediaSource(PostItem post) async {
+    final metadata = post.getMediaMetadata();
+    if (metadata.isImageOrGif) {
+      return await getImageSource(post);
+    } else if (metadata.isWebm) {
+      return await getVideoSource(post);
     } else {
       return null;
     }
   }
 
-  static ImageSource getImageSource(PostItem post, bool forceThumbnail) {
-    if (post.isMediaDownloaded && post.mediaType.isImageOrGif()) {
-      String filePath = getIt<ChanStorage>()
+  Future<ImageSource> getImageSource(PostItem post) async {
+    final metadata = post.getMediaMetadata();
+    final mainUrl = metadata.getMediaUrl(ChanPostMediaType.MAIN);
+    final downloaded = await _chanDownloader.isMediaDownloaded(metadata);
+    if (downloaded && metadata.isImageOrGif) {
+      String filePath = _chanStorage
           .getMediaFile(
-            post.getMediaUrl(ChanPostMediaType.MAIN),
-            post.getCacheDirective(),
+            metadata.getFileName(ChanPostMediaType.MAIN),
+            metadata.cacheDirective,
           )!
           .path;
-      return FileImageSource(filePath, post.postId);
+      return FileImageSource(mainUrl, filePath, metadata);
     }
 
-    if (post.isFavorite() && post.mediaType.isWebm() && post.isMediaDownloaded) {
-      File? thumbnailFile = ThumbnailHelper.getVideoThumbnail(post);
+    if (post.isFavorite() && metadata.isWebm && downloaded) {
+      File? thumbnailFile = _thumbnailHelper.getVideoThumbnail(metadata);
       if (thumbnailFile != null) {
-        return FileImageSource(thumbnailFile.path, post.postId);
+        return FileImageSource(mainUrl, thumbnailFile.path, metadata);
       }
     }
 
-    if (forceThumbnail || post.mediaType.isWebm()) {
-      return NetworkImageSource(
-        post.getMediaUrl(ChanPostMediaType.THUMBNAIL),
-        null,
-        post.postId,
-      );
-    } else {
-      return NetworkImageSource(
-        post.getMediaUrl(ChanPostMediaType.MAIN),
-        post.getMediaUrl(ChanPostMediaType.THUMBNAIL),
-        post.postId,
-      );
-    }
+    return NetworkImageSource(
+      mainUrl,
+      metadata.getMediaUrl(ChanPostMediaType.THUMBNAIL),
+      metadata,
+    );
   }
 
-  static VideoSource getVideoSource(PostItem post) {
-    ImageSource placeholderImage = getImageSource(post, false);
+  Future<VideoSource> getVideoSource(PostItem post) async {
+    final metadata = post.getMediaMetadata();
+    ImageSource placeholderImage = await _getVideoThumbnailSource(post);
+    final downloaded = await _chanDownloader.isMediaDownloaded(metadata);
 
-    if (post.isMediaDownloaded) {
-      String filePath = getIt<ChanStorage>()
+    if (downloaded) {
+      String filePath = _chanStorage
           .getMediaFile(
-            post.getMediaUrl(ChanPostMediaType.MAIN),
-            post.getCacheDirective(),
+            metadata.getFileName(ChanPostMediaType.MAIN),
+            metadata.cacheDirective,
           )!
           .path;
-      return FileVideoSource(filePath, post.postId, placeholderImage);
+      return FileVideoSource(filePath, metadata, placeholderImage);
     }
 
-    return NetworkVideoSource(post.getMediaUrl(ChanPostMediaType.MAIN), post.postId, placeholderImage);
+    return NetworkVideoSource(metadata.getMediaUrl(ChanPostMediaType.MAIN), metadata, placeholderImage);
+  }
+
+  Future<ImageSource> _getVideoThumbnailSource(PostItem post) async {
+    final metadata = post.getMediaMetadata();
+    final mainUrl = metadata.getMediaUrl(ChanPostMediaType.MAIN);
+    final videoThumbnailDownloaded = await _chanStorage.mediaFileExists(
+      metadata.getFileName(ChanPostMediaType.VIDEO_THUMBNAIL),
+      metadata.cacheDirective,
+    );
+    if (videoThumbnailDownloaded) {
+      String filePath = _chanStorage
+          .getMediaFile(
+            metadata.getFileName(ChanPostMediaType.VIDEO_THUMBNAIL),
+            metadata.cacheDirective,
+          )!
+          .path;
+      return FileImageSource(mainUrl, filePath, metadata);
+    }
+
+    final thumbnailDownloaded = await _chanStorage.mediaFileExists(
+      metadata.getFileName(ChanPostMediaType.THUMBNAIL),
+      metadata.cacheDirective,
+    );
+    if (thumbnailDownloaded) {
+      String filePath = _chanStorage
+          .getMediaFile(
+            metadata.getFileName(ChanPostMediaType.THUMBNAIL),
+            metadata.cacheDirective,
+          )!
+          .path;
+      return FileImageSource(mainUrl, filePath, metadata);
+    } else {
+      return NetworkImageSource(
+        metadata.getMediaUrl(ChanPostMediaType.THUMBNAIL),
+        null,
+        metadata,
+      );
+    }
   }
 }
 
-sealed class MediaSource {
-  final int postId;
+@immutable
+sealed class MediaSource extends Equatable {
+  final MediaMetadata metadata;
 
-  MediaSource(this.postId);
+  get boardId => metadata.boardId;
+
+  get threadId => metadata.threadId;
+
+  get mediaId => metadata.mediaId;
+
+  get hasLocalFile => this is FileImageSource || this is FileVideoSource;
+
+  MediaSource(
+    this.metadata,
+  );
 
   ImageSource asImageSource() {
     if (this is ImageSource) {
@@ -130,49 +271,111 @@ sealed class MediaSource {
       throw Exception("MediaSource is not a VideoSource");
     }
   }
+
+  @override
+  List<Object?> get props => [metadata];
 }
 
+@immutable
 sealed class ImageSource extends MediaSource {
-  ImageSource(int postId) : super(postId);
+  final String mainUrl;
+
+  ImageSource(
+    this.mainUrl,
+    MediaMetadata metadata,
+  ) : super(metadata);
+
+  @override
+  List<Object?> get props => super.props..addAll([mainUrl]);
 }
 
+@immutable
 class NetworkImageSource extends ImageSource {
-  final String mainUrl;
   final String? thumbnailUrl;
 
-  NetworkImageSource(this.mainUrl, this.thumbnailUrl, int postId) : super(postId);
+  NetworkImageSource(
+    String mainUrl,
+    this.thumbnailUrl,
+    MediaMetadata metadata,
+  ) : super(mainUrl, metadata);
+
+  @override
+  List<Object?> get props => super.props..addAll([thumbnailUrl]);
 }
 
+@immutable
 class FileImageSource extends ImageSource {
   final String filePath;
 
-  FileImageSource(this.filePath, int postId) : super(postId);
+  FileImageSource(
+    String mainUrl,
+    this.filePath,
+    MediaMetadata metadata,
+  ) : super(mainUrl, metadata);
+
+  @override
+  List<Object?> get props => super.props..addAll([filePath]);
 }
 
+@immutable
 sealed class VideoSource extends MediaSource {
   final ImageSource placeholderSource;
 
-  VideoSource(this.placeholderSource, int postId) : super(postId);
+  VideoSource(
+    this.placeholderSource,
+    MediaMetadata metadata,
+  ) : super(metadata);
+
+  @override
+  List<Object?> get props => super.props..addAll([placeholderSource]);
 }
 
+@immutable
 class NetworkVideoSource extends VideoSource {
   final String url;
 
-  NetworkVideoSource(this.url, int postId, ImageSource placeholderImage) : super(placeholderImage, postId);
+  NetworkVideoSource(
+    this.url,
+    MediaMetadata metadata,
+    ImageSource placeholderImage,
+  ) : super(placeholderImage, metadata);
+
+  @override
+  List<Object?> get props => super.props..addAll([url]);
 }
 
+@immutable
 class FileVideoSource extends VideoSource {
   final String filePath;
 
-  FileVideoSource(this.filePath, int postId, ImageSource placeholderImage) : super(placeholderImage, postId);
+  FileVideoSource(
+    this.filePath,
+    MediaMetadata metadata,
+    ImageSource placeholderImage,
+  ) : super(placeholderImage, metadata);
+
+  @override
+  List<Object?> get props => super.props..addAll([filePath]);
 }
 
 extension PostItemMediaExtension on PostItem {
-  MediaSource? getMediaSource() => MediaHelper.getMediaSource(this);
-
-  ImageSource getThumbnailImageSource() => MediaHelper.getImageSource(this, true);
+  MediaMetadata getMediaMetadata() => MediaMetadata(
+        imageId: imageId,
+        filename: filename,
+        extension: extension,
+        boardId: boardId,
+        threadId: threadId,
+        mediaId: postId,
+      );
 }
 
 extension ThreadItemMediaExtension on ThreadItem {
-  ImageSource? getThumbnailImageSource() => MediaHelper.getThreadThumbnailSource(this);
+  MediaMetadata getMediaMetadata() => MediaMetadata(
+        imageId: imageId,
+        filename: filename,
+        extension: extension,
+        boardId: boardId,
+        threadId: threadId,
+        mediaId: threadId,
+      );
 }

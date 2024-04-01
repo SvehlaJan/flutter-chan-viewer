@@ -8,5 +8,3 @@ enum ChanDownloadProgress {
 
   final int value;
 }
-
-extension ChanDownloadProgressExtension on ChanDownloadProgress {}

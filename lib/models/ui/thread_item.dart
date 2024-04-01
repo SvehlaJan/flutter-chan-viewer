@@ -149,6 +149,11 @@ class ThreadItem extends ChanPostBase with EquatableMixin {
   }
 
   @override
+  String toString() {
+    return 'ThreadItem{subtitle: $subtitle}';
+  }
+
+  @override
   List<Object?> get props =>
       super.props + [onlineStatus, lastModified, selectedPostId, isThreadFavorite, replies, images, lastSeenPostIndex];
 }

@@ -10,19 +10,21 @@ abstract class BasePageState<T extends StatefulWidget> extends State<T> with Sin
 
   TextEditingController _searchQueryController = TextEditingController();
   late Bloc bloc;
+  late FocusNode _searchFocusNode;
 
   @override
   void initState() {
     _fabAnimationController = AnimationController(vsync: this, duration: Duration(milliseconds: 500));
     final curvedAnimation = CurvedAnimation(curve: Curves.easeInOut, parent: _fabAnimationController);
     _fabAnimation = Tween<double>(begin: 0, end: 1).animate(curvedAnimation);
+    _searchFocusNode = FocusNode();
 
     super.initState();
   }
 
   @override
   void dispose() {
-    // Dispose logic
+    _searchFocusNode.dispose();
     super.dispose();
   }
 
@@ -61,7 +63,7 @@ abstract class BasePageState<T extends StatefulWidget> extends State<T> with Sin
         iconColor: Theme.of(context).primaryIconTheme.color!,
         bubbleColor: Theme.of(context).colorScheme.secondary,
         icon: action.icon,
-        titleStyle: Theme.of(context).textTheme.subtitle1!,
+        titleStyle: Theme.of(context).textTheme.titleMedium!,
         onPress: () {
           _fabAnimationController.reverse();
           action.onTap();
@@ -95,6 +97,7 @@ abstract class BasePageState<T extends StatefulWidget> extends State<T> with Sin
                 Navigator.of(context).pop();
               }
             });
+            return null;
           }),
         },
         child: Scaffold(
@@ -114,6 +117,7 @@ abstract class BasePageState<T extends StatefulWidget> extends State<T> with Sin
         leading: IconButton(icon: Icon(Icons.search), onPressed: finishScreen),
         title: TextField(
           controller: _searchQueryController,
+          focusNode: _searchFocusNode,
           autofocus: true,
           decoration: InputDecoration(
             hintText: "Search...",
@@ -143,6 +147,7 @@ abstract class BasePageState<T extends StatefulWidget> extends State<T> with Sin
       _searchQueryController.clear();
       bloc.add(ChanEventCloseSearch());
     }));
+    _searchFocusNode.requestFocus();
   }
 
   static Widget buildErrorScreen(BuildContext context, String message) {

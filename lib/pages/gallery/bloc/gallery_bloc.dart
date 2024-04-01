@@ -14,17 +14,16 @@ import 'package:flutter_chan_viewer/repositories/posts_repository.dart';
 import 'package:flutter_chan_viewer/repositories/threads_repository.dart';
 import 'package:flutter_chan_viewer/utils/chan_util.dart';
 import 'package:flutter_chan_viewer/utils/exceptions.dart';
-import 'package:flutter_chan_viewer/utils/extensions.dart';
 import 'package:flutter_chan_viewer/utils/log_utils.dart';
 import 'package:flutter_chan_viewer/utils/media_helper.dart';
 
 import 'gallery_event.dart';
 import 'gallery_state.dart';
 
-class GalleryBloc extends Bloc<ChanEvent, GalleryState> {
-  final logger = LogUtils.getLogger();
+class GalleryBloc extends Bloc<ChanEvent, GalleryState> with ChanLogger {
   final ThreadsRepository _threadsRepository = getIt<ThreadsRepository>();
   final PostsRepository _postsRepository = getIt<PostsRepository>();
+  final MediaHelper _mediaHelper = getIt<MediaHelper>();
   late final StreamSubscription _subscription;
 
   final String _boardId;
@@ -51,7 +50,7 @@ class GalleryBloc extends Bloc<ChanEvent, GalleryState> {
       emit(GalleryStateLoading());
     });
 
-    on<ChanEventDataFetched>((event, emit) {
+    on<ChanEventDataFetched>((event, emit) async {
       if (!_dataSuccessfullyFetched && event.result.data != null) {
         _dataSuccessfullyFetched = true;
       }
@@ -59,25 +58,25 @@ class GalleryBloc extends Bloc<ChanEvent, GalleryState> {
       if (event.result is Loading) {
         if (event.result.data != null) {
           _threadDetailModel = event.result.data;
-          emit(buildContentState());
+          emit(await buildContentState());
         } else {
           emit(GalleryStateLoading());
         }
       } else if (event.result is Success) {
         _threadDetailModel = event.result.data;
-        emit(buildContentState());
+        emit(await buildContentState());
       } else if (event.result is Failure) {
         if (event.result.data is HttpException || event.result.data is SocketException) {
-          emit(buildContentState(event: GallerySingleEventShowOffline()));
+          emit(await buildContentState(event: GallerySingleEventShowOffline()));
         } else {
           emit(GalleryStateError(event.result.data.toString()));
         }
       }
     });
 
-    on<ChanEventDataError>((event, emit) {
+    on<ChanEventDataError>((event, emit) async {
       if (event.error is HttpException || event.error is SocketException) {
-        emit(buildContentState(event: GallerySingleEventShowOffline()));
+        emit(await buildContentState(event: GallerySingleEventShowOffline()));
       } else {
         emit(GalleryStateError(event.error.toString()));
       }
@@ -95,7 +94,7 @@ class GalleryBloc extends Bloc<ChanEvent, GalleryState> {
     });
 
     on<GalleryEventOnReplyClicked>((event, emit) async {
-      emit(buildContentState(event: GallerySingleEventShowReply(event.postId, _threadId, _boardId)));
+      emit(await buildContentState(event: GallerySingleEventShowReply(event.postId, _threadId, _boardId)));
     });
 
     on<GalleryEventHidePost>((event, emit) async {
@@ -120,20 +119,18 @@ class GalleryBloc extends Bloc<ChanEvent, GalleryState> {
     });
 
     on<GalleryEventOnAddToCollectionClicked>((event, emit) async {
-      List<ThreadItemVO> _customThreads =
-      (await _threadsRepository.getCustomThreads()).mapToList((e) => e.toThreadItemVO());
-      emit(buildContentState(
+      List<ThreadItemVO> _customThreads = await (await _threadsRepository.getCustomThreads()).toThreadItemVOList(_mediaHelper);
+      emit(await buildContentState(
           event: GallerySingleEventShowCollectionsDialog(
-            _customThreads,
-            _threadDetailModel.selectedPostId,
-          )));
+        _customThreads,
+        _threadDetailModel.selectedPostId,
+      )));
     });
 
     on<GalleryEventCreateNewCollection>((event, emit) async {
       await _threadsRepository.createCustomThread(event.name);
-      List<ThreadItemVO> _customThreads =
-          (await _threadsRepository.getCustomThreads()).mapToList((e) => e.toThreadItemVO());
-      emit(buildContentState(
+      List<ThreadItemVO> _customThreads = await (await _threadsRepository.getCustomThreads()).toThreadItemVOList(_mediaHelper);
+      emit(await buildContentState(
           event: GallerySingleEventShowCollectionsDialog(
         _customThreads,
         _threadDetailModel.selectedPostId,
@@ -141,12 +138,11 @@ class GalleryBloc extends Bloc<ChanEvent, GalleryState> {
     });
 
     on<GalleryEventAddPostToCollection>((event, emit) async {
-      List<ThreadItemVO> _customThreads =
-          (await _threadsRepository.getCustomThreads()).mapToList((e) => e.toThreadItemVO());
+      List<ThreadItemVO> _customThreads = await (await _threadsRepository.getCustomThreads()).toThreadItemVOList(_mediaHelper);
       ThreadItemVO thread = _customThreads.where((element) => element.subtitle == event.customThreadName).firstOrNull!;
       PostItem post = _threadDetailModel.findPostById(event.postId)!;
       await _threadsRepository.addPostToCustomThread(post, thread.threadId);
-      emit(buildContentState(event: GallerySingleEventShowPostAddedToCollectionSuccess()));
+      emit(await buildContentState(event: GallerySingleEventShowPostAddedToCollectionSuccess()));
     });
   }
 
@@ -156,7 +152,7 @@ class GalleryBloc extends Bloc<ChanEvent, GalleryState> {
     return super.close();
   }
 
-  GalleryStateContent buildContentState({GallerySingleEvent? event}) {
+  Future<GalleryStateContent> buildContentState({GallerySingleEvent? event}) async {
     late PostItem selectedPost;
     String? overlayMetadataText = null;
 
@@ -172,15 +168,17 @@ class GalleryBloc extends Bloc<ChanEvent, GalleryState> {
     } else {
       selectedPost = _threadDetailModel.findPostById(_initialPostId)!;
     }
-    List<PostItemVO> repliesForSelectedPost =
-        _threadDetailModel.findVisibleRepliesForPost(selectedPost.postId).map((e) => e.toPostItemVO()).toList();
+    List<PostItem> repliesForSelectedPost = await _threadDetailModel.findVisibleRepliesForPost(selectedPost.postId);
+    List<MediaSource?> mediaSources = await Future.wait(_threadDetailModel.visibleMediaPosts.map((post) async {
+      return _mediaHelper.getMediaSource(post);
+    }));
 
     return GalleryStateContent(
       showAsCarousel: showAsCarousel,
-      mediaSources: _threadDetailModel.visibleMediaPosts.map((post) => post.getMediaSource()!).toList(),
+      mediaSources: mediaSources.nonNulls.toList(),
       initialMediaIndex: initialCarouselIndex,
       overlayMetadataText: overlayMetadataText,
-      replies: [selectedPost.toPostItemVO(), ...repliesForSelectedPost],
+      replies: await [selectedPost, ...repliesForSelectedPost].toPostItemVOList(_mediaHelper),
       event: event,
     );
   }

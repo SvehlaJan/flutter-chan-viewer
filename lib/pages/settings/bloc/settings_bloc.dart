@@ -9,12 +9,13 @@ import 'package:flutter_chan_viewer/models/ui/thread_item.dart';
 import 'package:flutter_chan_viewer/repositories/chan_downloader.dart';
 import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
+import 'package:flutter_chan_viewer/utils/log_utils.dart';
 import 'package:flutter_chan_viewer/utils/preferences.dart';
 
 import 'settings_event.dart';
 import 'settings_state.dart';
 
-class SettingsBloc extends Bloc<ChanEvent, SettingsState> {
+class SettingsBloc extends Bloc<ChanEvent, SettingsState> with ChanLogger {
   final ChanDownloader _downloader = getIt<ChanDownloader>();
   final ChanStorage _chanStorage = getIt<ChanStorage>();
   final LocalDataSource _localDataSource = getIt<LocalDataSource>();
@@ -63,10 +64,10 @@ class SettingsBloc extends Bloc<ChanEvent, SettingsState> {
         List<PostItem> posts = await _localDataSource.getPostsFromThread(thread);
         for (PostItem post in posts) {
           if (post.hasMedia() && post.isMediaDownloaded) {
-            print("Post ${post.postId} is downloaded");
+            logDebug("Post ${post.postId} is downloaded");
             // await _localDataSource.updatePost(post.copyWith(downloadProgress: ChanDownloadProgress.FINISHED.value));
           } else {
-            print("Post ${post.postId} is NOT downloaded");
+            logDebug("Post ${post.postId} is NOT downloaded");
             // await _localDataSource.updatePost(post.copyWith(downloadProgress: ChanDownloadProgress.NOT_STARTED.value));
           }
         }
@@ -77,7 +78,13 @@ class SettingsBloc extends Bloc<ChanEvent, SettingsState> {
 
     on<SettingsEventToggleShowNsfw>((event, emit) {
       emit(SettingsStateLoading());
-      _preferences.setBool(Preferences.KEY_SETTINGS_SHOW_NSFW, event.showNsfw);
+      _preferences.setBool(Preferences.KEY_SETTINGS_SHOW_NSFW, event.enabled);
+      emit(_contentState);
+    });
+
+    on<SettingsEventToggleBiometricLock>((event, emit) {
+      emit(SettingsStateLoading());
+      _preferences.setBool(Preferences.KEY_SETTINGS_BIOMETRIC_LOCK, event.enabled);
       emit(_contentState);
     });
 
@@ -106,6 +113,7 @@ class SettingsBloc extends Bloc<ChanEvent, SettingsState> {
         _appTheme,
         _downloads,
         _preferences.getBool(Preferences.KEY_SETTINGS_SHOW_NSFW, def: false),
+        _preferences.getBool(Preferences.KEY_SETTINGS_BIOMETRIC_LOCK, def: false),
         _dbOverview,
       );
 }

@@ -28,10 +28,17 @@ class SettingsStateContent extends SettingsState {
   final AppTheme? theme;
   final List<DownloadFolderInfo>? downloads;
   final bool showNsfw;
+  final bool biometricLock;
   final MoorDbOverview moorDbOverview;
 
-  SettingsStateContent(this.theme, this.downloads, this.showNsfw, this.moorDbOverview);
+  SettingsStateContent(
+    this.theme,
+    this.downloads,
+    this.showNsfw,
+    this.biometricLock,
+    this.moorDbOverview,
+  );
 
   @override
-  List<Object?> get props => [theme, downloads, showNsfw];
+  List<Object?> get props => [theme, downloads, showNsfw, biometricLock];
 }

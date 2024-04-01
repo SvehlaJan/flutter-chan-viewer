@@ -55,8 +55,8 @@ class Constants {
       inputDecorationTheme: InputDecorationTheme(
         hintStyle: Theme.of(context)
             .textTheme
-            .headline6!
-            .copyWith(color: Theme.of(context).primaryTextTheme.headline6!.color!.withOpacity(0.8)),
+            .titleLarge!
+            .copyWith(color: Theme.of(context).primaryTextTheme.titleLarge!.color!.withOpacity(0.8)),
       ),
     );
   }

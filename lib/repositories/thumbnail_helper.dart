@@ -1,39 +1,86 @@
+import 'dart:collection';
 import 'dart:io';
 
-import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/models/helper/chan_post_base.dart';
+import 'package:flutter_chan_viewer/models/helper/media_file_name.dart';
 import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
-import 'package:kt_dart/kt.dart';
+import 'package:flutter_chan_viewer/utils/log_utils.dart';
+import 'package:flutter_chan_viewer/utils/media_helper.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 
-class ThumbnailHelper {
-  static File? getVideoThumbnail(ChanPostBase post) {
-    String thumbnailUrl = post.getMediaUrl(ChanPostMediaType.VIDEO_THUMBNAIL);
-    File? imageFile = getIt<ChanStorage>().getMediaFile(thumbnailUrl, post.getCacheDirective());
+class ThumbnailHelper with ChanLogger {
+  final ChanStorage chanStorage;
+
+  final ListQueue<MediaMetadata> _thumbnailQueue = ListQueue();
+
+  bool _isProcessingQueue = false;
+
+  ThumbnailHelper._(this.chanStorage);
+
+  static Future<ThumbnailHelper> create(ChanStorage chanStorage) async {
+    return ThumbnailHelper._(chanStorage);
+  }
+
+  File? getVideoThumbnail(MediaMetadata video) {
+    MediaFileName thumbnailFileName = video.getFileName(ChanPostMediaType.VIDEO_THUMBNAIL);
+    File? imageFile = chanStorage.getMediaFile(thumbnailFileName, video.cacheDirective);
     if (imageFile != null && imageFile.existsSync()) {
       return imageFile;
     }
     return null;
   }
 
-  static Future<File?> _createVideoThumbnail(KtPair<String, String> inOut) async {
-    String? newFilePath = await VideoThumbnail.thumbnailFile(
-        video: inOut.first,
-        thumbnailPath: inOut.second,
-        imageFormat: ImageFormat.JPEG,
-        maxHeight: 512,
-        quality: 80);
-    if (newFilePath != null && File(newFilePath).existsSync()) {
-      return File(newFilePath);
+  void enqueueVideoThumbnail(MediaMetadata video) {
+    _thumbnailQueue.add(video);
+    if (!_isProcessingQueue) {
+      _isProcessingQueue = true;
+      _processQueue();
     }
-    return null;
   }
 
-  static Future<File?> createVideoThumbnail(ChanPostBase post) async {
-    String videoUrl = post.getMediaUrl(ChanPostMediaType.MAIN);
-    String thumbnailUrl = post.getMediaUrl(ChanPostMediaType.VIDEO_THUMBNAIL);
-    String videoPath = getIt<ChanStorage>().getFileAbsolutePath(videoUrl, post.getCacheDirective());
-    String thumbnailPath = getIt<ChanStorage>().getFileAbsolutePath(thumbnailUrl, post.getCacheDirective());
-    return await _createVideoThumbnail(KtPair(videoPath, thumbnailPath));
+  Future<void> _processQueue() async {
+    while (_thumbnailQueue.isNotEmpty) {
+      MediaMetadata video = _thumbnailQueue.removeFirst();
+      await _createVideoThumbnail(video);
+    }
+    _isProcessingQueue = false;
+  }
+
+  Future<File?> _createVideoThumbnail(MediaMetadata video) async {
+    MediaFileName thumbnailFileName = video.getFileName(ChanPostMediaType.VIDEO_THUMBNAIL);
+    final fileExists = await chanStorage.mediaFileExists(thumbnailFileName, video.cacheDirective);
+    if (fileExists) {
+      // logDebug("Video thumbnail for ${video.filename} already exists");
+      return null;
+    }
+
+    String videoPath = chanStorage.getFileAbsolutePath(
+      video.getFileName(ChanPostMediaType.MAIN),
+      video.cacheDirective,
+    );
+
+    try {
+      // logDebug("Creating video thumbnail for ${videoPath}");
+      final data = await VideoThumbnail.thumbnailData(
+        video: videoPath,
+        imageFormat: ImageFormat.JPEG,
+        maxHeight: 256,
+        quality: 80,
+      );
+      // final data = await VideoCompress.getByteThumbnail(
+      //     videoPath,
+      //     quality: 50, // default(100)
+      //     position: -1 // default(-1)
+      // );
+      if (data != null) {
+        logDebug("Video thumbnail for ${video.filename} created");
+        await chanStorage.writeMediaFile(thumbnailFileName, video.cacheDirective, data);
+      } else {
+        logError("Error creating video thumbnail: data is null");
+      }
+    } catch (e) {
+      logError("Error creating video thumbnail: $e");
+    }
+    return null;
   }
 }

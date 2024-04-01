@@ -21,6 +21,10 @@ class LocalDataSource {
     return _postsDao.updatePost(post.toTableData());
   }
 
+  Future<int> updatePostDownloadProgress(int postId, int downloadProgress) {
+    return _postsDao.updateDownloadProgress(postId, downloadProgress);
+  }
+
   Future<List<PostItem>> getPostsFromThread(ThreadItem thread) async {
     List<PostsTableData> posts = await _postsDao.getAllPostsFromThread(thread.boardId, thread.threadId);
     return posts.map((postData) => PostItem.fromTableData(postData, thread: thread)).toList();
@@ -46,6 +50,10 @@ class LocalDataSource {
 
   Future<void> updateThreadOnlineState(int threadId, OnlineState onlineState) async {
     return _threadsDao.updateThreadOnlineState(threadId, onlineState);
+  }
+
+  Future<int> updateDownloadProgressByThreadId(int threadId, int downloadProgress) async {
+    return _postsDao.updateDownloadProgressByThreadId(threadId, downloadProgress);
   }
 
   Future<ThreadItem?> getThreadById(String boardId, int threadId) async {

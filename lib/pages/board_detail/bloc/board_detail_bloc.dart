@@ -14,11 +14,13 @@ import 'package:flutter_chan_viewer/repositories/boards_repository.dart';
 import 'package:flutter_chan_viewer/repositories/chan_result.dart';
 import 'package:flutter_chan_viewer/utils/exceptions.dart';
 import 'package:flutter_chan_viewer/utils/extensions.dart';
+import 'package:flutter_chan_viewer/utils/media_helper.dart';
 import 'package:flutter_chan_viewer/utils/preferences.dart';
 
 class BoardDetailBloc extends Bloc<ChanEvent, BoardDetailState> {
   final BoardsRepository _repository = getIt<BoardsRepository>();
   final Preferences _preferences = getIt<Preferences>();
+  final MediaHelper _mediaHelper = getIt<MediaHelper>();
 
   final String boardId;
   BoardDetailModel? _boardDetailModel;
@@ -48,15 +50,15 @@ class BoardDetailBloc extends Bloc<ChanEvent, BoardDetailState> {
           emit(BoardDetailStateLoading());
         } else {
           _boardDetailModel = event.result.data;
-          emit(buildContentState(lazyLoading: true));
+          emit(await buildContentState(lazyLoading: true));
         }
       } else if (event.result is Success<BoardDetailModel>) {
         _boardDetailModel = event.result.data;
-        emit(buildContentState());
+        emit(await buildContentState());
       } else if (event.result is Failure<BoardDetailModel>) {
         Exception exception = (event.result as Failure).exception;
         if (exception is HttpException || exception is SocketException) {
-          emit(buildContentState(event: BoardDetailEventShowOffline()));
+          emit(await buildContentState(event: BoardDetailEventShowOffline()));
         } else {
           emit(BoardDetailStateError(exception.toString()));
         }
@@ -65,7 +67,7 @@ class BoardDetailBloc extends Bloc<ChanEvent, BoardDetailState> {
 
     on<ChanEventDataError>((event, emit) async {
       if (event.error is HttpException || event.error is SocketException) {
-        emit(buildContentState(event: BoardDetailEventShowOffline()));
+        emit(await buildContentState(event: BoardDetailEventShowOffline()));
       } else {
         emit(BoardDetailStateError(event.error.toString()));
       }
@@ -77,7 +79,7 @@ class BoardDetailBloc extends Bloc<ChanEvent, BoardDetailState> {
     });
 
     on<BoardDetailEventOnItemClicked>((event, emit) async {
-      emit(buildContentState(event: BoardDetailEventOpenThreadDetail(boardId, event.threadId)));
+      emit(await buildContentState(event: BoardDetailEventOpenThreadDetail(boardId, event.threadId)));
     });
 
     on<BoardDetailEventToggleFavorite>((event, emit) async {
@@ -88,23 +90,23 @@ class BoardDetailBloc extends Bloc<ChanEvent, BoardDetailState> {
         favoriteBoards.add(boardId);
       }
       _preferences.setStringList(Preferences.KEY_FAVORITE_BOARDS, favoriteBoards);
-      emit(buildContentState());
+      emit(await buildContentState());
     });
 
-    on<ChanEventSearch>((event, emit) {
+    on<ChanEventSearch>((event, emit) async {
       searchQuery = event.query;
-      emit(buildContentState());
+      emit(await buildContentState());
     });
 
-    on<ChanEventShowSearch>((event, emit) {
+    on<ChanEventShowSearch>((event, emit) async {
       _showSearchBar = true;
-      emit(buildContentState());
+      emit(await buildContentState());
     });
 
-    on<ChanEventCloseSearch>((event, emit) {
+    on<ChanEventCloseSearch>((event, emit) async {
       searchQuery = "";
       _showSearchBar = false;
-      emit(buildContentState());
+      emit(await buildContentState());
     });
   }
 
@@ -114,7 +116,7 @@ class BoardDetailBloc extends Bloc<ChanEvent, BoardDetailState> {
     return super.close();
   }
 
-  BoardDetailStateContent buildContentState({bool lazyLoading = false, BoardDetailSingleEvent? event}) {
+  Future<BoardDetailStateContent> buildContentState({bool lazyLoading = false, BoardDetailSingleEvent? event}) async {
     List<ThreadItemVO> threads;
     if (searchQuery.isNotEmpty) {
       List<ThreadItem> titleMatchThreads = _boardDetailModel!.threads
@@ -122,9 +124,11 @@ class BoardDetailBloc extends Bloc<ChanEvent, BoardDetailState> {
           .toList();
       List<ThreadItem> bodyMatchThreads =
           _boardDetailModel!.threads.where((thread) => (thread.content ?? "").containsIgnoreCase(searchQuery)).toList();
-      threads = LinkedHashSet<ThreadItemVO>.from(titleMatchThreads + bodyMatchThreads).toList();
+      threads = await LinkedHashSet<ThreadItem>.from(titleMatchThreads + bodyMatchThreads)
+          .toList()
+          .toThreadItemVOList(_mediaHelper);
     } else {
-      threads = _boardDetailModel!.threads.map((thread) => thread.toThreadItemVO()).toList();
+      threads = await _boardDetailModel!.threads.toThreadItemVOList(_mediaHelper);
     }
 
     return BoardDetailStateContent(

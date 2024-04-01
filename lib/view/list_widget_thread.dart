@@ -7,8 +7,7 @@ import 'package:flutter_chan_viewer/utils/log_utils.dart';
 import 'package:flutter_chan_viewer/view/view_cached_image.dart';
 import 'package:flutter_html/flutter_html.dart';
 
-class ThreadListWidget extends StatelessWidget {
-  final logger = LogUtils.getLogger();
+class ThreadListWidget extends StatelessWidget with ChanLogger {
   final ThreadItemVO thread;
   final bool showProgress;
 
@@ -48,11 +47,11 @@ class ThreadListWidget extends StatelessWidget {
                             Padding(
                                 padding: const EdgeInsets.all(1.0),
                                 child: Icon(Icons.star, color: Colors.yellow, size: Constants.favoriteIconSize)),
-                          Text(thread.threadId.toString(), style: Theme.of(context).textTheme.caption),
+                          Text(thread.threadId.toString(), style: Theme.of(context).textTheme.bodySmall),
                           Spacer(),
-                          Text("${thread.replies}p/${thread.images}m", style: Theme.of(context).textTheme.caption),
+                          Text("${thread.replies}p/${thread.images}m", style: Theme.of(context).textTheme.bodySmall),
                           Spacer(),
-                          Text(ChanUtil.getHumanDate(thread.timestamp), style: Theme.of(context).textTheme.caption),
+                          Text(ChanUtil.getHumanDate(thread.timestamp), style: Theme.of(context).textTheme.bodySmall),
                         ],
                       ),
                       Row(
@@ -63,16 +62,16 @@ class ThreadListWidget extends StatelessWidget {
                                 child: Padding(
                                     padding: const EdgeInsets.only(bottom: 8.0),
                                     child: Text(thread.subtitle!,
-                                        style: Theme.of(context).textTheme.headline6, maxLines: 2))),
+                                        style: Theme.of(context).textTheme.titleLarge, maxLines: 2))),
                           if (newReplies > 0)
                             Text("$newReplies NEW",
-                                style: Theme.of(context).textTheme.caption!.copyWith(backgroundColor: Colors.red)),
+                                style: Theme.of(context).textTheme.bodySmall!.copyWith(backgroundColor: Colors.red)),
                         ],
                       ),
                       Html(
                         data: ChanUtil.getReadableHtml(thread.htmlContent ?? "", true),
                         style: {"*": Style(margin: Margins.zero)},
-                        onLinkTap: (url, attributes, element) => logger.d("Html link clicked { url: $url }"),
+                        onLinkTap: (url, attributes, element) => logDebug("Html link clicked { url: $url }"),
                       )
                     ],
                   ),

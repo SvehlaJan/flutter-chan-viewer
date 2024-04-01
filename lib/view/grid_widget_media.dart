@@ -1,28 +1,27 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_chan_viewer/models/helper/media_type.dart';
-import 'package:flutter_chan_viewer/models/ui/post_item_vo.dart';
+import 'package:flutter_chan_viewer/utils/media_helper.dart';
 import 'package:flutter_chan_viewer/view/view_cached_image.dart';
 import 'package:shimmer_animation/shimmer_animation.dart';
 
-class PostGridWidget extends StatefulWidget {
-  final PostItemVO post;
+class GridWidgetMedia extends StatefulWidget {
+  final MediaSource mediaSource;
   final bool selected;
   final Function onTap;
   final Function onLongPress;
 
-  const PostGridWidget({
+  const GridWidgetMedia({
     key,
-    required this.post,
+    required this.mediaSource,
     required this.selected,
     required this.onTap,
     required this.onLongPress,
   }) : super(key: key);
 
   @override
-  _PostGridWidgetState createState() => _PostGridWidgetState();
+  _GridWidgetMediaState createState() => _GridWidgetMediaState();
 }
 
-class _PostGridWidgetState extends State<PostGridWidget> with SingleTickerProviderStateMixin {
+class _GridWidgetMediaState extends State<GridWidgetMedia> with SingleTickerProviderStateMixin {
   AnimationController? _controller;
   late Animation<double> _animation;
 
@@ -44,7 +43,7 @@ class _PostGridWidgetState extends State<PostGridWidget> with SingleTickerProvid
 
   @override
   Widget build(BuildContext context) {
-    Widget content = buildContent(context, widget.post);
+    Widget content = buildContent(context, widget.mediaSource);
     return GridTile(
       child: InkWell(
         onTap: widget.onTap as void Function()?,
@@ -62,20 +61,16 @@ class _PostGridWidgetState extends State<PostGridWidget> with SingleTickerProvid
     );
   }
 
-  Widget buildContent(BuildContext context, PostItemVO post) {
+  Widget buildContent(BuildContext context, MediaSource mediaSource) {
+    final metadata = mediaSource.metadata;
+    final hasLocalFile = mediaSource.hasLocalFile;
+
     return Card(
       margin: EdgeInsets.all(1.0),
       clipBehavior: Clip.antiAlias,
-      child: Stack(
-        fit: StackFit.passthrough,
-        children: <Widget>[
-          Hero(
-              tag: post.postId,
-              child: ChanCachedImage(imageSource: post.mediaSource!.asImageSource(), boxFit: BoxFit.cover)),
-          if (post.isDownloaded()) Align(alignment: Alignment.bottomRight, child: Icon(Icons.sd_storage)),
-          if (post.mediaType.isGif()) Align(alignment: Alignment.bottomLeft, child: Icon(Icons.gif)),
-          if (post.mediaType.isWebm()) Align(alignment: Alignment.bottomRight, child: Icon(Icons.play_arrow)),
-        ],
+      child: Hero(
+        tag: metadata.mediaId,
+        child: ChanCachedImage(imageSource: mediaSource.asImageSource(), boxFit: BoxFit.cover),
       ),
     );
   }

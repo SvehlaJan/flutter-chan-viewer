@@ -19,7 +19,7 @@ class RemoteDataSource {
     String url = "${FlavorConfig.values().baseUrl}/boards.json";
 
     final response = await client.get(Uri.parse(url));
-//    logger.d("Board list fetched. { url: $url, response status: ${response.statusCode} }");
+//    logDebug("Board list fetched. { url: $url, response status: ${response.statusCode} }");
     if (response.statusCode == 200) {
       return BoardListModel.fromJson(json.decode(response.body));
     } else {
@@ -31,7 +31,7 @@ class RemoteDataSource {
     String url = "${FlavorConfig.values().baseUrl}/$boardId/catalog.json";
 
     final response = await client.get(Uri.parse(url));
-//    logger.d("Thread list fetched. { url: $url, response status: ${response.statusCode} }");
+//    logDebug("Thread list fetched. { url: $url, response status: ${response.statusCode} }");
     if (response.statusCode == 200) {
       return BoardDetailModel.fromJson(boardId, OnlineState.ONLINE, json.decode(response.body));
     } else {
@@ -43,7 +43,7 @@ class RemoteDataSource {
     String url = "${FlavorConfig.values().baseUrl}/$boardId/thread/$threadId.json";
 
     final response = await client.get(Uri.parse(url));
-//    logger.d("Post list fetched. { url: $url, response status: ${response.statusCode} }");
+//    logDebug("Post list fetched. { url: $url, response status: ${response.statusCode} }");
     if (response.statusCode == 200) {
       return ThreadDetailModel.fromJson(
           boardId, threadId, isArchived ? OnlineState.ARCHIVED : OnlineState.ONLINE, json.decode(response.body));
@@ -56,7 +56,7 @@ class RemoteDataSource {
     String url = "${FlavorConfig.values().baseUrl}/$boardId/archive.json";
 
     final response = await client.get(Uri.parse(url));
-//    logger.d("Archive list fetched. { url: $url, response status: ${response.statusCode} }");
+//    logDebug("Archive list fetched. { url: $url, response status: ${response.statusCode} }");
     if (response.statusCode == 200) {
       return ArchiveListModel.fromJson(boardId, json.decode(response.body));
     } else {

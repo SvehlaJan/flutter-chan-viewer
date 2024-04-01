@@ -105,7 +105,7 @@ class _BoardListPageState extends BasePageState<BoardListPage> {
           if (item.isHeader) {
             return Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: Text(item.headerTitle!, style: Theme.of(context).textTheme.subtitle1));
+                child: Text(item.headerTitle!, style: Theme.of(context).textTheme.titleMedium));
           } else {
             return InkWell(
               child: BoardListWidget(board: item.chanBoard!),

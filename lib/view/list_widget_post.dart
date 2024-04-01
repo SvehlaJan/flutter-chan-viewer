@@ -104,7 +104,7 @@ class _PostListWidgetState extends State<PostListWidget> with SingleTickerProvid
                 ),
                 child: widget.showHeroAnimation
                     ? Hero(
-                        tag: mediaSource.postId,
+                        tag: mediaSource.mediaId,
                         child: ChanCachedImage(imageSource: mediaSource.asImageSource(), boxFit: BoxFit.fitWidth))
                     : ChanCachedImage(imageSource: mediaSource.asImageSource(), boxFit: BoxFit.fitWidth)),
           Flexible(
@@ -116,12 +116,12 @@ class _PostListWidgetState extends State<PostListWidget> with SingleTickerProvid
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
-                      Text(postId.toString(), style: Theme.of(context).textTheme.caption),
-                      Text("${replies}r", style: Theme.of(context).textTheme.caption),
-                      Text(ChanUtil.getHumanDate(timestamp), style: Theme.of(context).textTheme.caption),
+                      Text(postId.toString(), style: Theme.of(context).textTheme.bodySmall),
+                      Text("${replies}r", style: Theme.of(context).textTheme.bodySmall),
+                      Text(ChanUtil.getHumanDate(timestamp), style: Theme.of(context).textTheme.bodySmall),
                     ],
                   ),
-                  if (subtitle.isNotNullNorEmpty) Text(subtitle!, style: Theme.of(context).textTheme.bodyText1),
+                  if (subtitle.isNotNullNorEmpty) Text(subtitle!, style: Theme.of(context).textTheme.bodyLarge),
                   if (htmlContent.isNotNullNorEmpty)
                     Html(
                       data: ChanUtil.getReadableHtml(htmlContent, false),

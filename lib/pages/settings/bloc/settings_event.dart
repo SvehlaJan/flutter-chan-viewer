@@ -17,12 +17,21 @@ class SettingsEventSetTheme extends ChanEvent {
 class SettingsEventExperiment extends ChanEvent {}
 
 class SettingsEventToggleShowNsfw extends ChanEvent {
-  final bool showNsfw;
+  final bool enabled;
 
-  SettingsEventToggleShowNsfw(this.showNsfw);
+  SettingsEventToggleShowNsfw(this.enabled);
 
   @override
-  List<Object> get props => [showNsfw];
+  List<Object> get props => [enabled];
+}
+
+class SettingsEventToggleBiometricLock extends ChanEvent {
+  final bool enabled;
+
+  SettingsEventToggleBiometricLock(this.enabled);
+  
+  @override
+  List<Object> get props => [enabled];
 }
 
 class SettingsEventCancelDownloads extends ChanEvent {}

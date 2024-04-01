@@ -105,7 +105,7 @@ class _FavoritesPageState extends BasePageState<FavoritesPage> {
               if (item.isHeader || thread == null) {
                 return Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: Text(item.headerTitle!, style: Theme.of(context).textTheme.subtitle1));
+                    child: Text(item.headerTitle!, style: Theme.of(context).textTheme.titleMedium));
               } else {
                 Widget threadWidget = item.thread?.isCustom ?? false
                     ? CustomThreadListWidget(thread: thread)

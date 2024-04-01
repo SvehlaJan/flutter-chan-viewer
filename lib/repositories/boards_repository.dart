@@ -13,18 +13,18 @@ import 'package:flutter_chan_viewer/repositories/chan_result.dart';
 import 'package:flutter_chan_viewer/utils/log_utils.dart';
 import 'package:path_provider/path_provider.dart';
 
-class BoardsRepository {
-  final logger = LogUtils.getLogger();
+class BoardsRepository with ChanLogger {
+  final RemoteDataSource _chanApiProvider;
+  final LocalDataSource _localDataSource;
 
-  late RemoteDataSource _chanApiProvider;
-  late LocalDataSource _localDataSource;
+  BoardsRepository._(this._chanApiProvider, this._localDataSource);
 
-  Future<void> initializeAsync() async {
-    _chanApiProvider = getIt<RemoteDataSource>();
-    _localDataSource = getIt<LocalDataSource>();
-
-    var dir = await getApplicationDocumentsDirectory();
-    await dir.create(recursive: true);
+  static Future<BoardsRepository> create(
+    RemoteDataSource chanApiProvider,
+    LocalDataSource localDataSource,
+  ) async {
+    final repository = BoardsRepository._(chanApiProvider, localDataSource);
+    return repository;
   }
 
   Future<BoardListModel?> fetchBoardList(bool includeNsfw) async {
@@ -37,8 +37,8 @@ class BoardsRepository {
     try {
       List<BoardItem> boards = await _localDataSource.getBoards(includeNsfw);
       return boards.isNotEmpty ? BoardListModel(boards) : null;
-    } catch (e, stackTrace) {
-      logger.e("fetchCachedBoardList error", e, stackTrace);
+    } catch (e) {
+      logError("fetchCachedBoardList error", error: e);
     }
 
     return null;

@@ -4,71 +4,85 @@ import 'dart:ui';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_chan_viewer/data/local/download_item.dart';
 import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/models/helper/chan_post_base.dart';
-import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
-import 'package:flutter_chan_viewer/models/ui/post_item.dart';
 import 'package:flutter_chan_viewer/repositories/cache_directive.dart';
 import 'package:flutter_chan_viewer/repositories/chan_downloader.dart';
 import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
 import 'package:flutter_chan_viewer/utils/log_utils.dart';
+import 'package:flutter_chan_viewer/utils/media_helper.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 
-class ChanDownloaderImpl extends ChanDownloader {
-  static final logger = LogUtils.getLogger();
+class ChanDownloaderImpl extends ChanDownloader with ChanLogger {
 
-  late ChanStorage _chanStorage;
+  final ChanStorage _chanStorage;
   List<DownloadTask> _libraryTasks = [];
   List<_TaskInfo> _taskInfoList = [];
   ReceivePort _port = ReceivePort();
 
-  @override
-  Future<void> initializeAsync() async {
-    _chanStorage = await getIt.getAsync<ChanStorage>();
+  ChanDownloaderImpl._(this._chanStorage);
+
+  static Future<ChanDownloaderImpl> create() async {
+    final downloader = ChanDownloaderImpl._(await getIt.getAsync<ChanStorage>());
 
     WidgetsFlutterBinding.ensureInitialized();
     await FlutterDownloader.initialize(debug: true);
     FlutterDownloader.registerCallback(ChanDownloaderImpl.downloadCallbackBackground);
 
-    _libraryTasks = await FlutterDownloader.loadTasks() ?? [];
+    downloader._libraryTasks = await FlutterDownloader.loadTasks() ?? [];
 
-    IsolateNameServer.registerPortWithName(_port.sendPort, Constants.downloaderPortName);
-    _port.listen((dynamic data) {
-      downloadCallbackMain(data[0], data[1], data[2]);
+    IsolateNameServer.registerPortWithName(downloader._port.sendPort, Constants.downloaderPortName);
+    downloader._port.listen((dynamic data) {
+      print("Download progress: $data");
+      downloader.downloadCallbackMain(data[0], data[1], data[2]);
     });
+
+    return downloader;
   }
 
   @override
-  Future<void> downloadThreadMedia(ThreadDetailModel model) async {
-    await _chanStorage.createDirectory(model.cacheDirective);
+  Future<void> downloadMedia(MediaMetadata media, {DownloadStatusCallback? statusCallback}) async {
+    await _chanStorage.createDirectory(media.cacheDirective);
 
     try {
-      for (PostItem post in model.allMediaPosts) {
-        await _downloadPostMedia(post);
-      }
+      await _downloadMedia(media);
     } catch (e) {
-      logger.e("Failed to download thread media: ", e);
+      logError("Failed to download thread media: ", error: e);
     }
   }
 
-  Future<void> _downloadPostMedia(PostItem post) async {
-    DownloadTask? existingTask = findDownloadTask(post.getMediaUrl(ChanPostMediaType.MAIN));
+  @override
+  Future<void> downloadItem(DownloadItem item, {DownloadStatusCallback? statusCallback}) async {}
+
+  Future<void> _downloadMedia(MediaMetadata media) async {
+    DownloadTask? existingTask = findDownloadTask(media.getMediaUrl(ChanPostMediaType.MAIN));
     if (existingTask == null) {
-      await _requestDownload(_TaskInfo.fromPost(post));
+      await _requestDownload(_TaskInfo.fromMediaMetadata(media));
       return;
     }
 
     if ([DownloadTaskStatus.enqueued, DownloadTaskStatus.running].contains(existingTask.status)) {
-      logger.i("Url is already enqueued to download. Skipping. ${existingTask.status}");
+      logDebug("Url is already enqueued to download. Skipping. ${existingTask.status}");
       return;
     }
     if ([DownloadTaskStatus.complete].contains(existingTask.status)) {
-      // logger.i("Url is already downloaded. Skipping. ${existingTask.status}");
-      return;
+      final fileExists = await _chanStorage.mediaFileExists(
+        media.getFileName(ChanPostMediaType.MAIN),
+        media.cacheDirective,
+      );
+      if (fileExists) {
+        logDebug("Url is already downloaded. Skipping. ${existingTask.status}");
+        return;
+      } else {
+        logDebug("File is missing. Re-downloading. ${existingTask.status}");
+        await _requestDownload(_TaskInfo.fromMediaMetadata(media));
+        return;
+      }
     }
     if ([DownloadTaskStatus.paused].contains(existingTask.status)) {
-      logger.i("Url is already paused. Resuming. ${existingTask.status}");
+      logDebug("Url is already paused. Resuming. ${existingTask.status}");
       await FlutterDownloader.resume(taskId: existingTask.taskId);
       return;
     }
@@ -77,7 +91,7 @@ class ChanDownloaderImpl extends ChanDownloader {
       DownloadTaskStatus.canceled,
       DownloadTaskStatus.undefined,
     ].contains(existingTask.status)) {
-      await _requestDownload(_TaskInfo.fromPost(post));
+      await _requestDownload(_TaskInfo.fromMediaMetadata(media));
     }
   }
 
@@ -97,14 +111,14 @@ class ChanDownloaderImpl extends ChanDownloader {
   }
 
   void downloadCallbackMain(String id, int status, int progress) async {
-    DownloadTaskStatus taskStatus = DownloadTaskStatus(status);
+    DownloadTaskStatus taskStatus = DownloadTaskStatus.fromInt(status);
     _TaskInfo? task = _taskInfoList.firstWhereOrNull((element) => element.taskId == id);
     if (task != null) {
       if (taskStatus == DownloadTaskStatus.complete) {
       } else if (taskStatus == DownloadTaskStatus.failed) {
-        print("Failed to download: ${task.filename} . Deleting file.");
+        logDebug("Failed to download: ${task.filename} . Deleting file.");
         await getIt.get<ChanStorage>().deleteMediaFile(task.filename, task.cacheDirective);
-        print("File deleted.");
+        logDebug("File deleted.");
       } else if (taskStatus == DownloadTaskStatus.enqueued) {
       } else if (taskStatus == DownloadTaskStatus.running) {}
     }
@@ -121,18 +135,16 @@ class ChanDownloaderImpl extends ChanDownloader {
   }
 
   @override
-  Future<void> cancelThreadDownload(ThreadDetailModel model) async {
-    for (PostItem post in model.allMediaPosts) {
-      _TaskInfo? task = _taskInfoList.firstWhereOrNull((element) => element.postId == post.postId);
-      if (task != null) {
-        await FlutterDownloader.cancel(taskId: task.taskId);
-      }
+  Future<void> cancelMediaDownload(MediaMetadata media) async {
+    _TaskInfo? task = _taskInfoList.firstWhereOrNull((element) => element.mediaId == media.mediaId);
+    if (task != null) {
+      await FlutterDownloader.cancel(taskId: task.taskId);
     }
   }
 
   @override
-  bool isMediaDownloaded(ChanPostBase post) {
-    DownloadTask? task = findDownloadTask(post.getMediaUrl(ChanPostMediaType.MAIN));
+  Future<bool> isMediaDownloaded(MediaMetadata metadata) async {
+    DownloadTask? task = findDownloadTask(metadata.getMediaUrl(ChanPostMediaType.MAIN));
     bool fileDownloaded = task != null && task.status == DownloadTaskStatus.complete;
 
     return fileDownloaded;
@@ -149,7 +161,7 @@ class ChanDownloaderImpl extends ChanDownloader {
 }
 
 class _TaskInfo {
-  final int postId;
+  final int mediaId;
   final String url;
   final String filename;
   final CacheDirective cacheDirective;
@@ -158,18 +170,18 @@ class _TaskInfo {
   DownloadTaskStatus status = DownloadTaskStatus.undefined;
 
   _TaskInfo({
-    required this.postId,
+    required this.mediaId,
     required this.url,
     required this.filename,
     required this.cacheDirective,
   });
 
-  factory _TaskInfo.fromPost(PostItem post) {
+  factory _TaskInfo.fromMediaMetadata(MediaMetadata media) {
     return _TaskInfo(
-      postId: post.postId,
-      url: post.getMediaUrl(ChanPostMediaType.MAIN),
-      filename: "${post.imageId}${post.extension}",
-      cacheDirective: post.getCacheDirective(),
+      mediaId: int.parse(media.imageId!),
+      url: media.getMediaUrl(ChanPostMediaType.MAIN),
+      filename: "${media.imageId}${media.extension}",
+      cacheDirective: media.cacheDirective,
     );
   }
 }

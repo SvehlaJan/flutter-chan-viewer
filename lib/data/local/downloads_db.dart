@@ -4,6 +4,7 @@ import 'dart:isolate';
 import 'package:drift/drift.dart';
 import 'package:drift/isolate.dart';
 import 'package:drift/native.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_chan_viewer/data/local/dao/downloads_dao.dart';
 import 'package:flutter_chan_viewer/data/local/tables/downloads_table.dart';
 import 'package:path/path.dart' as p;
@@ -52,6 +53,26 @@ class DownloadsDB extends _$DownloadsDB {
     return await receivePort.first as DriftIsolate;
   }
 
+  static Future<DriftIsolate> _createIsolateWithSpawn(RootIsolateToken token) async {
+    return await DriftIsolate.spawn(() {
+      // This function runs in a new isolate, so we must first initialize the
+      // messenger to use platform channels.
+      BackgroundIsolateBinaryMessenger.ensureInitialized(token);
+
+      // The callback to DriftIsolate.spawn() must return the database connection
+      // to use.
+      return LazyDatabase(() async {
+        // Note that this runs on a background isolate, which only started to
+        // support platform channels in Flutter 3.7. For earlier Flutter versions,
+        // a workaround is described later in this article.
+        final dbFolder = await getApplicationDocumentsDirectory();
+        final path = p.join(dbFolder.path, 'downloads_db.sqlite');
+
+        return NativeDatabase(File(path));
+      });
+    });
+  }
+
   static void _startBackground(_IsolateStartRequest request) {
     // this is the entry point from the background isolate! Let's create
     // the database from the path we received
@@ -66,9 +87,9 @@ class DownloadsDB extends _$DownloadsDB {
     request.sendDriftIsolate.send(driftIsolate);
   }
 
-  static DatabaseConnection createDriftIsolateAndConnect() {
+  static DatabaseConnection createDriftIsolateAndConnect(RootIsolateToken token) {
     return DatabaseConnection.delayed(() async {
-      final isolate = await _createDriftIsolate();
+      final isolate = await _createIsolateWithSpawn(token);
       return await isolate.connect();
     }());
   }

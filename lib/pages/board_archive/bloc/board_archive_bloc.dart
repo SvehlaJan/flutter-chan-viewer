@@ -17,11 +17,12 @@ import 'package:flutter_chan_viewer/repositories/threads_repository.dart';
 import 'package:flutter_chan_viewer/utils/exceptions.dart';
 import 'package:flutter_chan_viewer/utils/extensions.dart';
 import 'package:flutter_chan_viewer/utils/log_utils.dart';
+import 'package:flutter_chan_viewer/utils/media_helper.dart';
 
-class BoardArchiveBloc extends Bloc<ChanEvent, BoardArchiveState> {
-  final logger = LogUtils.getLogger();
+class BoardArchiveBloc extends Bloc<ChanEvent, BoardArchiveState> with ChanLogger {
   final BoardsRepository _boardsRepository = getIt<BoardsRepository>();
   final ThreadsRepository _threadsRepository = getIt<ThreadsRepository>();
+  final MediaHelper _mediaHelper = getIt<MediaHelper>();
   final String boardId;
   bool _showSearchBar = false;
   String searchQuery = "";
@@ -55,13 +56,14 @@ class BoardArchiveBloc extends Bloc<ChanEvent, BoardArchiveState> {
       if (cachedThreadsMap.containsKey(threadId)) {
         int batchInsertIndex = event.index;
         while (cachedThreadsMap.containsKey(threadId)) {
-          archiveThreads.add(ArchiveThreadWrapper(cachedThreadsMap[threadId]!.toThreadItemVO(), false));
+          archiveThreads
+              .add(ArchiveThreadWrapper(await cachedThreadsMap[threadId]!.toThreadItemVO(_mediaHelper,), false));
           batchInsertIndex++;
           threadId = batchInsertIndex < archiveThreadIds.length ? archiveThreadIds[batchInsertIndex] : null;
         }
       } else {
         ThreadItem threadItem = ThreadItem.fromCacheDirective(CacheDirective(boardId, threadId));
-        archiveThreads.add(ArchiveThreadWrapper(threadItem.toThreadItemVO(), true));
+        archiveThreads.add(ArchiveThreadWrapper(await threadItem.toThreadItemVO(_mediaHelper), true));
         emit(buildContentState(lazyLoading: true));
 
         try {
@@ -73,9 +75,9 @@ class BoardArchiveBloc extends Bloc<ChanEvent, BoardArchiveState> {
                 .updateThread(threadDetailModel.thread.copyWith(onlineStatus: OnlineState.ARCHIVED.index));
           }
           archiveThreads[archiveThreads.length - 1] =
-              ArchiveThreadWrapper(threadDetailModel.thread.toThreadItemVO(), false);
+              ArchiveThreadWrapper(await threadDetailModel.thread.toThreadItemVO(_mediaHelper), false);
         } catch (e) {
-          logger.e("Failed to load archived thread", e);
+          logError("Failed to load archived thread", error: e);
         }
       }
 

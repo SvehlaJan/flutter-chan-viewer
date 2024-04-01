@@ -68,7 +68,9 @@ class ThreadDetailModel extends Equatable {
     );
   }
 
-  CacheDirective get cacheDirective => thread.getCacheDirective();
+  CacheDirective get cacheDirective => thread.cacheDirective;
+
+  bool get hasPosts => _posts.isNotEmpty;
 
   List<PostItem> get visiblePosts => _posts.where((post) => !post.isHidden).toList();
 
@@ -112,6 +114,11 @@ class ThreadDetailModel extends Equatable {
 
   List<PostItem> findVisibleRepliesForPost(int postId) {
     return _posts.where((post) => post.repliesTo.contains(postId) && !post.isHidden).toList();
+  }
+
+  @override
+  String toString() {
+    return 'ThreadDetailModel{thread: ${thread.subtitle}}';
   }
 
   @override

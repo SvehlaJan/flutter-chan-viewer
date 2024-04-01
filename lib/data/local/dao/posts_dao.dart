@@ -50,16 +50,26 @@ class PostsDao extends DatabaseAccessor<ChanDB> with _$PostsDaoMixin {
 
   Future<bool> updatePost(PostsTableData entry) {
     return (update(postsTable).replace(entry)).then((value) {
-      print(value ? "Update goal row success" : "Update goal row failed");
       return value;
     });
+  }
+
+  Future<int> updateDownloadProgress(int postId, int downloadProgress) {
+    return (update(postsTable)..where((post) => post.postId.equals(postId))).write(
+      PostsTableCompanion(downloadProgress: Value(downloadProgress)),
+    );
+  }
+
+  Future<int> updateDownloadProgressByThreadId(int threadId, int downloadProgress) {
+    return (update(postsTable)..where((post) => post.threadId.equals(threadId))).write(
+      PostsTableCompanion(downloadProgress: Value(downloadProgress)),
+    );
   }
 
   Future<int> deletePostById(int postId, String boardId) =>
       (delete(postsTable)..where((post) => post.postId.equals(postId) & post.boardId.equals(boardId)))
           .go()
           .then((value) {
-        print("Row affecteds: $value");
         return value;
       });
 }

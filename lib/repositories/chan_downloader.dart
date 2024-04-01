@@ -1,14 +1,22 @@
-import 'package:flutter_chan_viewer/models/helper/chan_post_base.dart';
-import 'package:flutter_chan_viewer/models/thread_detail_model.dart';
+import 'package:flutter_chan_viewer/data/local/download_item.dart';
+import 'package:flutter_chan_viewer/utils/media_helper.dart';
+
+typedef DownloadStatusCallback = Future<void> Function(DownloadItem item);
 
 abstract class ChanDownloader {
-  Future<void> initializeAsync();
+  Future<void> downloadMedia(
+    MediaMetadata media, {
+    DownloadStatusCallback? statusCallback,
+  });
 
-  Future<void> downloadThreadMedia(ThreadDetailModel model);
+  Future<void> downloadItem(
+    DownloadItem item, {
+    DownloadStatusCallback? statusCallback,
+  });
 
   Future<void> cancelAllDownloads();
 
-  Future<void> cancelThreadDownload(ThreadDetailModel model);
+  Future<void> cancelMediaDownload(MediaMetadata metadata);
 
-  bool isMediaDownloaded(ChanPostBase post);
+  Future<bool> isMediaDownloaded(MediaMetadata metadata);
 }

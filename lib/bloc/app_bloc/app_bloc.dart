@@ -11,16 +11,18 @@ import 'package:flutter_chan_viewer/locator.dart';
 import 'package:flutter_chan_viewer/repositories/boards_repository.dart';
 import 'package:flutter_chan_viewer/repositories/chan_downloader.dart';
 import 'package:flutter_chan_viewer/repositories/chan_storage.dart';
+import 'package:flutter_chan_viewer/repositories/downloads_repository.dart';
 import 'package:flutter_chan_viewer/repositories/posts_repository.dart';
 import 'package:flutter_chan_viewer/repositories/threads_repository.dart';
 import 'package:flutter_chan_viewer/utils/constants.dart';
+import 'package:flutter_chan_viewer/utils/log_utils.dart';
 import 'package:flutter_chan_viewer/utils/navigation_helper.dart';
 import 'package:flutter_chan_viewer/utils/preferences.dart';
 import 'package:json_theme/json_theme.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-class AppBloc extends Bloc<AppEvent, AppState> {
+class AppBloc extends Bloc<AppEvent, AppState> with ChanLogger {
   late Preferences preferences;
   late ThemeData appTheme;
   LocalAuthentication auth = LocalAuthentication();
@@ -30,19 +32,22 @@ class AppBloc extends Bloc<AppEvent, AppState> {
   bool isMobile = Platform.isAndroid || Platform.isIOS;
 
   Future<void> initBloc() async {
+    // TODO: Do this in a better way
     await getIt.getAsync<Preferences>();
     await getIt.getAsync<ChanDownloader>();
     await getIt.getAsync<ChanStorage>();
     await getIt.getAsync<BoardsRepository>();
     await getIt.getAsync<ThreadsRepository>();
     await getIt.getAsync<PostsRepository>();
+    await getIt.getAsync<DownloadsRepository>();
+
+    preferences = await getIt.getAsync<Preferences>();
+    appTheme = await loadTheme();
 
     if (isMobile) {
       requestAuthentication();
       requestPermissions();
     }
-
-    preferences = getIt.get<Preferences>();
   }
 
   Future<ThemeData> loadTheme() async {
@@ -61,7 +66,6 @@ class AppBloc extends Bloc<AppEvent, AppState> {
   AppBloc() : super(AppStateLoading()) {
     on<AppEventAppStarted>((event, emit) async {
       await initBloc();
-      appTheme = await loadTheme();
       if (!isMobile) {
         this.authState = AuthState.authenticated;
         emit(_buildContentState());
@@ -82,7 +86,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     });
     on<AppEventLifecycleChange>((event, emit) async {
       this.lastLifecycleState = event.lastLifecycleState;
-      print("ChanViewerEventLifecycleChange: ${event.lastLifecycleState}");
+      logDebug("ChanViewerEventLifecycleChange: ${event.lastLifecycleState}");
       if (event.lastLifecycleState == AppLifecycleState.paused) {
         add(AppEventAuthStateChange(authState: AuthState.auth_required));
       } else if (event.lastLifecycleState == AppLifecycleState.resumed) {
@@ -98,15 +102,22 @@ class AppBloc extends Bloc<AppEvent, AppState> {
   @override
   void onError(Object error, StackTrace stackTrace) {
     super.onError(error, stackTrace);
-    print("AppBloc onError: $error");
+    logError("AppBloc error", error: error, stackTrace: stackTrace);
     // emit(ChanStateError(error.toString()));
   }
 
   Future<void> requestAuthentication() async {
+    bool biometricLockEnabled = preferences.getBool(Preferences.KEY_SETTINGS_BIOMETRIC_LOCK);
+    if (!biometricLockEnabled) {
+      logDebug("Biometric lock is disabled");
+      add(AppEventAuthStateChange(authState: AuthState.authenticated));
+      return;
+    }
+
     bool authAvailable = await auth.canCheckBiometrics;
     bool deviceSupported = await auth.isDeviceSupported();
     if (!isMobile || !authAvailable || !deviceSupported) {
-      print("Device does not support biometric auth");
+      logDebug("Device does not support biometric auth");
       add(AppEventAuthStateChange(authState: AuthState.authenticated));
       return;
     }
